@@ -181,7 +181,16 @@ useEffect(() => {
   return (
     <div>
       HELLO
-      <MaterialReactTable columns={columns} data={data} />
+      <MaterialReactTable enableGrouping 
+      initialState={{
+        density: 'compact',
+        expanded: true, //expand all groups by default
+        grouping: ['date'], //an array of columns to group by by default (can be multiple)
+        pagination: { pageIndex: 0, pageSize: 20 },
+        sorting: [{ id: 'date', desc: false }], //sort by state by default
+
+      }}
+      columns={columns} data={data} />
     </div>
   );
 };
