@@ -1,12 +1,13 @@
-import { AccountCircle } from '@mui/icons-material'
-import { Box, Paper, Card, CardContent, Stack, Avatar, Icon, Typography, CardActions, Button, Skeleton, Container } from '@mui/material'
-import { red } from '@mui/material/colors'
-import React, { FC, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+// import { AccountCircle } from '@mui/icons-material'
+import { Box, Paper, Card, CardContent, Stack, Typography,  } from '@mui/material'
+// import { red } from '@mui/material/colors'
+import { FC, useEffect, useState } from 'react'
+// import { Link } from 'react-router-dom'
 import { Divider } from '@mui/material';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 
 export interface DeviceDetails {
+  key: string;
   device_id: string;
   patient_id: string;
   device_resource_id: string;
@@ -101,10 +102,15 @@ export interface DeviceDetails {
 export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
 
   
-
+  useEffect(() => {console.log(props.observation_resource)},[props.observation_resource])
   const [newData, setNewData] = useState(false);
-
-  const [valueQuantityValue, setvalueQuantityValue] = useState(Number)
+  useEffect(() => {
+    if (props.patient_id !== "" && props.observation_resource.component[1]) {
+      setNewData(true);
+    }
+  }, [props.patient_id, props.observation_resource]);
+  
+//   const [valueQuantityValue, setvalueQuantityValue] = useState(Number)
   // useEffect(() => {
   //   if(total==3){
   //     setNewData(false)
@@ -117,10 +123,7 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
 
   return (
     
-      <Box  width={"400px"} sx={{backgroundColor:'transparent'}}>
-        <Button onClick={() => {
-      console.log(props.device_id, props.patient_id)
-    }}>
+      <Box  width={"350px"} sx={{backgroundColor:'transparent'}}>
         <Paper  elevation={2} sx={{ borderRadius: "25px", backgroundColor:'transparent'}}>
           <Card
             style={{ backgroundColor: "transparent", borderRadius: "25px", minHeight:"280px"
@@ -153,7 +156,7 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
                                   Set Temp:&nbsp;
                               </Typography>
                               <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
-                                  {valueQuantityValue}
+                                  100
                               </Typography>
                           </Stack>
                           <Stack direction={'row'}  width={'50%'}>
@@ -189,46 +192,64 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
                       <Stack direction={'row'} width={"100%"} >
                           <Stack direction={'row'} width={'50%'} >
                               <Typography variant='subtitle1' component={"h2"}>
-                                  SPO2:&nbsp;
+                                  {props.observation_resource.component[0].code.text}:&nbsp;
                               </Typography>
                               <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
-                                  100   
+                                  {props.observation_resource.component[0].valueQuantity.value}{props.observation_resource.component[0].valueQuantity.unit}
                               </Typography>
                           </Stack>
                           <Stack direction={'row'}  width={'50%'}>
-                              <Typography variant='subtitle1' component={"h2"}>
+                              {/* <Typography variant='subtitle1' component={"h2"}>
                                   PI:&nbsp;
                               </Typography>
                               <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} >
                                   100   
+                              </Typography> */}
+                              <Typography variant='subtitle1' component={"h2"}>
+                                  {props.observation_resource.component[1].code.text}:&nbsp;
+                              </Typography>
+                              <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
+                                  {props.observation_resource.component[1].valueQuantity.value}{props.observation_resource.component[1].valueQuantity.unit}
                               </Typography>
                           </Stack>
                       </Stack>
                       <Stack direction={'row'} width={"100%"} marginTop={'10px'}>
                           <Stack direction={'row'}  width={'50%'}>
-                              <Typography variant='subtitle1' component={"h2"}>
+                              {/* <Typography variant='subtitle1' component={"h2"}>
                                   PR:&nbsp;
                               </Typography>
                               <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
                                   100   
+                              </Typography> */}
+                              <Typography variant='subtitle1' component={"h2"}>
+                                  {props.observation_resource.component[2].code.text}:&nbsp;
+                              </Typography>
+                              <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
+                                  {props.observation_resource.component[2].valueQuantity.value}{props.observation_resource.component[2].valueQuantity.unit}
                               </Typography>
                           </Stack>
                           <Stack direction={'row'}  width={'50%'}>
-                              <Typography variant='subtitle1' component={"h2"}>
+                              {/* <Typography variant='subtitle1' component={"h2"}>
                                   SIQ:&nbsp;
                               </Typography>
                               <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} >
                                   100   
+                              </Typography> */}
+                              <Typography variant='subtitle1' component={"h2"}>
+                                  {props.observation_resource.component[3].code.text}:&nbsp;
+                              </Typography>
+                              <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
+                                  {props.observation_resource.component[3].valueQuantity.value}{props.observation_resource.component[3].valueQuantity.unit}
                               </Typography>
                           </Stack>
                       </Stack>
                   </Stack>
                   <Divider /></>) : (
-                  <>
-                    <PowerSettingsNewIcon sx={{ fontSize: 70, color:'red' }} />
+                  <div style={{marginLeft:'85px', marginTop:'5px'}}>
+                    <PowerSettingsNewIcon sx={{ fontSize: 150, color:'red' }} />
                     <br></br>
-                    Device not active
-                  </>) }
+                    <Typography variant='h6'>Device not active</Typography>
+                  </div>) }
                   
                   {/* <Stack
                     direction={{ xs: "row" }}
@@ -266,7 +287,7 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
             
           </Card>
         </Paper>
-        </Button>
+        
       </Box>
   )
 }

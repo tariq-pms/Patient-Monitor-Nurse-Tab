@@ -1,57 +1,56 @@
-import React, { useState } from 'react'
-import { AppBar, Menu, MenuItem } from '@mui/material'
+import { useState } from 'react'
+import { AppBar } from '@mui/material'
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
+import Drawer from '@mui/material/Drawer';
+// import List from '@mui/material/List';
+// import Divider from '@mui/material/Divider';
+// import ListItem from '@mui/material/ListItem';
+// import ListItemButton from '@mui/material/ListItemButton';
+// import ListItemIcon from '@mui/material/ListItemIcon';
+// import ListItemText from '@mui/material/ListItemText';
+// import DialogActions from '@mui/material/DialogActions';
+// import DialogContent from '@mui/material/DialogContent';
+// import DialogContentText from '@mui/material/DialogContentText';
+// import DialogTitle from '@mui/material/DialogTitle';
+// import useMediaQuery from '@mui/material/useMediaQuery';
+// import { useTheme } from '@mui/material/styles';
+// import AddIcon from '@mui/icons-material/Add';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
 import { AccountCircle } from '@mui/icons-material';
-import SettingsIcon from '@mui/icons-material/Settings';
 import { Link } from 'react-router-dom';
 import pmsLogo from "../assets/phx_logo.png";
 import { useAuth0 } from '@auth0/auth0-react';
+import { SettingsMenu } from './SettingsMenu';
+// type Anchor = 'right';
 
 export const Header = () => {
+  // const [temproom, settemproom] = useState([])
+  // const [open, setOpen] = React.useState(false);
+  // const theme = useTheme();
+  // const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const [state, setState] = useState(false)
+  const {isLoading, isAuthenticated, loginWithRedirect} = useAuth0();
+  // const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  // const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
 
-  const {isLoading, user, isAuthenticated, loginWithRedirect, logout} = useAuth0();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-
-
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
-
-      setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-      setAnchorEl(null);
-  };
+  //     setAnchorEl(event.currentTarget);
+  // };
+  // const handleClose = () => {
+  //     setAnchorEl(null);
+  // };
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" sx={{backgroundColor: 'radial-gradient(circle, rgba(43,52,85,1) 0%, rgba(12,14,23,1) 100%)'}}>
+      <AppBar position="static" style={{ background: 'transparent', boxShadow: 'none'}} >
         <Toolbar>
-        {/* <Typography
-          variant="h5"
-          noWrap
-          component="a"
-          href=""
-          sx={{
-            mr: 2,
-            display: 'flex',
-            flexGrow: 1,
-            fontFamily: 'monospace',
-            fontWeight: 700,
-            letterSpacing: '.1rem',
-            textDecoration: 'none',
-            color: 'white'
-          }}
-        >
-          Device Monitor
-        </Typography> */}
         <div style={{display: 'flex', marginRight:'auto'}}>
         <Link to="/">
-          <img src={pmsLogo} alt="Phoenix"/>
+          <img src={pmsLogo} alt="Phoenix" style={{
+        maxWidth: '70%', // Set the maximum width to 100%
+        height: 'auto', // Maintain the aspect ratio
+      }}/>
         </Link>
         </div>
           {
@@ -62,12 +61,19 @@ export const Header = () => {
             aria-label="account of current user"
             aria-controls="menu-appbar"
             aria-haspopup="true"
-            onClick={handleMenu}
+            onClick={() => {setState(true)}}
             color="inherit"
             >
-              <AccountCircle />
+              <AccountCircle sx={{ fontSize: 35 }}/>
             </IconButton>
-            <Menu
+            <Drawer
+            anchor={'right'}
+            open={state}
+            onClose={() => {setState(false)}}
+          >
+            <SettingsMenu></SettingsMenu>
+          </Drawer>
+            {/* <Menu
                 id="menu-appbar"
                 anchorEl={anchorEl}
                 anchorOrigin={{
@@ -82,61 +88,15 @@ export const Header = () => {
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
               >
-                <Link to="user"><MenuItem onClick={handleClose}>My Account</MenuItem></Link>
+                <MenuItem onClick={handleClose}>My Account</MenuItem>
                 <MenuItem onClick={() => logout()}>Logout</MenuItem>
-            </Menu>
+            </Menu> */}
           </div>
         }
         {
           !isLoading && !isAuthenticated &&
           <Button variant='contained' onClick={() => loginWithRedirect()}>Sign In</Button>
         }
-              
-        {/* {auth && (
-          <div>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleMenu}
-              color="inherit"
-            >
-              <AccountCircle />
-            </IconButton>
-            {/* <Menu
-              id="menu-appbar"
-              anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
-            >
-              <MenuItem onClick={handleClose}>Profile</MenuItem>
-              <MenuItem onClick={handleClose}>My account</MenuItem>
-            </Menu> */}
-          {/* </div>
-        )} */}
-        {
-          !isLoading && isAuthenticated && 
-          <IconButton size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleMenu}
-              color="inherit"
-            >
-              <SettingsIcon />
-          </IconButton>
-        }
-          
         </Toolbar>
       </AppBar>
     </Box>

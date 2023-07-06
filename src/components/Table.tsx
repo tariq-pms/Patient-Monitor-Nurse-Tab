@@ -140,7 +140,7 @@ export const Table = () => {
 
 useEffect(() => {
   fetch(
-    'https://localhost:9443/fhir-server/api/v4/Communication?_count=50',
+    'http://13.127.51.218:9444/fhir-server/api/v4/Communication?_count=50',
     {
       credentials: "omit", // send cookies and HTTP authentication information
       headers: {

@@ -75,6 +75,7 @@ export default function InfiniteScroll(
               ...current,
               entry: [...current.entry, ...data.entry],
             }));
+            
           }
           setHasMore(pageNumber * 10 < data.total);
         }
