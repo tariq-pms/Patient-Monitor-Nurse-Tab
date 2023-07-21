@@ -1,7 +1,8 @@
 import { useAuth0 } from '@auth0/auth0-react';
-import { AccountCircle } from '@mui/icons-material'
-import { Alert, Box, Button, Divider, List, ListItem, ListItemButton, Snackbar, Stack, TextField, Typography } from '@mui/material'
+import { AccountCircle, ExpandLess, ExpandMore, StarBorder } from '@mui/icons-material'
+import { Alert, Box, Button, Collapse, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Snackbar, Stack, TextField, Typography } from '@mui/material'
 import React, { useEffect } from 'react'
+import { Link } from "react-router-dom";
 import { useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import Dialog from '@mui/material/Dialog';
@@ -10,11 +11,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 type Anchor = 'right';
 export const SettingsMenu = () => {
     const [state, setState] = useState(false)
-    console.log(state)
+    
     const [temproom, settemproom] = useState([{
         "resource": {
             "name": String,
@@ -44,7 +46,6 @@ export const SettingsMenu = () => {
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const toggleDrawer = (anchor: Anchor, open: boolean) =>
     (event: React.KeyboardEvent | React.MouseEvent) => {
-        console.log(anchor,open)
         if (
         event.type === 'keydown' &&
         ((event as React.KeyboardEvent).key === 'Tab' ||
@@ -55,6 +56,8 @@ export const SettingsMenu = () => {
 
         setState(true);
     };
+    const [drop, setDrop] = useState(false)
+  
     const [addnewbutton, setaddnewbutton] = useState(false);
     const [deviceList, setDeviceList] = useState([{
         resource: {
@@ -81,7 +84,7 @@ export const SettingsMenu = () => {
         }
     }])
     const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
-        console.log(event)
+        // console.log(event)
         if (reason === 'clickaway') {
           return;
         }
@@ -89,7 +92,7 @@ export const SettingsMenu = () => {
         setSnack(false);
       };
     useEffect(() => {
-        fetch(`http://13.127.51.218:9444/fhir-server/api/v4/Location`, {
+        fetch(`http://3.110.197.165:9444/fhir-server/api/v4/Location`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -100,17 +103,17 @@ export const SettingsMenu = () => {
           settemproom(data.entry)
         }})
       },[])
-      useEffect(() => {console.log(roomName)},[roomName])
-    const addButton = (index: String) => {
+      // useEffect(() => {console.log(roomName)},[roomName])
+    const addButton = (index: any) => {
         let data = {}
         let vvtemp = {"reference": `Location/${roomId}`}
         data = {
             ...deviceList[Number(index)].resource,
             location: vvtemp
         }
-        console.log(`http://13.127.51.218:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`)
+        //console.log(`http://3.110.197.165:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`)
 
-        fetch(`http://13.127.51.218:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`, {
+        fetch(`http://3.110.197.165:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "PUT",
             body: JSON.stringify(data),
@@ -129,7 +132,7 @@ export const SettingsMenu = () => {
         
         // let deviceList: any[] = []
         useEffect(() =>{
-            fetch(`http://13.127.51.218:9444/fhir-server/api/v4/Device`, {
+            fetch(`http://3.110.197.165:9444/fhir-server/api/v4/Device`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -158,7 +161,7 @@ export const SettingsMenu = () => {
                     // console.log(device.resource.identifier[0].value)
                     return(
                         <ListItem>
-                            <ListItemButton onClick={() => addButton(String(index))}>
+                            <ListItemButton onClick={() => addButton((index))}>
                             <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
                             { device.resource.identifier[0].value}
                             </Typography>
@@ -190,7 +193,7 @@ export const SettingsMenu = () => {
             "name": newRoomName
         }
         // console.log
-        fetch(`http://13.127.51.218:9444/fhir-server/api/v4/Location`, {
+        fetch(`http://3.110.197.165:9444/fhir-server/api/v4/Location`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "POST",
             body: JSON.stringify(data),
@@ -200,7 +203,7 @@ export const SettingsMenu = () => {
             },
         })
         .then((response) => {
-            console.log(response)
+            // console.log(response)
             setSnack(true)
             if(response.status==201){setSnackSucc(true)}
             else{setSnackSucc(false)}
@@ -248,28 +251,46 @@ export const SettingsMenu = () => {
       >
         <List>
           <ListItem>
-            <Stack direction={'row'} width={"100%"} justifyContent="end">
-              <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
-                {user?.email}
-              </Typography>
-              <AccountCircle sx={{ fontSize: {
-                xs : 35,
-                sm : 35,
-                md : 75,
-                lg : 75
-              } }}/>
-            </Stack>
+            <ListItemButton>
+              
+                {/* <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}> */}
+                <ListItemText>
+                  {user?.email}
+                </ListItemText>
+                <ListItemIcon>
+                <AccountCircle sx={{ fontSize: {
+                  xs : 35,
+                  sm : 35,
+                  md : 75,
+                  lg : 75
+                } }}/>
+                </ListItemIcon>
+                {/* </Typography> */}
+              
+            </ListItemButton>
           </ListItem>
           <Divider />
           <ListItem>
-            <Stack width={"100%"} sx={{paddingTop:'10px' ,paddingBottom:'10px'}}>
-              <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
+            {/* <Stack width={"100%"} sx={{paddingTop:'10px' ,paddingBottom:'10px'}}> */}
+              {/* <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
                 Placeholder for Hospital Name
-              </Typography>
-              <Typography variant="h5" sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto', paddingTop:'35px', paddingBottom:'15px'}}>
-                Add device to room
-              </Typography>              
-              {
+              </Typography> */}
+              {/* <Divider /> */}
+              <Stack width={"100%"} sx={{paddingTop:'10px' ,paddingBottom:'10px'}}>
+              <Link to="rooms" style={{textDecoration: 'none', textDecorationColor: 'none', color:'white'}}>
+              {/* <ListItemButton onClick={() => {setDrop(!drop)}}> */}
+              <ListItemButton>
+                {/* <Stack direction={'row'} width={"100%"} justifyContent='end'> */}
+                {/* <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
+                  Devices and Rooms
+                </Typography> */}
+                <ListItemText primary="Devices and Rooms"></ListItemText>
+                {/* <SettingsIcon /> */}
+                {/* </Stack>  */}
+              </ListItemButton>  
+              </Link>   
+              </Stack>
+              {/* {
                 temproom.map((room) => {
                   return (
                     <Stack width={'100%'} direction={'row'}>
@@ -290,11 +311,35 @@ export const SettingsMenu = () => {
                   </Typography>
                   <AddIcon sx={{fontSize:'40px'}}/>
                 </ListItemButton>
-              </Stack>
-            </Stack>
+              </Stack> */}
+            {/* </Stack> */}
               
   
           </ListItem>
+          <Collapse in={drop} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                {
+                temproom.map((room) => {
+                  return (
+                    
+                    <ListItemButton onClick={() => {setOpen(true);setRoomId(room.resource.id)}}>
+                    <ListItemText primary={room.resource.name}>
+                      
+                    </ListItemText>
+                    <ListItemIcon>
+                      <AddIcon />
+                    </ListItemIcon>
+                    </ListItemButton>
+                    
+                  )
+                })
+              }
+              <ListItemButton onClick={() => setaddnewbutton(true)}>
+                <ListItemText primary="Add New Room" />
+                <ListItemIcon><AddIcon /></ListItemIcon>
+              </ListItemButton>
+                </List>
+              </Collapse>      
           <ListItem>
           <Button onClick={() => logout()} variant="contained" sx={{backgroundColor:'red', margin:'auto', color:'white'}}>
             <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto'}}>
@@ -303,7 +348,7 @@ export const SettingsMenu = () => {
             </Button>
           </ListItem>
         </List>
-        {addToRoom()}
+
         {addNewRoomButton()}
         <Snackbar open={snack} autoHideDuration={5000} onClose={handleClose}>
             <Alert onClose={handleClose} severity={snackSucc ? 'success':'error'}>

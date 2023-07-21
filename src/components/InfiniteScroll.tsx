@@ -82,7 +82,7 @@ export default function InfiniteScroll(
         setLoading(false);
       })
       .catch((err) => {
-        console.log(err);
+        // console.log(err);
         setError(true);
       });
   }, [pageNumber]);
