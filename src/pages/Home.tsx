@@ -24,6 +24,7 @@ export const Home = (currentRoom: any) => {
   const [loading, setLoading] = useState(false)
   const [parentobs, setParentObs] = useState<Record<string, any>>({});
   const [parentcomm, setParentComm] = useState<Record<string, any>>({});
+  const [patient, setPatient] = useState<Record<string, any>>({})
 //   const [obsResource, setObsResource] = useState({
 //     "resourceType": "",
 //     "id": "",
@@ -209,6 +210,7 @@ export const Home = (currentRoom: any) => {
     ],
   });
   const [value, setValue] = useState("");
+  
   // useEffect(() => {
   //   console.log(rooms)
   // },[rooms])
@@ -230,7 +232,7 @@ export const Home = (currentRoom: any) => {
   
   useEffect(() => {
     setLoading(true)
-    // fetch(`http://3.110.197.165:9444/fhir-server/api/v4/Location`, {
+    // fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Location`, {
     //   credentials: "omit",
     //   headers: {
     //     Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -240,7 +242,7 @@ export const Home = (currentRoom: any) => {
     // .then((data) => {setRooms(data)})
     // setLoading(true)
     
-    const socket = new WebSocket("ws://3.110.197.165:9444/fhir-server/api/v4/notification");
+    const socket = new WebSocket("ws://13.126.5.10:9444/fhir-server/api/v4/notification");
     socket.onopen = () => {
       console.log("Socket open successful");
     };
@@ -250,7 +252,7 @@ export const Home = (currentRoom: any) => {
       if (recieved_data.location.split("/")[0] == "Observation"){
           // console.log(data)
         // if (obsArray.includes(recieved_data.resourceId)){
-          fetch(`http://3.110.197.165:9444/fhir-server/api/v4/${recieved_data.location}`, {
+          fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -268,7 +270,7 @@ export const Home = (currentRoom: any) => {
       }
       else if (recieved_data.location.split("/")[0] == "Communication"){
         // if (comArray.includes(recieved_data.resourceId)){
-          fetch(`http://3.110.197.165:9444/fhir-server/api/v4/${JSON.parse(data.data).location}`, {
+          fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${JSON.parse(data.data).location}`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -284,7 +286,7 @@ export const Home = (currentRoom: any) => {
       }
       else if (recieved_data.location.split("/")[0] == "Device"){
         // if (devArray.includes(recieved_data.resourceId)){
-          fetch(`http://3.110.197.165:9444/fhir-server/api/v4/${JSON.parse(data.data).location}`, {
+          fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${JSON.parse(data.data).location}`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -305,9 +307,9 @@ export const Home = (currentRoom: any) => {
   useEffect(() => {
     if(currentRoom!=""){
       setLoading(true)
-      let url = `http://3.110.197.165:9444/fhir-server/api/v4/Device?location=${currentRoom.currentRoom}`
+      
       // console.log(url)
-      fetch(`http://3.110.197.165:9444/fhir-server/api/v4/Device?location=${currentRoom.currentRoom}`, {
+      fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Device?location=${currentRoom.currentRoom}`, {
         credentials: "omit",
         headers: {
           Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -330,11 +332,23 @@ export const Home = (currentRoom: any) => {
   
   //useEffect(() => {console.log(parentcomm);console.log(parentobs)},[parentcomm])
   useEffect(() => {
+    
     devices.entry?.map((device) => {
-
       // var correct = true;
       if(device.resource.patient){
-        fetch(`http://3.110.197.165:9444/fhir-server/api/v4/Observation?patient=${device.resource.patient.reference.split("/")[1]}&_sort=-date&_count=1`, {
+        
+        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Patient/${device.resource.patient.reference.split("/")[1]}`,{
+          credentials: "omit",
+          headers: {
+            Authorization: "Basic "+ btoa("fhiruser:change-password"),
+          },
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          var temp = String(device.resource.id);
+          setPatient((prevPatient) => ({...prevPatient, [temp]: data}))
+        })
+        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation?patient=${device.resource.patient.reference.split("/")[1]}&_sort=-date&_count=1`, {
         credentials: "omit",
         headers: {
           Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -348,7 +362,7 @@ export const Home = (currentRoom: any) => {
             setParentObs((prevParentobs) => ({...prevParentobs, [temp]: data.entry[0]["resource"]}))
           }})
       
-        fetch(`http://3.110.197.165:9444/fhir-server/api/v4/Communication?sender=${device.resource.id}&_count=1`, {
+        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Communication?sender=${device.resource.id}&_count=1`, {
         credentials: "omit",
         headers: {
           Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -367,7 +381,9 @@ export const Home = (currentRoom: any) => {
       }
       
     })
-  },[])
+  },[devices])
+
+ 
   const warmer = devices.entry?.map((device) => {
     
     if(String(device.resource.identifier[1]?.value)=="Comprehensive Infant Care Centre"){
@@ -384,7 +400,7 @@ export const Home = (currentRoom: any) => {
           key={String(device.resource.id)}
           device_id={String(device.resource.identifier[0].value)}
           device_resource_id={String(device.resource.id)}
-          patient_id={device.resource.patient.reference.split("/")[1]}
+          patient= {patient[String(device.resource.id)]}//{device.resource.patient.reference.split("/")[1]}
           observation_resource={parentobs[String(device.resource.id)]}
           communication_resource={parentcomm[String(device.resource.id)]}
         />
@@ -396,7 +412,7 @@ export const Home = (currentRoom: any) => {
           key={String(device.resource.id)}
           device_id={String(device.resource.identifier[0].value)}
           device_resource_id={String(device.resource.id)}
-          patient_id={""}
+          patient={null}
           observation_resource={parentobs[String(device.resource.id)]}
           communication_resource={parentcomm[String(device.resource.id)]}
         />
@@ -417,7 +433,7 @@ export const Home = (currentRoom: any) => {
           key={String(device.resource.id)}
           device_id={String(device.resource.identifier[0].value)}
           device_resource_id={String(device.resource.id)}
-          patient_id={device.resource.patient.reference.split("/")[1]}
+          patient= {patient[String(device.resource.id)]}
           observation_resource={parentobs[String(device.resource.id)]}
           communication_resource={parentcomm[String(device.resource.id)]}
         />
@@ -472,6 +488,7 @@ export const Home = (currentRoom: any) => {
 
   return (
     <div>
+      
       {/* <Selector onTabChange={handleTabChange} /> */}
       {/* <Box sx={{ width: '95%', margin:'0 auto', marginTop:'10px'  }}>
         <Tabs value={value}

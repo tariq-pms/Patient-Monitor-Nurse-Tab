@@ -5,11 +5,31 @@ import { FC, useEffect, useState } from 'react'
 // import { Link } from 'react-router-dom'
 import { Divider } from '@mui/material';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
+import { Link } from 'react-router-dom';
 
 export interface DeviceDetails {
   key: string;
   device_id: string;
-  patient_id: string;
+  patient: {
+    "resourceType": string;
+    "id": string;
+    "meta": {
+        "versionId": string;
+        "lastUpdated": string;
+    };
+    "extension": 
+        {
+            "url": string;
+            "valueString":string;
+        }[];
+
+    "identifier": 
+        {
+            "system": string;
+            "value": string;
+        }[];
+    
+};
   device_resource_id: string;
   observation_resource: {
     "resourceType": string;
@@ -104,14 +124,24 @@ export interface DeviceDetails {
 }
 
 export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
-
+    const [alarmColor, setAlarmColor] = useState("")
+    // const devicetimer = setInterval(timer, 10000)
+    function timer() {
+        setNewData(false)
+        setAlarmColor("white")
+        }
   const [newData, setNewData] = useState(false);
+  const [runNo, setRunNo] = useState(0)
   useEffect(() => {
-    if (props.observation_resource?.component?.[1]) {
-      setNewData(true);
-    }
+    // let devicetimer = setInterval(timer, 10000)    
+    setRunNo(runNo+1)
+    // clearInterval(devicetimer)
+    // console.log(devicetimer)
+    // runtimer = setInterval(timer, 10000)
     
-    for (var i=0; i< props?.communication_resource?.extension?.[1].valueCodeableConcept?.coding?.length; i++){
+    if (props.observation_resource?.component?.[1] && runNo==2 && props.communication_resource?.extension?.[1]) {
+      setNewData(true);
+      for (var i=0; i< props?.communication_resource?.extension?.[1].valueCodeableConcept?.coding?.length; i++){
         
         if(props.communication_resource?.extension[1]?.valueCodeableConcept?.coding[i]?.code=='high'){
             setAlarmColor('red')
@@ -120,28 +150,26 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
             setAlarmColor('yellow')
         }
     }
+    }
+    
+
   }, [props.observation_resource]);
 //   useEffect(() => {console.log(props.patient_id)},[props.patient_id])
-  const [alarmColor, setAlarmColor] = useState("")
-  setInterval(timer, 20000)
-  
-  function timer() {
-    setNewData(false)
-    setAlarmColor("white")
-    }
 
 
   return (
-    
+
       <Box  width={{
-        xs: "350px",
+        xs: "320px",
         sm: "350px",
         md: "450px",
         lg: "450px"
       }} sx={{backgroundColor:'transparent', borderRadius:'25px', border: `4px solid ${alarmColor}`}} >
+        
+        <Link to="devicedata" state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}>
         <Paper  elevation={2} sx={{ borderRadius: "25px", backgroundColor:'transparent' }}>
           <Card
-            style={{ backgroundColor: "transparent", borderRadius: "25px", minHeight:"280px", borderColor:'red'
+            style={{ backgroundColor: "transparent", borderRadius: "25px", minHeight:"280px",
              }}
           >
               <div>
@@ -157,7 +185,7 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
                       {props.device_id}
                       </Typography>
                       <Typography variant="subtitle1" sx={{marginLeft:'auto'}}>
-                      {props.patient_id}
+                      {props.patient?.identifier[0].value}
                       </Typography>
                     </Stack>
                     
@@ -170,15 +198,15 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
                             <Typography variant='subtitle1' component={"h2"}>
                                 {props.observation_resource.component[0].code.text}&nbsp;
                             </Typography>
-                            <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
+                            <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto', fontWeight:"bold"}} paddingRight={'20px'} >
                             {(() => {
                                 if (props.observation_resource.component[0].valueQuantity.value==0) {
-                                    return 'PREWARM';
+                                    return 'P';
                                 } else if (props.observation_resource.component[0].valueQuantity.value==1){
-                                    return 'MANUAL';
+                                    return 'M';
                                 }
                                 else{
-                                    return 'BABY';
+                                    return 'B';
                                 }
                             })()}
                             </Typography>
@@ -251,7 +279,7 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
                 }
                 {!props.observation_resource.component[6] && 
                     <Stack marginTop={'10px'} marginBottom={'10px'} sx={{justifyContent:'center'}}>
-                        <Typography variant='subtitle1' component={'h2'}>Oximeter Not connected</Typography>
+                        <Typography variant='subtitle1' component={'h2'} sx={{fontWeight:'bold', justifySelf:'center'}}>Oximeter Not connected</Typography>
                     </Stack>
                 }
                   
@@ -266,6 +294,7 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
             
           </Card>
         </Paper>
+        </Link>
         
       </Box>
   )

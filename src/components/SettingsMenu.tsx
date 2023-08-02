@@ -92,7 +92,7 @@ export const SettingsMenu = () => {
         setSnack(false);
       };
     useEffect(() => {
-        fetch(`http://3.110.197.165:9444/fhir-server/api/v4/Location`, {
+        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Location`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -111,9 +111,9 @@ export const SettingsMenu = () => {
             ...deviceList[Number(index)].resource,
             location: vvtemp
         }
-        //console.log(`http://3.110.197.165:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`)
+        //console.log(`http://13.126.5.10:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`)
 
-        fetch(`http://3.110.197.165:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`, {
+        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "PUT",
             body: JSON.stringify(data),
@@ -132,7 +132,7 @@ export const SettingsMenu = () => {
         
         // let deviceList: any[] = []
         useEffect(() =>{
-            fetch(`http://3.110.197.165:9444/fhir-server/api/v4/Device`, {
+            fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Device`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -193,7 +193,7 @@ export const SettingsMenu = () => {
             "name": newRoomName
         }
         // console.log
-        fetch(`http://3.110.197.165:9444/fhir-server/api/v4/Location`, {
+        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Location`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "POST",
             body: JSON.stringify(data),
@@ -239,9 +239,9 @@ export const SettingsMenu = () => {
     <Box
         style={{ background: '#1E253C'}}
         sx={{ width: {
-          xs : 200,
-          sm : 250,
-          md : 300,
+          xs : 350,
+          sm : 350,
+          md : 350,
           lg : 400
         } }}
         height={"100%"}

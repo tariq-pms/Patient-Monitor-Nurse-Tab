@@ -69,7 +69,7 @@ export const Header = ({currentRoom, roomChange}) => {
   // };
   useEffect(() => {
     if(isAuthenticated){
-      fetch(`http://3.110.197.165:9444/fhir-server/api/v4/Location`, {
+      fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Location`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -128,6 +128,7 @@ export const Header = ({currentRoom, roomChange}) => {
             anchor={'right'}
             open={state}
             onClose={() => {setState(false)}}
+          
           >
             <SettingsMenu></SettingsMenu>
           </Drawer>
