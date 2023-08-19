@@ -219,10 +219,15 @@ export const DetailedDevice = () => {
             id: "priority"
         }
     ]
-    const [rows, setRows] = useState([])
+    const [rows, setRows] = useState([{
+        date: String,
+        time: String,
+        alarm: String,
+        priority: String
+    }])
     
     useEffect(() => {
-        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history`, {
+        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource?.id}/_history`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -234,12 +239,12 @@ export const DetailedDevice = () => {
             let temparr: any[] = []
             var totaldata = data.total
             var page = 1
-            if(totaldata>1000){
-                totaldata=1000
+            if(totaldata>100000){
+                totaldata=100000
             }
             // console.log(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=50`)
-            while(totaldata>=50){
-                fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=50`,{
+            while(totaldata>=100){
+                fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=100`,{
                     credentials: "omit",
                     headers: {
                         Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -248,14 +253,13 @@ export const DetailedDevice = () => {
                 .then((response) => response.json())
                 .then((data) => {
                     for(let i=0;i<data.entry.length;i++){
-                       
                         temparr.push(data.entry[i])
                     }
                 })
-                totaldata=totaldata%50
+                totaldata=totaldata%100
                 page+=1
             }
-                fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=50`,{
+                fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=100`,{
                     credentials: "omit",
                     headers: {
                         Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -277,7 +281,7 @@ export const DetailedDevice = () => {
             
             
         })
-        // console.log(`http://13.126.5.10:9444/fhir-server/api/v4/Communication/${communication_resource.id}/_history`)
+        
         fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Communication/${communication_resource.id}/_history`, {
           credentials: "omit",
           headers: {
@@ -286,16 +290,19 @@ export const DetailedDevice = () => {
         })
         .then((response) => response.json())
         .then((data) => {
+            
             // setObservation(data)
             let temparr: any[] = []
             var totaldata = data.total
             
             var page = 1
-            if(totaldata>1000){
-                totaldata=1000
+            if(totaldata>100000){
+                totaldata=100000
             }
-            while(totaldata>=50){
-                fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Communication/${communication_resource.id}/_history?_page=${page}&_count=50`,{
+            
+            while(totaldata>=100){
+                
+                fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Communication/${communication_resource.id}/_history?_page=${page}&_count=100`,{
                     credentials: "omit",
                     headers: {
                         Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -308,12 +315,12 @@ export const DetailedDevice = () => {
                         temparr.push(data.entry[i])
                     }
                 })
-                totaldata=totaldata%50
+                
+                totaldata=totaldata%100
                 page+=1
             }
-            if(totaldata <50){
-                
-                fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Communication/${communication_resource.id}/_history?_page=${page}&_count=50`,{
+            if(totaldata <100){
+                fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Communication/${communication_resource.id}/_history?_page=${page}&_count=100`,{
                     credentials: "omit",
                     headers: {
                         Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -325,6 +332,7 @@ export const DetailedDevice = () => {
                         // console.log(temparr)
                         temparr.push(data.entry[i])
                     }
+                    
                     setCommunication(temparr)
                     setLoading(false)
                 })
@@ -368,252 +376,7 @@ export const DetailedDevice = () => {
         };
         socket.onerror = () => {console.log(`Error in socket connection`)}
       }, [])
-      useEffect(() => {console.log(communication)},[communication])
     const [vvtemp, setvvtemp] = useState(false)
-    useEffect(() => {
-    //    console.log(Array.isArray(observation))
-
-        if(observation[1]?.resource?.component?.length>1){
-            
-            setTimes(observation.map((obs) => {
-                return(
-                    new Date(obs.resource.meta.lastUpdated).toLocaleTimeString())
-                }))
-            
-            setDataSet(() => {
-                if(observation[1].resource.component.length>6){
-                    return [
-                        {
-                            label: String(observation[1].resource.component[1].code.text),
-                            data: observation.map((obs) => {
-                                if(obs.resource.component){return(obs.resource.component[1].valueQuantity.value)}
-                                else{return(null)}    
-                                
-                            }),
-                            // borderColor: 'rgb(255, 99, 132)',
-                            // backgroundColor:'rgb(255, 99, 132)',
-                            yaxis:'y'
-                        },
-                        {
-                            label: String(observation[1].resource.component[2].code.text),
-                            data: observation.map((obs) => {
-                                if(obs.resource.component){return(obs.resource.component[2].valueQuantity.value)}
-                                else{return(null)}    
-                                
-                            }),
-                            // borderColor: 'rgb(53, 162, 235)',
-                            // backgroundColor:'rgb(53, 162, 235)',
-                            yaxis:'y'
-                        }, 
-                        {
-                            label: String(observation[1].resource.component[3].code.text),
-                            data: observation.map((obs) => {
-                                if(obs.resource.component){return(obs.resource.component[3].valueQuantity.value)}
-                                else{return(null)}    
-                                
-                            }),
-                            // borderColor: 'rgb(53, 162, 235)',
-                            // backgroundColor:'rgb(53, 162, 235)',
-                            yaxis:'y1'
-                        },
-                        {
-                            label: String(observation[1].resource.component[4].code.text),
-                            data: observation.map((obs) => {
-                                if(obs.resource.component){return(obs.resource.component[4].valueQuantity.value)}
-                                else{return(null)}    
-                                
-                            }),
-                            // borderColor: 'rgb(53, 162, 235)',
-                            // backgroundColor:'rgb(53, 162, 235)',
-                            yaxis:'y'
-                        },
-                        {
-                            label: String(observation[1].resource.component[5].code.text),
-                            data: observation.map((obs) => {
-                                if(obs.resource.component){return(obs.resource.component[5].valueQuantity.value)}
-                                else{return(null)}    
-                                
-                            }),
-                            // borderColor: 'rgb(53, 162, 235)',
-                            // backgroundColor:'rgb(53, 162, 235)',
-                            yaxis:'y2'
-                        },
-                        {
-                            label: String(observation[1].resource.component[6].code.text),
-                            data: observation.map((obs) => {
-                                if(obs.resource.component && obs.resource.component[6]){
-                                    return(obs.resource.component[6].valueQuantity.value)
-                                }
-                                else{
-                                    return(null)
-                                }
-                                }),
-                            // data: observation.map((obs) => {
-                            //     if(obs.resource.component){return(obs.resource.component[1].valueQuantity.value)}
-                            //     else{return(null)}    
-                                
-                            // }),
-                            // borderColor: 'rgb(53, 162, 235)',
-                            // backgroundColor:'rgb(53, 162, 235)',
-                            yaxis:'y1'
-                        },
-                        {
-                            label: String(observation[1].resource.component[7].code.text),
-                            data: observation.map((obs) => {
-                                if(obs.resource.component && obs.resource.component[7]){
-                                    return(obs.resource.component[7].valueQuantity.value)
-                                }
-                                else{
-                                    return(null)
-                                }
-                                }),
-                            // data: observation.map((obs) => {
-                            //     if(obs.resource.component){return(obs.resource.component[1].valueQuantity.value)}
-                            //     else{return(null)}    
-                                
-                            // }),
-                            // borderColor: 'rgb(53, 162, 235)',
-                            // backgroundColor:'rgb(53, 162, 235)',
-                            yaxis:'y3'
-                        }
-                    ]
-                }
-                if(observation[1].resource.component.length<=6){
-                    return [
-                        {
-                            label: String(observation[1].resource.component[1].code.text),
-                            data: observation.map((obs) => {
-                                if(obs.resource.component){return(obs.resource.component[1].valueQuantity.value)}
-                                else{return(null)}    
-                                
-                            }),
-                            // borderColor: 'rgb(255, 99, 132)',
-                            // backgroundColor:'rgb(255, 99, 132)',
-                            yaxis:'y'
-                        },
-                        {
-                            label: String(observation[1].resource.component[2].code.text),
-                            data: observation.map((obs) => {
-                                if(obs.resource.component){return(obs.resource.component[2].valueQuantity.value)}
-                                else{return(0)}    
-                                
-                            }),
-                            // borderColor: 'rgb(53, 162, 235)',
-                            // backgroundColor:'rgb(53, 162, 235)',
-                            yaxis:'y'
-                        }, 
-                        {
-                            label: String(observation[1].resource.component[3].code.text),
-                            data: observation.map((obs) => {
-                                if(obs.resource.component){return(obs.resource.component[3].valueQuantity.value)}
-                                else{return(null)}    
-                                
-                            }),
-                            // borderColor: 'rgb(53, 162, 235)',
-                            // backgroundColor:'rgb(53, 162, 235)',
-                            yaxis:'y1'
-                        },
-                        {
-                            label: String(observation[1].resource.component[4].code.text),
-                            data: observation.map((obs) => {
-                                if(obs.resource.component){return(obs.resource.component[4].valueQuantity.value)}
-                                else{return(null)}    
-                                
-                            }),
-                            // borderColor: 'rgb(53, 162, 235)',
-                            // backgroundColor:'rgb(53, 162, 235)',
-                            yaxis:'y'
-                        },
-                        {
-                            label: String(observation[1].resource.component[5].code.text),
-                            data: observation.map((obs) => {
-                                if(obs.resource.component){return(obs.resource.component[5].valueQuantity.value)}
-                                else{return(null)}    
-                                
-                            }),
-                            // borderColor: 'rgb(53, 162, 235)',
-                            // backgroundColor:'rgb(53, 162, 235)',
-                            yaxis:'y2'
-                        }]
-                }
-            }
-        )
-        }
-        setvvtemp(true)
-        console.log(observation)
-    },[observation])
-    useEffect(() => {
-        // communication.map((commres) => {
-        //     console.log(commres.resource.meta.lastUpdated)
-        // })
-        // console.log(communication)
-        var x: { date: StringConstructor; time: StringConstructor; alarm: StringConstructor; priority: StringConstructor; }[] = []
-        
-        communication.map((commres) => 
-             {
-                if(commres.resource.extension){
-                    
-                    commres.resource.extension[0].valueCodeableConcept.coding.map((val,index) => 
-                    {  
-                       x.push({
-                           date: String(new Date(commres.resource.meta.lastUpdated).toLocaleDateString()),
-                           time: String(new Date(commres.resource.meta.lastUpdated).toLocaleTimeString()),
-                           alarm: val.display,
-                           priority: commres.resource.extension[1].valueCodeableConcept.coding[index].display
-                       })
-                    }
-               )
-                }
-
-                    }
-        )
-        console.log(x)
-        setRows(x)
-        // setRows(
-        // console.log(communication)
-        // )
-    },[communication])
-    const [data, setData] = useState({})
-    useEffect(() => {
-        // console.log(dataset)
-        // console.log(labels)
-        // console.log(times)
-        setData({
-            labels,
-            datasets: dataset
-        })
-        setGraphData(true)
-    },[times])
-    const labels = times;
-    // const data = {
-    //     labels,
-    //     datasets: [
-    //       {
-    //         label: 'Dataset 1',
-    //         data: [1,2,3,4],
-    //         borderColor: 'rgb(255, 99, 132)',
-    //         backgroundColor: 'rgba(255, 99, 132, 0.5)',
-    //       },
-    //       {
-    //         label: 'Dataset 2',
-    //         data: [1,2,3,4],
-    //         borderColor: 'rgb(53, 162, 235)',
-    //         backgroundColor: 'rgba(53, 162, 235, 0.5)',
-    //       },
-    //     ],
-    //   };
-    // const vvtemp = [1,2,3,4,5];
-    // const data = {
-    //         vvtemp,
-    //         datasets: [{
-    //             label: "HELLO",
-    //             data: [1,2,3,4,5],
-    //             borderColor: 'rgb(255, 99, 132)',
-    //             backgroundColor:'rgb(255, 99, 132)',
-    //             yaxis:'y'
-    //         }]
-    //     }
-    // useEffect(() => {console.log(data)},[data])
     const options = {
         tension: 0.3,
         responsive: true,
@@ -693,6 +456,272 @@ export const DetailedDevice = () => {
           }
         },
       };
+      const yAxisIDMap = {
+        "%": "y",
+        "C": "y1",
+        "g": "y2",
+        "BPM": "y3"
+        // Add more mappings as needed
+      };
+    useEffect(() => {
+    //    console.log(Array.isArray(observation))
+
+        if(observation[1]?.resource?.component?.length>1){
+            
+            setTimes(observation.map((obs) => {
+                return(
+                    new Date(obs.resource.meta.lastUpdated).toLocaleTimeString())
+                }))
+            setDataSet(observation[1].resource.component.map((data, index) => {
+                return {
+                label: String(observation[1]?.resource?.component[index]?.code?.text),
+                data: observation.map((obs) => {
+                    if(obs?.resource?.component){return(obs.resource?.component[index]?.valueQuantity.value)}
+                    else{return(null)}    
+                    
+                }),
+                // borderColor: 'rgb(255, 99, 132)',
+                // backgroundColor:'rgb(255, 99, 132)',
+                yAxisID: yAxisIDMap[String(observation[1]?.resource?.component[index]?.valueQuantity.unit)] || 'y3'
+            }}))
+        //     setDataSet(() => {
+        //         if(observation[1].resource.component.length>6){
+        //             return [
+        //                 {
+        //                     label: String(observation[1].resource.component[1].code.text),
+        //                     data: observation.map((obs) => {
+        //                         if(obs.resource.component){return(obs.resource.component[1].valueQuantity.value)}
+        //                         else{return(null)}    
+                                
+        //                     }),
+        //                     // borderColor: 'rgb(255, 99, 132)',
+        //                     // backgroundColor:'rgb(255, 99, 132)',
+        //                     yAxisID: yAxisIDMap[String(observation[1].resource.component[1].valueQuantity.unit)] || 'y3'
+        //                 },
+        //                 {
+        //                     label: String(observation[1].resource.component[2].code.text),
+        //                     data: observation.map((obs) => {
+        //                         if(obs.resource.component){return(obs.resource.component[2].valueQuantity.value)}
+        //                         else{return(null)}    
+                                
+        //                     }),
+        //                     // borderColor: 'rgb(53, 162, 235)',
+        //                     // backgroundColor:'rgb(53, 162, 235)',
+        //                     yAxisID: yAxisIDMap[String(observation[1].resource.component[2].valueQuantity.unit)] || 'y3'
+        //                 }, 
+        //                 {
+        //                     label: String(observation[1].resource.component[3].code.text),
+        //                     data: observation.map((obs) => {
+        //                         if(obs.resource.component){return(obs.resource.component[3].valueQuantity.value)}
+        //                         else{return(null)}    
+                                
+        //                     }),
+        //                     // borderColor: 'rgb(53, 162, 235)',
+        //                     // backgroundColor:'rgb(53, 162, 235)',
+        //                     yAxisID: yAxisIDMap[String(observation[1].resource.component[3].valueQuantity.unit)] || 'y3'
+        //                 },
+        //                 {
+        //                     label: String(observation[1].resource.component[4].code.text),
+        //                     data: observation.map((obs) => {
+        //                         if(obs.resource.component){return(obs.resource?.component[4]?.valueQuantity.value)}
+        //                         else{return(null)}    
+                                
+        //                     }),
+        //                     // borderColor: 'rgb(53, 162, 235)',
+        //                     // backgroundColor:'rgb(53, 162, 235)',
+        //                     yAxisID: yAxisIDMap[String(observation[1].resource.component[4].valueQuantity.unit)] || 'y3'
+        //                 },
+        //                 {
+        //                     label: String(observation[1].resource.component[5].code.text),
+        //                     data: observation.map((obs) => {
+        //                         if(obs.resource.component){return(obs.resource?.component[5]?.valueQuantity.value)}
+        //                         else{return(null)}    
+                                
+        //                     }),
+        //                     // borderColor: 'rgb(53, 162, 235)',
+        //                     // backgroundColor:'rgb(53, 162, 235)',
+        //                     yAxisID: yAxisIDMap[String(observation[1].resource.component[5].valueQuantity.unit)] || 'y3'
+        //                 },
+        //                 {
+        //                     label: String(observation[1].resource.component[6].code.text),
+        //                     data: observation.map((obs) => {
+        //                         if(obs.resource.component && obs.resource.component[6]){
+        //                             return(obs.resource.component[6].valueQuantity.value)
+        //                         }
+        //                         else{
+        //                             return(null)
+        //                         }
+        //                         }),
+        //                     // data: observation.map((obs) => {
+        //                     //     if(obs.resource.component){return(obs.resource.component[1].valueQuantity.value)}
+        //                     //     else{return(null)}    
+                                
+        //                     // }),
+        //                     // borderColor: 'rgb(53, 162, 235)',
+        //                     // backgroundColor:'rgb(53, 162, 235)',
+        //                     yAxisID: yAxisIDMap[String(observation[1].resource.component[6].valueQuantity.unit)] || 'y3'
+        //                 },
+        //                 {
+        //                     label: String(observation[1].resource.component[7].code.text),
+        //                     data: observation.map((obs) => {
+        //                         if(obs.resource.component && obs.resource.component[7]){
+        //                             return(obs.resource.component[7].valueQuantity.value)
+        //                         }
+        //                         else{
+        //                             return(null)
+        //                         }
+        //                         }),
+        //                     // data: observation.map((obs) => {
+        //                     //     if(obs.resource.component){return(obs.resource.component[1].valueQuantity.value)}
+        //                     //     else{return(null)}    
+                                
+        //                     // }),
+        //                     // borderColor: 'rgb(53, 162, 235)',
+        //                     // backgroundColor:'rgb(53, 162, 235)',
+        //                     yAxisID: yAxisIDMap[String(observation[1].resource.component[7].valueQuantity.unit)] || 'y3'
+        //                 }
+        //             ]
+        //         }
+        //         if(observation[1].resource.component.length<=6){
+        //             return [
+        //                 {
+        //                     label: String(observation[1].resource.component[1].code.text),
+        //                     data: observation.map((obs) => {
+        //                         if(obs.resource.component){return(obs.resource.component[1]?.valueQuantity.value)}
+        //                         else{return(null)}    
+                                
+        //                     }),
+        //                     // borderColor: 'rgb(255, 99, 132)',
+        //                     // backgroundColor:'rgb(255, 99, 132)',
+        //                     yAxisID:'y'
+        //                 },
+        //                 {
+        //                     label: String(observation[1].resource.component[2].code.text),
+        //                     data: observation.map((obs) => {
+        //                         if(obs.resource.component){return(obs.resource.component[2]?.valueQuantity.value)}
+        //                         else{return(0)}    
+                                
+        //                     }),
+        //                     // borderColor: 'rgb(53, 162, 235)',
+        //                     // backgroundColor:'rgb(53, 162, 235)',
+        //                     yAxisID:'y'
+        //                 }, 
+        //                 {
+        //                     label: String(observation[1].resource.component[3].code.text),
+        //                     data: observation.map((obs) => {
+        //                         if(obs.resource.component){return(obs.resource.component[3]?.valueQuantity.value)}
+        //                         else{return(null)}    
+                                
+        //                     }),
+        //                     // borderColor: 'rgb(53, 162, 235)',
+        //                     // backgroundColor:'rgb(53, 162, 235)',
+        //                     yAxisID:'y1'
+        //                 },
+        //                 {
+        //                     label: String(observation[1]?.resource?.component[4]?.code.text),
+        //                     data: observation.map((obs) => {
+        //                         if(obs.resource.component){return(obs.resource.component[4]?.valueQuantity.value)}
+        //                         else{return(null)}    
+                                
+        //                     }),
+        //                     // borderColor: 'rgb(53, 162, 235)',
+        //                     // backgroundColor:'rgb(53, 162, 235)',
+        //                     yAxisID:'y'
+        //                 },
+        //                 {
+        //                     label: String(observation[1]?.resource?.component[5]?.code.text),
+        //                     data: observation.map((obs) => {
+        //                         if(obs.resource.component){return(obs.resource.component[5]?.valueQuantity.value)}
+        //                         else{return(null)}    
+                                
+        //                     }),
+        //                     // borderColor: 'rgb(53, 162, 235)',
+        //                     // backgroundColor:'rgb(53, 162, 235)',
+        //                     yAxisID:'y2'
+        //                 }]
+        //         }
+        //     }
+        // )
+        }
+        setvvtemp(true)
+        console.log(observation)
+    },[observation])
+    useEffect(() => {
+        // communication.map((commres) => {
+        //     console.log(commres.resource.meta.lastUpdated)
+        // })
+        // console.log(communication)
+        var x: { date: String; time: String; alarm: String; priority: String; }[] = []
+        
+        communication.map((commres) => 
+             {
+                if(commres.resource.extension){
+                    
+                    commres.resource.extension[0].valueCodeableConcept.coding.map((val,index) => 
+                    {  
+                        const lastUpdatedDate = new Date(commres.resource.meta.lastUpdated);
+
+
+                       x.push({
+                           date: (lastUpdatedDate.toLocaleDateString()),
+                           time: (lastUpdatedDate.toLocaleTimeString()),
+                           alarm: String(val.display),
+                           priority: String(commres.resource.extension[1].valueCodeableConcept.coding[index].display)
+                       })
+                    }
+               )
+                }
+
+                    }
+        )
+        console.log(x)
+        setRows(x)
+        // setRows(
+        // console.log(communication)
+        // )
+    },[communication])
+    const [data, setData] = useState({})
+    useEffect(() => {
+        // console.log(dataset)
+        // console.log(labels)
+        // console.log(times)
+        setData({
+            labels,
+            datasets: dataset
+        })
+        setGraphData(true)
+    },[times])
+    const labels = times;
+    // const data = {
+    //     labels,
+    //     datasets: [
+    //       {
+    //         label: 'Dataset 1',
+    //         data: [1,2,3,4],
+    //         borderColor: 'rgb(255, 99, 132)',
+    //         backgroundColor: 'rgba(255, 99, 132, 0.5)',
+    //       },
+    //       {
+    //         label: 'Dataset 2',
+    //         data: [1,2,3,4],
+    //         borderColor: 'rgb(53, 162, 235)',
+    //         backgroundColor: 'rgba(53, 162, 235, 0.5)',
+    //       },
+    //     ],
+    //   };
+    // const vvtemp = [1,2,3,4,5];
+    // const data = {
+    //         vvtemp,
+    //         datasets: [{
+    //             label: "HELLO",
+    //             data: [1,2,3,4,5],
+    //             borderColor: 'rgb(255, 99, 132)',
+    //             backgroundColor:'rgb(255, 99, 132)',
+    //             yaxis:'y'
+    //         }]
+    //     }
+    // useEffect(() => {console.log(data)},[data])
+
 //    const options = {
 //   responsive: true,
 //   plugins: {
@@ -771,13 +800,28 @@ export const DetailedDevice = () => {
                     <Typography variant="h3" sx={{fontWeight:'bold'}}>
                         {(() => {
                             if(newData){
-                                if (newObs?.component[0]?.valueQuantity.value==0) {
-                                    return 'P';
-                                } else if (newObs?.component[0].valueQuantity.value==1){
-                                    return 'M';
+                                if (newObs?.component[0]?.valueQuantity.unit==1 || newObs?.component[0]?.valueQuantity.unit=="BABY") {
+                                    return 'BABY';
+                                } else if (newObs?.component[0]?.valueQuantity.unit==2 || newObs?.component[0]?.valueQuantity.unit=="PREWARM"){
+                                    return 'PREWARM';
+                                } else if (newObs?.component[0]?.valueQuantity.unit==3 || newObs?.component[0]?.valueQuantity.unit=="MANUAL"){
+                                    return 'MANUAL';
+                                } else if (newObs?.component[0]?.valueQuantity.unit==3 || newObs?.component[0]?.valueQuantity.unit=="AIR"){
+                                    return 'AIR';
+                                } else if (newObs?.component[0]?.valueQuantity.unit==3 || newObs?.component[0]?.valueQuantity.unit=="BUBBLE CPAP"){
+                                    return 'BUBBLE CPAP'
+                                } else if (newObs?.component[0]?.valueQuantity.unit==3 || newObs?.component[0]?.valueQuantity.unit=="FLOW CPAP 1"){
+                                    return 'FLOW CPAP 1'
+                                } else if (newObs?.component[0]?.valueQuantity.unit==3 || newObs?.component[0]?.valueQuantity.unit=="BUBBLE CPAP 2"){
+                                    return 'FLOW CPAP 2'
+                                } else if (newObs?.component[0]?.valueQuantity.unit==3 || newObs?.component[0]?.valueQuantity.unit=="PULSE OXIMETER"){
+                                    return 'PULSE OXIMETER'
+                                } else if (newObs?.component[0]?.valueQuantity.unit==3 || newObs?.component[0]?.valueQuantity.unit=="HIGH FLOW"){
+                                    return 'HIGH FLOW'
                                 }
+
                                 else{
-                                    return 'B';
+                                    return 'NOT FOUND';
                                 }
                             }
                             else{
@@ -788,15 +832,23 @@ export const DetailedDevice = () => {
                     </Typography>
                 </Stack>
                 {newData && newObs?.component.map((_obs: any,index: number) => {
-                    if(index<6 && index!=0){
+                    if((index<4 || index>8) && index!=0){
                         return (
                             <Stack alignItems={'center'} spacing={'10px'}>
                                 <Typography variant="h6" >
                                     {newObs?.component[index]?.code.text}
                                 </Typography>
-                                <Typography variant="h3">
-                                    {newData && newObs?.component[index]?.valueQuantity.value}{newObs?.component[index]?.valueQuantity.unit}
+                                <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                                <Typography variant='h3'>
+                                {Math.round((newObs?.component[index]?.valueQuantity?.value + Number.EPSILON) * 100) / 100}&nbsp;
                                 </Typography>
+                                <Typography variant='h5'>
+                                {newObs?.component[index]?.valueQuantity?.unit}
+                                </Typography>
+                            </div>
+                                {/* <Typography variant="h3">
+                                {Math.round((newData && newObs?.component[index]?.valueQuantity.value + Number.EPSILON) * 100) / 100}{newObs?.component[index]?.valueQuantity.unit}
+                                </Typography> */}
                             </Stack>
                         )
                     }
@@ -836,7 +888,64 @@ export const DetailedDevice = () => {
             }}
         >
                 {newData && newObs?.component.map((_obs: any, index: number) => {
-                    if(index>5){
+                    var temp = false
+                    if(newObs?.component[index]?.code.text=="SIQ"){
+                        temp = true
+                    }
+                    if(index<9 && index>3){
+                    return (
+                        <Stack alignItems={'center'} spacing={'10px'}>
+                            <Typography variant="h6" >
+                                {newData && newObs?.component[index]?.code.text}
+                            </Typography>
+                            {temp && <Box width={'130px'} height={'45px'} sx={{backgroundColor:'white', borderRadius:'10px'}}>
+                            <Box width={String(newObs?.component[index]?.valueQuantity?.value)+'%'} height={'100%'} sx={{backgroundColor:'blue', borderRadius:'10px'}}></Box>
+                                    </Box>}
+                            {!temp && <Typography variant="h3">
+                                {/* {newData && newObs?.component[index]?.valueQuantity?.value}{newObs?.component[index]?.valueQuantity?.unit} */}
+                                <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                                <Typography variant='h3'>
+                                {Math.round((newObs?.component[index]?.valueQuantity?.value + Number.EPSILON) * 100) / 100}&nbsp;
+                                </Typography>
+                                <Typography variant='h5'>
+                                {newObs?.component[index]?.valueQuantity?.unit}
+                                </Typography>
+                            </div>
+                            </Typography>}
+                            
+                        </Stack>
+                    )}
+                    temp = false
+                })}
+                <Divider sx={{marginTop:'20px'}} />
+                <Box
+            sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: {
+                    xs: "2rem",
+                    sm: "3rem",
+                    md: "4rem",
+                    lg: "5rem",
+                    xl: "6rem",
+                },
+                mt: {
+                    xs: 5,
+                    sm: 6,
+                    md: 7,
+                    lg: 8,
+                },
+                mb: {
+                    xs: 3,
+                    sm: 4,
+                    md: 5,
+                    lg: 6,
+                },
+                justifyContent: "center",
+            }}
+        >
+            {/* {newData && newObs?.component.map((_obs: any, index: number) => {
+                    if(index>10){
                     return (
                         <Stack alignItems={'center'} spacing={'10px'}>
                             <Typography variant="h6" >
@@ -847,13 +956,15 @@ export const DetailedDevice = () => {
                             </Typography>
                         </Stack>
                     )}
-                })}
+                })} */}
+            </Box>
+            
             </Box>:<Box
             sx={{
                 display: "flex",
                 flexWrap: "wrap",
                 justifyContent: "center"}}>
-                    <Typography variant='h2' sx={{fontWeight:'bold'}}>Oximeter Not connected</Typography></Box>}
+                    <Typography variant='h2' sx={{fontWeight:'bold'}}>{newData && 'Oximeter Not connected'}{!newData && ''}</Typography></Box>}
             <Divider sx={{marginTop:'20px'}} />
             <div style={{marginTop:'25px'}}>
             

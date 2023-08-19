@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 // import AppBar from '@mui/material/AppBar';
 // import Typography from '@mui/material/Typography';
 // import Button from '@mui/material/Button';
@@ -8,17 +8,16 @@ import { useAuth0 } from '@auth0/auth0-react';
 // import AccountCircle from '@mui/icons-material/AccountCircle';
 // import MenuItem from '@mui/material/MenuItem';
 // import Menu from '@mui/material/Menu';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import { DeviceCard } from '../components/DeviceCard';
+
 import { useMediaQuery } from "@material-ui/core";
 import { useTheme } from "@material-ui/core/styles";
 import { ExpandMoreRounded } from '@mui/icons-material';
 import Accordion from '@mui/material/Accordion/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { DeviceCard } from '../components/DeviceCard';
 export const Home = (currentRoom: any) => {
   // useEffect(() => {console.log(currentRoom.currentRoom)},[currentRoom])
   const [loading, setLoading] = useState(false)
@@ -252,6 +251,7 @@ export const Home = (currentRoom: any) => {
       if (recieved_data.location.split("/")[0] == "Observation"){
           // console.log(data)
         // if (obsArray.includes(recieved_data.resourceId)){
+          // console.log(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`)
           fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`, {
           credentials: "omit",
           headers: {
@@ -260,11 +260,14 @@ export const Home = (currentRoom: any) => {
           })
           .then((response) => response.json())
           .then((data) => {
-            
-            let temp = String(data.device.reference.split("/")[1])
-            console.log(temp)
+            // console.log(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`)
+            let temp = String(data.device?.reference?.split("/")[1])
             // console.log(temp)
+            // console.log(temp)
+            // console.log(data);
+            console.log(data) 
             setParentObs((prevparentobs) => ({...prevparentobs,[temp]: data}))
+            console.log(parentobs)
           })
         // }
       }
@@ -280,6 +283,7 @@ export const Home = (currentRoom: any) => {
           .then((data) => {
             var temp = String(data.sender.reference.split("/")[1])
             setParentComm((prevparentcom) => ({...prevparentcom,[temp]: data}))
+            // console.log(data)
             // setCommResource(data)
           })
         // }
@@ -385,7 +389,6 @@ export const Home = (currentRoom: any) => {
 
  
   const warmer = devices.entry?.map((device) => {
-    
     if(String(device.resource.identifier[1]?.value)=="Comprehensive Infant Care Centre"){
     var correct = false
     // var temp = String(device.resource.id)
@@ -445,7 +448,41 @@ export const Home = (currentRoom: any) => {
           key={String(device.resource.id)}
           device_id={String(device.resource.identifier[0].value)}
           device_resource_id={String(device.resource.id)}
-          patient_id={""}
+          patient={null}
+          observation_resource={parentobs[String(device.resource.id)]}
+          communication_resource={parentcomm[String(device.resource.id)]}
+        />
+      )
+    }}
+  })
+  const cpap = devices.entry?.map((device) => {
+    if(String(device.resource.identifier[1]?.value)=="SVAAS"){
+    var correct = false
+    // var temp = String(device.resource.id)
+    if(device.resource.patient && parentcomm[String(device.resource.id)] && parentobs[String(device.resource.id)]){
+      correct = true
+      
+    }
+    
+    if(correct){
+      return (
+        <DeviceCard 
+          key={String(device.resource.id)}
+          device_id={String(device.resource.identifier[0].value)}
+          device_resource_id={String(device.resource.id)}
+          patient= {patient[String(device.resource.id)]}//{device.resource.patient.reference.split("/")[1]}
+          observation_resource={parentobs[String(device.resource.id)]}
+          communication_resource={parentcomm[String(device.resource.id)]}
+        />
+      )
+    }
+    else{
+      return (
+        <DeviceCard 
+          key={String(device.resource.id)}
+          device_id={String(device.resource.identifier[0].value)}
+          device_resource_id={String(device.resource.id)}
+          patient={null}
           observation_resource={parentobs[String(device.resource.id)]}
           communication_resource={parentcomm[String(device.resource.id)]}
         />
@@ -507,7 +544,7 @@ export const Home = (currentRoom: any) => {
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
       <Box
             sx={{
-              
+              // backgroundColor:'red',
               display: "flex",
               flexWrap: "wrap",
               gap: '2rem',
@@ -538,7 +575,16 @@ export const Home = (currentRoom: any) => {
                   <Typography variant='h5' component={"h2"} sx={{color:"#00B1FD"}}>Warmers</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  {warmer}
+                <Box
+                    sx={{
+                      // backgroundColor:'red',
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: '2rem',
+                      justifyContent: "left",
+                      width:"100%",
+                    }}
+                  >{warmer}</Box>
                 </AccordionDetails>
               </Accordion>
               <Accordion sx={{backgroundColor:"transparent" , marginBottom:"10px"}}>
@@ -551,7 +597,20 @@ export const Home = (currentRoom: any) => {
                 </AccordionSummary>
                 <AccordionDetails>
                   <Typography>
+                  <Box
+                    sx={{
+                      // backgroundColor:'red',
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: '2rem',
+                      justifyContent: "left",
+                      width:"100%",
+                    }}
+                  >
                     {incubator}
+                  </Box>
+                  
+                    
                   </Typography>
                 </AccordionDetails>
               </Accordion >
@@ -563,6 +622,22 @@ export const Home = (currentRoom: any) => {
                 >
                   <Typography variant='h5' component={"h2"} sx={{color:"#00B1FD"}}>CPAP</Typography>
                 </AccordionSummary>
+                <AccordionDetails>
+                  <Box
+                    sx={{
+                      // backgroundColor:'red',
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: '2rem',
+                      justifyContent: "left",
+                      width:"100%",
+                    }}
+                  >
+                    {cpap}
+                  </Box>
+                  
+                    
+                </AccordionDetails>
               </Accordion>
             </Box>
             )}

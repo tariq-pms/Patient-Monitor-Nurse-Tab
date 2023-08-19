@@ -138,12 +138,12 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
     // clearInterval(devicetimer)
     // console.log(devicetimer)
     // runtimer = setInterval(timer, 10000)
-    
     if (props.observation_resource?.component?.[1] && runNo==2 && props.communication_resource?.extension?.[1]) {
       setNewData(true);
+      console.log(props.observation_resource.identifier[0].value);
       for (var i=0; i< props?.communication_resource?.extension?.[1].valueCodeableConcept?.coding?.length; i++){
-        
-        if(props.communication_resource?.extension[1]?.valueCodeableConcept?.coding[i]?.code=='high'){
+        console.log(props.communication_resource?.extension[1]?.valueCodeableConcept?.coding[i]?.code)
+        if(props.communication_resource?.extension[1]?.valueCodeableConcept?.coding[i]?.code=='High Priority'){
             setAlarmColor('red')
             break
         }else{
@@ -151,22 +151,19 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
         }
     }
     }
-    
 
   }, [props.observation_resource]);
 //   useEffect(() => {console.log(props.patient_id)},[props.patient_id])
-
-
   return (
 
       <Box  width={{
         xs: "320px",
         sm: "350px",
-        md: "450px",
-        lg: "450px"
+        md: "480px",
+        lg: "480px"
       }} sx={{backgroundColor:'transparent', borderRadius:'25px', border: `4px solid ${alarmColor}`}} >
         
-        <Link to="devicedata" state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}>
+        <Link to="devicedata" style={{ textDecoration: 'none' }} state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}>
         <Paper  elevation={2} sx={{ borderRadius: "25px", backgroundColor:'transparent' }}>
           <Card
             style={{ backgroundColor: "transparent", borderRadius: "25px", minHeight:"280px",
@@ -182,10 +179,10 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
                   >
                     <Stack direction={'row'} width={"100%"}>
                       <Typography variant="subtitle1" component={"h2"}>
-                      {props.device_id}
+                      {props?.device_id}
                       </Typography>
                       <Typography variant="subtitle1" sx={{marginLeft:'auto'}}>
-                      {props.patient?.identifier[0].value}
+                      {props.patient?.identifier && props?.patient?.identifier[0]?.value}
                       </Typography>
                     </Stack>
                     
@@ -193,101 +190,277 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
                   <Divider />
                   { newData ? (<>
                   <Stack marginTop={'10px'} marginBottom={'10px'}>
-                    <Stack direction={'row'} width={'100%'} sx={{ justifyContent:'center'}}>
+                    <Stack spacing={'5px'} direction={'row'} width={'100%'} sx={{ justifyContent:'center', display: 'flex', alignItems: 'center'}}>
                         <Stack marginLeft={'auto'} marginRight={'auto'}>
                             <Typography variant='subtitle1' component={"h2"}>
                                 {props.observation_resource.component[0].code.text}&nbsp;
-                            </Typography>
+                            </Typography>        
                             <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto', fontWeight:"bold"}} paddingRight={'20px'} >
                             {(() => {
-                                if (props.observation_resource.component[0].valueQuantity.value==0) {
+                                if (props.observation_resource.component[0].valueQuantity.unit=="PREWARM") {
                                     return 'P';
-                                } else if (props.observation_resource.component[0].valueQuantity.value==1){
+                                } else if (props.observation_resource.component[0].valueQuantity.unit=="MANUAL"){
                                     return 'M';
+                                } else if(props.observation_resource.component[0].valueQuantity.unit=="BABY"){
+                                    return 'B'
+                                } else if(props.observation_resource.component[0].valueQuantity.unit="AIR"){
+                                    return 'A'
                                 }
                                 else{
-                                    return 'B';
+                                    return 'NF';
                                 }
                             })()}
                             </Typography>
                         </Stack>
                         <Stack marginLeft={'auto'} marginRight={'auto'}>
                             <Typography variant='subtitle1' component={"h2"}>
-                            Set Temp.&nbsp;
+                                {(() => {
+                                    let x = props.observation_resource.component[1].code.text
+                                    let arr = x.split(" ")
+                                    let vvtemp = ""
+                                    arr.map((val) => {
+                                        
+                                        if (val.length>4){
+                                            vvtemp+=val.substring(0,4)
+                                            vvtemp+= ". "
+                                        }
+                                        else{
+                                            vvtemp+=val
+                                            vvtemp+=" "
+                                        }
+                                    })
+                                    return vvtemp
+                                })()}
+                            &nbsp;
                             </Typography>
-                            <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
-                            {props.observation_resource.component[1].valueQuantity.value}{props.observation_resource.component[1].valueQuantity.unit}
-                            </Typography>
+                            <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                                <Typography variant='h5' component={"h2"}>
+                                {Math.round((props.observation_resource.component[1].valueQuantity.value + Number.EPSILON) * 100) / 100}&nbsp;
+                                </Typography>
+                                <Typography variant='subtitle2' component={"h2"}>
+                                {props.observation_resource.component[1].valueQuantity.unit}
+                                </Typography>
+                            </div>
                         </Stack>
-                        <Stack marginLeft={'auto'} marginRight={'auto'}>
+                        <Stack marginLeft={'auto'} marginRight={'auto'} sx={{ display: 'flex', alignItems: 'center' }}>
                             <Typography variant='subtitle1' component={"h2"}>
-                            Temp 1&nbsp;
+                            {(() => {
+                                    let x = props.observation_resource.component[2].code.text
+                                    let arr = x.split(" ")
+                                    let vvtemp = ""
+                                    arr.map((val) => {
+                                        
+                                        if (val.length>4){
+                                            vvtemp+=val.substring(0,4)
+                                            vvtemp+= ". "
+                                        }
+                                        else{
+                                            vvtemp+=val
+                                            vvtemp+=" "
+                                        }
+                                    })
+                                    return vvtemp
+                                })()}
+                            &nbsp;
                             </Typography>
-                            <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
-                            {props.observation_resource.component[2].valueQuantity.value}{props.observation_resource.component[2].valueQuantity.unit} 
-                            </Typography>
+                            <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                                <Typography variant='h5' component={"h2"}>
+                                {Math.round((props.observation_resource.component[2].valueQuantity.value + Number.EPSILON) * 100) / 100}&nbsp;
+                                </Typography>
+                                <Typography variant='subtitle2' component={"h2"}>
+                                {props.observation_resource.component[2].valueQuantity.unit}
+                                </Typography>
+                            </div>
                         </Stack>
-                        <Stack marginLeft={'auto'} marginRight={'auto'}>
+                        <Stack marginLeft={'auto'} marginRight={'auto'} sx={{ display: 'flex', alignItems: 'center' }}>
                             <Typography variant='subtitle1' component={"h2"}>
-                            Heater %&nbsp;
+                            {(() => {
+                                    let x = props.observation_resource.component[3].code.text
+                                    let arr = x.split(" ")
+                                    let vvtemp = ""
+                                    arr.map((val) => {
+                                        
+                                        if (val.length>4){
+                                            vvtemp+=val.substring(0,4)
+                                            vvtemp+= ". "
+                                        }
+                                        else{
+                                            vvtemp+=val
+                                            vvtemp+=" "
+                                        }
+                                    })
+                                    return vvtemp
+                                })()}
+                            &nbsp;
                             </Typography>
-                            <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
-                            {props.observation_resource.component[3].valueQuantity.value}{props.observation_resource.component[3].valueQuantity.unit}
-                            </Typography>
+                            <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                                <Typography variant='h5' component={"h2"}>
+                                {Math.round((props.observation_resource.component[3].valueQuantity.value + Number.EPSILON) * 100) / 100}&nbsp;
+                                </Typography>
+                                <Typography variant='subtitle2' component={"h2"}>
+                                {props.observation_resource.component[3].valueQuantity.unit}
+                                </Typography>
+                            </div>
                         </Stack>
                     </Stack>
                   </Stack>
                   <Divider />
-                  {props.observation_resource.component[6] && 
-                  <Stack marginTop={'10px'} marginBottom={'10px'}>
-                  <Stack direction={'row'} width={'100%'} sx={{justifyContent:'center'}} >
-                  <Stack marginLeft={'auto'} marginRight={'auto'}>
-                          <Typography variant='subtitle1' component={"h2"}>
-                              SpO2&nbsp;
-                          </Typography>
-                          <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
-                          {props.observation_resource.component[5].valueQuantity.value}{props.observation_resource.component[5].valueQuantity.unit}
-                          </Typography>
-                      </Stack>
-                      <Stack marginLeft={'auto'} marginRight={'auto'}>
-                          <Typography variant='subtitle1' component={"h2"}>
-                          PI&nbsp;
-                          </Typography>
-                          <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
-                          {props.observation_resource.component[7].valueQuantity.value}{props.observation_resource.component[7].valueQuantity.unit}
-                          </Typography>
-                      </Stack>
-                      <Stack marginLeft={'auto'} marginRight={'auto'}>
-                          <Typography variant='subtitle1' component={"h2"}>
-                          PR&nbsp;
-                          </Typography>
-                          <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
-                          {props.observation_resource.component[6].valueQuantity.value}{props.observation_resource.component[6].valueQuantity.unit} 
-                          </Typography>
-                      </Stack>
-                      <Stack marginLeft={'auto'} marginRight={'auto'}>
-                          <Typography variant='subtitle1' component={"h2"}>
-                          SIQ&nbsp;
-                          </Typography>
-                          <LinearProgress variant="determinate" value={props.observation_resource.component[8].valueQuantity.value} />
-                          {/* <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
-                          {props.observation_resource.component[8].valueQuantity.value}{props.observation_resource.component[8].valueQuantity.unit}
-                          </Typography> */}
-                      </Stack>
-                  </Stack>
-                </Stack>
+                {props.observation_resource.component[4].code.text=="SpO2" &&                
+                    <Stack marginTop={'10px'} marginBottom={'10px'}>
+                    <Stack direction={'row'} width={'100%'} sx={{justifyContent:'center'}} >
+                    <Stack marginLeft={'auto'} marginRight={'auto'}>
+                        <Typography variant='subtitle1' component={"h2"}>
+                        {(() => {
+                                    let x = props.observation_resource.component[4].code.text
+                                    let arr = x.split(" ")
+                                    let vvtemp = ""
+                                    arr.map((val) => {
+                                        
+                                        if (val.length>4){
+                                            vvtemp+=val.substring(0,4)
+                                            vvtemp+= ". "
+                                        }
+                                        else{
+                                            vvtemp+=val
+                                            vvtemp+=" "
+                                        }
+                                    })
+                                    return vvtemp
+                                })()}
+                            &nbsp;
+                        </Typography>
+                        <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                                <Typography variant='h5' component={"h2"}>
+                                {Math.round((props.observation_resource.component[4].valueQuantity.value + Number.EPSILON) * 100) / 100}&nbsp;
+                                </Typography>
+                                <Typography variant='subtitle2' component={"h2"}>
+                                {props.observation_resource.component[4].valueQuantity.unit}
+                                </Typography>
+                            </div>
+                    </Stack>
+                    <Stack marginLeft={'auto'} marginRight={'auto'}>
+                        <Typography variant='subtitle1' component={"h2"}>
+                        {(() => {
+                                    let x = props.observation_resource.component[5].code.text
+                                    let arr = x.split(" ")
+                                    let vvtemp = ""
+                                    arr.map((val) => {
+                                        
+                                        if (val.length>4){
+                                            vvtemp+=val.substring(0,4)
+                                            vvtemp+= ". "
+                                        }
+                                        else{
+                                            vvtemp+=val
+                                            vvtemp+=" "
+                                        }
+                                    })
+                                    return vvtemp
+                                })()}
+                            &nbsp;
+                        </Typography>
+                        <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                                <Typography variant='h5' component={"h2"}>
+                                {Math.round((props.observation_resource.component[5].valueQuantity.value + Number.EPSILON) * 100) / 100}&nbsp;
+                                </Typography>
+                                <Typography variant='subtitle2' component={"h2"}>
+                                {props.observation_resource.component[5].valueQuantity.unit}
+                                </Typography>
+                            </div>
+                    </Stack>
+                    <Stack marginLeft={'auto'} marginRight={'auto'}>
+                        <Typography variant='subtitle1' component={"h2"}>
+                        {(() => {
+                                    let x = props.observation_resource.component[6].code.text
+                                    let arr = x.split(" ")
+                                    let vvtemp = ""
+                                    arr.map((val) => {
+                                        
+                                        if (val.length>4){
+                                            vvtemp+=val.substring(0,4)
+                                            vvtemp+= ". "
+                                        }
+                                        else{
+                                            vvtemp+=val
+                                            vvtemp+=" "
+                                        }
+                                    })
+                                    return vvtemp
+                                })()}
+                            &nbsp;
+                        </Typography>
+                        <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                                <Typography variant='h5' component={"h2"}>
+                                {Math.round((props.observation_resource.component[6].valueQuantity.value + Number.EPSILON) * 100) / 100}&nbsp;
+                                </Typography>
+                                <Typography variant='subtitle2' component={"h2"}>
+                                {props.observation_resource.component[6].valueQuantity.unit}
+                                </Typography>
+                            </div>
+                    </Stack>
+                    <Stack marginLeft={'auto'} marginRight={'auto'}>
+                        <Typography variant='subtitle1' component={"h2"}>
+                        {(() => {
+                                    let x = props.observation_resource.component[7].code.text
+                                    let arr = x.split(" ")
+                                    let vvtemp = ""
+                                    arr.map((val) => {
+                                        
+                                        if (val.length>4){
+                                            vvtemp+=val.substring(0,4)
+                                            vvtemp+= ". "
+                                        }
+                                        else{
+                                            vvtemp+=val
+                                            vvtemp+=" "
+                                        }
+                                    })
+                                    return vvtemp
+                                })()}
+                            &nbsp;
+                        </Typography>
+                        {(() => {
+                            
+                            if(props.observation_resource.component[7].valueQuantity.unit=="SIQ"){
+                                return (
+                                    <Box width={'50px'} height={'25px'} sx={{backgroundColor:'white', borderRadius:'6px'}}>
+                                        <Box width={String(props.observation_resource.component[7].valueQuantity.value)+'%'} height={'100%'} sx={{backgroundColor:'blue', borderRadius:'6px'}}>
+                                        </Box>
+                                    </Box>
+                                )
+                            }
+                            else{
+                                return(
+                                    <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                                        <Typography variant='h5' component={"h2"}>
+                                        {Math.round((props.observation_resource.component[7].valueQuantity.value + Number.EPSILON) * 100) / 100}
+                                        </Typography>
+                                        <Typography variant='subtitle2' component={"h2"}>
+                                        {props.observation_resource.component[7].valueQuantity.unit}
+                                        </Typography>
+                                    </div> 
+                                )
+                            }
+                        })()}
+                        
+                        {/* <Typography variant='h5' component={"h2"} sx={{marginLeft:'auto'}} paddingRight={'20px'}>
+                        {props.observation_resource.component[8].valueQuantity.value}{props.observation_resource.component[8].valueQuantity.unit}
+                        </Typography> */}
+                    </Stack>
+                    </Stack>
+                    </Stack>
                 }
-                {!props.observation_resource.component[6] && 
+                {props.observation_resource.component[4].code.text!="SpO2" && 
                     <Stack marginTop={'10px'} marginBottom={'10px'} sx={{justifyContent:'center'}}>
                         <Typography variant='subtitle1' component={'h2'} sx={{fontWeight:'bold', justifySelf:'center'}}>Oximeter Not connected</Typography>
                     </Stack>
                 }
-                  
-                  <Divider /></>) : (
-                    <Stack width={"100%"}>
-                        <PowerSettingsNewIcon sx={{fontSize: 150, color:'red', marginLeft:'auto', marginRight:'auto'}}/>
-                        <Typography variant='h6' sx={{marginLeft:'auto', marginRight:'auto'}}>Device not active/connected</Typography>
-                    </Stack>
+                {/* <Divider /> */}
+                </>) : (
+                <Stack width={"100%"}>
+                    <PowerSettingsNewIcon sx={{fontSize: 150, color:'red', marginLeft:'auto', marginRight:'auto'}}/>
+                    <Typography variant='h6' sx={{marginLeft:'auto', marginRight:'auto'}}>Device not active/connected</Typography>
+                </Stack>
                   )}               
                 </CardContent>
               </div>

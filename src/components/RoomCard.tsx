@@ -126,6 +126,10 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
             else{setSnackSucc(false)}
         })
     }
+    const xtemp = () => {
+        console.log("HLJKLSDJFKLSDF")
+        setOpen(false)
+    }
     const addToRoom = () => {
         
         // let deviceList: any[] = []
@@ -145,9 +149,8 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
         
         return (
             <Dialog
-            fullScreen={fullScreen}
             open={open}
-            onClose={() => setOpen(false)}
+            onClose={xtemp}
             aria-labelledby="responsive-dialog-title"
         >
             <DialogTitle id="responsive-dialog-title">
@@ -160,6 +163,7 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
                     return(
                         <ListItem>
                             <ListItemButton onClick={() => addButton((index))}>
+                            
                             <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
                             {device.resource.identifier[0].value}
                             </Typography>
@@ -170,7 +174,7 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
             </List>
             </DialogContent>
             <DialogActions>
-            <Button autoFocus onClick={() => setOpen(false)}>
+            <Button onClick={xtemp}>
                 Close
             </Button>
             </DialogActions>
