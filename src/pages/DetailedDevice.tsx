@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Backdrop, Box, CircularProgress, Divider, Paper, Stack, Typography, } from '@mui/material';
+import { Backdrop, Box, Button, CircularProgress, Divider, Paper, Stack, Typography, } from '@mui/material';
 import { useLocation } from "react-router-dom";
 import { MaterialReactTable, type MRT_ColumnDef } from 'material-react-table';
 import zoomPlugin from 'chartjs-plugin-zoom'
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { ExportToCsv } from 'export-to-csv';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -462,6 +464,19 @@ export const DetailedDevice = () => {
         "g": "y2",
         "BPM": "y3"
         // Add more mappings as needed
+      };
+      const csvOptions = {
+        fieldSeparator: ',',
+        quoteStrings: '"',
+        decimalSeparator: '.',
+        showLabels: true,
+        useBom: true,
+        useKeysAsHeaders: false,
+        headers: cols.map((c) => c.header),
+      };
+      const csvExporter = new ExportToCsv(csvOptions);
+      const handleExportData = () => {
+        csvExporter.generateCsv(rows);
       };
     useEffect(() => {
     //    console.log(Array.isArray(observation))
@@ -984,7 +999,29 @@ export const DetailedDevice = () => {
                 grouping: ['date','time'], //an array of columns to group by by default (can be multiple)        
                 pagination: { pageIndex: 0, pageSize: 20 },
                 sorting: [{ id: 'date', desc: true }], //sort by state by defaul
-              }} columns={cols} data={rows}></MaterialReactTable>
+              }} columns={cols} data={rows} 
+              positionToolbarAlertBanner="bottom"    
+renderTopToolbarCustomActions={({ table }) => (
+    <Box
+      sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }} 
+    >
+      <Button
+        color="primary"
+        //export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
+        onClick={handleExportData}
+        startIcon={<FileDownloadIcon />}
+        variant="contained"
+      >
+        Export All Data
+      </Button>
+    </Box>
+  )}>
+
+              </MaterialReactTable>
+
+
+
+
         </Stack>
     </Paper>
     )

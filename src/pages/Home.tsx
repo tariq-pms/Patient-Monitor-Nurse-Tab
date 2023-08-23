@@ -18,6 +18,7 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { DeviceCard } from '../components/DeviceCard';
+import { CICCard } from '../components/CICCard';
 export const Home = (currentRoom: any) => {
   // useEffect(() => {console.log(currentRoom.currentRoom)},[currentRoom])
   const [loading, setLoading] = useState(false)
@@ -399,7 +400,7 @@ export const Home = (currentRoom: any) => {
     
     if(correct){
       return (
-        <DeviceCard 
+        <CICCard 
           key={String(device.resource.id)}
           device_id={String(device.resource.identifier[0].value)}
           device_resource_id={String(device.resource.id)}
@@ -411,7 +412,7 @@ export const Home = (currentRoom: any) => {
     }
     else{
       return (
-        <DeviceCard 
+        <CICCard 
           key={String(device.resource.id)}
           device_id={String(device.resource.identifier[0].value)}
           device_resource_id={String(device.resource.id)}

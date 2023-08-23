@@ -3,6 +3,7 @@ import { AppBar, Divider, FormControl, InputLabel, MenuItem, Select, SelectChang
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Drawer from '@mui/material/Drawer';
+import SettingsIcon from '@mui/icons-material/Settings';
 // import List from '@mui/material/List';
 // import Divider from '@mui/material/Divider';
 // import ListItem from '@mui/material/ListItem';
@@ -24,6 +25,7 @@ import pmsLogo from "../assets/phx_logo.png";
 import { useAuth0 } from '@auth0/auth0-react';
 import { SettingsMenu } from './SettingsMenu';
 import MenuIcon from '@mui/icons-material/Menu';
+import { Typography } from '@material-ui/core';
 // type Anchor = 'right';
 
 export const Header = ({currentRoom, roomChange}) => {
@@ -31,9 +33,8 @@ export const Header = ({currentRoom, roomChange}) => {
   // const [open, setOpen] = React.useState(false);
   // const theme = useTheme();
   // const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-
   const [state, setState] = useState(false)
-  const {isLoading, isAuthenticated, loginWithRedirect} = useAuth0();
+  const {user, isLoading, isAuthenticated, loginWithRedirect} = useAuth0();
   const [temproom, settemproom] = useState([{
     "resource": {
         "name": String,
@@ -54,8 +55,9 @@ export const Header = ({currentRoom, roomChange}) => {
 }])
   const [room,setRoom] = useState("");
   const handleSetRoom = (event: SelectChangeEvent) => {
-    setRoom(event.target.value);
-    roomChange(temproom[temproom.findIndex((item) => item.resource.name===String(event.target.value))].resource.id)
+      setRoom(event.target.value);
+      roomChange(temproom[temproom.findIndex((item) => item.resource.name===String(event.target.value))].resource.id)
+
   }
  // useEffect(() => {console.log(room);console.log(temproom.findIndex((item) => item.resource.name === room)),[room]})
 
@@ -98,10 +100,10 @@ export const Header = ({currentRoom, roomChange}) => {
         </div>
           {
           !isLoading && isAuthenticated && 
-          <Stack direction={'row'}>
+          <Stack direction={'row'} >
             <FormControl variant='standard' sx={{width:'200px'}}>
               <InputLabel id="demo-simple-select-standard-label">Room</InputLabel>
-              
+             
               <Select label="Room" onChange={handleSetRoom} value={room}>
               {temproom.map((room) => {
                 let index = -1;
@@ -111,45 +113,30 @@ export const Header = ({currentRoom, roomChange}) => {
                 )
                 
               })}
+              
               </Select>
             </FormControl>
-            
-            <IconButton
-            size="large"
-            aria-label="account of current user"
-            aria-controls="menu-appbar"
-            aria-haspopup="true"
-            onClick={() => {setState(true)}}
-            color="inherit"
+            <Divider orientation="vertical" flexItem sx={{marginLeft:'20px'}}/>
+            <Button
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={() => {setState(true)}}
+              color="inherit"
+              sx={{marginLeft:'10px'}}
+              endIcon={<AccountCircle />}
             >
-              <MenuIcon sx={{ fontSize: 35 }}/>
-            </IconButton>
+              
+                <Typography variant='subtitle1' component={"h2"} sx={{fontWeight:"bold"}}>&nbsp; {user?.nickname} &nbsp;</Typography>
+            </Button>
             <Drawer
             anchor={'right'}
             open={state}
             onClose={() => {setState(false)}}
-          
-          >
-            <SettingsMenu></SettingsMenu>
+            >
+              <SettingsMenu />
           </Drawer>
-            {/* <Menu
-                id="menu-appbar"
-                anchorEl={anchorEl}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-              >
-                <MenuItem onClick={handleClose}>My Account</MenuItem>
-                <MenuItem onClick={() => logout()}>Logout</MenuItem>
-            </Menu> */}
           </Stack>
         }
         {
