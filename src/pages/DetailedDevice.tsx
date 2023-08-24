@@ -29,17 +29,8 @@ ChartJS.register(
     zoomPlugin
 );
 import {faker} from '@faker-js/faker';
-interface Column {
-    accessorKey: string;
-    header: string;
-    id: string;
-}
-interface Row {
-    date: string;
-    time: string;
-    alarm: string;
-    priority: string;
-  }
+
+
 
 
 export const DetailedDevice = () => {
@@ -992,36 +983,33 @@ export const DetailedDevice = () => {
             
             </div>
             <Divider sx={{marginTop:'20px', marginBottom:'20px'}} />
-            <MaterialReactTable enableGrouping
+            <MaterialReactTable 
+            enableGrouping
             initialState={{
                 density: 'compact',        
                 expanded: true, //expand all groups by default        
                 grouping: ['date','time'], //an array of columns to group by by default (can be multiple)        
                 pagination: { pageIndex: 0, pageSize: 20 },
                 sorting: [{ id: 'date', desc: true }], //sort by state by defaul
-              }} columns={cols} data={rows} 
+              }} 
+              columns={cols} data={rows} 
               positionToolbarAlertBanner="bottom"    
-renderTopToolbarCustomActions={({ table }) => (
-    <Box
-      sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }} 
-    >
-      <Button
-        color="primary"
-        //export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
-        onClick={handleExportData}
-        startIcon={<FileDownloadIcon />}
-        variant="contained"
-      >
-        Export All Data
-      </Button>
-    </Box>
-  )}>
-
+              renderTopToolbarCustomActions={({ table }) => (
+                <Box
+                sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }} 
+                >
+                    <Button
+                        color="primary"
+                        //export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
+                        onClick={handleExportData}
+                        startIcon={<FileDownloadIcon />}
+                        variant="contained"
+                    >
+                        Export All Data
+                    </Button>
+                </Box>
+            )}>
               </MaterialReactTable>
-
-
-
-
         </Stack>
     </Paper>
     )

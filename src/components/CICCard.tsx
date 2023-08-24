@@ -8,6 +8,8 @@ import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPersonBreastfeeding, faBaby, faWeightHanging } from '@fortawesome/free-solid-svg-icons'
+import WavesIcon from '@mui/icons-material/Waves';
+import { Container } from '@material-ui/core';
 export interface DeviceDetails {
   key: string;
   device_id: string;
@@ -213,203 +215,160 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
         sm: "500px",
         md: "500px",
         lg: "500px"
-      }} sx={{backgroundColor:'#CDDBE6', borderRadius:'25px', border: `6px solid ${alarmColor}`}} >
+      }} sx={{backgroundColor:'#262626', borderRadius:'25px', border: `6px solid ${alarmColor}`}} >
         
         <Link to="devicedata" style={{ textDecoration: 'none' }} state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}>
-        <Paper elevation={2} sx={{ borderRadius: "25px", backgroundColor:'transparent' }}>
+        <Paper elevation={2} sx={{ borderRadius: "25px", backgroundColor:'transparent'}}>
           <Card
-            style={{ backgroundColor: "transparent", borderRadius: "25px", height:"400px",
+            style={{ backgroundColor: "transparent", borderRadius: "25px", height:"300px",
              }}
           >
             {newData ? (<>
-                <Stack width={"100%"} height={"100%"}>
-                
-                <Box width={'100%'} height={'20%'} sx={{backgroundColor:'#0570D6'}}>
-                    <Stack width={"100%"} direction={"row"} height={"100%"}>
-                        <Box display={'flex'} width={'70%'} height={'100%'} justifyContent='right' sx={{backgroundColor:'transparent'}}>
-                            <Box display={'flex'} width={'50%'} height={'60%'} sx={{backgroundColor:'#CBCFE5', marginTop:'auto', marginBottom:'auto', marginRight:'10px', borderRadius:'7px'}}>
-                                <Typography variant='h6' sx={{fontWeight:"bold", color:'#2271AF'}} margin={'auto'}>
+                <Stack width={'100%'} height={'100%'}>
+                    <Box display={'flex'} width={'100%'} height={'20%'} paddingTop={'2%'}>
+                        <Box width={'70%'} height={'100%'} textAlign={'right'}>
+                            <Typography variant='h6' paddingRight={'3%'}>
+                                {(() => {
+                                    let data = findData("MODE")
+                                    return (data.unit+" "+"MODE")
+                                })()}
+                            </Typography>
+                        </Box> 
+                        <FontAwesomeIcon icon={faPersonBreastfeeding} fontSize={'250%'} color='#CBCFE5'/>
+                        <Box display={'flex'} width={'30%'} height={'100%'}>
+                            
+                            <Box width={'30%'} height={'65%'} sx={{backgroundColor:'transparent'}}>
+                                <Typography variant="subtitle2" sx={{fontWeight:"bold",marginTop:'5px', marginLeft:'5px'}} color={'#CBCFE5'}>
+                                    {props.patient?.identifier && props?.patient?.identifier[0]?.value}<br />
+                                    <Typography fontSize={'70%'} sx={{fontWeight:"bold"}} color={'#CBCFE5'}>
+                                        {props?.device_id}
+                                    </Typography>
+                                </Typography>
+                            </Box>
+                        </Box>                         
+                    </Box>
+                    <Stack width={"100%"} height={'40%'} direction={'row'}>
+                        <Box width={'33.3%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                            <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography>
+                            <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
+                                <WavesIcon sx={{paddingTop:'6%', paddingRight:'7%', fontSize:'200%'}}/>
+                                <Typography variant='h3'>
                                     {(() => {
-                                        let data = findData("MODE")
-                                        return (data.unit+" "+"MODE")
+                                        let data = findData("Heater Level")
+                                        return (data.data)
                                     })()}
-                                    {/* {props?.observation_resource?.component[0]?.valueQuantity?.unit} MODE */}
+                                </Typography>
+                                <Typography variant='subtitle1' color={"#26C5E4"} paddingTop={'13%'} paddingLeft={'3%'}>
+                                    {(() => {
+                                        if(props.observation_resource?.component[0].valueQuantity.unit=="MANUAL"){
+                                            let data = findData("Set Heater")
+                                            return (data.data)
+                                        }
+                                        else{return ""}
+                                    })()}
+                                </Typography>
+                            </div>
+                        </Box>
+                        <Box width={'33.3%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                        <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Baby Temp °C</Typography>
+                            <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
+                            <FontAwesomeIcon icon={faBaby} color='#CBCFE5' style={{paddingTop:'6%', paddingRight:'7%', fontSize:'200%'}}/>
+                                <Typography variant='h3'>
+                                    {(() => {
+                                        let data = findData("Measured Skin Temp 1")
+                                        return (data.data)
+                                    })()}
+                                </Typography>
+                                <Typography variant='h6' color={"#26C5E4"} paddingTop={'13%'} paddingLeft={'3%'}>
+                                    {(() => {
+                                        if(props.observation_resource?.component[0].valueQuantity.unit=="BABY"){
+                                            let data = findData("Set Skin Temp 1")
+                                            return (data.data)
+                                        }
+                                        else{return ""}
+                                    })()}
+                                </Typography>
+                            </div>
+                            <Typography variant='h6' color={"#26C5E4"} paddingLeft={'3%'}>
+                                {(() => {
+                                        let data = findData("Measured Skin Temp 2")
+                                        return (data.data)
+                                    }
+                                )()}
+                            </Typography>
+                        </Box>
+                        <Box width={'33.3%'} height={'100%'} justifyContent={'center'} textAlign={'center'}>
+                            <Box width={"100%"} height={"50%"} sx={{ borderTop:'3px solid grey'}}>
+                                <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>PR (BPM)</Typography>
+                                <Typography variant='h5' color={"#26C5E4"}>
+                                    {(() => {
+                                            let data = findData("Pulse Rate")
+                                            return (data.data)
+                                        }
+                                    )()}
+                                </Typography>
+                            </Box>
+                            <Box width={"100%"} height={"50%"} sx={{ borderTop:'3px solid grey'}}>
+                                <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>SpO2 %</Typography>
+                                <Typography variant='h5' color={"#26C5E4"}>
+                                    {(() => {
+                                            let data = findData("SpO2")
+                                            return (data.data)
+                                        }
+                                    )()}
                                 </Typography>
                             </Box>
                         </Box>
-                        
-                        <Box width={'30%'} height={'100%'}>
-                            <Stack width={'100%'} height={'100%'} direction={'row'} justifyItems={'center'} sx={{marginTop:'12%'}}>
-                                <FontAwesomeIcon icon={faPersonBreastfeeding} fontSize={'250%'} color='#CBCFE5'/>
-                                <Box width={'30%'} height={'65px'} sx={{backgroundColor:'transparent'}}>
-                                    <Typography variant="subtitle2" sx={{fontWeight:"bold",marginTop:'5px', marginLeft:'5px'}} color={'#CBCFE5'}>
-                                        {props.patient?.identifier && props?.patient?.identifier[0]?.value}<br />
-                                        <Typography fontSize={'70%'} sx={{fontWeight:"bold"}} color={'#CBCFE5'}>
-                                            {props?.device_id}
-                                        </Typography>
-                                    </Typography>
-                                </Box>
-                            </Stack>
-                            
-                        </Box>
                     </Stack>
-
-
-                    <Box width={'30%'} height={'65px'} sx={{backgroundColor:'transparent'}}></Box>
-                </Box>
-                <Box width={'100%'} height={"220px"} sx={{backgroundColor:'transparent'}}>
-                    <Stack width={"90%"} sx={{margin:'auto', marginTop:'15px'}} spacing={'10px'}>
-                        <Stack spacing={'10px'} direction={'row'}>
-                            {/* Temperature Box */}
-                            <Box width={"35%"} height={"80px"} sx={{backgroundColor:'#99C9DD', borderRadius:'10px'}}>
-                                <Stack direction={'row'} width={'100%'}>
-                                    <Box width={'30%'} height={'80px'} sx={{backgroundColor:'transparent'}} display="flex" justifyContent="center" alignItems="center">
-                                        <FontAwesomeIcon icon={faBaby} fontSize={'40px'} color={'black'}/>
-                                    </Box>
-                                    <Stack width={'70%'}>
-                                        <Box width={'100%'} height={'40px'} sx={{backgroundColor:'transparent'}} textAlign={'center'}>
-                                            <Typography fontSize={'170%'} sx={{color:'#984C38'}}>
-                                                {(() => {
-                                                    let data = findData("Measured Skin Temp 1")
-                                                    return (data.data+data.unit)
-                                                })()}
-                                            </Typography>
-                                        </Box>
-                                        <Box width={'100%'} height={'40px'} sx={{backgroundColor:'transparent'}} textAlign={'center'}>
-                                            <Typography fontSize={'170%'} sx={{color:'#1786B8'}}>
-                                                {(() => {
-                                                    let data = findData("Measured Skin Temp 2")
-                                                    return (data.data+data.unit)
-                                                })()}
-                                            </Typography>
-                                        </Box>
-                                    </Stack>
-                                </Stack>
-                            </Box>
-                            {/* Heater Box */}
-                            <Box width={"35%"} height={"80px"} sx={{backgroundColor:'#99C9DD', borderRadius:'10px'}}>
-                                {/* To be done by Tariq */}
-                            </Box>
-                            {/* Weight box */}
-                            <Box width={"35%"} height={"60px"} sx={{backgroundColor:'#B4CFE4', borderRadius:'5px'}}>
-                                <Stack direction={'row'} height={'100%'}>
-                                    <Box width={'70%'} height={'100%'} sx={{backgroundColor:'transparent'}} textAlign={'center'} justifyContent={'center'}>
-                                        <Typography variant='h5' component={"h2"} sx={{color:'black'}}>
-                                            {(() => {
-                                                let data = findData("Measure Weigh")
-                                                return (data.data+data.unit)
-                                            })()}
-                                        </Typography>
-                                    </Box>
-                                    <Stack width={'30%'} height={"100%"}>
-                                        <Box width={'97%'} height={'45%'} justifyContent={'right'} textAlign={'right'} marginTop={"10%"}>
-                                            <FontAwesomeIcon icon={faBaby} fontSize={'30px'} color={'black'}/>
-                                        </Box>
-                                        <Box width={'97%'} height={'45%'} justifyContent={'left'} textAlign={'left'} marginTop={"10%"}>
-                                            <FontAwesomeIcon icon={faWeightHanging} fontSize={'20px'} color={'black'}/>
-                                        </Box>
-                                    </Stack>
-                                </Stack>
-                            </Box>
-                        </Stack>
-                        {/* Alarm Box */}
-                        <Box width={'66%'} height={'50px'} sx={{backgroundColor:'#B4CFE4', borderRadius:'7px'}} textAlign={'center'} justifyContent={'center'}>
-                            <Typography variant='h6' component={"h2"} sx={{fontWeight:"bold", marginTop:'3px', color:'#2271AF'}}>
+                    <Stack width={"100%"} height={'48%'} direction={'row'}>
+                        <Box width={'33%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                            <Typography variant='h6'>
                                 {alarm}
                             </Typography>
                         </Box>
-                        <Stack spacing={'10px'} direction={'row'}>
-                            {/* Pleth Box */}
-                            <Box width={"70%"} height={"70px"} sx={{backgroundColor:'#93CCE0', borderRadius:'10px'}}>
-                            </Box>
-                            {/* Masmimo Alarm Box */}
-                            <Box width={"35%"} height={"60px"} sx={{backgroundColor:'#B4CFE4', borderRadius:'5px'}}>
-                            </Box>
-                        </Stack>
-                        <Stack spacing={'10px'} direction={'row'}>
-                            {/* SIQ Box */}
-                            <Box width={"10%"} height={'50px'} sx={{backgroundColor:'transparent', border:'3px solid #2879AF', borderRadius:'5px'}} justifyContent={'center'} textAlign={'center'} justifyItems={'center'}>
-                                <Stack width={"100%"} height={"100%"}>
-                                    <Typography variant='caption' sx={{fontWeight:"bold", color:'#2271AF'}}>
-                                        SIQ
-                                    </Typography>
-                                    <Box display={'flex'} height={'40%'} width={'60%'} sx={{backgroundColor:'transparent', border:'2px solid #2879AF', borderRadius:'5px', margin:'auto'}}>
-                                        {(()=>{
-                                            let data = findData("SIQ")
-                                            return (
-                                                <Box width={'100%'} height={String(data.data)} sx={{backgroundColor:'red'}} marginTop={'auto'}></Box>
-                                            )
-                                        })()}
-                                        
-                                    </Box>
-                                </Stack>
-                            </Box>
-                            {/* PI Box */}
-                            <Box width={'15%'} height={'50px'} sx={{backgroundColor:'transparent', border:'3px solid #2879AF', borderRadius:'5px'}} justifyContent={'center'} textAlign={'center'} justifyItems={'center'}>
-                                <Stack width={"100%"} height={"100%"}>
-                                    <Typography variant='caption' sx={{fontWeight:"bold", color:'#2271AF'}}>
-                                        PI (%)
-                                    </Typography>
-                                    <Typography variant='h6' sx={{fontWeight:"bold", color:'red'}}>
-                                        {(() => {
-                                            let data = findData("PI")
-                                            return (data.data)
-                                        })()}
-                                    </Typography>
-                                </Stack>
-                            </Box>
-                            {/* PVI Box */}
-                            <Box width={'15%'} height={'50px'} sx={{backgroundColor:'transparent', border:'3px solid #2879AF', borderRadius:'5px'}} justifyContent={'center'} textAlign={'center'} justifyItems={'center'}>
-                                <Stack width={"100%"} height={"100%"}>
-                                    <Typography variant='caption' sx={{fontWeight:"bold", color:'#2271AF'}}>
-                                        PVI (%)
-                                    </Typography>
-                                    <Typography variant='h6' sx={{fontWeight:"bold", color:'red'}}>
-                                        {(() => {
+                        <Box width={'42%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}}></Box>
+                        <Box width={'25%'} height={'100%'} >
+                            <Box display={'flex'} width={'100%'} height={'33%'} sx={{ borderTop:'3px solid grey'}} justifyContent={'space-between'} textAlign={'center'}>
+                                
+                                <Typography variant='subtitle2' color={"#A8C5D4"} paddingLeft={'5%'} paddingTop={'7%'}>PVI</Typography>
+                                <Typography variant='h5' color={"#26C5E4"} paddingRight={'13%'} paddingTop={'2%'}>
+                                    {(() => {
                                             let data = findData("PVI")
                                             return (data.data)
-                                        })()}
-                                    </Typography>
-                                </Stack>
+                                        }
+                                    )()}
+                                </Typography>
                             </Box>
-                            <Box width={'27%'} height={'50px'} sx={{backgroundColor:'transparent', border:'3px solid #2879AF', borderRadius:'5px'}}>
-                                <Stack direction="row" width={'100%'} height={'100%'}>
-                                    <Box display={'flex'} width={'50%'} height={'100%'} sx={{backgroundColor:'transparent'}} justifyContent={'center'}>
-                                        <Typography variant='caption' sx={{fontWeight:"bold", color:'#2271AF'}} marginBottom={'auto'} marginTop={'auto'} marginLeft={'5px'}>
-                                            SPO2(%)
-                                        </Typography>
-                                    </Box>
-                                    <Typography variant='h5' sx={{fontWeight:"bold", color:'red'}} marginBottom={'auto'} marginTop={'auto'} margin={'auto'}>
-                                        {(() => {
-                                            let data = findData("SpO2")
+                            <Box display={'flex'} width={'100%'} height={'33%'} sx={{ borderTop:'3px solid grey'}} justifyContent={'space-between'} textAlign={'center'}>
+                                <Typography variant='subtitle2' color={"#A8C5D4"} paddingLeft={'5%'} paddingTop={'7%'}>PI</Typography>
+                                <Typography variant='h5' color={"#26C5E4"} paddingRight={'13%'} paddingTop={'2%'}>
+                                    {(() => {
+                                            let data = findData("PI")
                                             return (data.data)
-                                        })()}
-                                    </Typography>
-                                </Stack>
+                                        }
+                                    )()}
+                                </Typography>
                             </Box>
-                            <Box width={'27%'} height={'50px'} sx={{backgroundColor:'transparent', border:'3px solid #2879AF', borderRadius:'5px'}}>
-                                <Stack direction="row" width={'100%'} height={'100%'}>
-                                    <Box display={'flex'} width={'50%'} height={'100%'} sx={{backgroundColor:'transparent'}} justifyContent={'center'}>
-                                        <Typography variant='caption' sx={{fontWeight:"bold", color:'#2271AF'}} marginBottom={'auto'} marginTop={'auto'} marginLeft={'5px'}>
-                                            BPM
-                                        </Typography>
-                                    </Box>
-                                    <Typography variant='h5' sx={{fontWeight:"bold", color:'red'}} marginBottom={'auto'} marginTop={'auto'} margin={'auto'}>
-                                        {(() => {
-                                            let data = findData("Pulse Rate")
-                                            return (data.data)
-                                        })()}
-                                    </Typography>
-                                </Stack>
+                            <Box display={'flex'} width={'100%'} height={'34%'} sx={{ borderTop:'3px solid grey'}} justifyContent={'space-between'} textAlign={'center'}>
+                                <Typography variant='subtitle2' color={"#A8C5D4"} paddingLeft={'5%'} paddingTop={'5%'}>SIQ</Typography>
+                                <Box width={'40%'} marginRight={'13%'} height={'60%'} sx={{border:'2px solid #A8C5D4' , borderRadius:'3px'}}>
+                                    {(() => {
+                                        let data = findData("SIQ")
+                                        return(
+                                            <Box width={`${data.data}`+"%"} height={'100%'} sx={{backgroundColor:'#26C5E4'}}></Box>
+                                        )
+                                    })()}
+                                </Box>
+                                
                             </Box>
-                        </Stack>
+                        </Box>
                     </Stack>
-                </Box>
-            </Stack>
+                    
+                </Stack>
             </>):(<>
-            <Box width={'100%'} height={'100%'} sx={{backgroundColor:'transparent'}} display={'flex'}>
-            <Stack width={'100%'} height={'400px'} sx={{marginLeft:'auto', marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
-                    <PowerSettingsNewIcon sx={{fontSize: 200, color:'red', marginLeft:'auto', marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}/>
+            <Box width={'100%'} height={'100%'} sx={{backgroundColor:'transparent'}} display={'flex'} textAlign={"center"} justifyContent={"center"}>
+            <Stack width={'100%'} height={'100%'} justifyContent={"center"} textAlign={"center"}>
+                    <PowerSettingsNewIcon sx={{fontSize: 200, color:'red', marginLeft:'auto', marginRight:'auto'}}/>
                     <Typography variant='h6' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'grey'}}>Device {props?.device_id} not active/connected</Typography>
                 </Stack>
             </Box>
