@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, clone } from 'react'
 import { AppBar, Divider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Stack } from '@mui/material'
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Drawer from '@mui/material/Drawer';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { shadows } from '@material-ui/system'
 // import List from '@mui/material/List';
 // import Divider from '@mui/material/Divider';
 // import ListItem from '@mui/material/ListItem';
@@ -25,8 +26,10 @@ import pmsLogo from "../assets/phx_logo.png";
 import { useAuth0 } from '@auth0/auth0-react';
 import { SettingsMenu } from './SettingsMenu';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Typography } from '@material-ui/core';
+import { Typography, useScrollTrigger } from '@material-ui/core';
 // type Anchor = 'right';
+
+
 
 export const Header = ({currentRoom, roomChange}) => {
   // const [temproom, settemproom] = useState([])
@@ -87,8 +90,8 @@ export const Header = ({currentRoom, roomChange}) => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" style={{ background: 'transparent', boxShadow: 'none'}} >
-        
+      <AppBar position="static" style={{ background: 'transparent', boxShadow: 'none' }} > 
+      {/* boxShadow: '0 10px 3px -1px rgba(41, 45, 61, 1)' */}
         <Toolbar>
         <div style={{display: 'flex', marginRight:'auto'}}>
         <Link to="/">

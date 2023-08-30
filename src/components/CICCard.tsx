@@ -127,7 +127,7 @@ export interface DeviceDetails {
 }
 
 export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
-    const [alarmColor, setAlarmColor] = useState("")
+    const [alarmColor, setAlarmColor] = useState("transparent")
     // const devicetimer = setInterval(timer, 10000)
 
 
@@ -227,20 +227,19 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                 <Stack width={'100%'} height={'100%'}>
                     <Box display={'flex'} width={'100%'} height={'20%'} paddingTop={'2%'}>
                         <Box width={'70%'} height={'100%'} textAlign={'right'}>
-                            <Typography variant='h6' paddingRight={'3%'}>
+                            <div style={{fontSize: '130%', paddingRight:'3%' ,paddingTop:'3%', fontWeight:800}} >
                                 {(() => {
                                     let data = findData("MODE")
                                     return (data.unit+" "+"MODE")
                                 })()}
-                            </Typography>
+                            </div>
                         </Box> 
-                        <FontAwesomeIcon icon={faPersonBreastfeeding} fontSize={'250%'} color='#CBCFE5'/>
+                        <FontAwesomeIcon icon={faPersonBreastfeeding} fontSize={'200%'} color='#CBCFE5'/>
                         <Box display={'flex'} width={'30%'} height={'100%'}>
-                            
                             <Box width={'30%'} height={'65%'} sx={{backgroundColor:'transparent'}}>
-                                <Typography variant="subtitle2" sx={{fontWeight:"bold",marginTop:'5px', marginLeft:'5px'}} color={'#CBCFE5'}>
+                                <Typography variant='caption' sx={{fontWeight:"bold",marginTop:'5px', marginLeft:'5px'}} color={'#CBCFE5'}>
                                     {props.patient?.identifier && props?.patient?.identifier[0]?.value}<br />
-                                    <Typography fontSize={'70%'} sx={{fontWeight:"bold"}} color={'#CBCFE5'}>
+                                    <Typography variant='caption' color={'#CBCFE5'}>
                                         {props?.device_id}
                                     </Typography>
                                 </Typography>
@@ -248,7 +247,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                         </Box>                         
                     </Box>
                     <Stack width={"100%"} height={'40%'} direction={'row'}>
-                        <Box width={'33.3%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                        <Box width={'33.3%'} height={'100%'} sx={{ borderRight:'1px solid #A8A8A8', borderTop:'1px solid #A8A8A8'}} justifyContent={'center'} textAlign={'center'}>
                             <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography>
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
                                 <WavesIcon sx={{paddingTop:'6%', paddingRight:'7%', fontSize:'200%'}}/>
@@ -269,7 +268,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                                 </Typography>
                             </div>
                         </Box>
-                        <Box width={'33.3%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                        <Box width={'33.3%'} height={'100%'} sx={{ borderRight:'1px solid #A8A8A8', borderTop:'1px solid #A8A8A8'}} justifyContent={'center'} textAlign={'center'}>
                         <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Baby Temp °C</Typography>
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
                             <FontAwesomeIcon icon={faBaby} color='#CBCFE5' style={{paddingTop:'6%', paddingRight:'7%', fontSize:'200%'}}/>
@@ -298,7 +297,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                             </Typography>
                         </Box>
                         <Box width={'33.3%'} height={'100%'} justifyContent={'center'} textAlign={'center'}>
-                            <Box width={"100%"} height={"50%"} sx={{ borderTop:'3px solid grey'}}>
+                            <Box width={"100%"} height={"50%"} sx={{ borderTop:'1px solid #A8A8A8'}}>
                                 <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>PR (BPM)</Typography>
                                 <Typography variant='h5' color={"#26C5E4"}>
                                     {(() => {
@@ -308,7 +307,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                                     )()}
                                 </Typography>
                             </Box>
-                            <Box width={"100%"} height={"50%"} sx={{ borderTop:'3px solid grey'}}>
+                            <Box width={"100%"} height={"50%"} sx={{ borderTop:'1px solid #A8A8A8'}}>
                                 <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>SpO2 %</Typography>
                                 <Typography variant='h5' color={"#26C5E4"}>
                                     {(() => {
@@ -321,14 +320,14 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                         </Box>
                     </Stack>
                     <Stack width={"100%"} height={'48%'} direction={'row'}>
-                        <Box width={'33%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                        <Box width={'33%'} height={'100%'} sx={{ borderRight:'1px solid #A8A8A8', borderTop:'1px solid #A8A8A8'}} justifyContent={'center'} textAlign={'center'}>
                             <Typography variant='h6'>
                                 {alarm}
                             </Typography>
                         </Box>
-                        <Box width={'42%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}}></Box>
+                        <Box width={'42%'} height={'100%'} sx={{ borderRight:'1px solid #A8A8A8', borderTop:'1px solid #A8A8A8'}}></Box>
                         <Box width={'25%'} height={'100%'} >
-                            <Box display={'flex'} width={'100%'} height={'33%'} sx={{ borderTop:'3px solid grey'}} justifyContent={'space-between'} textAlign={'center'}>
+                            <Box display={'flex'} width={'100%'} height={'33%'} sx={{ borderTop:'1px solid #A8A8A8'}} justifyContent={'space-between'} textAlign={'center'}>
                                 
                                 <Typography variant='subtitle2' color={"#A8C5D4"} paddingLeft={'5%'} paddingTop={'7%'}>PVI</Typography>
                                 <Typography variant='h5' color={"#26C5E4"} paddingRight={'13%'} paddingTop={'2%'}>
@@ -339,7 +338,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                                     )()}
                                 </Typography>
                             </Box>
-                            <Box display={'flex'} width={'100%'} height={'33%'} sx={{ borderTop:'3px solid grey'}} justifyContent={'space-between'} textAlign={'center'}>
+                            <Box display={'flex'} width={'100%'} height={'33%'} sx={{ borderTop:'1px solid #A8A8A8'}} justifyContent={'space-between'} textAlign={'center'}>
                                 <Typography variant='subtitle2' color={"#A8C5D4"} paddingLeft={'5%'} paddingTop={'7%'}>PI</Typography>
                                 <Typography variant='h5' color={"#26C5E4"} paddingRight={'13%'} paddingTop={'2%'}>
                                     {(() => {
@@ -349,7 +348,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                                     )()}
                                 </Typography>
                             </Box>
-                            <Box display={'flex'} width={'100%'} height={'34%'} sx={{ borderTop:'3px solid grey'}} justifyContent={'space-between'} textAlign={'center'}>
+                            <Box display={'flex'} width={'100%'} height={'34%'} sx={{ borderTop:'1px solid #A8A8A8'}} justifyContent={'space-between'} textAlign={'center'}>
                                 <Typography variant='subtitle2' color={"#A8C5D4"} paddingLeft={'5%'} paddingTop={'5%'}>SIQ</Typography>
                                 <Box width={'40%'} marginRight={'13%'} height={'60%'} sx={{border:'2px solid #A8C5D4' , borderRadius:'3px'}}>
                                     {(() => {
@@ -369,7 +368,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
             <Box width={'100%'} height={'100%'} sx={{backgroundColor:'transparent'}} display={'flex'} textAlign={"center"} justifyContent={"center"}>
             <Stack width={'100%'} height={'100%'} justifyContent={"center"} textAlign={"center"}>
                     <PowerSettingsNewIcon sx={{fontSize: 200, color:'red', marginLeft:'auto', marginRight:'auto'}}/>
-                    <Typography variant='h6' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'grey'}}>Device {props?.device_id} not active/connected</Typography>
+                    <Typography variant='h6' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'white'}}>Device {props?.device_id} not active/connected</Typography>
                 </Stack>
             </Box>
                 

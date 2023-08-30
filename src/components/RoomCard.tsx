@@ -4,6 +4,9 @@ import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Paper from '@mui/material/Paper'
 import { FC, useEffect, useState } from 'react'
+import DeleteIcon from '@mui/icons-material/Delete';
+import { IconButton } from '@material-ui/core'
+import { Settings } from '@mui/icons-material'
 export interface roomData {
     roomName: string;
     roomId: string;
@@ -45,7 +48,7 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
                 "reference": String
             },
             "location": {
-                "reference": String
+                "reference": ""
             }
         }
     }])
@@ -127,9 +130,9 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
         })
     }
     const xtemp = () => {
-        console.log("HLJKLSDJFKLSDF")
         setOpen(false)
     }
+
     const addToRoom = () => {
         
         // let deviceList: any[] = []
@@ -143,38 +146,41 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
         .then((response) => response.json())
         .then((data) => {if(data.entry){
           setDeviceList(data.entry)
-        //   console.log(deviceList[0].resource.identifier[0].value)
         }})
         }, [])
         
         return (
             <Dialog
             open={open}
-            onClose={xtemp}
+            onClose={() => setOpen(false)}
             aria-labelledby="responsive-dialog-title"
         >
             <DialogTitle id="responsive-dialog-title">
             {`Add device to ${props.roomName}`}
+            
             </DialogTitle>
             <DialogContent>
             <List>
                 {deviceList.map((device, index) => {
-                    // console.log(device.resource.identifier[0].value)
-                    return(
-                        <ListItem>
-                            <ListItemButton onClick={() => addButton((index))}>
-                            
-                            <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
-                            {device.resource.identifier[0].value}
-                            </Typography>
-                            </ListItemButton>
-                        </ListItem>
-                    )
+                    if(device?.resource?.location?.reference){
+                        if(device?.resource?.location?.reference.split("/")[1] != props.roomId){
+                            return(
+                                <ListItem>
+                                    <ListItemButton onClick={() => addButton((index))}>
+                                    
+                                    <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
+                                    {device.resource.identifier[0].value}
+                                    </Typography>
+                                    </ListItemButton>
+                                </ListItem>
+                            )
+                        }
+                    }
                 })}
             </List>
             </DialogContent>
             <DialogActions>
-            <Button onClick={xtemp}>
+            <Button onClick={(() => {setOpen(false)})}>
                 Close
             </Button>
             </DialogActions>
@@ -190,12 +196,12 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
             style={{ backgroundColor: "transparent", borderRadius: "25px", minHeight:"280px"
              }}
           >
-              <div>
-                <Stack width={"100%"} direction={"row"} sx={{justifyContent:"center", marginTop:"20px"}}>
+            <Stack width={'100%'} direction={'row'}>
+            <div style={{marginTop:'10%', width:'100%', marginLeft:'13%', textAlign:'center', justifyContent:'center'}} >
+                
                 <CardContent>
                     <Typography>{props.roomName}</Typography>
                 </CardContent>
-                </Stack>
                 
                 {/* {devicesInRoom()} */}
                 {addToRoom()}
@@ -207,6 +213,11 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
                 </Snackbar>
                 
               </div>
+              <IconButton style={{marginLeft:'auto', marginRight:'5%', marginTop:'5%', color:'white', background:'none'}}><Settings /></IconButton>
+              
+            </Stack>
+            
+              
             
           </Card>
         </Paper>

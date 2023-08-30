@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import { RoomCard } from '../components/RoomCard';
 import { Alert, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Snackbar, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import { Settings } from '@mui/icons-material';
 export const Rooms = () => {
     const {isAuthenticated} = useAuth0();
     const theme = useTheme();
@@ -114,7 +115,13 @@ export const Rooms = () => {
     })
   return (
     <div>
+      
+      <Stack width={'100%'} direction={'row'} paddingTop={'2%'} justifyContent={'center'} textAlign={'center'}>
+              <Typography variant='h5' color={'white'}>Rooms & Device Settings</Typography>
+              <Settings  sx={{marginLeft:'1%', fontSize:'200%', color:'white'}}/>
+            </Stack>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+          
         <Box
             sx={{
               
@@ -137,6 +144,7 @@ export const Rooms = () => {
               width:"95%",
             }}
           >
+            
             {roomBoxes}
             <Box  width={"350px"} sx={{backgroundColor:'transparent'}} onClick={() => {setaddnewbutton(true)}}>
               <Paper  elevation={2} sx={{ borderRadius: "25px", backgroundColor:'transparent'}}>
@@ -146,7 +154,7 @@ export const Rooms = () => {
                 >
                   <Stack width={"100%"} direction={"row"} sx={{justifyContent:"center", marginTop:"20px"}}>
                     <CardContent>
-                        <Typography sx={{marginLeft:"45px"}}>Add new room</Typography>
+                        <Typography sx={{paddingLeft:'45px'}}>Add new room</Typography>
                         <AddIcon sx={{ fontSize: 200 }} />
                     </CardContent>
                   </Stack>

@@ -10,9 +10,10 @@ import {CircularProgress} from "@mui/material";
 import { useAuth0 } from "@auth0/auth0-react";
 import { UserInfo } from "./pages/UserInfo";
 import { SetStateAction, useEffect, useState } from "react";
+import "@fontsource/noto-sans";
 const theme = createTheme({
   typography: {
-    fontFamily: "Inter",
+    fontFamily: 'Roboto',
   },
   palette: {//
     mode: 'dark',

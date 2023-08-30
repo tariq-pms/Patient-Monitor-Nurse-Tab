@@ -9,7 +9,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 // import MenuItem from '@mui/material/MenuItem';
 // import Menu from '@mui/material/Menu';
 
-import { useMediaQuery } from "@material-ui/core";
+import { Divider, useMediaQuery } from "@material-ui/core";
 import { useTheme } from "@material-ui/core/styles";
 import { ExpandMoreRounded } from '@mui/icons-material';
 import Accordion from '@mui/material/Accordion/Accordion';
@@ -19,6 +19,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { DeviceCard } from '../components/DeviceCard';
 import { CICCard } from '../components/CICCard';
+import { INCCard } from '../components/INCCard';
 export const Home = (currentRoom: any) => {
   // useEffect(() => {console.log(currentRoom.currentRoom)},[currentRoom])
   const [loading, setLoading] = useState(false)
@@ -375,9 +376,11 @@ export const Home = (currentRoom: any) => {
         })
         .then((response) => response.json())
         .then((data) => {
-          if(!data.entry){console.log("")}
+          if(!data.entry){console.log(`http://13.126.5.10:9444/fhir-server/api/v4/Communication?sender=${device.resource.id}&_count=1`)}
           else{
             var temp = String(device.resource.id);
+            
+
             setParentComm((prevParentcomm) => ({...prevParentcomm, [temp]: data.entry[0]["resource"]}))
             // setParentComm({...parentcomm,temp:data.entry[0]})
           }
@@ -430,10 +433,12 @@ export const Home = (currentRoom: any) => {
     if(device.resource.patient && parentcomm[String(device.resource.id)] && parentobs[String(device.resource.id)]){
       correct = true
     }
-    
+    console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+      console.log(parentcomm[String(device.resource.id)]);
     if(correct){
+      
       return (
-        <DeviceCard 
+        <INCCard 
           key={String(device.resource.id)}
           device_id={String(device.resource.identifier[0].value)}
           device_resource_id={String(device.resource.id)}
@@ -445,7 +450,7 @@ export const Home = (currentRoom: any) => {
     }
     else{
       return (
-        <DeviceCard 
+        <INCCard 
           key={String(device.resource.id)}
           device_id={String(device.resource.identifier[0].value)}
           device_resource_id={String(device.resource.id)}
@@ -567,7 +572,8 @@ export const Home = (currentRoom: any) => {
           >
             {isAuthenticated && (
               <Box sx={{width:"100%"}}>
-              <Accordion sx={{backgroundColor:"transparent" , marginBottom:"10px"}}>
+              <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' , marginBottom:"10px", borderBottom:'2px solid #00B1FD'}}>
+                
                 <AccordionSummary
                   expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD"}}/>}
                   aria-controls="panel1a-content"
@@ -588,7 +594,7 @@ export const Home = (currentRoom: any) => {
                   >{warmer}</Box>
                 </AccordionDetails>
               </Accordion>
-              <Accordion sx={{backgroundColor:"transparent" , marginBottom:"10px"}}>
+              <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent" , backgroundImage:'none' , marginBottom:"10px", borderBottom:'2px solid #00B1FD'}}>
                 <AccordionSummary
                   expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD"}}/>}
                   aria-controls="panel2a-content"
@@ -615,7 +621,7 @@ export const Home = (currentRoom: any) => {
                   </Typography>
                 </AccordionDetails>
               </Accordion >
-              <Accordion sx={{backgroundColor:"transparent" , marginBottom:"10px"}}>
+              <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' ,marginBottom:"10px", borderBottom:'2px solid #00B1FD', borderTop:'none'}}>
                 <AccordionSummary
                   expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD"}}/>}
                   aria-controls="panel3a-content"

@@ -1,195 +1,91 @@
-import { useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
-export const Table = () => {
-  type Alarm = {
-    date: string;
-    time: string;
-    alarmType: string;
-    priority: string;
+import { Box, Button, Stack } from "@mui/material";
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { ExportToCsv } from 'export-to-csv';
+import { Divider } from "@material-ui/core";
+
+export interface rowsandcolumns {
+  rows: [];
+  columns: [];
+}
+export const Table: FC<rowsandcolumns> = (props) => {
+  const [tableData, setTableData]=useState(props)
+  useEffect(() => {
+    setTableData(props);
+},[props])
+  const csvOptions = {
+    fieldSeparator: ',',
+    quoteStrings: '"',
+    decimalSeparator: '.',
+    showLabels: true,
+    useBom: true,
+    useKeysAsHeaders: false,
+    headers: props.columns.map((c) => c.header),
+  };
+  
+  const csvExporter = new ExportToCsv(csvOptions);
+  const handleExportData = () => {
+    csvExporter.generateCsv(props.rows);
   };
 
-  const [communicationStructure, setCommunicationStructure] = useState({
-    "resourceType": "",
-    "id": "",
-    "type": "",
-    "total": "",
-    "link": [
-        {
-            "relation": "",
-            "url": ""
-        }
-    ],
-    "entry": [
-        {
-            "fullUrl": "",
-            "resource": {
-                "resourceType": "",
-                "id": "",
-                "meta": {
-                    "versionId": "",
-                    "lastUpdated": ""
-                },
-                "extension": [
-                    {
-                        "url": "",
-                        "valueCodeableConcept": {
-                            "coding": [
-                                {
-                                    "system": "",
-                                    "code": "",
-                                    "display": ""
-                                },
-                                {
-                                    "system": "",
-                                    "code": "",
-                                    "display": ""
-                                },
-                                {
-                                    "system": "",
-                                    "code": "",
-                                    "display": ""
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "url": "",
-                        "valueCodeableConcept": {
-                            "coding": [
-                                {
-                                    "system": "",
-                                    "code": "",
-                                    "display": ""
-                                },
-                                {
-                                    "system": "",
-                                    "code": "",
-                                    "display": ""
-                                },
-                                {
-                                    "system": "",
-                                    "code": "",
-                                    "display": ""
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "status": "",
-                "sent": "",
-                "sender": {
-                    "reference": ""
-                },
-                "payload": [
-                    {
-                        "contentReference": {
-                            "display": ""
-                        }
-                    }
-                ]
-            },
-            "search": {
-                "mode": "",
-                "score": ""
-            }
-        },
-
-
-    ]
-});
-  const [data, setData] = useState<{ date: string; time: string; alarmType: string; priority: string; }[]>([])
-  const columns = useMemo<MRT_ColumnDef<Alarm>[]>(
-    () => [
-      {
-        accessorKey: "date", //normal accessorKey
-
-        header: "Date",
-
-        size: 100,
-      },
-
-      {
-        accessorKey: "time",
-
-        header: "Time",
-
-        size: 100,
-      },
-
-      {
-        accessorKey: "alarmType",
-
-        header: "Alarm",
-
-        size: 100,
-      },
-
-      {
-        accessorKey: "priority",
-
-        header: "Priority",
-
-        size: 100,
-      },
-    ],
-
-    []
-  );
 
 
 
-useEffect(() => {
-  fetch(
-    'http://13.126.5.10:9444/fhir-server/api/v4/Communication?_count=50',
-    {
-      credentials: "omit", // send cookies and HTTP authentication information
-      headers: {
-        Authorization: "Basic " + btoa("fhiruser:change-password"), // set HTTP basic auth header
-      },
-    }
-  )
-    .then((response) => response.json())
-    .then((data) => {
-      setCommunicationStructure(data);
-    })
-    // .catch((err) => console.log(err));
-}, [])
 
-useEffect(() => {
-  if(communicationStructure.resourceType!=""){
-    communicationStructure.entry.map((val) => {
-      var x = 0;
-      var date = String(val.resource.sent.split("T")[0])
-      var time = String(val.resource.sent.split("T")[1].split("-")[0])
-      val.resource.extension[0].valueCodeableConcept.coding.map((realval) => {
-        
-        var xxx = {
-          date: date,
-          time: time,
-          alarmType: realval.display,
-          priority: val.resource.extension[1].valueCodeableConcept.coding[x].display,
-        }
-        x+=1;
-        setData((prevdata) => [...prevdata, xxx]);
-        // console.log(xxx)
-        
-      })
-    })
-  }
-}, [communicationStructure])
+
+
 
   return (
-    <div>
-      <MaterialReactTable enableGrouping 
-      initialState={{
-        density: 'compact',
-        expanded: true, //expand all groups by default
-        grouping: ['date','time'], //an array of columns to group by by default (can be multiple)
-        pagination: { pageIndex: 0, pageSize: 20 },
-        sorting: [{ id: 'date', desc: false },{id: 'time', desc:false}], //sort by state by default
-
-      }}
-      columns={columns} data={data} />
-    </div>
+      <MaterialReactTable 
+            enableGrouping
+            enableDensityToggle={false}
+            enableFilters={false}
+            enableHiding={false}
+            enableFullScreenToggle={false}
+            initialState={{
+                density: 'compact',        
+                expanded: true, //expand all groups by default        
+                grouping: ['date','time'], //an array of columns to group by by default (can be multiple)        
+                pagination: { pageIndex: 0, pageSize: 20 },
+                sorting: [{ id: 'date', desc: true }], //sort by state by defaul
+                columnVisibility:{priority:false}
+              }} 
+              columns={tableData.columns} data={tableData.rows} 
+              positionToolbarAlertBanner="bottom"   
+              full
+              renderTopToolbarCustomActions={({ table }) => (
+                <Stack width="100%" direction={'row'} justifyContent={'space-between'}>
+                  <Box
+                sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }} 
+                >
+                    <Button
+                        color="primary"
+                        //export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
+                        onClick={handleExportData}
+                        startIcon={<FileDownloadIcon />}
+                        variant="contained"
+                        
+                    >
+                        Export
+                    </Button>
+                </Box>
+                <Stack direction={'row'} paddingTop={'10px'}>
+                  <Box width={'40px'} height={'20px'} sx={{backgroundColor:'#F44336', borderRadius:'5px'}}></Box>
+                  &nbsp;
+                  - High Priority
+                  &nbsp;
+                  <Box width={'40px'} height={'20px'} sx={{backgroundColor:'#00BCD4', borderRadius:'5px'}}></Box>
+                  &nbsp;
+                  - Medium Priority
+                  &nbsp;
+                  <Box width={'40px'} height={'20px'} sx={{backgroundColor:'#FFEB3B', borderRadius:'5px'}}></Box>
+                  &nbsp;
+                  - Low Priority
+                </Stack>
+                </Stack>
+                
+            )}>
+              </MaterialReactTable>
   );
 };

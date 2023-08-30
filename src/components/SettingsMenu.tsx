@@ -237,7 +237,7 @@ export const SettingsMenu = () => {
     }
   return (
     <Box
-        style={{ background: '#1E253C'}}
+        style={{ background: '#151A2A'}}
         sx={{ width: {
           xs : 350,
           sm : 350,
@@ -253,7 +253,6 @@ export const SettingsMenu = () => {
           <ListItem>
             <ListItemButton>
               
-                {/* <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}> */}
                 <ListItemText>
                   {user?.email}
                 </ListItemText>
@@ -271,48 +270,15 @@ export const SettingsMenu = () => {
           </ListItem>
           <Divider />
           <ListItem>
-            {/* <Stack width={"100%"} sx={{paddingTop:'10px' ,paddingBottom:'10px'}}> */}
-              {/* <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
-                Placeholder for Hospital Name
-              </Typography> */}
-              {/* <Divider /> */}
+
               <Stack width={"100%"} sx={{paddingTop:'10px' ,paddingBottom:'10px'}}>
               <Link to="rooms" style={{textDecoration: 'none', textDecorationColor: 'none', color:'white'}}>
               {/* <ListItemButton onClick={() => {setDrop(!drop)}}> */}
               <ListItemButton>
-                {/* <Stack direction={'row'} width={"100%"} justifyContent='end'> */}
-                {/* <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
-                  Devices and Rooms
-                </Typography> */}
-                <ListItemText primary="Devices and Rooms"></ListItemText>
-                {/* <SettingsIcon /> */}
-                {/* </Stack>  */}
+                <ListItemText primary="Devices and Rooms"></ListItemText><ListItemIcon sx={{marginLeft:'left'}}><SettingsIcon /></ListItemIcon>
               </ListItemButton>  
               </Link>   
               </Stack>
-              {/* {
-                temproom.map((room) => {
-                  return (
-                    <Stack width={'100%'} direction={'row'}>
-                    <ListItemButton onClick={() => {setOpen(true);setRoomName(`${room.resource.name}`);setRoomId(`${room.resource.id}`)}}>
-                    <Typography variant='subtitle1' component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto', paddingTop:'20px', paddingBottom:'15px'}} >
-                      { room.resource.name}
-                    </Typography>
-                    <AddIcon />
-                    </ListItemButton>
-                    </Stack>
-                  )
-                })
-              }
-              <Stack width={'100%'} direction={'row'}>
-                <ListItemButton onClick={() => {setaddnewbutton(true)}}>
-                  <Typography variant='subtitle1' component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto', paddingTop:'20px', paddingBottom:'15px'}} >
-                    Add new room
-                  </Typography>
-                  <AddIcon sx={{fontSize:'40px'}}/>
-                </ListItemButton>
-              </Stack> */}
-            {/* </Stack> */}
               
   
           </ListItem>

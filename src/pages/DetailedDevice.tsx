@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Backdrop, Box, Button, CircularProgress, Divider, Paper, Stack, Typography, } from '@mui/material';
+import React, { FC, useEffect, useMemo, useState } from 'react';
+import { Backdrop, Box, Button, CircularProgress, Divider, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography, } from '@mui/material';
 import { useLocation } from "react-router-dom";
 import { MaterialReactTable, type MRT_ColumnDef } from 'material-react-table';
 import zoomPlugin from 'chartjs-plugin-zoom'
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { ExportToCsv } from 'export-to-csv';
+
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -29,11 +29,17 @@ ChartJS.register(
     zoomPlugin
 );
 import {faker} from '@faker-js/faker';
+import { Table } from '../components/Table';
 
 
 
-
-export const DetailedDevice = () => {
+export type AlarmTable = {
+    date: string;
+    time: string;
+    alarm: string;
+    priority: string;
+}
+export const DetailedDevice: FC = () => {
     const [loading, setLoading] = useState(true)
     const [observation, setObservation] = useState(
      [
@@ -115,6 +121,7 @@ export const DetailedDevice = () => {
     )
     const [newObs, setNewObs] = useState({})
     const [newData, setNewData] = useState(false)
+    const [requiredForTimer, setRequiredForTimer] = useState(false)
     const [communication, setCommunication] = useState([{
         "resource":{
             "resourceType": String,
@@ -179,46 +186,98 @@ export const DetailedDevice = () => {
     const {key, device_id, patient, device_resource_id, observation_resource, communication_resource} = useLocation().state
     // setNewObs(observation_resource)
    
-    const [dataset, setDataSet] = useState([
-        {
-            // "name": "",
-            // "data": [],
-            // "bordorcolor": "",
-            // "backgroundcolor":"",
-            // "yaxis":""
-        }
-    ])
+    const [dataset, setDataSet] = useState([[{}]])
     const [graphData, setGraphData] = useState(false)
     const [times, setTimes] = useState<Array<any>>([])
-    const cols = [
-        {
-            accessorKey: "date",
-            header: "Date",
-            id: "date"
-        },
-        {
-            accessorKey: "time",
-            header: "Time",
-            id: "time"
-        },
-        {
-            accessorKey: "alarm",
-            header: "Alarm",
-            id: "alarm"
-        },
-        {
-            accessorKey: "priority",
-            header: "Priority",
-            id: "priority"
-        }
-    ]
+    const columns = useMemo<MRT_ColumnDef<AlarmTable>[]>(
+        () => [
+            {
+                accessorKey: "date",
+                header: "Date",
+                id: "date"
+            },
+            {
+                accessorKey: "time",
+                header: "Time",
+                id: "time"
+            },
+            {
+                accessorKey: "alarm",
+                header: "Alarm",
+                id: "alarm",
+                Cell: ({ cell,row }) => (
+                    <Box
+                        display={'inline-block'}
+                        paddingTop={"5px"}
+                        paddingBottom={"5px"}
+                        paddingLeft={'10px'}
+                        paddingRight={'10px'}
+                        justifyContent={'center'}
+                        textAlign={'center'}
+                        color={'black'}
+                        sx={() => ({
+                            borderRadius: "5px",
+                            backgroundColor:
+                            row.original.priority == "Low Priority"
+                            ? "#FFEB3B"
+                            : row.original.priority == "Medium Priority"
+                            ? "#00BCD4  " : "#F44336 "
+                        })}
+                    >
+                        {cell.getValue<string>()}
+                    </Box>
+                ),
+                
+            },
+            {
+                accessorKey: "priority",
+                header: "Priority",
+                id: "priority",
+                Cell: ({ cell }) => (
+                    <Box
+                        width={'40%'}
+                        padding={"5px"}
+                        justifyContent={'center'}
+                        textAlign={'center'}
+                        color={'black'}
+                        sx={() => ({
+                            borderRadius: "5px",
+                            backgroundColor:
+                            cell.getValue<string>() == "Low Priority"
+                            ? "#FFEB3B"
+                            : cell.getValue<string>() == "Medium Priority"
+                            ? "#00BCD4  " : "#F44336 "
+                        })}
+                    >
+                        {cell.getValue<string>()}
+                    </Box>
+                ),
+            }
+        ]
+    )
+        useEffect(() => {
+            if(newObs.component){
+                setNewData(true)
+                setRequiredForTimer(!requiredForTimer)
+            }
+        },[newObs])
     const [rows, setRows] = useState([{
         date: String,
         time: String,
         alarm: String,
         priority: String
     }])
-    
+
+    useEffect(() => {
+        let timer: number | undefined;
+        
+        if(newData){
+            timer = setInterval(() => {;setNewData(false);clearInterval(timer)},7000)
+        }
+        return () => {
+            clearInterval(timer); 
+        };
+    }, [requiredForTimer])
     useEffect(() => {
         fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource?.id}/_history`, {
           credentials: "omit",
@@ -236,6 +295,10 @@ export const DetailedDevice = () => {
                 totaldata=100000
             }
             // console.log(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=50`)
+
+
+
+
             while(totaldata>=100){
                 fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=100`,{
                     credentials: "omit",
@@ -268,6 +331,9 @@ export const DetailedDevice = () => {
                     setObservation(temparr.reverse())
                     setLoading(false)
                 })
+
+
+
             
             // console.log(temparr)
             // setObservation((prevobs) => ({...prevobs,entry: temparr}))
@@ -336,7 +402,7 @@ export const DetailedDevice = () => {
             
         })
 
-
+        
 
         const socket = new WebSocket("ws://13.126.5.10:9444/fhir-server/api/v4/notification");
         socket.onopen = () => {
@@ -344,6 +410,7 @@ export const DetailedDevice = () => {
         };
         socket.onmessage = (data) => {
           var recieved_data = JSON.parse(data.data)
+
           // console.log(data)
           if (recieved_data.location.split("/")[0] == "Observation" && recieved_data.location.split("/")[1] == observation_resource.id){
               // console.log(data)
@@ -359,10 +426,52 @@ export const DetailedDevice = () => {
                 // console.log(temp)
                 // console.log(temp)
                 setNewObs(data)
-                setNewData(true)
+                
             
               })
             // }
+          }
+          if (recieved_data.location.split("/")[0] == "Communication" && recieved_data.location.split("/")[1] == communication_resource.id){
+            
+            fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`, {
+              credentials: "omit",
+              headers: {
+                Authorization: "Basic "+ btoa("fhiruser:change-password"),
+                },
+              })
+              .then((response) => response.json())
+              .then((data) => {
+                console.log("HELLO WORLD")
+                // console.log(temp)
+                // console.log(temp)
+        //         date: String,
+        // time: String,
+        // alarm: String,
+        // priority: String
+        let x: { date: string; time: string; alarm: string; priority: string; }[] = [];
+            if(data.extension){
+                        
+                data.extension[0].valueCodeableConcept.coding.map((val,index) => 
+                {  
+                    const lastUpdatedDate = new Date(data.meta.lastUpdated);
+
+
+                x.push({
+                    date: (lastUpdatedDate.toLocaleDateString()),
+                    time: (lastUpdatedDate.toLocaleTimeString()),
+                    alarm: String(val.display),
+                    priority: String(data.extension[1].valueCodeableConcept.coding[index].display)
+                })
+                }
+                )
+                x.map((val) => {
+                    setRows((rows) => [...rows])
+                })
+                // setRows((rows) => [...rows,x])
+            }
+                
+            
+              })
           }
           
           // console.log(data.data);
@@ -370,7 +479,7 @@ export const DetailedDevice = () => {
         socket.onerror = () => {console.log(`Error in socket connection`)}
       }, [])
     const [vvtemp, setvvtemp] = useState(false)
-    const options = {
+    const temperatureOption = {
         tension: 0.3,
         responsive: true,
         // legend: {
@@ -423,7 +532,120 @@ export const DetailedDevice = () => {
                 text: "Temperature (C°)"
             }
           },
-          y2: {     //g
+        //   y2: {     //g
+        //     type: 'linear' as const,
+        //     display: true,
+        //     position: 'right' as const,
+        //     grid: {
+        //       drawOnChartArea: false,
+        //     },
+        //     title: {
+        //         display: true,
+        //         text: "Grams (g)"
+        //     }
+        //   },
+        //   y3: {     // bpm
+        //     type: 'linear' as const,
+        //     display: true,
+        //     position: 'left' as const,
+        //     grid: {
+        //       drawOnChartArea: false,
+        //     },
+        //     title: {
+        //         display: true,
+        //         text: "Beats Per Minuite (bpm)"
+        //     }
+        //   }
+        },
+    };
+    const weightOption = {
+        tension: 0.3,
+        responsive: true,
+        // legend: {
+        //     position: 'bottom'
+        // },
+        interaction: {
+          mode: 'index' as const,
+          intersect: false,
+        },
+        stacked: false,
+        plugins: {
+          colors: {
+            forceOverride: true
+          },
+          zoom: {
+            pan: {
+                enabled: true,
+                mode: 'x'
+            },
+            zoom: {
+                pinch: {
+                    enabled: true       // Enable pinch zooming
+                },
+                wheel: {
+                    enabled: true       // Enable wheel zooming
+                },
+                mode: 'x',
+            }
+        }
+        },
+        scales: {
+          y: {     //g
+            type: 'linear' as const,
+            display: true,
+            position: 'left' as const,
+            grid: {
+                drawOnChartArea: false,
+            },
+            title: {
+                display: true,
+                text: "Grams (g)"
+            }
+            },
+        },
+    };
+    const pulseoximeterOption = {
+        tension: 0.3,
+        responsive: true,
+        // legend: {
+        //     position: 'bottom'
+        // },
+        interaction: {
+          mode: 'index' as const,
+          intersect: false,
+        },
+        stacked: false,
+        plugins: {
+          colors: {
+            forceOverride: true
+          },
+          zoom: {
+            pan: {
+                enabled: true,
+                mode: 'x'
+            },
+            zoom: {
+                pinch: {
+                    enabled: true       // Enable pinch zooming
+                },
+                wheel: {
+                    enabled: true       // Enable wheel zooming
+                },
+                mode: 'x',
+            }
+        }
+        },
+        scales: {
+          y: {      // Celcius
+            type: 'linear' as const,
+            display: true,
+            position: 'left' as const,
+            title: {
+                display: true,
+                text: "Percentage (%)"
+            }
+          },
+          y1: {     // %
             type: 'linear' as const,
             display: true,
             position: 'right' as const,
@@ -432,225 +654,143 @@ export const DetailedDevice = () => {
             },
             title: {
                 display: true,
-                text: "Grams (g)"
+                text: "Beats Per Minuite (BPM)"
             }
           },
-          y3: {     // bpm
-            type: 'linear' as const,
-            display: true,
-            position: 'left' as const,
-            grid: {
-              drawOnChartArea: false,
-            },
-            title: {
-                display: true,
-                text: "Beats Per Minuite (bpm)"
-            }
-          }
+        //   y2: {     //g
+        //     type: 'linear' as const,
+        //     display: true,
+        //     position: 'right' as const,
+        //     grid: {
+        //       drawOnChartArea: false,
+        //     },
+        //     title: {
+        //         display: true,
+        //         text: "Grams (g)"
+        //     }
+        //   },
+        //   y3: {     // bpm
+        //     type: 'linear' as const,
+        //     display: true,
+        //     position: 'left' as const,
+        //     grid: {
+        //       drawOnChartArea: false,
+        //     },
+        //     title: {
+        //         display: true,
+        //         text: "Beats Per Minuite (bpm)"
+        //     }
+        //   }
         },
-      };
-      const yAxisIDMap = {
+    };
+    const heaterYaxis = {
+    "%": "y",
+    "C": "y1",
+    // "g": "y2",
+    // "BPM": "y3"
+    // Add more mappings as needed
+    };
+    const pulseoximeterYaxis = {
         "%": "y",
-        "C": "y1",
-        "g": "y2",
-        "BPM": "y3"
-        // Add more mappings as needed
-      };
-      const csvOptions = {
-        fieldSeparator: ',',
-        quoteStrings: '"',
-        decimalSeparator: '.',
-        showLabels: true,
-        useBom: true,
-        useKeysAsHeaders: false,
-        headers: cols.map((c) => c.header),
-      };
-      const csvExporter = new ExportToCsv(csvOptions);
-      const handleExportData = () => {
-        csvExporter.generateCsv(rows);
-      };
+        "BPM": "y1"
+    }
+    
+      
     useEffect(() => {
     //    console.log(Array.isArray(observation))
 
         if(observation[1]?.resource?.component?.length>1){
             
             setTimes(observation.map((obs) => {
+                let zeroth = []
+                let first = []
+                let second = [{
+                    label: "",
+                    data: [] as string[],
+                    yAxisID: "y"
+                }]
+                let third = [{
+                    label: "",
+                    data: [] as string[],
+                    yAxisID: "y"
+                }]
+
+                observation[1].resource.component.map((data, index) => {
+                    if(data.valueQuantity.unit.toString() == "C"  || data.code.text.toString()=="Set Heater" || data.code.text.toString()=="Heater Level"){
+                        let unit = data.valueQuantity.unit.toString();
+                        console.log("********************")
+                        console.log(unit)
+                        zeroth.push({
+                            label: data.code.text.toString(),
+                            data: observation.map((data2, index2) => {
+                                return (
+                                    data2?.resource?.component[index]?.valueQuantity?.value.toString()
+                                )
+                            }),
+                            yAxisID: heaterYaxis[unit] || "y"
+                        })
+                    }
+                    else if(data.code.text.toString() == "Pulse Rate" || data.code.text.toString() == "SpO2"){
+                        let unit2 = data.valueQuantity.unit.toString();
+                        first.push({
+                            label: data.code.text.toString(),
+                            data: observation.map((data2, index2) => {
+                                return (
+                                    data2?.resource?.component[index]?.valueQuantity?.value.toString()
+                                )
+                            }),
+                            yAxisID: pulseoximeterYaxis[unit2] || "y"
+                        })
+                    }
+                    else if(data.valueQuantity.unit.toString() == "g"){
+                        second.push({
+                            label: data.code.text.toString(),
+                            data: observation.map((data2, index2) => {
+                                return (
+                                    data2?.resource?.component[index]?.valueQuantity?.value.toString()
+                                )
+                            }),
+                            yAxisID: "y"
+                        })
+                    }
+                    else if(data.code.text.toString() == "Humidity set" || data.code.text.toString() == "Measure Humidity"){
+                        third.push({
+                            label: data.code.text.toString(),
+                            data: observation.map((data2, index2) => {
+                                return (
+                                    data2?.resource?.component[index]?.valueQuantity?.value.toString()
+                                )
+                            }),
+                            yAxisID: pulseoximeterYaxis[unit2] || "y"
+                        })
+                    }
+                    
+                })
+                
+                setDataSet([zeroth, first, second, third])
                 return(
                     new Date(obs.resource.meta.lastUpdated).toLocaleTimeString())
                 }))
-            setDataSet(observation[1].resource.component.map((data, index) => {
-                return {
-                label: String(observation[1]?.resource?.component[index]?.code?.text),
-                data: observation.map((obs) => {
-                    if(obs?.resource?.component){return(obs.resource?.component[index]?.valueQuantity.value)}
-                    else{return(null)}    
+
+            //     observation[1].resource.component.map((data, index) => {
+            //     return {
+            //     label: String(observation[1]?.resource?.component[index]?.code?.text),
+            //     data: observation.map((obs) => {
+            //         if(obs?.resource?.component){return(obs.resource?.component[index]?.valueQuantity.value)}
+            //         else{return(null)}    
                     
-                }),
-                // borderColor: 'rgb(255, 99, 132)',
-                // backgroundColor:'rgb(255, 99, 132)',
-                yAxisID: yAxisIDMap[String(observation[1]?.resource?.component[index]?.valueQuantity.unit)] || 'y3'
-            }}))
-        //     setDataSet(() => {
-        //         if(observation[1].resource.component.length>6){
-        //             return [
-        //                 {
-        //                     label: String(observation[1].resource.component[1].code.text),
-        //                     data: observation.map((obs) => {
-        //                         if(obs.resource.component){return(obs.resource.component[1].valueQuantity.value)}
-        //                         else{return(null)}    
-                                
-        //                     }),
-        //                     // borderColor: 'rgb(255, 99, 132)',
-        //                     // backgroundColor:'rgb(255, 99, 132)',
-        //                     yAxisID: yAxisIDMap[String(observation[1].resource.component[1].valueQuantity.unit)] || 'y3'
-        //                 },
-        //                 {
-        //                     label: String(observation[1].resource.component[2].code.text),
-        //                     data: observation.map((obs) => {
-        //                         if(obs.resource.component){return(obs.resource.component[2].valueQuantity.value)}
-        //                         else{return(null)}    
-                                
-        //                     }),
-        //                     // borderColor: 'rgb(53, 162, 235)',
-        //                     // backgroundColor:'rgb(53, 162, 235)',
-        //                     yAxisID: yAxisIDMap[String(observation[1].resource.component[2].valueQuantity.unit)] || 'y3'
-        //                 }, 
-        //                 {
-        //                     label: String(observation[1].resource.component[3].code.text),
-        //                     data: observation.map((obs) => {
-        //                         if(obs.resource.component){return(obs.resource.component[3].valueQuantity.value)}
-        //                         else{return(null)}    
-                                
-        //                     }),
-        //                     // borderColor: 'rgb(53, 162, 235)',
-        //                     // backgroundColor:'rgb(53, 162, 235)',
-        //                     yAxisID: yAxisIDMap[String(observation[1].resource.component[3].valueQuantity.unit)] || 'y3'
-        //                 },
-        //                 {
-        //                     label: String(observation[1].resource.component[4].code.text),
-        //                     data: observation.map((obs) => {
-        //                         if(obs.resource.component){return(obs.resource?.component[4]?.valueQuantity.value)}
-        //                         else{return(null)}    
-                                
-        //                     }),
-        //                     // borderColor: 'rgb(53, 162, 235)',
-        //                     // backgroundColor:'rgb(53, 162, 235)',
-        //                     yAxisID: yAxisIDMap[String(observation[1].resource.component[4].valueQuantity.unit)] || 'y3'
-        //                 },
-        //                 {
-        //                     label: String(observation[1].resource.component[5].code.text),
-        //                     data: observation.map((obs) => {
-        //                         if(obs.resource.component){return(obs.resource?.component[5]?.valueQuantity.value)}
-        //                         else{return(null)}    
-                                
-        //                     }),
-        //                     // borderColor: 'rgb(53, 162, 235)',
-        //                     // backgroundColor:'rgb(53, 162, 235)',
-        //                     yAxisID: yAxisIDMap[String(observation[1].resource.component[5].valueQuantity.unit)] || 'y3'
-        //                 },
-        //                 {
-        //                     label: String(observation[1].resource.component[6].code.text),
-        //                     data: observation.map((obs) => {
-        //                         if(obs.resource.component && obs.resource.component[6]){
-        //                             return(obs.resource.component[6].valueQuantity.value)
-        //                         }
-        //                         else{
-        //                             return(null)
-        //                         }
-        //                         }),
-        //                     // data: observation.map((obs) => {
-        //                     //     if(obs.resource.component){return(obs.resource.component[1].valueQuantity.value)}
-        //                     //     else{return(null)}    
-                                
-        //                     // }),
-        //                     // borderColor: 'rgb(53, 162, 235)',
-        //                     // backgroundColor:'rgb(53, 162, 235)',
-        //                     yAxisID: yAxisIDMap[String(observation[1].resource.component[6].valueQuantity.unit)] || 'y3'
-        //                 },
-        //                 {
-        //                     label: String(observation[1].resource.component[7].code.text),
-        //                     data: observation.map((obs) => {
-        //                         if(obs.resource.component && obs.resource.component[7]){
-        //                             return(obs.resource.component[7].valueQuantity.value)
-        //                         }
-        //                         else{
-        //                             return(null)
-        //                         }
-        //                         }),
-        //                     // data: observation.map((obs) => {
-        //                     //     if(obs.resource.component){return(obs.resource.component[1].valueQuantity.value)}
-        //                     //     else{return(null)}    
-                                
-        //                     // }),
-        //                     // borderColor: 'rgb(53, 162, 235)',
-        //                     // backgroundColor:'rgb(53, 162, 235)',
-        //                     yAxisID: yAxisIDMap[String(observation[1].resource.component[7].valueQuantity.unit)] || 'y3'
-        //                 }
-        //             ]
-        //         }
-        //         if(observation[1].resource.component.length<=6){
-        //             return [
-        //                 {
-        //                     label: String(observation[1].resource.component[1].code.text),
-        //                     data: observation.map((obs) => {
-        //                         if(obs.resource.component){return(obs.resource.component[1]?.valueQuantity.value)}
-        //                         else{return(null)}    
-                                
-        //                     }),
-        //                     // borderColor: 'rgb(255, 99, 132)',
-        //                     // backgroundColor:'rgb(255, 99, 132)',
-        //                     yAxisID:'y'
-        //                 },
-        //                 {
-        //                     label: String(observation[1].resource.component[2].code.text),
-        //                     data: observation.map((obs) => {
-        //                         if(obs.resource.component){return(obs.resource.component[2]?.valueQuantity.value)}
-        //                         else{return(0)}    
-                                
-        //                     }),
-        //                     // borderColor: 'rgb(53, 162, 235)',
-        //                     // backgroundColor:'rgb(53, 162, 235)',
-        //                     yAxisID:'y'
-        //                 }, 
-        //                 {
-        //                     label: String(observation[1].resource.component[3].code.text),
-        //                     data: observation.map((obs) => {
-        //                         if(obs.resource.component){return(obs.resource.component[3]?.valueQuantity.value)}
-        //                         else{return(null)}    
-                                
-        //                     }),
-        //                     // borderColor: 'rgb(53, 162, 235)',
-        //                     // backgroundColor:'rgb(53, 162, 235)',
-        //                     yAxisID:'y1'
-        //                 },
-        //                 {
-        //                     label: String(observation[1]?.resource?.component[4]?.code.text),
-        //                     data: observation.map((obs) => {
-        //                         if(obs.resource.component){return(obs.resource.component[4]?.valueQuantity.value)}
-        //                         else{return(null)}    
-                                
-        //                     }),
-        //                     // borderColor: 'rgb(53, 162, 235)',
-        //                     // backgroundColor:'rgb(53, 162, 235)',
-        //                     yAxisID:'y'
-        //                 },
-        //                 {
-        //                     label: String(observation[1]?.resource?.component[5]?.code.text),
-        //                     data: observation.map((obs) => {
-        //                         if(obs.resource.component){return(obs.resource.component[5]?.valueQuantity.value)}
-        //                         else{return(null)}    
-                                
-        //                     }),
-        //                     // borderColor: 'rgb(53, 162, 235)',
-        //                     // backgroundColor:'rgb(53, 162, 235)',
-        //                     yAxisID:'y2'
-        //                 }]
-        //         }
-        //     }
-        // )
+            //     }),
+            //     // borderColor: 'rgb(255, 99, 132)',
+            //     // backgroundColor:'rgb(255, 99, 132)',
+            //     yAxisID: yAxisIDMap[String(observation[1]?.resource?.component[index]?.valueQuantity.unit)] || 'y3'
+            // }})
+            
+            
+
+
         }
         setvvtemp(true)
-        console.log(observation)
+        // console.log(observation)
     },[observation])
     useEffect(() => {
         // communication.map((commres) => {
@@ -680,75 +820,96 @@ export const DetailedDevice = () => {
 
                     }
         )
-        console.log(x)
         setRows(x)
         // setRows(
         // console.log(communication)
         // )
     },[communication])
-    const [data, setData] = useState({})
+    const [temperatureData, setTemperatureData] = useState({})
+    const [weightData, setWeightData] = useState({})
+    const [pulseoximeterData, setPulseoximeterData] = useState({})
+    const [humidityData, setHumidityData] = useState({})
+    
     useEffect(() => {
-        // console.log(dataset)
+        console.log(dataset[0])
+        console.log(dataset[1])
         // console.log(labels)
         // console.log(times)
-        setData({
-            labels,
-            datasets: dataset
+        setTemperatureData(() => {
+            if(dataset[0]?.length > 1) {
+                return (
+                    {
+                        labels,
+                        datasets: dataset[0]
+                    }
+                )
+            }
+            else {
+                return (
+                    {
+                        labels: [],
+                        datasets: []
+                    }
+                )
+            }
+        })
+        setPulseoximeterData(() => {
+            if(dataset[1]?.length > 1) {
+                return (
+                    {
+                        labels,
+                        datasets: dataset[1]
+                    }
+                )
+            }
+            else {
+                return (
+                    {
+                        labels: [],
+                        datasets: []
+                    }
+                )
+            }
+        })
+        setWeightData(() => {
+            if(dataset[2]?.length > 1) {
+                return (
+                    {
+                        labels,
+                        datasets: dataset[2]
+                    }
+                )
+            }
+            else {
+                return (
+                    {
+                        labels: [],
+                        datasets: []
+                    }
+                )
+            }
+        })
+        setHumidityData(() => {
+            if(dataset[3]?.length > 1) {
+                return (
+                    {
+                        labels,
+                        datasets: dataset[3]
+                    }
+                )
+            }
+            else {
+                return (
+                    {
+                        labels: [],
+                        datasets: []
+                    }
+                )
+            }
         })
         setGraphData(true)
     },[times])
     const labels = times;
-    // const data = {
-    //     labels,
-    //     datasets: [
-    //       {
-    //         label: 'Dataset 1',
-    //         data: [1,2,3,4],
-    //         borderColor: 'rgb(255, 99, 132)',
-    //         backgroundColor: 'rgba(255, 99, 132, 0.5)',
-    //       },
-    //       {
-    //         label: 'Dataset 2',
-    //         data: [1,2,3,4],
-    //         borderColor: 'rgb(53, 162, 235)',
-    //         backgroundColor: 'rgba(53, 162, 235, 0.5)',
-    //       },
-    //     ],
-    //   };
-    // const vvtemp = [1,2,3,4,5];
-    // const data = {
-    //         vvtemp,
-    //         datasets: [{
-    //             label: "HELLO",
-    //             data: [1,2,3,4,5],
-    //             borderColor: 'rgb(255, 99, 132)',
-    //             backgroundColor:'rgb(255, 99, 132)',
-    //             yaxis:'y'
-    //         }]
-    //     }
-    // useEffect(() => {console.log(data)},[data])
-
-//    const options = {
-//   responsive: true,
-//   plugins: {
-//     legend: {
-//       position: 'top' as const,
-//     },
-//     title: {
-//       display: true,
-//       text: 'Chart.js Line Chart',
-//     },
-//   },
-// };
-    // const labels = times;
-
-    // const data = {
-    // times,
-    // datasets: dataset
-    // };
-
-    // useEffect(() => {console.log(dataset)},[dataset])
-
 
 
 
@@ -975,7 +1136,46 @@ export const DetailedDevice = () => {
             <div style={{marginTop:'25px'}}>
             
                 {
-                    graphData && (<Line options={options} data={data}></Line>)
+                    graphData && (<>
+                    <Box sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }} >
+                        <Button color="primary" startIcon={<FileDownloadIcon />} variant="contained">
+                            Export
+                        </Button>
+                    </Box>
+                    {/* <ToggleButtonGroup sx={{marginLeft:'20px'}} exclusive aria-label="text alignment">
+                        <ToggleButton value="left" aria-label="left aligned">
+                            Day
+                        </ToggleButton>
+                        <ToggleButton value="center" aria-label="centered">
+                            Week
+                        </ToggleButton>
+                        <ToggleButton value="right" aria-label="right aligned">
+                            Month
+                        </ToggleButton>
+                    </ToggleButtonGroup> */}
+                        {(() => {
+                            if(observation_resource?.identifier[0]?.value?.toString()=="PMSCIC"){
+                                return (
+                                    <Stack height={'100%'} width={'100%'}>
+                                            <Line options={temperatureOption} data={temperatureData} height={"90%"}></Line>
+                                        <Stack direction={'row'} width={'100%'} height={"50%"} justifyContent={'space-between'}>
+                                            <div style={{width:'45%'}}>
+                                                <Line options={pulseoximeterOption} data={pulseoximeterData} height={'100%'}></Line>
+                                            </div>
+                                            <div style={{width:'45%'}}>
+                                                <Line options={weightOption} data={weightData} height={'100%'} ></Line>
+                                            </div>
+                                        </Stack>
+                                    </Stack>
+                                )
+                            }
+                            return <div></div>
+                        })()}
+                       
+                    
+                        {/* <Button >Select all</Button> */}
+                        
+                    </>)
                 }
                 {
                     !graphData && (<div></div>)
@@ -983,33 +1183,7 @@ export const DetailedDevice = () => {
             
             </div>
             <Divider sx={{marginTop:'20px', marginBottom:'20px'}} />
-            <MaterialReactTable 
-            enableGrouping
-            initialState={{
-                density: 'compact',        
-                expanded: true, //expand all groups by default        
-                grouping: ['date','time'], //an array of columns to group by by default (can be multiple)        
-                pagination: { pageIndex: 0, pageSize: 20 },
-                sorting: [{ id: 'date', desc: true }], //sort by state by defaul
-              }} 
-              columns={cols} data={rows} 
-              positionToolbarAlertBanner="bottom"    
-              renderTopToolbarCustomActions={({ table }) => (
-                <Box
-                sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }} 
-                >
-                    <Button
-                        color="primary"
-                        //export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
-                        onClick={handleExportData}
-                        startIcon={<FileDownloadIcon />}
-                        variant="contained"
-                    >
-                        Export All Data
-                    </Button>
-                </Box>
-            )}>
-              </MaterialReactTable>
+            <Table rows={rows} columns={columns}/>
         </Stack>
     </Paper>
     )
