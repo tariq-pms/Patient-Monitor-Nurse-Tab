@@ -40,6 +40,8 @@ export const Rooms = () => {
         }})
         }  
       },[])
+      const [controlBorder, setControlboarder] = useState('grey')
+      const [controlOpacity, setOpacity] = useState("0.8")
       const [addnewbutton, setaddnewbutton] = useState(false);
       const [newRoomName, setNewRoomName] = useState("")
       const [snackSucc, setSnackSucc] = useState(false);
@@ -56,7 +58,6 @@ export const Rooms = () => {
       const addNewRoom = () => {
         const data = {
             "resourceType": "Location",
-            "id": "1891b72f248-2c6e5dce-4dcf-421b-82cc-d701f6513872",
             "identifier": [
                 {
                     "value": newRoomName
@@ -118,7 +119,7 @@ export const Rooms = () => {
       
       <Stack width={'100%'} direction={'row'} paddingTop={'2%'} justifyContent={'center'} textAlign={'center'}>
               <Typography variant='h5' color={'white'}>Rooms & Device Settings</Typography>
-              <Settings  sx={{marginLeft:'1%', fontSize:'200%', color:'white'}}/>
+              {/* <Settings  sx={{marginLeft:'1%', fontSize:'200%', color:'white'}}/> */}
             </Stack>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
           
@@ -146,16 +147,16 @@ export const Rooms = () => {
           >
             
             {roomBoxes}
-            <Box  width={"350px"} sx={{backgroundColor:'transparent'}} onClick={() => {setaddnewbutton(true)}}>
-              <Paper  elevation={2} sx={{ borderRadius: "25px", backgroundColor:'transparent'}}>
+            <Box  width={"350px"} sx={{opacity:controlOpacity, backgroundColor:'transparent', border:`4px solid ${controlBorder}`, borderRadius:'30px'}} onMouseLeave={() => {setControlboarder("grey");setOpacity("0.8")}} onMouseEnter={() => {setControlboarder("#2BA0E0");setOpacity("1")}} onClick={() => {setaddnewbutton(true)}}>
+              <Paper  elevation={2} sx={{ borderRadius: "25px",background:'transparent'}}>
                 <Card
-                  style={{ backgroundColor: "transparent", borderRadius: "25px", minHeight:"280px"
+                  style={{ background: "transparent", borderRadius: "25px", minHeight:"280px"
                   }}
                 >
                   <Stack width={"100%"} direction={"row"} sx={{justifyContent:"center", marginTop:"20px"}}>
                     <CardContent>
                         <Typography sx={{paddingLeft:'45px'}}>Add new room</Typography>
-                        <AddIcon sx={{ fontSize: 200 }} />
+                        <AddIcon sx={{ fontSize: 200, color:controlBorder }} />
                     </CardContent>
                   </Stack>
                 </Card>

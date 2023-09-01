@@ -12,6 +12,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { UserInfo } from '../pages/UserInfo';
 
 type Anchor = 'right';
 export const SettingsMenu = () => {
@@ -237,13 +238,13 @@ export const SettingsMenu = () => {
     }
   return (
     <Box
-        style={{ background: '#151A2A'}}
         sx={{ width: {
           xs : 350,
           sm : 350,
           md : 350,
           lg : 400
-        } }}
+        },
+        backgroundImage: "linear-gradient(to right, #20273F, #141828)" }}
         height={"100%"}
         role="presentation"
         onClick={toggleDrawer('right', false)}
@@ -252,7 +253,7 @@ export const SettingsMenu = () => {
         <List>
           <ListItem>
             <ListItemButton>
-              
+            
                 <ListItemText>
                   {user?.email}
                 </ListItemText>
@@ -265,7 +266,6 @@ export const SettingsMenu = () => {
                 } }}/>
                 </ListItemIcon>
                 {/* </Typography> */}
-              
             </ListItemButton>
           </ListItem>
           <Divider />

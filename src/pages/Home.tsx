@@ -122,44 +122,7 @@ export const Home = (currentRoom: any) => {
 // })
   //console.log(loading)
   const { isAuthenticated, isLoading } = useAuth0();
-  //console.log(isLoading)
-  // const [rooms, setRooms] = useState(
-  //   {
-  //     "resourceType": String,
-  //     "id": String,
-  //     "type": String,
-  //     "total": Number,
-  //     "link": [
-  //         {
-  //             "relation": String,
-  //             "url": String
-  //         }
-  //     ],
-  //     "entry": [
-  //         {
-  //             "fullUrl": String,
-  //             "resource": {
-  //                 "resourceType": String,
-  //                 "id": String,
-  //                 "meta": {
-  //                     "versionId": String,
-  //                     "lastUpdated": String
-  //                 },
-  //                 "identifier": [
-  //                     {
-  //                         "value": String
-  //                     }
-  //                 ],
-  //                 "name": String,
-  //                 "status": String
-  //             },
-  //             "search": {
-  //                 "mode": String,
-  //                 "score": Number
-  //             }
-  //         }
-  //     ]
-  // })
+
   const [devices, setDevices] = useState({
     "resourceType": String,
     "id": String,
@@ -212,48 +175,18 @@ export const Home = (currentRoom: any) => {
   });
   const [value, setValue] = useState("");
   
-  // useEffect(() => {
-  //   console.log(rooms)
-  // },[rooms])
-  // const tabs = rooms.entry 
-  // ? rooms.entry.map((room) => {
-  //   return (
-  //     <Tab sx={{fontSize:{
-  //               xs: 19,
-  //               sm: 19,
-  //               md: 19,
-  //               lg: 19,
-  //     }}} value={room.resource.id} label={String(room.resource.name)}/>
-  //   )
-  // }) : null
-  // const handleChange = (event: React.SyntheticEvent, newValue: string) => {
-  //   //console.log(event)
-  //   setValue(newValue);
-  // };
+
   
   useEffect(() => {
     setLoading(true)
-    // fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Location`, {
-    //   credentials: "omit",
-    //   headers: {
-    //     Authorization: "Basic "+ btoa("fhiruser:change-password"),
-    //   },
-    // })
-    // .then((response) => response.json())
-    // .then((data) => {setRooms(data)})
-    // setLoading(true)
-    
     const socket = new WebSocket("ws://13.126.5.10:9444/fhir-server/api/v4/notification");
     socket.onopen = () => {
       console.log("Socket open successful");
     };
     socket.onmessage = (data) => {
       var recieved_data = JSON.parse(data.data)
-      // console.log(data)
       if (recieved_data.location.split("/")[0] == "Observation"){
-          // console.log(data)
-        // if (obsArray.includes(recieved_data.resourceId)){
-          // console.log(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`)
+
           fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`, {
           credentials: "omit",
           headers: {
@@ -262,11 +195,8 @@ export const Home = (currentRoom: any) => {
           })
           .then((response) => response.json())
           .then((data) => {
-            // console.log(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`)
             let temp = String(data.device?.reference?.split("/")[1])
-            // console.log(temp)
-            // console.log(temp)
-            // console.log(data);
+
             console.log(data) 
             setParentObs((prevparentobs) => ({...prevparentobs,[temp]: data}))
             console.log(parentobs)
@@ -274,7 +204,6 @@ export const Home = (currentRoom: any) => {
         // }
       }
       else if (recieved_data.location.split("/")[0] == "Communication"){
-        // if (comArray.includes(recieved_data.resourceId)){
           fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${JSON.parse(data.data).location}`, {
           credentials: "omit",
           headers: {
@@ -285,8 +214,7 @@ export const Home = (currentRoom: any) => {
           .then((data) => {
             var temp = String(data.sender.reference.split("/")[1])
             setParentComm((prevparentcom) => ({...prevparentcom,[temp]: data}))
-            // console.log(data)
-            // setCommResource(data)
+
           })
         // }
       }
@@ -300,8 +228,7 @@ export const Home = (currentRoom: any) => {
           })
           .then((response) => response.json())
           .then((data) => {
-            // console.log(data)
-            // console.log("New device updated. Please refresh.")
+
           })
         // }
       }
@@ -327,19 +254,11 @@ export const Home = (currentRoom: any) => {
       setLoading(false)
     }
   }, [currentRoom])
-  // useEffect(() => {console.log(devices)},[devices])
-  // const getdevlist = () => {
-  //   const [obsArray, setObsArray] = useState<string[]>([])
-  //   const [comArray, setComArray] = useState<string[]>([])
-  //   const [devArray, setDevArray] = useState<string[]>([])
-  // }
 
-
-  
-  //useEffect(() => {console.log(parentcomm);console.log(parentobs)},[parentcomm])
   useEffect(() => {
     
     devices.entry?.map((device) => {
+      setLoading(true)
       // var correct = true;
       if(device.resource.patient){
         
@@ -387,7 +306,7 @@ export const Home = (currentRoom: any) => {
         })
       
       }
-      
+      setLoading(false)
     })
   },[devices])
 
@@ -433,7 +352,6 @@ export const Home = (currentRoom: any) => {
     if(device.resource.patient && parentcomm[String(device.resource.id)] && parentobs[String(device.resource.id)]){
       correct = true
     }
-    console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
       console.log(parentcomm[String(device.resource.id)]);
     if(correct){
       
@@ -495,58 +413,11 @@ export const Home = (currentRoom: any) => {
       )
     }}
   })
-  // const devicelist = devices.entry?.map((device) => {
-  //   var correct = false
-  //   // var temp = String(device.resource.id)
-  //   if(device.resource.patient && parentcomm[String(device.resource.id)] && parentobs[String(device.resource.id)]){
-  //     correct = true
-  //   }
-    
-  //   if(correct){
-  //     return (
-  //       <DeviceCard 
-  //         key={String(device.resource.id)}
-  //         device_id={String(device.resource.identifier[0].value)}
-  //         device_resource_id={String(device.resource.id)}
-  //         patient_id={device.resource.patient.reference.split("/")[1]}
-  //         observation_resource={parentobs[String(device.resource.id)]}
-  //         communication_resource={parentcomm[String(device.resource.id)]}
-  //       />
-  //     )
-  //   }
-  //   else{
-  //     return (
-  //       <DeviceCard 
-  //         key={String(device.resource.id)}
-  //         device_id={String(device.resource.identifier[0].value)}
-  //         device_resource_id={String(device.resource.id)}
-  //         patient_id={""}
-  //         observation_resource={parentobs[String(device.resource.id)]}
-  //         communication_resource={parentcomm[String(device.resource.id)]}
-  //       />
-  //     )
-  //   }
-    
-  // })
+
+
 
   return (
     <div>
-      
-      {/* <Selector onTabChange={handleTabChange} /> */}
-      {/* <Box sx={{ width: '95%', margin:'0 auto', marginTop:'10px'  }}>
-        <Tabs value={value}
-          centered
-          onChange={handleChange}
-          textColor="secondary"
-          indicatorColor="secondary"
-          aria-label="secondary tabs example"
-          variant={isSmallScreen ? "scrollable" : "fullWidth"}
-          scrollButtons="auto"
-          
-        >
-          {isAuthenticated && tabs}
-        </Tabs>
-      </Box> */}
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
       <Box
             sx={{
@@ -648,7 +519,6 @@ export const Home = (currentRoom: any) => {
               </Accordion>
             </Box>
             )}
-            {/* {isAuthenticated && devicelist} */}
         </Box>
             </div>
     </div>

@@ -133,7 +133,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
 
 
     // const devicetimer = setInterval(timer, 10000)
-
+    const [controlOpacity, setControlOpacity] = useState("0.8")
     // setInterval(secondTimer,7000)
     const [newData, setNewData] = useState(false);
     const [alarm, setAlarm] = useState("")
@@ -190,7 +190,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
         let timer: number | undefined;
         
         if(newData){
-            timer = setInterval(() => {setNewData(false);setAlarmColor("");clearInterval(timer)},7000)
+            timer = setInterval(() => {setNewData(false);setAlarmColor("transparent");clearInterval(timer)},7000)
 
         }
         return () => {
@@ -215,7 +215,9 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
         sm: "500px",
         md: "500px",
         lg: "500px"
-      }} sx={{backgroundColor:'#262626', borderRadius:'25px', border: `6px solid ${alarmColor}`}} >
+      }} sx={{backgroundColor:'#262626', borderRadius:'25px', border: `6px solid ${alarmColor}`, opacity:controlOpacity}} 
+      onMouseLeave={() => {setControlOpacity("0.8")}} onMouseEnter={() => {setControlOpacity("1")}}
+      >
         
         <Link to="devicedata" style={{ textDecoration: 'none' }} state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}>
         <Paper elevation={2} sx={{ borderRadius: "25px", backgroundColor:'transparent'}}>

@@ -14,6 +14,9 @@ import "@fontsource/noto-sans";
 const theme = createTheme({
   typography: {
     fontFamily: 'Roboto',
+    allVariants:{
+      userSelect: 'none'
+    }
   },
   palette: {//
     mode: 'dark',

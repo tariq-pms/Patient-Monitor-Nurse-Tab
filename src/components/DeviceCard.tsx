@@ -126,10 +126,6 @@ export interface DeviceDetails {
 export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
     const [alarmColor, setAlarmColor] = useState("")
     // const devicetimer = setInterval(timer, 10000)
-    function timer() {
-        setNewData(false)
-        setAlarmColor("white")
-        }
   const [newData, setNewData] = useState(false);
   const [runNo, setRunNo] = useState(0)
   useEffect(() => {

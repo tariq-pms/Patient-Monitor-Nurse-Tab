@@ -183,6 +183,7 @@ export const DetailedDevice: FC = () => {
             ]
         }}
     ])
+    const [timeFrame, setTimeFrame] = useState(5)
     const {key, device_id, patient, device_resource_id, observation_resource, communication_resource} = useLocation().state
     // setNewObs(observation_resource)
    
@@ -272,74 +273,14 @@ export const DetailedDevice: FC = () => {
         let timer: number | undefined;
         
         if(newData){
-            timer = setInterval(() => {;setNewData(false);clearInterval(timer)},7000)
+            timer = setInterval(() => {setNewData(false);clearInterval(timer)},7000)
         }
         return () => {
             clearInterval(timer); 
         };
     }, [requiredForTimer])
     useEffect(() => {
-        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource?.id}/_history`, {
-          credentials: "omit",
-          headers: {
-            Authorization: "Basic "+ btoa("fhiruser:change-password"),
-          },
-        })
-        .then((response) => response.json())
-        .then((data) => {
-            // setObservation(data)
-            let temparr: any[] = []
-            var totaldata = data.total
-            var page = 1
-            if(totaldata>100000){
-                totaldata=100000
-            }
-            // console.log(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=50`)
 
-
-
-
-            while(totaldata>=100){
-                fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=100`,{
-                    credentials: "omit",
-                    headers: {
-                        Authorization: "Basic "+ btoa("fhiruser:change-password"),
-                    },
-                })
-                .then((response) => response.json())
-                .then((data) => {
-                    for(let i=0;i<data.entry.length;i++){
-                        temparr.push(data.entry[i])
-                    }
-                })
-                totaldata=totaldata%100
-                page+=1
-            }
-                fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=100`,{
-                    credentials: "omit",
-                    headers: {
-                        Authorization: "Basic "+ btoa("fhiruser:change-password"),
-                    },
-                })
-                .then((response) => response.json())
-                .then((data) => {
-                    for(let i=0;i<data.entry.length;i++){
-                        // console.log(temparr)
-                        temparr.push(data.entry[i])
-                    }
-                    
-                    setObservation(temparr.reverse())
-                    setLoading(false)
-                })
-
-
-
-            
-            // console.log(temparr)
-            // setObservation((prevobs) => ({...prevobs,entry: temparr}))
-            
-            
-        })
         
         fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Communication/${communication_resource.id}/_history`, {
           credentials: "omit",
@@ -412,25 +353,31 @@ export const DetailedDevice: FC = () => {
           var recieved_data = JSON.parse(data.data)
 
           // console.log(data)
-          if (recieved_data.location.split("/")[0] == "Observation" && recieved_data.location.split("/")[1] == observation_resource.id){
-              // console.log(data)
-            // if (obsArray.includes(recieved_data.resourceId)){
-              fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`, {
-              credentials: "omit",
-              headers: {
-                Authorization: "Basic "+ btoa("fhiruser:change-password"),
-                },
-              })
-              .then((response) => response.json())
-              .then((data) => {
-                // console.log(temp)
-                // console.log(temp)
-                setNewObs(data)
+
+
+
+        //   if (recieved_data.location.split("/")[0] == "Observation" && recieved_data.location.split("/")[1] == observation_resource.id){
+        //       // console.log(data)
+        //     // if (obsArray.includes(recieved_data.resourceId)){
+        //       fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`, {
+        //       credentials: "omit",
+        //       headers: {
+        //         Authorization: "Basic "+ btoa("fhiruser:change-password"),
+        //         },
+        //       })
+        //       .then((response) => response.json())
+        //       .then((data) => {
+        //         // console.log(temp)
+        //         // console.log(temp)
+        //         setNewObs(data)
                 
             
-              })
-            // }
-          }
+        //       })
+        //     // }
+        //   }
+
+
+
           if (recieved_data.location.split("/")[0] == "Communication" && recieved_data.location.split("/")[1] == communication_resource.id){
             
             fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`, {
@@ -441,7 +388,6 @@ export const DetailedDevice: FC = () => {
               })
               .then((response) => response.json())
               .then((data) => {
-                console.log("HELLO WORLD")
                 // console.log(temp)
                 // console.log(temp)
         //         date: String,
@@ -478,6 +424,110 @@ export const DetailedDevice: FC = () => {
         };
         socket.onerror = () => {console.log(`Error in socket connection`)}
       }, [])
+
+
+    useEffect(() => {
+        console.log(observation_resource.id)
+        let url = []
+        let currentNewDate = new Date()
+        let currentdate = currentNewDate.getDate().toString().padStart(2,'0')
+        let currentmonth = (Number(currentNewDate.getMonth())+1).toString().padStart(2,'0')
+        let currentyear = currentNewDate.getFullYear()
+        let currentDate = currentyear+"-"+currentmonth+"-"+currentdate
+        if(timeFrame==0){
+            url.push(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource?.id}/_history?_since=${currentDate}T00:00:00Z`)
+        }
+        else if(timeFrame==1){
+            // let weekNewDate = new Date(currentNewDate.setDate(currentNewDate.getDate() - 7));
+            // let weekdate = weekNewDate.getUTCDate().toString().padStart(2,'0')
+            // let weekmonth = ((weekNewDate.getMonth())+1).toString().padStart(2,'0')
+            // let weekyear = weekNewDate.getUTCFullYear()
+            for (let incrementDate = 0; incrementDate < 7 ; incrementDate++) {
+                let weekNewDate = new Date(currentNewDate.setDate(currentNewDate.getDate() - incrementDate));
+                let weekdate = weekNewDate.getUTCDate().toString().padStart(2,'0')
+                let weekmonth = (Number(weekNewDate.getMonth())+1).toString().padStart(2,'0')
+                let weekyear = weekNewDate.getUTCFullYear()
+                let weekDate = weekyear+"-"+weekmonth+"-"+weekdate
+                for (let index2 = 0; index2 < 24; index2++) {
+                    url.push(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource?.id}/_history?_count=1&_since=${weekDate}T${index2.toString().padStart(2,'0')}:00:00Z`)
+                }
+                
+                                
+            }
+        }
+        else if(timeFrame==2){
+            let monthNewDate = new Date(currentNewDate.setMonth(currentNewDate.getMonth() - 1));
+            let monthdate = monthNewDate.getUTCDate().toString().padStart(2,'0')
+            let monthmonth = (Number(monthNewDate.getMonth())+1).toString().padStart(2,'0')
+            let monthyear = monthNewDate.getUTCFullYear()
+            for (let index = 1; index < 30; index++) {
+                let monthDate = monthyear+"-"+monthmonth+"-"+index.toString().padStart(2,'0')
+                url.push(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource?.id}/_history?_count=1&_since=${monthDate}T00:00:00Z`)
+            }
+        }
+        let temparr: any[] = []
+        url.map((query) => {
+            fetch(query, {
+                credentials: "omit",
+                method: "GET",
+                headers: {
+                    Authorization: "Basic "+ btoa("fhiruser:change-password"),
+                },
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                if(data.total==0){return}
+                var totaldata = data.total 
+                let page = 1
+                if(totaldata>10000){
+                    totaldata = 10000
+                }
+                console.log(data.entry)
+                temparr.push(data.entry.resource)
+                // var totaldata = data.total
+                // let page = 1
+                // if(totaldata>10000){
+                //     totaldata = 10000
+                // }
+                // while(totaldata>=100){
+                //     fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=100`,{
+                //         credentials: "omit",
+                //         headers: {
+                //             Authorization: "Basic "+ btoa("fhiruser:change-password"),
+                //         },
+                //     })
+                //     .then((response) => response.json())
+                //     .then((data) => {
+                //         for(let i=0;i<data.entry.length;i++){
+                //             temparr.push(data.entry[i])
+                //         }
+                //     })
+                //     totaldata=totaldata%100
+                //     page+=1
+                // }
+                // fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=100`,{
+                //     credentials: "omit",
+                //     method: "GET",
+                //     headers: {
+                //         Authorization: "Basic "+ btoa("fhiruser:change-password"),
+                //     },
+                // })
+                // .then((response) => response.json())
+                // .then((data) => {
+                //     for(let i=0;i<data.entry.length;i++){
+                //         temparr.push(data.entry[i])
+                //     }
+                //     console.log(temparr)
+                // })
+            })
+            
+        })
+        console.log(temparr)
+              
+        //   })
+    },[timeFrame])
+//     useEffect(() => {        setObservation(temparr)
+// },[neededForGraph])
     const [vvtemp, setvvtemp] = useState(false)
     const temperatureOption = {
         tension: 0.3,
@@ -532,30 +582,6 @@ export const DetailedDevice: FC = () => {
                 text: "Temperature (C°)"
             }
           },
-        //   y2: {     //g
-        //     type: 'linear' as const,
-        //     display: true,
-        //     position: 'right' as const,
-        //     grid: {
-        //       drawOnChartArea: false,
-        //     },
-        //     title: {
-        //         display: true,
-        //         text: "Grams (g)"
-        //     }
-        //   },
-        //   y3: {     // bpm
-        //     type: 'linear' as const,
-        //     display: true,
-        //     position: 'left' as const,
-        //     grid: {
-        //       drawOnChartArea: false,
-        //     },
-        //     title: {
-        //         display: true,
-        //         text: "Beats Per Minuite (bpm)"
-        //     }
-        //   }
         },
     };
     const weightOption = {
@@ -683,6 +709,52 @@ export const DetailedDevice: FC = () => {
         //   }
         },
     };
+    // const humidityOption = {
+    //     tension: 0.3,
+    //     responsive: true,
+    //     // legend: {
+    //     //     position: 'bottom'
+    //     // },
+    //     interaction: {
+    //       mode: 'index' as const,
+    //       intersect: false,
+    //     },
+    //     stacked: false,
+    //     plugins: {
+    //       colors: {
+    //         forceOverride: true
+    //       },
+    //       zoom: {
+    //         pan: {
+    //             enabled: true,
+    //             mode: 'x'
+    //         },
+    //         zoom: {
+    //             pinch: {
+    //                 enabled: true       // Enable pinch zooming
+    //             },
+    //             wheel: {
+    //                 enabled: true       // Enable wheel zooming
+    //             },
+    //             mode: 'x',
+    //         }
+    //     }
+    //     },
+    //     scales: {
+    //       y: {     //g
+    //         type: 'linear' as const,
+    //         display: true,
+    //         position: 'left' as const,
+    //         grid: {
+    //             drawOnChartArea: false,
+    //         },
+    //         title: {
+    //             display: true,
+    //             text: "Percentage (%)"
+    //         }
+    //         },
+    //     },
+    // };
     const heaterYaxis = {
     "%": "y",
     "C": "y1",
@@ -698,7 +770,6 @@ export const DetailedDevice: FC = () => {
       
     useEffect(() => {
     //    console.log(Array.isArray(observation))
-
         if(observation[1]?.resource?.component?.length>1){
             
             setTimes(observation.map((obs) => {
@@ -716,7 +787,7 @@ export const DetailedDevice: FC = () => {
                 }]
 
                 observation[1].resource.component.map((data, index) => {
-                    if(data.valueQuantity.unit.toString() == "C"  || data.code.text.toString()=="Set Heater" || data.code.text.toString()=="Heater Level"){
+                    if(data.valueQuantity.unit.toString() == "C" || data.valueQuantity.unit.toString() == "C°" || data.code.text.toString()=="Set Heater" || data.code.text.toString()=="Heater Level"){
                         let unit = data.valueQuantity.unit.toString();
                         console.log("********************")
                         console.log(unit)
@@ -753,17 +824,18 @@ export const DetailedDevice: FC = () => {
                             yAxisID: "y"
                         })
                     }
-                    else if(data.code.text.toString() == "Humidity set" || data.code.text.toString() == "Measure Humidity"){
-                        third.push({
-                            label: data.code.text.toString(),
-                            data: observation.map((data2, index2) => {
-                                return (
-                                    data2?.resource?.component[index]?.valueQuantity?.value.toString()
-                                )
-                            }),
-                            yAxisID: pulseoximeterYaxis[unit2] || "y"
-                        })
-                    }
+                    // else if(data.code.text.toString() == "Humidity set" || data.code.text.toString() == "Measure Humidity"){
+                    //     let unit2 = data.valueQuantity.unit.toString();
+                    //     third.push({
+                    //         label: data.code.text.toString(),
+                    //         data: observation.map((data2, index2) => {
+                    //             return (
+                    //                 data2?.resource?.component[index]?.valueQuantity?.value.toString()
+                    //             )
+                    //         }),
+                    //         yAxisID: "y"
+                    //     })
+                    // }
                     
                 })
                 
@@ -828,11 +900,9 @@ export const DetailedDevice: FC = () => {
     const [temperatureData, setTemperatureData] = useState({})
     const [weightData, setWeightData] = useState({})
     const [pulseoximeterData, setPulseoximeterData] = useState({})
-    const [humidityData, setHumidityData] = useState({})
+    // const [humidityData, setHumidityData] = useState({})
     
     useEffect(() => {
-        console.log(dataset[0])
-        console.log(dataset[1])
         // console.log(labels)
         // console.log(times)
         setTemperatureData(() => {
@@ -889,25 +959,26 @@ export const DetailedDevice: FC = () => {
                 )
             }
         })
-        setHumidityData(() => {
-            if(dataset[3]?.length > 1) {
-                return (
-                    {
-                        labels,
-                        datasets: dataset[3]
-                    }
-                )
-            }
-            else {
-                return (
-                    {
-                        labels: [],
-                        datasets: []
-                    }
-                )
-            }
-        })
+        // setHumidityData(() => {
+        //     if(dataset[3]?.length > 1) {
+        //         return (
+        //             {
+        //                 labels,
+        //                 datasets: dataset[3]
+        //             }
+        //         )
+        //     }
+        //     else {
+        //         return (
+        //             {
+        //                 labels: [],
+        //                 datasets: []
+        //             }
+        //         )
+        //     }
+        // })
         setGraphData(true)
+
     },[times])
     const labels = times;
 
@@ -920,6 +991,10 @@ export const DetailedDevice: FC = () => {
 
     return (
     <Paper sx={{backgroundColor:'transparent', width:'95%', margin: '0 auto', marginTop:'10px',}}>
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={loading}
+        ><CircularProgress color="inherit" /></Backdrop>
         <Backdrop
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
           open={loading}
@@ -967,29 +1042,7 @@ export const DetailedDevice: FC = () => {
                     <Typography variant="h3" sx={{fontWeight:'bold'}}>
                         {(() => {
                             if(newData){
-                                if (newObs?.component[0]?.valueQuantity.unit==1 || newObs?.component[0]?.valueQuantity.unit=="BABY") {
-                                    return 'BABY';
-                                } else if (newObs?.component[0]?.valueQuantity.unit==2 || newObs?.component[0]?.valueQuantity.unit=="PREWARM"){
-                                    return 'PREWARM';
-                                } else if (newObs?.component[0]?.valueQuantity.unit==3 || newObs?.component[0]?.valueQuantity.unit=="MANUAL"){
-                                    return 'MANUAL';
-                                } else if (newObs?.component[0]?.valueQuantity.unit==3 || newObs?.component[0]?.valueQuantity.unit=="AIR"){
-                                    return 'AIR';
-                                } else if (newObs?.component[0]?.valueQuantity.unit==3 || newObs?.component[0]?.valueQuantity.unit=="BUBBLE CPAP"){
-                                    return 'BUBBLE CPAP'
-                                } else if (newObs?.component[0]?.valueQuantity.unit==3 || newObs?.component[0]?.valueQuantity.unit=="FLOW CPAP 1"){
-                                    return 'FLOW CPAP 1'
-                                } else if (newObs?.component[0]?.valueQuantity.unit==3 || newObs?.component[0]?.valueQuantity.unit=="BUBBLE CPAP 2"){
-                                    return 'FLOW CPAP 2'
-                                } else if (newObs?.component[0]?.valueQuantity.unit==3 || newObs?.component[0]?.valueQuantity.unit=="PULSE OXIMETER"){
-                                    return 'PULSE OXIMETER'
-                                } else if (newObs?.component[0]?.valueQuantity.unit==3 || newObs?.component[0]?.valueQuantity.unit=="HIGH FLOW"){
-                                    return 'HIGH FLOW'
-                                }
-
-                                else{
-                                    return 'NOT FOUND';
-                                }
+                                return (newObs?.component[0]?.valueQuantity.unit==1 || newObs?.component[0]?.valueQuantity.unit)
                             }
                             else{
                                 return "Device Not Active"
@@ -1137,26 +1190,27 @@ export const DetailedDevice: FC = () => {
             
                 {
                     graphData && (<>
-                    <Box sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }} >
+                    <Box sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap', marginLeft:"1%" }} >
                         <Button color="primary" startIcon={<FileDownloadIcon />} variant="contained">
                             Export
                         </Button>
                     </Box>
-                    {/* <ToggleButtonGroup sx={{marginLeft:'20px'}} exclusive aria-label="text alignment">
-                        <ToggleButton value="left" aria-label="left aligned">
+                    <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'2%'}}>
+                        <ToggleButton value={0} key="left" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(0)}}>
                             Day
-                        </ToggleButton>
-                        <ToggleButton value="center" aria-label="centered">
+                        </ToggleButton>,
+                        <ToggleButton value={1} key="center" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(1)}}>
                             Week
-                        </ToggleButton>
-                        <ToggleButton value="right" aria-label="right aligned">
+                        </ToggleButton>,
+                        <ToggleButton value={2} key="right" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(2)}}>
                             Month
-                        </ToggleButton>
-                    </ToggleButtonGroup> */}
+                        </ToggleButton>,
+                    </ToggleButtonGroup>
                         {(() => {
                             if(observation_resource?.identifier[0]?.value?.toString()=="PMSCIC"){
                                 return (
                                     <Stack height={'100%'} width={'100%'}>
+                                        
                                             <Line options={temperatureOption} data={temperatureData} height={"90%"}></Line>
                                         <Stack direction={'row'} width={'100%'} height={"50%"} justifyContent={'space-between'}>
                                             <div style={{width:'45%'}}>
@@ -1166,6 +1220,22 @@ export const DetailedDevice: FC = () => {
                                                 <Line options={weightOption} data={weightData} height={'100%'} ></Line>
                                             </div>
                                         </Stack>
+                                    </Stack>
+                                )
+                            }
+                            if(observation_resource?.identifier[0]?.value?.toString()=="PMSinc"){
+                                return (
+                                    <Stack height={'100%'} width={'100%'}>
+                                        <Line options={temperatureOption} data={temperatureData} height={"60%"}></Line>
+                                        <Stack direction={'row'} width={'100%'} height={"50%"} justifyContent={'space-between'}>
+                                            <div style={{width:'48%'}}>
+                                                <Line options={pulseoximeterOption} data={pulseoximeterData} height={'100%'}></Line>
+                                            </div>
+                                            <div style={{width:'48%'}}>
+                                                <Line options={weightOption} data={weightData} height={'100%'} ></Line>
+                                            </div>
+                                        </Stack>
+                                        {/* <Line options={humidityOption} data={humidityData} height={"60%"}></Line> */}
                                     </Stack>
                                 )
                             }
