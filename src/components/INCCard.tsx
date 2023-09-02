@@ -187,11 +187,12 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
         let unit = props.observation_resource.component[index].valueQuantity.unit
         return ({data:data, unit:unit})
     }
+
     useEffect(() => {
         let timer: number | undefined;
         
         if(newData){
-            timer = setInterval(() => {setNewData(false);setAlarmColor("");clearInterval(timer)},7000)
+            timer = setInterval(() => {setNewData(false);setAlarmColor("transparent");clearInterval(timer)},7000)
 
         }
         return () => {

@@ -257,6 +257,7 @@ export const DetailedDevice: FC = () => {
         ]
     )
         useEffect(() => {
+            
             if(newObs.component){
                 setNewData(true)
                 setRequiredForTimer(!requiredForTimer)
@@ -356,25 +357,25 @@ export const DetailedDevice: FC = () => {
 
 
 
-        //   if (recieved_data.location.split("/")[0] == "Observation" && recieved_data.location.split("/")[1] == observation_resource.id){
-        //       // console.log(data)
-        //     // if (obsArray.includes(recieved_data.resourceId)){
-        //       fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`, {
-        //       credentials: "omit",
-        //       headers: {
-        //         Authorization: "Basic "+ btoa("fhiruser:change-password"),
-        //         },
-        //       })
-        //       .then((response) => response.json())
-        //       .then((data) => {
-        //         // console.log(temp)
-        //         // console.log(temp)
-        //         setNewObs(data)
+          if (recieved_data.location.split("/")[0] == "Observation" && recieved_data.location.split("/")[1] == observation_resource.id){
+              // console.log(data)
+            // if (obsArray.includes(recieved_data.resourceId)){
+              fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`, {
+              credentials: "omit",
+              headers: {
+                Authorization: "Basic "+ btoa("fhiruser:change-password"),
+                },
+              })
+              .then((response) => response.json())
+              .then((data) => {
+                // console.log(temp)
+                // console.log(temp)
+                setNewObs(data)
                 
             
-        //       })
-        //     // }
-        //   }
+              })
+            // }
+          }
 
 
 
@@ -425,9 +426,9 @@ export const DetailedDevice: FC = () => {
         socket.onerror = () => {console.log(`Error in socket connection`)}
       }, [])
 
+    const [vvtemp, setvvtemp] = useState(false)
 
     useEffect(() => {
-        console.log(observation_resource.id)
         let url = []
         let currentNewDate = new Date()
         let currentdate = currentNewDate.getDate().toString().padStart(2,'0')
@@ -466,69 +467,80 @@ export const DetailedDevice: FC = () => {
             }
         }
         let temparr: any[] = []
-        url.map((query) => {
-            fetch(query, {
-                credentials: "omit",
-                method: "GET",
-                headers: {
-                    Authorization: "Basic "+ btoa("fhiruser:change-password"),
-                },
+        let prevdate = ""
+        Promise.all(
+            url.map((query) => {
+                return fetch(query, {
+                    credentials: "omit",
+                    method: "GET",
+                    headers: {
+                        Authorization: "Basic "+ btoa("fhiruser:change-password"),
+                    },
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    if(data.total===0){return null}
+                    if((data.entry[0].resource.meta.lastUpdated).toString() === prevdate){return null}
+                    prevdate = (data.entry[0].resource.meta.lastUpdated).toString()
+
+                    // var totaldata = data.total 
+                    // let page = 1
+                    // if(totaldata>10000){
+                    //     totaldata = 10000
+                    // }
+                    // temparr.push(data.entry.map((val: { resource: any; }) => (val.resource)))
+                    return (data.entry.map((val: any)=>(val)))
+                    
+                    
+                    // var totaldata = data.total
+                    // let page = 1
+                    // if(totaldata>10000){
+                    //     totaldata = 10000
+                    // }
+                    // while(totaldata>=100){
+                    //     fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=100`,{
+                    //         credentials: "omit",
+                    //         headers: {
+                    //             Authorization: "Basic "+ btoa("fhiruser:change-password"),
+                    //         },
+                    //     })
+                    //     .then((response) => response.json())
+                    //     .then((data) => {
+                    //         for(let i=0;i<data.entry.length;i++){
+                    //             temparr.push(data.entry[i])
+                    //         }
+                    //     })
+                    //     totaldata=totaldata%100
+                    //     page+=1
+                    // }
+                    // fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=100`,{
+                    //     credentials: "omit",
+                    //     method: "GET",
+                    //     headers: {
+                    //         Authorization: "Basic "+ btoa("fhiruser:change-password"),
+                    //     },
+                    // })
+                    // .then((response) => response.json())
+                    // .then((data) => {
+                    //     for(let i=0;i<data.entry.length;i++){
+                    //         temparr.push(data.entry[i])
+                    //     }
+                    //     console.log(temparr)
+                    // })
+                })
             })
-            .then((response) => response.json())
-            .then((data) => {
-                if(data.total==0){return}
-                var totaldata = data.total 
-                let page = 1
-                if(totaldata>10000){
-                    totaldata = 10000
-                }
-                console.log(data.entry)
-                temparr.push(data.entry.resource)
-                // var totaldata = data.total
-                // let page = 1
-                // if(totaldata>10000){
-                //     totaldata = 10000
-                // }
-                // while(totaldata>=100){
-                //     fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=100`,{
-                //         credentials: "omit",
-                //         headers: {
-                //             Authorization: "Basic "+ btoa("fhiruser:change-password"),
-                //         },
-                //     })
-                //     .then((response) => response.json())
-                //     .then((data) => {
-                //         for(let i=0;i<data.entry.length;i++){
-                //             temparr.push(data.entry[i])
-                //         }
-                //     })
-                //     totaldata=totaldata%100
-                //     page+=1
-                // }
-                // fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource.id}/_history?_page=${page}&_count=100`,{
-                //     credentials: "omit",
-                //     method: "GET",
-                //     headers: {
-                //         Authorization: "Basic "+ btoa("fhiruser:change-password"),
-                //     },
-                // })
-                // .then((response) => response.json())
-                // .then((data) => {
-                //     for(let i=0;i<data.entry.length;i++){
-                //         temparr.push(data.entry[i])
-                //     }
-                //     console.log(temparr)
-                // })
-            })
-            
+        )
+        .then((results) => {
+            const dats = results.filter((entry) => entry!==null)
+            .reduce((accumulator, currentvalue) => accumulator.concat(currentvalue),[])
+            setObservation(dats)
         })
-        console.log(temparr)
-              
+        
+        setObservation(temparr)
         //   })
     },[timeFrame])
 //     useEffect(() => {        setObservation(temparr)
 // },[neededForGraph])
-    const [vvtemp, setvvtemp] = useState(false)
     const temperatureOption = {
         tension: 0.3,
         responsive: true,
@@ -770,8 +782,8 @@ export const DetailedDevice: FC = () => {
       
     useEffect(() => {
     //    console.log(Array.isArray(observation))
-        if(observation[1]?.resource?.component?.length>1){
-            
+        console.log(observation)
+        if(observation[0]?.resource?.component?.length>1){
             setTimes(observation.map((obs) => {
                 let zeroth = []
                 let first = []
@@ -786,7 +798,7 @@ export const DetailedDevice: FC = () => {
                     yAxisID: "y"
                 }]
 
-                observation[1].resource.component.map((data, index) => {
+                observation[0].resource.component.map((data, index) => {
                     if(data.valueQuantity.unit.toString() == "C" || data.valueQuantity.unit.toString() == "C°" || data.code.text.toString()=="Set Heater" || data.code.text.toString()=="Heater Level"){
                         let unit = data.valueQuantity.unit.toString();
                         console.log("********************")
@@ -841,28 +853,31 @@ export const DetailedDevice: FC = () => {
                 
                 setDataSet([zeroth, first, second, third])
                 return(
-                    new Date(obs.resource.meta.lastUpdated).toLocaleTimeString())
+                    new Date(obs.resource.meta.lastUpdated).toLocaleString())
                 }))
 
-            //     observation[1].resource.component.map((data, index) => {
-            //     return {
-            //     label: String(observation[1]?.resource?.component[index]?.code?.text),
-            //     data: observation.map((obs) => {
-            //         if(obs?.resource?.component){return(obs.resource?.component[index]?.valueQuantity.value)}
-            //         else{return(null)}    
-                    
-            //     }),
-            //     // borderColor: 'rgb(255, 99, 132)',
-            //     // backgroundColor:'rgb(255, 99, 132)',
-            //     yAxisID: yAxisIDMap[String(observation[1]?.resource?.component[index]?.valueQuantity.unit)] || 'y3'
-            // }})
             
             
 
 
         }
-        setvvtemp(true)
-        // console.log(observation)
+        else{
+            setTimes(observation.map((obs) => {
+
+                let second = [{
+                    label: "",
+                    data: [] as string[],
+                    yAxisID: "y"
+                }]
+                
+
+
+                
+                setDataSet([second, second, second, second])
+                return(
+                    new Date(obs.resource.meta.lastUpdated).toLocaleTimeString())
+                }))
+        }
     },[observation])
     useEffect(() => {
         // communication.map((commres) => {
@@ -1052,6 +1067,7 @@ export const DetailedDevice: FC = () => {
                     </Typography>
                 </Stack>
                 {newData && newObs?.component.map((_obs: any,index: number) => {
+                   
                     if((index<4 || index>8) && index!=0){
                         return (
                             <Stack alignItems={'center'} spacing={'10px'}>
@@ -1116,6 +1132,7 @@ export const DetailedDevice: FC = () => {
                     return (
                         <Stack alignItems={'center'} spacing={'10px'}>
                             <Typography variant="h6" >
+                            
                                 {newData && newObs?.component[index]?.code.text}
                             </Typography>
                             {temp && <Box width={'130px'} height={'45px'} sx={{backgroundColor:'white', borderRadius:'10px'}}>
@@ -1195,22 +1212,24 @@ export const DetailedDevice: FC = () => {
                             Export
                         </Button>
                     </Box>
-                    <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'2%'}}>
-                        <ToggleButton value={0} key="left" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(0)}}>
-                            Day
-                        </ToggleButton>,
-                        <ToggleButton value={1} key="center" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(1)}}>
-                            Week
-                        </ToggleButton>,
-                        <ToggleButton value={2} key="right" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(2)}}>
-                            Month
-                        </ToggleButton>,
-                    </ToggleButtonGroup>
+
                         {(() => {
+                            console.log(device_id)
                             if(observation_resource?.identifier[0]?.value?.toString()=="PMSCIC"){
                                 return (
+                                    
                                     <Stack height={'100%'} width={'100%'}>
-                                        
+                                        <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'2%'}}>
+                                            <ToggleButton value={0} key="left" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(0)}}>
+                                                Day
+                                            </ToggleButton>,
+                                            <ToggleButton value={1} key="center" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(1)}}>
+                                                Week
+                                            </ToggleButton>,
+                                            <ToggleButton value={2} key="right" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(2)}}>
+                                                Month
+                                            </ToggleButton>,
+                                        </ToggleButtonGroup>
                                             <Line options={temperatureOption} data={temperatureData} height={"90%"}></Line>
                                         <Stack direction={'row'} width={'100%'} height={"50%"} justifyContent={'space-between'}>
                                             <div style={{width:'45%'}}>
@@ -1226,6 +1245,17 @@ export const DetailedDevice: FC = () => {
                             if(observation_resource?.identifier[0]?.value?.toString()=="PMSinc"){
                                 return (
                                     <Stack height={'100%'} width={'100%'}>
+                                        <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'2%'}}>
+                                            <ToggleButton value={0} key="left" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(0)}}>
+                                                Day
+                                            </ToggleButton>,
+                                            <ToggleButton value={1} key="center" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(1)}}>
+                                                Week
+                                            </ToggleButton>,
+                                            <ToggleButton value={2} key="right" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(2)}}>
+                                                Month
+                                            </ToggleButton>,
+                                        </ToggleButtonGroup>
                                         <Line options={temperatureOption} data={temperatureData} height={"60%"}></Line>
                                         <Stack direction={'row'} width={'100%'} height={"50%"} justifyContent={'space-between'}>
                                             <div style={{width:'48%'}}>

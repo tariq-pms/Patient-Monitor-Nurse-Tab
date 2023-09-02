@@ -114,7 +114,7 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
         }
         //console.log(`http://13.126.5.10:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`)
 
-        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`, {
+        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}?_count=20`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "PUT",
             body: JSON.stringify(data),
@@ -266,7 +266,7 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
         
         // let deviceList: any[] = []
         useEffect(() =>{
-            fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Device`, {
+            fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Device?_count=20`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),

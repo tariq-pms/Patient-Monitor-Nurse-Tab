@@ -152,8 +152,12 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
     // clearInterval(devicetimer)
     // console.log(devicetimer)
     // runtimer = setInterval(timer, 10000)
+    console.log("called")
+    console.log(props.communication_resource?.extension?.[1])
+    
     if (props.observation_resource?.component?.[1] && runNo>=2 && props.communication_resource?.extension?.[1]) {
-        console.log("called")
+
+        
         setNewData(true);
         
         setRequiredForBorderColor(!requiredForBorderColor)

@@ -20,6 +20,7 @@ import Typography from '@mui/material/Typography';
 import { DeviceCard } from '../components/DeviceCard';
 import { CICCard } from '../components/CICCard';
 import { INCCard } from '../components/INCCard';
+import { SVAASCard } from '../components/SVAASCard';
 export const Home = (currentRoom: any) => {
   // useEffect(() => {console.log(currentRoom.currentRoom)},[currentRoom])
   const [loading, setLoading] = useState(false)
@@ -380,7 +381,9 @@ export const Home = (currentRoom: any) => {
     }}
   })
   const cpap = devices.entry?.map((device) => {
+    console.log(String(device.resource.id))
     if(String(device.resource.identifier[1]?.value)=="SVAAS"){
+      
     var correct = false
     // var temp = String(device.resource.id)
     if(device.resource.patient && parentcomm[String(device.resource.id)] && parentobs[String(device.resource.id)]){
@@ -390,7 +393,7 @@ export const Home = (currentRoom: any) => {
     
     if(correct){
       return (
-        <DeviceCard 
+        <SVAASCard 
           key={String(device.resource.id)}
           device_id={String(device.resource.identifier[0].value)}
           device_resource_id={String(device.resource.id)}
@@ -402,7 +405,7 @@ export const Home = (currentRoom: any) => {
     }
     else{
       return (
-        <DeviceCard 
+        <SVAASCard 
           key={String(device.resource.id)}
           device_id={String(device.resource.identifier[0].value)}
           device_resource_id={String(device.resource.id)}
