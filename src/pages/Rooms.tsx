@@ -4,7 +4,6 @@ import Box from '@mui/material/Box';
 import { RoomCard } from '../components/RoomCard';
 import { Alert, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Snackbar, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { Settings } from '@mui/icons-material';
 export const Rooms = () => {
     const {isAuthenticated} = useAuth0();
     const theme = useTheme();
@@ -22,7 +21,7 @@ export const Rooms = () => {
                     "value": String
                 }
             ],
-            "status": String,
+            "status": "",
             
         }
     }])
@@ -54,6 +53,7 @@ export const Rooms = () => {
         }
     
         setSnack(false);
+        console.log(event);
       };
       const addNewRoom = () => {
         const data = {
@@ -111,7 +111,7 @@ export const Rooms = () => {
     }
     const roomBoxes = temproom.map((room) => {
         return(
-            <RoomCard roomName={room.resource.identifier[0].value} roomId={room.resource.id}></RoomCard>
+            <RoomCard roomName={String(room.resource.identifier[0].value)} roomId={String(room.resource.id)}></RoomCard>
         )
     })
   return (
@@ -146,7 +146,7 @@ export const Rooms = () => {
             }}
           >
             
-            {roomBoxes}
+            {temproom[0]?.resource.status!="" && roomBoxes}
             <Box  width={"350px"} sx={{opacity:controlOpacity, backgroundColor:'transparent', border:`4px solid ${controlBorder}`, borderRadius:'30px'}} onMouseLeave={() => {setControlboarder("grey");setOpacity("0.8")}} onMouseEnter={() => {setControlboarder("#2BA0E0");setOpacity("1")}} onClick={() => {setaddnewbutton(true)}}>
               <Paper  elevation={2} sx={{ borderRadius: "25px",background:'transparent'}}>
                 <Card
@@ -164,11 +164,11 @@ export const Rooms = () => {
             </Box>
             </Box>
             <Snackbar open={snack} autoHideDuration={5000} onClose={handleClose}>
-                            <Alert onClose={handleClose} severity={snackSucc ? 'success':'error'}>
-                                {snackSucc && "Operation Completed Successfully"}
-                                {!snackSucc && "Operation Failed"}
-                            </Alert>
-                        </Snackbar>
+              <Alert onClose={handleClose} variant="filled" severity={snackSucc ? 'success':'error'}>
+                  {snackSucc && "Operation Completed Successfully"}
+                  {!snackSucc && "Operation Failed"}
+              </Alert>
+            </Snackbar>
             {addNewRoomButton()}
         </div>
     </div>

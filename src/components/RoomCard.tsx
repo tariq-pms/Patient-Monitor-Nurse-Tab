@@ -1,12 +1,10 @@
-import { Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, InputLabel, List, ListItem, ListItemButton, ListItemText, MenuItem, Select, Snackbar, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material'
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,  List, ListItem, ListItemButton, Snackbar, Stack, Typography,} from '@mui/material'
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Paper from '@mui/material/Paper'
 import { FC, useEffect, useState } from 'react'
-import DeleteIcon from '@mui/icons-material/Delete';
-import { IconButton } from '@material-ui/core'
-import { Settings } from '@mui/icons-material'
+
 export interface roomData {
     roomName: string;
     roomId: string;
@@ -131,7 +129,7 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
     }
     const removeButton = (index: any) => {
         let data = {}
-        let vvtemp = {"reference": `Location/${props.roomId}`}
+        // let vvtemp = {"reference": `Location/${props.roomId}`}
         data = {
             ...deviceList[Number(index)].resource,
         }
@@ -242,7 +240,7 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
                                     <ListItemButton onClick={() => removeButton((index))}>
                                     
                                     <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
-                                    {device.resource.identifier[0].value}
+                                    {(device.resource.identifier[0].value).toString()}
                                     </Typography>
                                     </ListItemButton>
                                 </ListItem>
@@ -299,7 +297,7 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
                                     <ListItemButton onClick={() => addButton((index))}>
                                     
                                     <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
-                                    {device.resource.identifier[0].value}
+                                    {(device.resource.identifier[0].value).toString()}
                                     </Typography>
                                     </ListItemButton>
                                 </ListItem>
@@ -343,7 +341,7 @@ export const RoomCard: FC<roomData> = (props): JSX.Element => {
             {removeFromRoom()}
             {removeRoom()}
             <Snackbar open={snack} autoHideDuration={5000} onClose={handleClose}>
-                    <Alert onClose={handleClose} severity={snackSucc ? 'success':'error'}>
+                    <Alert onClose={handleClose} variant="filled" severity={snackSucc ? 'success':'error'}>
                         {snackSucc && "Operation Completed Successfully"}
                         {!snackSucc && "Operation Failed"}
                     </Alert>

@@ -1,15 +1,15 @@
 // import { AccountCircle } from '@mui/icons-material'
-import { Box, Paper, Card, CardContent, Stack, Typography, LinearProgress,  } from '@mui/material'
+import { Box, Paper, Card,Stack, Typography, } from '@mui/material'
 // import { red } from '@mui/material/colors'
 import { FC, useEffect, useState } from 'react'
 // import { Link } from 'react-router-dom'
-import { Divider } from '@mui/material';
+// import { Divider } from '@mui/material';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPersonBreastfeeding, faBaby, faWeightHanging } from '@fortawesome/free-solid-svg-icons'
+import { faPersonBreastfeeding, faBaby } from '@fortawesome/free-solid-svg-icons'
 import WavesIcon from '@mui/icons-material/Waves';
-import { Container } from '@material-ui/core';
+// import { Container } from '@material-ui/core';
 export interface DeviceDetails {
   key: string;
   device_id: string;
@@ -153,8 +153,9 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
     // clearInterval(devicetimer)
     // console.log(devicetimer)
     // runtimer = setInterval(timer, 10000)
+    console.log("called")
     if (props.observation_resource?.component?.[1] && runNo>=2 && props.communication_resource?.extension?.[1]) {
-        console.log("called")
+        
         setNewData(true);
         
         setRequiredForBorderColor(!requiredForBorderColor)
@@ -174,7 +175,7 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
     }
     setRequiredForTimer(!requiredForTimer)
     }
-    
+    console.log("New call")
     }, [props.observation_resource]);
 
     function findData(x: string){
@@ -192,7 +193,7 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
         let timer: number | undefined;
         
         if(newData){
-            timer = setInterval(() => {setNewData(false);setAlarmColor("transparent");clearInterval(timer)},7000)
+            timer = setInterval(() => {setNewData(false);setAlarmColor("transparent");clearInterval(timer)},15000)
 
         }
         return () => {
@@ -252,7 +253,7 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                         </Box>                         
                     </Box>
                     <Stack width={"100%"} height={'40%'} direction={'row'}>
-                        <Box width={'33.3%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                        <Box width={'37.5%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}} justifyContent={'center'} textAlign={'center'}>
                         <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Baby Temp °C</Typography>
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
                             <FontAwesomeIcon icon={faBaby} color='#CBCFE5' style={{paddingTop:'6%', paddingRight:'7%', fontSize:'200%'}}/>
@@ -280,7 +281,7 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                                 )()}
                             </Typography>
                         </Box>
-                        <Box width={'33.3%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                        <Box width={'37.5%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}} justifyContent={'center'} textAlign={'center'}>
                             <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Air Temp %</Typography>
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
                                 <WavesIcon sx={{paddingTop:'6%', paddingRight:'7%', fontSize:'200%'}}/>
@@ -307,7 +308,7 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                                     })()}
                                 </Typography>
                         </Box>
-                        <Box width={'33.3%'} height={'100%'} justifyContent={'center'} textAlign={'center'}>
+                        <Box width={'25%'} height={'100%'} justifyContent={'center'} textAlign={'center'}>
                             <Box display={'flex'} justifyContent={'space-around'} width={"100%"} height={"33%"} sx={{ borderTop:'3px solid grey'}}>
                                 <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'5%'}>RH %</Typography>
                                 <Typography variant='h5' color={"#26C5E4"} paddingTop={'2%'}>
@@ -341,12 +342,12 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                         </Box>
                     </Stack>
                     <Stack width={"100%"} height={'48%'} direction={'row'}>
-                        <Box width={'33%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                        <Box width={'37.5%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}} justifyContent={'center'} textAlign={'center'}>
                             <Typography variant='h6'>
                                 {alarm}
                             </Typography>
                         </Box>
-                        <Box width={'42%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}}></Box>
+                        <Box width={'37.5%'} height={'100%'} sx={{ borderRight:'3px solid grey', borderTop:'3px solid grey'}}></Box>
                         <Box width={'25%'} height={'100%'} >
                             <Box display={'flex'} width={'100%'} height={'33%'} sx={{ borderTop:'3px solid grey'}} justifyContent={'space-around'} textAlign={'center'}>
                                 
@@ -388,7 +389,7 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
             </>):(<>
             <Box width={'100%'} height={'100%'} sx={{backgroundColor:'transparent'}} display={'flex'} textAlign={"center"} justifyContent={"center"}>
             <Stack width={'100%'} height={'100%'} justifyContent={"center"} textAlign={"center"}>
-                    <PowerSettingsNewIcon sx={{fontSize: 200, color:'red', marginLeft:'auto', marginRight:'auto'}}/>
+                    <PowerSettingsNewIcon sx={{fontSize: 150, color:'red', marginLeft:'auto', marginRight:'auto'}}/>
                     <Typography variant='h6' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'white'}}>Device {props?.device_id} not active/connected</Typography>
                 </Stack>
             </Box>

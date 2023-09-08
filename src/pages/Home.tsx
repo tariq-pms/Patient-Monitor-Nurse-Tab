@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 // import AppBar from '@mui/material/AppBar';
 // import Typography from '@mui/material/Typography';
-// import Button from '@mui/material/Button';
+import Button from '@mui/material/Button';
 // import IconButton from '@mui/material/IconButton';
-
+import pmsLogo from "../assets/phx_logo.png";
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useAuth0 } from '@auth0/auth0-react';
 // import AccountCircle from '@mui/icons-material/AccountCircle';
 // import MenuItem from '@mui/material/MenuItem';
 // import Menu from '@mui/material/Menu';
 
-import { Divider, useMediaQuery } from "@material-ui/core";
 import { useTheme } from "@material-ui/core/styles";
 import { ExpandMoreRounded } from '@mui/icons-material';
 import Accordion from '@mui/material/Accordion/Accordion';
@@ -17,10 +17,10 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { DeviceCard } from '../components/DeviceCard';
 import { CICCard } from '../components/CICCard';
 import { INCCard } from '../components/INCCard';
 import { SVAASCard } from '../components/SVAASCard';
+import { Stack } from '@mui/material';
 export const Home = (currentRoom: any) => {
   // useEffect(() => {console.log(currentRoom.currentRoom)},[currentRoom])
   const [loading, setLoading] = useState(false)
@@ -89,40 +89,8 @@ export const Home = (currentRoom: any) => {
 //     ]
 // })
   const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down("xs"));
-//   const [commResource, setCommResource] = useState( {
-//     "id" : "",
-//     "status" : "",
-//     "resourceType": "",
-//     "sent": "", 
-//     "category" : [{
-//     "coding" : [{
-//         "system" : "",
-//         "code" : ""
-//         }],
-//         "text" : ""
-//     }],
-//     "subject": {
-//         "reference": ""
-//     },
-//     "sender": {
-//         "reference": ""},
-//     "payload":[{
-//         "contentReference":{
-//             "display": ""
-//         }}
-//     ],
-//     "extension": [
-//         {
-//             "url": "",
-//             "valueCodeableConcept": {
-//                 "coding": []
-//             }
-//         }
-//     ]
-// })
-  //console.log(loading)
-  const { isAuthenticated, isLoading } = useAuth0();
+
+  const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();
 
   const [devices, setDevices] = useState({
     "resourceType": String,
@@ -174,8 +142,7 @@ export const Home = (currentRoom: any) => {
       },
     ],
   });
-  const [value, setValue] = useState("");
-  
+  console.log(loading)  
 
   
   useEffect(() => {
@@ -449,7 +416,7 @@ export const Home = (currentRoom: any) => {
               <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' , marginBottom:"10px", borderBottom:'2px solid #00B1FD'}}>
                 
                 <AccordionSummary
-                  expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD"}}/>}
+                  expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD", fontSize:'300%'}}/>}
                   aria-controls="panel1a-content"
                   id="panel1a-header"
                 >
@@ -470,7 +437,7 @@ export const Home = (currentRoom: any) => {
               </Accordion>
               <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent" , backgroundImage:'none' , marginBottom:"10px", borderBottom:'2px solid #00B1FD'}}>
                 <AccordionSummary
-                  expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD"}}/>}
+                  expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD", fontSize:'300%'}}/>}
                   aria-controls="panel2a-content"
                   id="panel2a-header"
                 >
@@ -497,9 +464,10 @@ export const Home = (currentRoom: any) => {
               </Accordion >
               <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' ,marginBottom:"10px", borderBottom:'2px solid #00B1FD', borderTop:'none'}}>
                 <AccordionSummary
-                  expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD"}}/>}
+                  expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD", fontSize:'300%'}}/>}
                   aria-controls="panel3a-content"
                   id="panel3a-header"
+                
                 >
                   <Typography variant='h5' component={"h2"} sx={{color:"#00B1FD"}}>CPAP</Typography>
                 </AccordionSummary>
@@ -512,6 +480,7 @@ export const Home = (currentRoom: any) => {
                       gap: '2rem',
                       justifyContent: "left",
                       width:"100%",
+                      
                     }}
                   >
                     {cpap}
@@ -521,6 +490,23 @@ export const Home = (currentRoom: any) => {
                 </AccordionDetails>
               </Accordion>
             </Box>
+            )}
+            {!isAuthenticated && !isLoading && (
+              <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'3%'} width={'70%'}>
+                <img src={pmsLogo} alt="Phoenix" style={{
+                  maxWidth: '50%', // Set the maximum width to 100%
+                  height: 'auto', // Maintain the aspect ratio
+                  marginLeft:'auto',
+                  marginRight:'auto'
+                }}/>
+                <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
+                <Typography variant='h6'>Placeholder for some subtitles ig</Typography>
+                <Stack direction={'row'} spacing={'5%'} justifyContent={'space-evenly'}>
+                <Button variant='outlined'sx={{width:'30%', height:'140%'}} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Check out our product page</Button>
+                <Button variant='contained' sx={{width:'30%', height:'140%'}} onClick={() => loginWithRedirect()}>Sign In</Button>
+                
+                </Stack>
+              </Stack>
             )}
         </Box>
             </div>

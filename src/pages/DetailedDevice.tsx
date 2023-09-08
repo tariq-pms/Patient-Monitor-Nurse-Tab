@@ -1,10 +1,12 @@
 import React, { FC, useEffect, useMemo, useState } from 'react';
-import { Backdrop, Box, Button, CircularProgress, Divider, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography, } from '@mui/material';
+import { Backdrop, Box, Button, CircularProgress, Divider, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography, useMediaQuery, } from '@mui/material';
 import { useLocation } from "react-router-dom";
 import { MaterialReactTable, type MRT_ColumnDef } from 'material-react-table';
 import zoomPlugin from 'chartjs-plugin-zoom'
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-
+import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import { useTheme } from '@mui/material/styles';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -30,6 +32,7 @@ ChartJS.register(
 );
 import {faker} from '@faker-js/faker';
 import { Table } from '../components/Table';
+import IconButton from '@mui/material/IconButton';
 
 
 
@@ -40,6 +43,8 @@ export type AlarmTable = {
     priority: string;
 }
 export const DetailedDevice: FC = () => {
+    const theme = useTheme();
+    const temp = useMediaQuery(theme.breakpoints.down("md"))
     const [loading, setLoading] = useState(true)
     const [observation, setObservation] = useState(
      [
@@ -183,7 +188,16 @@ export const DetailedDevice: FC = () => {
             ]
         }}
     ])
-    const [timeFrame, setTimeFrame] = useState(5)
+    const [newalarm, setNewAlarm] = useState([{
+        'date': String,
+        'time': {
+            'val': String,
+            'alarm': [],
+            'priority': []
+        }
+    }])
+    const [selectAlarm, setSelectAlarm] = useState(0)
+    const [timeFrame, setTimeFrame] = useState(0)
     const {key, device_id, patient, device_resource_id, observation_resource, communication_resource} = useLocation().state
     // setNewObs(observation_resource)
    
@@ -220,9 +234,9 @@ export const DetailedDevice: FC = () => {
                             borderRadius: "5px",
                             backgroundColor:
                             row.original.priority == "Low Priority"
-                            ? "#FFEB3B"
+                            ? "#00BCD4"
                             : row.original.priority == "Medium Priority"
-                            ? "#00BCD4  " : "#F44336 "
+                            ? "#FFEB3B  " : "#F44336 " 
                         })}
                     >
                         {cell.getValue<string>()}
@@ -245,9 +259,9 @@ export const DetailedDevice: FC = () => {
                             borderRadius: "5px",
                             backgroundColor:
                             cell.getValue<string>() == "Low Priority"
-                            ? "#FFEB3B"
+                            ? "#00BCD4"
                             : cell.getValue<string>() == "Medium Priority"
-                            ? "#00BCD4  " : "#F44336 "
+                            ? "#FFEB3B  " : "#F44336 "
                         })}
                     >
                         {cell.getValue<string>()}
@@ -266,15 +280,14 @@ export const DetailedDevice: FC = () => {
     const [rows, setRows] = useState([{
         date: String,
         time: String,
-        alarm: String,
+        alarm: Array,
         priority: String
     }])
-
     useEffect(() => {
         let timer: number | undefined;
         
         if(newData){
-            timer = setInterval(() => {setNewData(false);clearInterval(timer)},7000)
+            timer = setInterval(() => {setNewData(false);clearInterval(timer)},15000)
         }
         return () => {
             clearInterval(timer); 
@@ -356,8 +369,8 @@ export const DetailedDevice: FC = () => {
           // console.log(data)
 
 
-
           if (recieved_data.location.split("/")[0] == "Observation" && recieved_data.location.split("/")[1] == observation_resource.id){
+
               // console.log(data)
             // if (obsArray.includes(recieved_data.resourceId)){
               fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`, {
@@ -396,11 +409,20 @@ export const DetailedDevice: FC = () => {
         // alarm: String,
         // priority: String
         let x: { date: string; time: string; alarm: string; priority: string; }[] = [];
+        var y = []
             if(data.extension){
-                        
-                data.extension[0].valueCodeableConcept.coding.map((val,index) => 
+                const lastUpdatedDate = new Date(data.meta.lastUpdated);
+                // y.push({                                                                                 // This is for live updation of the new alarm ui
+                //     date: (lastUpdatedDate.toLocaleDateString()),
+                //     time: {
+                //         val: (lastUpdatedDate.toLocaleTimeString()),
+                //         alarm: data.extension[0].valueCodeableConcept.coding.map((val: { display: any; }) => {return val.display}),
+                //         priority: data.extension[1].valueCodeableConcept.coding.map((val: { display: any; }) => {return val.display})
+                //     }
+                //     })
+                data.extension[0].valueCodeableConcept.coding.map((val: { display: any; },index: string | number) => 
                 {  
-                    const lastUpdatedDate = new Date(data.meta.lastUpdated);
+                    
 
 
                 x.push({
@@ -414,6 +436,7 @@ export const DetailedDevice: FC = () => {
                 x.map((val) => {
                     setRows((rows) => [...rows])
                 })
+                
                 // setRows((rows) => [...rows,x])
             }
                 
@@ -425,10 +448,42 @@ export const DetailedDevice: FC = () => {
         };
         socket.onerror = () => {console.log(`Error in socket connection`)}
       }, [])
-
     const [vvtemp, setvvtemp] = useState(false)
-
+    const alarmUI = newalarm[selectAlarm].time.alarm.map((vals,index) => {
+    if(newalarm[selectAlarm].time.priority[index]=="High Priority"){
+        return (
+            <Box width={'180px'} height={'100px'} sx={{border:'2px solid red', borderRadius:'10px', margin:'15px'}} justifyContent={'center'} textAlign={'center'}>
+                <Typography variant='subtitle1' paddingTop={'13%'}>{vals}</Typography>
+                <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
+                    <Typography variant='subtitle2' >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
+                </div>
+                
+            </Box>
+        )
+    }
+    if(newalarm[selectAlarm].time.priority[index]=="Medium Priority"){
+        return (
+            <Box width={'180px'} height={'100px'} sx={{border:'2px solid yellow', borderRadius:'10px', margin:'15px'}} justifyContent={'center'} textAlign={'center'}>
+                <Typography variant='subtitle1' paddingTop={'13%'}>{vals}</Typography>
+                <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
+                    <Typography variant='subtitle2' >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
+                </div>
+            </Box>
+        )
+    }
+    if(newalarm[selectAlarm].time.priority[index]=="Low Priority"){
+        return (
+            <Box width={'180px'} height={'100px'} sx={{border:'2px solid cyan', borderRadius:'10px', margin:'15px'}} justifyContent={'center'} textAlign={'center'}>
+                <Typography variant='subtitle1' paddingTop={'13%'}>{vals}</Typography>
+                <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
+                    <Typography variant='subtitle2' >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
+                </div>
+            </Box>
+        )
+    }
+    })
     useEffect(() => {
+        // console.log(communication_resource?.id)
         let url = []
         let currentNewDate = new Date()
         let currentdate = currentNewDate.getDate().toString().padStart(2,'0')
@@ -436,7 +491,7 @@ export const DetailedDevice: FC = () => {
         let currentyear = currentNewDate.getFullYear()
         let currentDate = currentyear+"-"+currentmonth+"-"+currentdate
         if(timeFrame==0){
-            url.push(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource?.id}/_history?_since=${currentDate}T00:00:00Z`)
+            url.push(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource?.id}/_history?_since=${currentDate}T00:00:00Z&_count=10000`)
         }
         else if(timeFrame==1){
             // let weekNewDate = new Date(currentNewDate.setDate(currentNewDate.getDate() - 7));
@@ -450,7 +505,7 @@ export const DetailedDevice: FC = () => {
                 let weekyear = weekNewDate.getUTCFullYear()
                 let weekDate = weekyear+"-"+weekmonth+"-"+weekdate
                 for (let index2 = 0; index2 < 24; index2++) {
-                    url.push(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource?.id}/_history?_count=1&_since=${weekDate}T${index2.toString().padStart(2,'0')}:00:00Z`)
+                    url.push(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource?.id}/_history?_count=50&_since=${weekDate}T${index2.toString().padStart(2,'0')}:00:00Z`)
                 }
                 
                                 
@@ -467,7 +522,7 @@ export const DetailedDevice: FC = () => {
             }
         }
         let temparr: any[] = []
-        let prevdate = ""
+        let prevdate: string | any[] = []
         Promise.all(
             url.map((query) => {
                 return fetch(query, {
@@ -479,9 +534,10 @@ export const DetailedDevice: FC = () => {
                 })
                 .then((response) => response.json())
                 .then((data) => {
+                    // console.log(data.entry)
                     if(data.total===0){return null}
-                    if((data.entry[0].resource.meta.lastUpdated).toString() === prevdate){return null}
-                    prevdate = (data.entry[0].resource.meta.lastUpdated).toString()
+                    if(prevdate.includes((data.entry[0].resource.meta.lastUpdated).toString())){return null}
+                    prevdate += (data.entry[0].resource.meta.lastUpdated).toString()
 
                     // var totaldata = data.total 
                     // let page = 1
@@ -489,6 +545,7 @@ export const DetailedDevice: FC = () => {
                     //     totaldata = 10000
                     // }
                     // temparr.push(data.entry.map((val: { resource: any; }) => (val.resource)))
+                   
                     return (data.entry.map((val: any)=>(val)))
                     
                     
@@ -536,11 +593,127 @@ export const DetailedDevice: FC = () => {
             setObservation(dats)
         })
         
-        setObservation(temparr)
         //   })
     },[timeFrame])
+    const [tableVisisble, setTableVisible] = useState(false)
 //     useEffect(() => {        setObservation(temparr)
 // },[neededForGraph])
+    const pressure1Option = {
+        tension: 0.3,
+        responsive: true,
+        // legend: {
+        //     position: 'bottom'
+        // },
+        interaction: {
+          mode: 'index' as const,
+          intersect: false,
+        },
+        stacked: false,
+        plugins: {
+          colors: {
+            forceOverride: true
+          },
+          legend: {
+            display: false
+          },
+          zoom: {
+            pan: {
+                enabled: true,
+                mode: 'x'
+            },
+            zoom: {
+                pinch: {
+                    enabled: true       // Enable pinch zooming
+                },
+                wheel: {
+                    enabled: true       // Enable wheel zooming
+                },
+                mode: 'x',
+            }
+        }
+        },
+        scales: {
+          y: {      // Celcius
+            type: 'linear' as const,
+            display: true,
+            position: 'left' as const,
+            title: {
+                display: true,
+                text: "Percentage (%)"
+            }
+          },
+          y1: {     // %
+            type: 'linear' as const,
+            display: true,
+            position: 'right' as const,
+            grid: {
+              drawOnChartArea: false,
+            },
+            title: {
+                display: true,
+                text: "Liters Per Minuite (LPM)"
+            }
+          },
+        },
+    };
+    const pressure2Option = {
+        tension: 0.3,
+        responsive: true,
+        // legend: {
+        //     position: 'bottom'
+        // },
+        interaction: {
+          mode: 'index' as const,
+          intersect: false,
+        },
+        stacked: false,
+        plugins: {
+          colors: {
+            forceOverride: true
+          },
+          legend: {
+            display: false
+          },
+          zoom: {
+            pan: {
+                enabled: true,
+                mode: 'x'
+            },
+            zoom: {
+                pinch: {
+                    enabled: true       // Enable pinch zooming
+                },
+                wheel: {
+                    enabled: true       // Enable wheel zooming
+                },
+                mode: 'x',
+            }
+        }
+        },
+        scales: {
+          y: {      // Celcius
+            type: 'linear' as const,
+            display: true,
+            position: 'left' as const,
+            title: {
+                display: true,
+                text: "Centimeter of Water (CmH2O)"
+            }
+          },
+          y1: {     // %
+            type: 'linear' as const,
+            display: true,
+            position: 'right' as const,
+            grid: {
+              drawOnChartArea: false,
+            },
+            title: {
+                display: true,
+                text: "Bar"
+            }
+          },
+        },
+    };
     const temperatureOption = {
         tension: 0.3,
         responsive: true,
@@ -555,6 +728,9 @@ export const DetailedDevice: FC = () => {
         plugins: {
           colors: {
             forceOverride: true
+          },
+          legend: {
+            display: false
           },
           zoom: {
             pan: {
@@ -611,6 +787,9 @@ export const DetailedDevice: FC = () => {
           colors: {
             forceOverride: true
           },
+          legend: {
+            display: false
+          },
           zoom: {
             pan: {
                 enabled: true,
@@ -656,6 +835,9 @@ export const DetailedDevice: FC = () => {
         plugins: {
           colors: {
             forceOverride: true
+          },
+          legend: {
+            display: false
           },
           zoom: {
             pan: {
@@ -778,15 +960,24 @@ export const DetailedDevice: FC = () => {
         "%": "y",
         "BPM": "y1"
     }
+    const pressure1OptionYaxis = {
+        "%": "y",
+        "LPM": "y1",
+    }
+    const pressure2OptionYaxis = {
+        "CmH2O": "y",
+        "Bar": "y1",
+    }
     
       
     useEffect(() => {
+    
     //    console.log(Array.isArray(observation))
         console.log(observation)
         if(observation[0]?.resource?.component?.length>1){
             setTimes(observation.map((obs) => {
-                let zeroth = []
-                let first = []
+                let zeroth: {}[] = []
+                let first: {}[] = []
                 let second = [{
                     label: "",
                     data: [] as string[],
@@ -801,26 +992,35 @@ export const DetailedDevice: FC = () => {
                 observation[0].resource.component.map((data, index) => {
                     if(data.valueQuantity.unit.toString() == "C" || data.valueQuantity.unit.toString() == "C°" || data.code.text.toString()=="Set Heater" || data.code.text.toString()=="Heater Level"){
                         let unit = data.valueQuantity.unit.toString();
-                        console.log("********************")
-                        console.log(unit)
                         zeroth.push({
                             label: data.code.text.toString(),
-                            data: observation.map((data2, index2) => {
-                                return (
-                                    data2?.resource?.component[index]?.valueQuantity?.value.toString()
-                                )
+                            data: observation.map((data2) => {
+                                if(data2?.resource?.component){
+                                    return (
+                                        data2?.resource?.component[index]?.valueQuantity?.value.toString()
+                                    )
+                                }
+                                else{
+                                    return null
+                                }
+                                
                             }),
                             yAxisID: heaterYaxis[unit] || "y"
                         })
                     }
-                    else if(data.code.text.toString() == "Pulse Rate" || data.code.text.toString() == "SpO2"){
+                    else if(data.code.text.toString() == "Pulse Rate" || data.code.text.toString() == "SpO2" || data.code.text.toString() == "SPO2"){
                         let unit2 = data.valueQuantity.unit.toString();
                         first.push({
                             label: data.code.text.toString(),
-                            data: observation.map((data2, index2) => {
-                                return (
-                                    data2?.resource?.component[index]?.valueQuantity?.value.toString()
-                                )
+                            data: observation.map((data2) => {
+                                if(data2?.resource?.component){
+                                    return (
+                                        data2?.resource?.component[index]?.valueQuantity?.value.toString()
+                                    )
+                                }
+                                else{
+                                    return null
+                                }
                             }),
                             yAxisID: pulseoximeterYaxis[unit2] || "y"
                         })
@@ -828,12 +1028,52 @@ export const DetailedDevice: FC = () => {
                     else if(data.valueQuantity.unit.toString() == "g"){
                         second.push({
                             label: data.code.text.toString(),
-                            data: observation.map((data2, index2) => {
-                                return (
-                                    data2?.resource?.component[index]?.valueQuantity?.value.toString()
-                                )
+                            data: observation.map((data2) => {
+                                if(data2?.resource?.component){
+                                    return (
+                                        data2?.resource?.component[index]?.valueQuantity?.value.toString()
+                                    )
+                                }
+                                else{
+                                    return null
+                                }
                             }),
                             yAxisID: "y"
+                        })
+                    }
+                    else if(data.valueQuantity.unit.toString() == "LPM" || data.code.text.toString() == "Set FiO2")
+                    {
+                        let unit = data.valueQuantity.unit.toString();
+                        zeroth.push({
+                            label: data.code.text.toString(),
+                            data: observation.map((data2) => {
+                                if(data2?.resource?.component){
+                                    return (
+                                        data2?.resource?.component[index]?.valueQuantity?.value.toString()
+                                    )
+                                }
+                                else{
+                                    return null
+                                }
+                            }),
+                            yAxisID: pressure1OptionYaxis[unit] || "y"
+                        })
+                    }
+                    else if(data.valueQuantity.unit.toString() == "CmH2O" || data.valueQuantity.unit.toString() == "Bar"){
+                        let unit = data.valueQuantity.unit.toString();
+                        second.push({
+                            label: data.code.text.toString(),
+                            data: observation.map((data2) => {
+                                if(data2?.resource?.component){
+                                    return (
+                                        data2?.resource?.component[index]?.valueQuantity?.value.toString()
+                                    )
+                                }
+                                else{
+                                    return null
+                                }
+                            }),
+                            yAxisID: pressure2OptionYaxis[unit] || "y"
                         })
                     }
                     // else if(data.code.text.toString() == "Humidity set" || data.code.text.toString() == "Measure Humidity"){
@@ -852,8 +1092,13 @@ export const DetailedDevice: FC = () => {
                 })
                 
                 setDataSet([zeroth, first, second, third])
+                var fd = new Date(obs.resource.meta.lastUpdated)
+                var t = fd.toLocaleTimeString()
+                var d = fd.getDate()+"/"+(fd.getMonth()+1)
                 return(
-                    new Date(obs.resource.meta.lastUpdated).toLocaleString())
+                    // new Date(obs.resource.meta.lastUpdated).toLocaleString())
+                    d+"-"+t
+                )
                 }))
 
             
@@ -875,7 +1120,7 @@ export const DetailedDevice: FC = () => {
                 
                 setDataSet([second, second, second, second])
                 return(
-                    new Date(obs.resource.meta.lastUpdated).toLocaleTimeString())
+                    new Date(obs?.resource?.meta.lastUpdated).toLocaleTimeString())
                 }))
         }
     },[observation])
@@ -885,16 +1130,22 @@ export const DetailedDevice: FC = () => {
         // })
         // console.log(communication)
         var x: { date: String; time: String; alarm: String; priority: String; }[] = []
-        
+        var y = []
         communication.map((commres) => 
              {
                 if(commres.resource.extension){
-                    
+                    const lastUpdatedDate = new Date((commres.resource.meta.lastUpdated).toString());
+                    y.push({
+                        date: (lastUpdatedDate.toLocaleDateString()),
+                        time: {
+                            val: (lastUpdatedDate.toLocaleTimeString()),
+                            alarm: commres.resource.extension[0].valueCodeableConcept.coding.map((val) => {return val.display}),
+                            priority: commres.resource.extension[1].valueCodeableConcept.coding.map((val) => {return val.display})
+                        }
+                    })
                     commres.resource.extension[0].valueCodeableConcept.coding.map((val,index) => 
                     {  
-                        const lastUpdatedDate = new Date(commres.resource.meta.lastUpdated);
-
-
+                        
                        x.push({
                            date: (lastUpdatedDate.toLocaleDateString()),
                            time: (lastUpdatedDate.toLocaleTimeString()),
@@ -908,6 +1159,7 @@ export const DetailedDevice: FC = () => {
                     }
         )
         setRows(x)
+        setNewAlarm(y)
         // setRows(
         // console.log(communication)
         // )
@@ -940,6 +1192,7 @@ export const DetailedDevice: FC = () => {
         })
         setPulseoximeterData(() => {
             if(dataset[1]?.length > 1) {
+                
                 return (
                     {
                         labels,
@@ -957,7 +1210,9 @@ export const DetailedDevice: FC = () => {
             }
         })
         setWeightData(() => {
+           
             if(dataset[2]?.length > 1) {
+                
                 return (
                     {
                         labels,
@@ -998,9 +1253,9 @@ export const DetailedDevice: FC = () => {
     const labels = times;
 
 
-
-
-
+    const leftarrowcolor = selectAlarm==0 ? 'grey' : 'white'
+    const rightarrowcolor = selectAlarm==newalarm.length-1 ? 'grey' : 'white'
+    //const ttt = temperatureData[0].backgroundColor
 
 
 
@@ -1023,7 +1278,7 @@ export const DetailedDevice: FC = () => {
                     {patient?.extension[0]?.valueString} | {patient?.identifier[0]?.value}
                 </Typography>
             </Stack>
-            <Divider sx={{marginTop:'20px',}}/>
+            <Divider sx={{marginTop:'20px', border:'1px solid white'}}/>
             <Box
                 sx={{
                     display: "flex",
@@ -1054,7 +1309,7 @@ export const DetailedDevice: FC = () => {
                     <Typography variant="h6" >
                         {newData && newObs?.component[0]?.code.text}
                     </Typography>
-                    <Typography variant="h3" sx={{fontWeight:'bold'}}>
+                    <Typography variant="h4" sx={{fontWeight:'bold'}}>
                         {(() => {
                             if(newData){
                                 return (newObs?.component[0]?.valueQuantity.unit==1 || newObs?.component[0]?.valueQuantity.unit)
@@ -1075,7 +1330,7 @@ export const DetailedDevice: FC = () => {
                                     {newObs?.component[index]?.code.text}
                                 </Typography>
                                 <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
-                                <Typography variant='h3'>
+                                <Typography variant='h4'>
                                 {Math.round((newObs?.component[index]?.valueQuantity?.value + Number.EPSILON) * 100) / 100}&nbsp;
                                 </Typography>
                                 <Typography variant='h5'>
@@ -1121,6 +1376,7 @@ export const DetailedDevice: FC = () => {
                     lg: 6,
                 },
                 justifyContent: "center",
+                width:'100%'
             }}
         >
                 {newData && newObs?.component.map((_obs: any, index: number) => {
@@ -1130,7 +1386,7 @@ export const DetailedDevice: FC = () => {
                     }
                     if(index<9 && index>3){
                     return (
-                        <Stack alignItems={'center'} spacing={'10px'}>
+                        <Stack alignItems={'center'} spacing={'10px'} justifyContent={'center'}>
                             <Typography variant="h6" >
                             
                                 {newData && newObs?.component[index]?.code.text}
@@ -1202,35 +1458,44 @@ export const DetailedDevice: FC = () => {
                 flexWrap: "wrap",
                 justifyContent: "center"}}>
                     <Typography variant='h2' sx={{fontWeight:'bold'}}>{newData && 'Oximeter Not connected'}{!newData && ''}</Typography></Box>}
-            <Divider sx={{marginTop:'20px'}} />
+            <Divider sx={{marginTop:'20px', border:'1px solid white'}}/>
             <div style={{marginTop:'25px'}}>
             
                 {
                     graphData && (<>
-                    <Box sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap', marginLeft:"1%" }} >
-                        <Button color="primary" startIcon={<FileDownloadIcon />} variant="contained">
+                    <Stack direction={'row'} width={"100%"} justifyContent={'space-between'}>
+                    {/* <Button color="primary" startIcon={<FileDownloadIcon />} variant="contained" sx={{width:'100px', marginLeft:'2%'}}>
                             Export
-                        </Button>
-                    </Box>
+                    </Button> */}
+                    <Typography variant='h5' paddingLeft={'2%'}>Trends</Typography>
+                    <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{ marginRight:'2%', marginLeft:'auto'}}>
+                        <ToggleButton value={0} key="left" sx={{ width:'70px'}} onClick={() => {setTimeFrame(0)}}>
+                            Day
+                        </ToggleButton>,
+                        <ToggleButton value={1} key="center" sx={{ width:'70px'}} onClick={() => {setTimeFrame(1)}}>
+                            Week
+                        </ToggleButton>,
+                        <ToggleButton value={2} key="right" sx={{width:'70px'}} onClick={() => {setTimeFrame(2)}}>
+                            Month
+                        </ToggleButton>
+                    </ToggleButtonGroup>
 
+                    </Stack>
+                    <Box sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap', marginLeft:"1%" }} >
+
+                    </Box>
+                    {/* <div style={{justifyContent:'center'}}>
+                        
+                    </div> */}
                         {(() => {
-                            console.log(device_id)
+                            // console.log(device_id)
                             if(observation_resource?.identifier[0]?.value?.toString()=="PMSCIC"){
                                 return (
                                     
-                                    <Stack height={'100%'} width={'100%'}>
-                                        <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'2%'}}>
-                                            <ToggleButton value={0} key="left" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(0)}}>
-                                                Day
-                                            </ToggleButton>,
-                                            <ToggleButton value={1} key="center" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(1)}}>
-                                                Week
-                                            </ToggleButton>,
-                                            <ToggleButton value={2} key="right" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(2)}}>
-                                                Month
-                                            </ToggleButton>,
-                                        </ToggleButtonGroup>
-                                            <Line options={temperatureOption} data={temperatureData} height={"90%"}></Line>
+                                    <Stack height={'100%'} width={'100%'} >
+                                            
+                                            <Line options={temperatureOption} data={temperatureData} height={"100%"}></Line>
+                                            
                                         <Stack direction={'row'} width={'100%'} height={"50%"} justifyContent={'space-between'}>
                                             <div style={{width:'45%'}}>
                                                 <Line options={pulseoximeterOption} data={pulseoximeterData} height={'100%'}></Line>
@@ -1242,10 +1507,10 @@ export const DetailedDevice: FC = () => {
                                     </Stack>
                                 )
                             }
-                            if(observation_resource?.identifier[0]?.value?.toString()=="PMSinc"){
+                            if(observation_resource?.identifier[0]?.value?.toString()=="PMSinc" || observation_resource?.identifier[0]?.value?.toString()=="PMSINC"){
                                 return (
-                                    <Stack height={'100%'} width={'100%'}>
-                                        <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'2%'}}>
+                                    <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'auto'}>
+                                        {/* <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'2%'}}>
                                             <ToggleButton value={0} key="left" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(0)}}>
                                                 Day
                                             </ToggleButton>,
@@ -1255,15 +1520,89 @@ export const DetailedDevice: FC = () => {
                                             <ToggleButton value={2} key="right" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(2)}}>
                                                 Month
                                             </ToggleButton>,
-                                        </ToggleButtonGroup>
-                                        <Line options={temperatureOption} data={temperatureData} height={"60%"}></Line>
-                                        <Stack direction={'row'} width={'100%'} height={"50%"} justifyContent={'space-between'}>
-                                            <div style={{width:'48%'}}>
+                                        </ToggleButtonGroup> */}
+                                        <Box width={'100%'} height={{
+                                            xs: '100%',
+                                            sm: '100%',
+                                            md: '50%',
+                                            lg: '50%',
+                                    }}><Line options={temperatureOption} data={temperatureData} height={"100%"}></Line></Box>
+                                        
+                                        <Divider />
+                                        <Stack direction={{ xs: 'column', sm: 'column', md:'row', lg:'row' }} width={'100%'} height={{xs:"50%", sm:'50%', md:"100%", lg:"100%"}} justifyContent={'space-between'} divider={(
+                                            <Divider orientation={temp ? "horizontal" : "vertical"} flexItem/>
+                                        )}
+                                        spacing={{xs:'7%', sm:'7%'}}
+                                        >
+                                            <Box width={{xs:'100%', sm:'100%', md:'48%', lg:'48%'}}>  {/*style={{width:'48%'}}*/}
                                                 <Line options={pulseoximeterOption} data={pulseoximeterData} height={'100%'}></Line>
-                                            </div>
-                                            <div style={{width:'48%'}}>
+                                            </Box>
+                                            {/* <Box width={'40px'} height={'40px'} sx={{backgroundColor:'red'}}></Box> */}
+                                            {/* <Divider orientation={'vertical'} flexItem /> */}
+                                            <Box width={{xs:'100%', sm:'100%', md:'48%', lg:'48%'}}>
                                                 <Line options={weightOption} data={weightData} height={'100%'} ></Line>
-                                            </div>
+                                            </Box>
+                                        </Stack>
+                                        {/* <Line options={humidityOption} data={humidityData} height={"60%"}></Line> */}
+                                    </Stack>
+
+
+
+                                    // <Stack height={'100%'} width={'100%'}>
+                                    //     {/* <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'2%'}}>
+                                    //         <ToggleButton value={0} key="left" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(0)}}>
+                                    //             Day
+                                    //         </ToggleButton>,
+                                    //         <ToggleButton value={1} key="center" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(1)}}>
+                                    //             Week
+                                    //         </ToggleButton>,
+                                    //         <ToggleButton value={2} key="right" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(2)}}>
+                                    //             Month
+                                    //         </ToggleButton>,
+                                    //     </ToggleButtonGroup> */}
+                                    //     <Line options={temperatureOption} data={temperatureData} height={"60%"}></Line>
+                                    //     <Stack direction={'row'} width={'100%'} height={"50%"} justifyContent={'space-between'}>
+                                    //         <div style={{width:'48%'}}>
+                                    //             <Line options={pulseoximeterOption} data={pulseoximeterData} height={'100%'}></Line>
+                                    //         </div>
+                                    //         <div style={{width:'48%'}}>
+                                    //             <Line options={weightOption} data={weightData} height={'100%'} ></Line>
+                                    //         </div>
+                                    //     </Stack>
+                                    //     {/* <Line options={humidityOption} data={humidityData} height={"60%"}></Line> */}
+                                    // </Stack>
+                                )
+                            }
+                            if(observation_resource?.identifier[0]?.value?.toString()=="PMSSVAAS" || observation_resource?.identifier[0]?.value?.toString()=="PMSsvaas"){
+
+                                return (
+                                    <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'auto'}>
+                                        {/* <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'2%'}}>
+                                            <ToggleButton value={0} key="left" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(0)}}>
+                                                Day
+                                            </ToggleButton>,
+                                            <ToggleButton value={1} key="center" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(1)}}>
+                                                Week
+                                            </ToggleButton>,
+                                            <ToggleButton value={2} key="right" sx={{backgroundColor:'#2BA0E0'}} onClick={() => {setTimeFrame(2)}}>
+                                                Month
+                                            </ToggleButton>,
+                                        </ToggleButtonGroup> */}
+                                        <Line options={pressure1Option} data={temperatureData} height={"50%"}></Line>
+                                        <Divider />
+                                        <Stack direction={{ xs: 'column', sm: 'column', md:'row', lg:'row' }} width={'100%'} height={{xs:"50%", sm:'50%', md:"100%", lg:"100%"}} justifyContent={'space-between'} divider={(
+                                            <Divider orientation={temp ? "horizontal" : "vertical"} flexItem/>
+                                        )}
+                                        spacing={{xs:'7%', sm:'7%'}}
+                                        >
+                                            <Box width={{xs:'100%', sm:'100%', md:'48%', lg:'48%'}}>  {/*style={{width:'48%'}}*/}
+                                                <Line options={pulseoximeterOption} data={pulseoximeterData} height={'100%'}></Line>
+                                            </Box>
+                                            {/* <Box width={'40px'} height={'40px'} sx={{backgroundColor:'red'}}></Box> */}
+                                            {/* <Divider orientation={'vertical'} flexItem /> */}
+                                            <Box width={{xs:'100%', sm:'100%', md:'48%', lg:'48%'}}>
+                                                <Line options={pressure2Option} data={weightData} height={'100%'} ></Line>
+                                            </Box>
                                         </Stack>
                                         {/* <Line options={humidityOption} data={humidityData} height={"60%"}></Line> */}
                                     </Stack>
@@ -1282,8 +1621,20 @@ export const DetailedDevice: FC = () => {
                 }
             
             </div>
-            <Divider sx={{marginTop:'20px', marginBottom:'20px'}} />
-            <Table rows={rows} columns={columns}/>
+            <Divider sx={{marginTop:'40px', marginBottom:'20px', border:'1px solid white'}} />
+            <Typography variant='h5' paddingLeft={'2%'}>Alarms</Typography>
+            <Stack direction={'row'} width={'100%'} justifyContent={'space-between'} marginTop={'3%'}>
+                <IconButton onClick={() => {if(selectAlarm>0){setSelectAlarm(selectAlarm-1)}}}><KeyboardArrowLeftIcon sx={{ fontSize: '400%', color:`${leftarrowcolor}` }}/></IconButton>
+                <Box width={'100%'} display={'flex'} textAlign={'center'} justifyContent={'center'} flexWrap={'wrap'}>
+                {alarmUI}
+                    {/* <div style={{marginTop:'2.5%', display:'flex', width:'100%', height:'100%', justifyContent:'space-evenly'}}></div>  */}
+                </Box>
+                <IconButton onClick={() => {if(selectAlarm<newalarm.length){setSelectAlarm(selectAlarm+1)}}}><KeyboardArrowRightIcon style={{ fontSize: '400%', color:`${rightarrowcolor}` }}/></IconButton>  
+            </Stack>
+            <Button variant='contained' sx={{width:'40%', height:'70px', margin:'auto', marginTop:'6%', marginBottom:'3%'}} onClick={() => {setTableVisible(!tableVisisble)}}>
+                <Typography variant='h5'>{tableVisisble && "Collapse"}{!tableVisisble && "Alarm Log"}</Typography>
+            </Button>
+            {tableVisisble && <Table rows={rows} columns={columns}/>}
         </Stack>
     </Paper>
     )

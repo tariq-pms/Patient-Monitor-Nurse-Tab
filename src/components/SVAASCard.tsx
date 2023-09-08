@@ -1,5 +1,5 @@
 // import { AccountCircle } from '@mui/icons-material'
-import { Box, Paper, Card, CardContent, Stack, Typography, LinearProgress,  } from '@mui/material'
+import { Box, Paper, Card, Stack, Typography} from '@mui/material'
 // import { red } from '@mui/material/colors'
 import { FC, useEffect, useState } from 'react'
 // import { Link } from 'react-router-dom'
@@ -7,9 +7,8 @@ import { Divider } from '@mui/material';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPersonBreastfeeding, faBaby, faWeightHanging } from '@fortawesome/free-solid-svg-icons'
-import WavesIcon from '@mui/icons-material/Waves';
-import { Container } from '@material-ui/core';
+import { faPersonBreastfeeding, } from '@fortawesome/free-solid-svg-icons'
+
 export interface DeviceDetails {
   key: string;
   device_id: string;
@@ -218,13 +217,13 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
         sm: "500px",
         md: "500px",
         lg: "500px"
-      }} sx={{backgroundColor:'#00547A', borderRadius:'25px', border: `6px solid ${alarmColor}`, opacity:controlOpacity}} 
+      }} sx={{backgroundColor:'#00547A', borderRadius:'25px', border: `6px solid ${alarmColor}`, opacity:controlOpacity}} //border: alarmColor!='transparent' ? `6px solid ${alarmColor}`: ""
       onMouseLeave={() => {setControlOpacity("0.8")}} onMouseEnter={() => {setControlOpacity("1")}}>
         
         <Link to="devicedata" style={{ textDecoration: 'none' }} state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}>
         <Paper elevation={2} sx={{ borderRadius: "25px", backgroundColor:'transparent'}}>
           <Card
-            style={{ backgroundColor: "transparent", borderRadius: "25px", height:"300px",
+            style={{ backgroundColor: "transparent", borderRadius: "25px", height:"300px", boxShadow:'none'
              }}
           >
             {newData ? (<>
@@ -384,7 +383,7 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
             </>):(<>
             <Box width={'100%'} height={'100%'} sx={{backgroundColor:'transparent'}} display={'flex'} textAlign={"center"} justifyContent={"center"}>
             <Stack width={'100%'} height={'100%'} justifyContent={"center"} textAlign={"center"}>
-                    <PowerSettingsNewIcon sx={{fontSize: 200, color:'red', marginLeft:'auto', marginRight:'auto'}}/>
+                    <PowerSettingsNewIcon sx={{fontSize: 150, color:'red', marginLeft:'auto', marginRight:'auto'}}/>
                     <Typography variant='h6' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'white'}}>Device {props?.device_id} not active/connected</Typography>
                 </Stack>
             </Box>

@@ -1,13 +1,13 @@
 import { FC, useEffect, useMemo, useState } from "react";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
-import { Box, Button, Stack } from "@mui/material";
+import { Box, Button, Stack, ThemeProvider, createTheme, useTheme } from "@mui/material";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { ExportToCsv } from 'export-to-csv';
 import { Divider } from "@material-ui/core";
 
 export interface rowsandcolumns {
   rows: [];
-  columns: [];
+  columns: [{'header': string}];
 }
 export const Table: FC<rowsandcolumns> = (props) => {
   const [tableData, setTableData]=useState(props)
@@ -29,7 +29,89 @@ export const Table: FC<rowsandcolumns> = (props) => {
     csvExporter.generateCsv(props.rows);
   };
 
+  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
 
+
+  const tableTheme = useMemo(
+
+    () =>
+
+      createTheme({
+
+        palette: {
+
+          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
+
+          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+
+          info: {
+
+            main: 'rgb(255,122,0)', //add in a custom color for the toolbar alert background stuff
+
+          },
+
+          background: {
+
+            default:
+
+              globalTheme.palette.mode === 'light'
+
+                ? 'rgb(254,255,244)' //random light yellow color for the background in light mode
+
+                : '#000', //pure black table in dark mode for fun
+
+          },
+
+        },
+        // typography: {
+
+        //   button: {
+
+        //     textTransform: 'none', //customize typography styles for all buttons in table by default
+
+        //     fontSize: '1.2rem',
+
+        //   },
+
+        // },
+
+        components: {
+
+          MuiTooltip: {
+
+            styleOverrides: {
+
+              tooltip: {
+
+                fontSize: '1.1rem', //override to make tooltip font size larger
+
+              },
+
+            },
+
+          },
+
+          MuiSwitch: {
+
+            styleOverrides: {
+
+              thumb: {
+
+                color: 'pink', //change the color of the switch thumb in the columns show/hide menu to pink
+
+              },
+
+            },
+
+          },
+
+        },
+
+      }),
+
+    [globalTheme],
+
+  );
 
 
 
@@ -37,12 +119,19 @@ export const Table: FC<rowsandcolumns> = (props) => {
 
 
   return (
-      <MaterialReactTable 
+    <ThemeProvider theme={tableTheme}>
+            <MaterialReactTable 
             enableGrouping
             enableDensityToggle={false}
             enableFilters={false}
             enableHiding={false}
             enableFullScreenToggle={false}
+
+            muiTableHeadRowProps={{
+              sx:{
+                backgroundColor:'black'
+              }
+            }}
             initialState={{
                 density: 'compact',        
                 expanded: true, //expand all groups by default        
@@ -75,11 +164,11 @@ export const Table: FC<rowsandcolumns> = (props) => {
                   &nbsp;
                   - High Priority
                   &nbsp;
-                  <Box width={'40px'} height={'20px'} sx={{backgroundColor:'#00BCD4', borderRadius:'5px'}}></Box>
+                  <Box width={'40px'} height={'20px'} sx={{backgroundColor:'#FFEB3B', borderRadius:'5px'}}></Box>
                   &nbsp;
                   - Medium Priority
                   &nbsp;
-                  <Box width={'40px'} height={'20px'} sx={{backgroundColor:'#FFEB3B', borderRadius:'5px'}}></Box>
+                  <Box width={'40px'} height={'20px'} sx={{backgroundColor:'#00BCD4', borderRadius:'5px'}}></Box>
                   &nbsp;
                   - Low Priority
                 </Stack>
@@ -87,5 +176,7 @@ export const Table: FC<rowsandcolumns> = (props) => {
                 
             )}>
               </MaterialReactTable>
+    </ThemeProvider>
+
   );
 };
