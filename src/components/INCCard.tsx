@@ -128,7 +128,7 @@ export interface DeviceDetails {
 
 export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
 
-    const [alarmColor, setAlarmColor] = useState("transparent")
+    const [alarmColor, setAlarmColor] = useState("white")
     // const devicetimer = setInterval(timer, 10000)
 
 
@@ -153,7 +153,7 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
     // clearInterval(devicetimer)
     // console.log(devicetimer)
     // runtimer = setInterval(timer, 10000)
-    console.log("called")
+
     if (props.observation_resource?.component?.[1] && runNo>=2 && props.communication_resource?.extension?.[1]) {
         
         setNewData(true);
@@ -191,9 +191,8 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
 
     useEffect(() => {
         let timer: number | undefined;
-        
         if(newData){
-            timer = setInterval(() => {setNewData(false);setAlarmColor("transparent");clearInterval(timer)},15000)
+            timer = setInterval(() => {setNewData(false);setAlarmColor("white");clearInterval(timer)},15000)
 
         }
         return () => {
@@ -219,13 +218,13 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
         sm: "500px",
         md: "500px",
         lg: "500px"
-      }} sx={{backgroundColor:'#152634', borderRadius:'25px', border: `6px solid ${alarmColor}`, opacity:controlOpacity}} 
+      }} sx={{backgroundColor:'#152634', borderRadius:'25px'}} 
       onMouseLeave={() => {setControlOpacity("0.8")}} onMouseEnter={() => {setControlOpacity("1")}}>
         
         <Link to="devicedata" style={{ textDecoration: 'none' }} state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}>
-        <Paper elevation={2} sx={{ borderRadius: "25px", backgroundColor:'transparent'}}>
+        <Paper elevation={2} sx={{ borderRadius: "25px", backgroundColor:'transparent', opacity:controlOpacity, boxShadow: `0px 0px 5px 5px ${alarmColor}`}}>
           <Card
-            style={{ backgroundColor: "transparent", borderRadius: "25px", height:"300px",
+            style={{ backgroundColor: "transparent", borderRadius: "25px", height:"300px"
              }}
           >
             {newData ? (<>
@@ -266,7 +265,7 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                                 <Typography variant='h6' color={"#26C5E4"} paddingTop={'13%'} paddingLeft={'3%'}>
                                     {(() => {
                                         if(props.observation_resource?.component[0].valueQuantity.unit=="BABY"){
-                                            let data = findData("Set Skin Temp 1")
+                                            let data = findData("Set Skin Temp")
                                             return (data.data)
                                         }
                                         else{return ""}

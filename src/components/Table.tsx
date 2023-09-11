@@ -156,7 +156,7 @@ export const Table: FC<rowsandcolumns> = (props) => {
                         variant="contained"
                         
                     >
-                        Export
+                        Download
                     </Button>
                 </Box>
                 <Stack direction={'row'} paddingTop={'10px'}>

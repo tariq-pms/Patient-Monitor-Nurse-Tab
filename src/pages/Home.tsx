@@ -89,7 +89,6 @@ export const Home = (currentRoom: any) => {
 //     ]
 // })
   const theme = useTheme();
-
   const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();
 
   const [devices, setDevices] = useState({
@@ -182,6 +181,7 @@ export const Home = (currentRoom: any) => {
           .then((data) => {
             var temp = String(data.sender.reference.split("/")[1])
             setParentComm((prevparentcom) => ({...prevparentcom,[temp]: data}))
+            
 
           })
         // }
@@ -241,7 +241,7 @@ export const Home = (currentRoom: any) => {
           var temp = String(device.resource.id);
           setPatient((prevPatient) => ({...prevPatient, [temp]: data}))
         })
-        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation?patient=${device.resource.patient.reference.split("/")[1]}&_sort=-date&_count=1`, {
+        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation?patient=${device.resource.patient.reference.split("/")[1]}&_count=1&_sort=-_lastUpdated`, {
         credentials: "omit",
         headers: {
           Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -249,13 +249,15 @@ export const Home = (currentRoom: any) => {
         })
         .then((response) => response.json())
         .then((data) => {
-          if(!data.entry){console.log("")}
+          if(!data.entry){console.log(`http://13.126.5.10:9444/fhir-server/api/v4/Observation?patient=${device.resource.patient.reference.split("/")[1]}&_count=1&_sort=-_lastUpdated`)}
           else{
             var temp = String(device.resource.id);
+            console.log("FUCK YOU MOTHERFUCKER!!!!!!!")
+            console.log(temp)
             setParentObs((prevParentobs) => ({...prevParentobs, [temp]: data.entry[0]["resource"]}))
           }})
       
-        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Communication?sender=${device.resource.id}&_count=1`, {
+        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Communication?sender=${device.resource.id}&_count=1&_sort=-_lastUpdated`, {
         credentials: "omit",
         headers: {
           Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -263,7 +265,7 @@ export const Home = (currentRoom: any) => {
         })
         .then((response) => response.json())
         .then((data) => {
-          if(!data.entry){console.log(`http://13.126.5.10:9444/fhir-server/api/v4/Communication?sender=${device.resource.id}&_count=1`)}
+          if(!data.entry){console.log(`http://13.126.5.10:9444/fhir-server/api/v4/Communication?sender=${device.resource.id}&_count=1&_sort=-_lastUpdated`)}
           else{
             var temp = String(device.resource.id);
             
@@ -320,9 +322,8 @@ export const Home = (currentRoom: any) => {
     if(device.resource.patient && parentcomm[String(device.resource.id)] && parentobs[String(device.resource.id)]){
       correct = true
     }
-      console.log(parentcomm[String(device.resource.id)]);
+      console.log(parentobs[String(device.resource.id)]);
     if(correct){
-      
       return (
         <INCCard 
           key={String(device.resource.id)}
@@ -453,6 +454,7 @@ export const Home = (currentRoom: any) => {
                       gap: '2rem',
                       justifyContent: "left",
                       width:"100%",
+                      marginBottom:'2%'
                     }}
                   >
                     {incubator}

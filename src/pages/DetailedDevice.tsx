@@ -6,6 +6,8 @@ import zoomPlugin from 'chartjs-plugin-zoom'
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { useTheme } from '@mui/material/styles';
 import {
     Chart as ChartJS,
@@ -390,7 +392,12 @@ export const DetailedDevice: FC = () => {
             // }
           }
 
+          if(recieved_data.location.split("/")[0] == "Communication"){
+            console.log("SOMETHING CUCKED FU")
+            console.log(recieved_data.location.split("/")[1])
+            console.log(communication_resource.id)
 
+          }
 
           if (recieved_data.location.split("/")[0] == "Communication" && recieved_data.location.split("/")[1] == communication_resource.id){
             
@@ -402,6 +409,7 @@ export const DetailedDevice: FC = () => {
               })
               .then((response) => response.json())
               .then((data) => {
+                
                 // console.log(temp)
                 // console.log(temp)
         //         date: String,
@@ -420,6 +428,14 @@ export const DetailedDevice: FC = () => {
                 //         priority: data.extension[1].valueCodeableConcept.coding.map((val: { display: any; }) => {return val.display})
                 //     }
                 //     })
+                y.push({
+                    date: (lastUpdatedDate.toLocaleDateString()),
+                    time: {
+                        val: (lastUpdatedDate.toLocaleTimeString()),
+                        alarm: data.extension[0].valueCodeableConcept.coding.map((val) => {return val.display}),
+                        priority: data.extension[1].valueCodeableConcept.coding.map((val) => {return val.display})
+                    }
+                })
                 data.extension[0].valueCodeableConcept.coding.map((val: { display: any; },index: string | number) => 
                 {  
                     
@@ -434,7 +450,10 @@ export const DetailedDevice: FC = () => {
                 }
                 )
                 x.map((val) => {
-                    setRows((rows) => [...rows])
+                    setRows((rows) => [val,...rows])
+                })
+                y.map((val) => {
+                    setNewAlarm((rows) => [val,...rows])
                 })
                 
                 // setRows((rows) => [...rows,x])
@@ -483,6 +502,7 @@ export const DetailedDevice: FC = () => {
     }
     })
     useEffect(() => {
+        setLoading(true)
         // console.log(communication_resource?.id)
         let url = []
         let currentNewDate = new Date()
@@ -952,6 +972,7 @@ export const DetailedDevice: FC = () => {
     const heaterYaxis = {
     "%": "y",
     "C": "y1",
+    "C°": "y1"
     // "g": "y2",
     // "BPM": "y3"
     // Add more mappings as needed
@@ -973,7 +994,6 @@ export const DetailedDevice: FC = () => {
     useEffect(() => {
     
     //    console.log(Array.isArray(observation))
-        console.log(observation)
         if(observation[0]?.resource?.component?.length>1){
             setTimes(observation.map((obs) => {
                 let zeroth: {}[] = []
@@ -990,7 +1010,7 @@ export const DetailedDevice: FC = () => {
                 }]
 
                 observation[0].resource.component.map((data, index) => {
-                    if(data.valueQuantity.unit.toString() == "C" || data.valueQuantity.unit.toString() == "C°" || data.code.text.toString()=="Set Heater" || data.code.text.toString()=="Heater Level"){
+                    if(data.valueQuantity.unit.toString() == "C" || data.valueQuantity.unit.toString()=="C°" || data.valueQuantity.unit.toString() == "C°" || data.code.text.toString()=="Set Heater" || data.code.text.toString()=="Heater Level"){
                         let unit = data.valueQuantity.unit.toString();
                         zeroth.push({
                             label: data.code.text.toString(),
@@ -1123,6 +1143,7 @@ export const DetailedDevice: FC = () => {
                     new Date(obs?.resource?.meta.lastUpdated).toLocaleTimeString())
                 }))
         }
+        setLoading(false)
     },[observation])
     useEffect(() => {
         // communication.map((commres) => {
@@ -1631,10 +1652,13 @@ export const DetailedDevice: FC = () => {
                 </Box>
                 <IconButton onClick={() => {if(selectAlarm<newalarm.length){setSelectAlarm(selectAlarm+1)}}}><KeyboardArrowRightIcon style={{ fontSize: '400%', color:`${rightarrowcolor}` }}/></IconButton>  
             </Stack>
-            <Button variant='contained' sx={{width:'40%', height:'70px', margin:'auto', marginTop:'6%', marginBottom:'3%'}} onClick={() => {setTableVisible(!tableVisisble)}}>
+            <Button variant='contained' sx={{width:'40%', height:'70px', margin:'auto', marginTop:'6%', marginBottom:'3%'}} onClick={() => {setTableVisible(!tableVisisble)}} endIcon={tableVisisble ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}>
                 <Typography variant='h5'>{tableVisisble && "Collapse"}{!tableVisisble && "Alarm Log"}</Typography>
             </Button>
+            <Box width={'60%'} marginLeft={'auto'} marginRight={'auto'}>
             {tableVisisble && <Table rows={rows} columns={columns}/>}
+            </Box>
+            
         </Stack>
     </Paper>
     )

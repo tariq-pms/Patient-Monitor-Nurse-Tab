@@ -4,6 +4,8 @@ import Box from '@mui/material/Box';
 import { RoomCard } from '../components/RoomCard';
 import { Alert, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Snackbar, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import { CustomOkButton } from '../components/CustomOkButton';
+
 export const Rooms = () => {
     const {isAuthenticated} = useAuth0();
     const theme = useTheme();
@@ -116,6 +118,7 @@ export const Rooms = () => {
     })
   return (
     <div>
+      {/* <Box width={'8%'} height={'50px'}><CustomOkButton text="YES"/></Box> */}
       
       <Stack width={'100%'} direction={'row'} paddingTop={'2%'} justifyContent={'center'} textAlign={'center'}>
               <Typography variant='h5' color={'white'}>Rooms & Device Settings</Typography>
