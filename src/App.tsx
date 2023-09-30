@@ -1,35 +1,73 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
+import "./App.css";
+import { Routes, Route } from "react-router-dom";
+import {Home} from "./pages/Home";
+import {Rooms} from "./pages/Rooms"
+import { DetailedDevice } from "./pages/DetailedDevice";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import {Header} from "./components/Header";
+import { Backdrop } from "@mui/material";
+import {CircularProgress} from "@mui/material";
+import { useAuth0 } from "@auth0/auth0-react";
+import { UserInfo } from "./pages/UserInfo";
+import { useState } from "react";
+import "@fontsource/noto-sans";
+const theme = createTheme({
+  typography: {
+    fontFamily: 'Roboto',
+    allVariants:{
+      userSelect: 'none'
+    }
+  },
+  palette: {//
+    mode: 'dark',
+    background: {default: '#000000'},// "#121111",
+    primary: {
+      main: "#2BA0E0", //#181C2D
+    },
+    secondary:{
+      main: "#00A0E3"
+    }
+  },
+});
+ 
+            
+          
 function App() {
-  const [count, setCount] = useState(0)
 
+  const {isLoading} = useAuth0(); 
+
+  const [currentRoom, setCurrentRoom] = useState("")
+  const [roomAltered, setRoomAltered] = useState(false)
+  function roomChange (roomId: any) {
+    setCurrentRoom(roomId)
+  }
+
+  function roomModified (){
+    setRoomAltered(!roomAltered)
+  }
+  // useEffect(() => {console.log(currentRoom)},[currentRoom])
+  // const roomChange = (event) => {
+  //   console.log("HELLO WORLD")
+    
+  // }
+ 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div>
+      <ThemeProvider theme={theme}>
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={isLoading}
+        ><CircularProgress color="inherit" /></Backdrop>
+        <Header roomAltered={roomAltered} currentRoom={currentRoom} roomChange={roomChange} />
+        <Routes>
+          <Route path="/" element={<Home currentRoom={currentRoom} />}/>
+          <Route path="/user" element={<UserInfo />} />
+          <Route path="/rooms" element={<Rooms roomModified={roomModified}/>} />
+          <Route path="/devicedata" element={<DetailedDevice />} />
+        </Routes>
+      </ThemeProvider>
+    </div>
+  );
 }
 
-export default App
+export default App;
