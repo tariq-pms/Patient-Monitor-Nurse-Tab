@@ -9,7 +9,7 @@ import { Backdrop } from "@mui/material";
 import {CircularProgress} from "@mui/material";
 import { useAuth0 } from "@auth0/auth0-react";
 import { UserInfo } from "./pages/UserInfo";
-import { SetStateAction, useEffect, useState } from "react";
+import { useState } from "react";
 import "@fontsource/noto-sans";
 const theme = createTheme({
   typography: {
@@ -37,11 +37,13 @@ function App() {
   const {isLoading} = useAuth0(); 
 
   const [currentRoom, setCurrentRoom] = useState("")
-  const [currRoomId, setCurrRoomId] = useState("")
-
+  const [roomAltered, setRoomAltered] = useState(false)
   function roomChange (roomId: any) {
-    
     setCurrentRoom(roomId)
+  }
+
+  function roomModified (){
+    setRoomAltered(!roomAltered)
   }
   // useEffect(() => {console.log(currentRoom)},[currentRoom])
   // const roomChange = (event) => {
@@ -56,11 +58,11 @@ function App() {
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
           open={isLoading}
         ><CircularProgress color="inherit" /></Backdrop>
-        <Header currentRoom={currentRoom} roomChange={roomChange} />
+        <Header roomAltered={roomAltered} currentRoom={currentRoom} roomChange={roomChange} />
         <Routes>
           <Route path="/" element={<Home currentRoom={currentRoom} />}/>
           <Route path="/user" element={<UserInfo />} />
-          <Route path="/rooms" element={<Rooms />} />
+          <Route path="/rooms" element={<Rooms roomModified={roomModified}/>} />
           <Route path="/devicedata" element={<DetailedDevice />} />
         </Routes>
       </ThemeProvider>

@@ -1,13 +1,12 @@
 // import { AccountCircle } from '@mui/icons-material'
-import { Box, Paper, Card, Stack, Typography  } from '@mui/material'
+import { Box, Card, Stack, Typography, ButtonBase  } from '@mui/material'
 // import { red } from '@mui/material/colors'
 import { FC, useEffect, useState } from 'react'
 // import { Link } from 'react-router-dom'
-import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
-import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPersonBreastfeeding, faBaby, } from '@fortawesome/free-solid-svg-icons'
-import WavesIcon from '@mui/icons-material/Waves';
+import {  faBell, faPowerOff, } from '@fortawesome/free-solid-svg-icons'
+import { NewDeviceDetails } from './NewDeviceDetails';
+
 export interface DeviceDetails {
   key: string;
   device_id: string;
@@ -30,7 +29,7 @@ export interface DeviceDetails {
             "value": string;
         }[];
     
-};
+} | null;
   device_resource_id: string;
   observation_resource: {
     "resourceType": string;
@@ -125,13 +124,14 @@ export interface DeviceDetails {
 }
 
 export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
-    const [alarmColor, setAlarmColor] = useState("white")
+    const [isOpen, setIsOpen] = useState(false);
+    const [alarmColor, setAlarmColor] = useState("#202020")
     // const devicetimer = setInterval(timer, 10000)
 
 
 
     // const devicetimer = setInterval(timer, 10000)
-    const [controlOpacity, setControlOpacity] = useState("0.8")
+
     // setInterval(secondTimer,7000)
     const [newData, setNewData] = useState(false);
     const [alarm, setAlarm] = useState("")
@@ -144,17 +144,16 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
 
     const [requiredForBorderColor, setRequiredForBorderColor] = useState(false)
     
+    const [isBlinking, setIsBlinking] = useState(false);
+
     useEffect(() => {
     // let devicetimer = setInterval(timer, 10000)    
     setRunNo(runNo+1)
     // clearInterval(devicetimer)
     // console.log(devicetimer)
     // runtimer = setInterval(timer, 10000)
-    console.log("called")
-    console.log(props.communication_resource?.extension?.[1])
-    
-    if (props.observation_resource?.component?.[1] && runNo>=2 && props.communication_resource?.extension?.[1]) {
 
+    if (props.observation_resource?.component?.[1] && runNo>=2 && props.communication_resource?.extension?.[1]) {
         
         setNewData(true);
         
@@ -175,23 +174,41 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
     }
     setRequiredForTimer(!requiredForTimer)
     }
-    
+    console.log("New call")
     }, [props.observation_resource]);
 
     function findData(x: string){
-        let index = props.observation_resource.component.findIndex(item => item.code.text===x)
+        let index = props?.observation_resource?.component.findIndex(item => item.code.text===x)
         if(index==-1){
             return({data: "--", unit: "--"})
         }
-        let data = props.observation_resource.component[index].valueQuantity.value
+        let data = Number(props.observation_resource.component[index].valueQuantity.value)
+        data = Math.round((data + Number.EPSILON) * 100) / 100
         let unit = props.observation_resource.component[index].valueQuantity.unit
         return ({data:data, unit:unit})
     }
 
     useEffect(() => {
+     let intervalId: number | undefined;
+ 
+     if (newData) {
+       intervalId = setInterval(() => {
+         setIsBlinking((prevIsBlinking) => !prevIsBlinking);
+       }, 300); // Adjust the blinking interval (in milliseconds) as needed
+     } else {
+       clearInterval(intervalId);
+       setIsBlinking(false);
+     }
+ 
+     return () => {
+       clearInterval(intervalId);
+     };
+   }, [alarmColor]);
+
+    useEffect(() => {
         let timer: number | undefined;
         if(newData){
-            timer = setInterval(() => {setNewData(false);setAlarmColor("white");clearInterval(timer)},7000)
+            timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},1500000)
 
         }
         return () => {
@@ -209,6 +226,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
 
     // const tick =setInterval(timer,1000)
 //   useEffect(() => {console.log(props.patient_id)},[props.patient_id])
+const [controlOpacity, setControlOpacity] = useState("0.8")
   return (
 
       <Box  width={{
@@ -216,51 +234,59 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
         sm: "500px",
         md: "500px",
         lg: "500px"
-      }} sx={{backgroundColor:'#262626', borderRadius:'25px'}} //border: alarmColor!='transparent' ? `6px solid ${alarmColor}`: "", opacity:controlOpacity, boxShadow: '0px 0px 5px 5px white'
-      onMouseLeave={() => {setControlOpacity("0.8")}} onMouseEnter={() => {setControlOpacity("1")}}
+      }} sx={{ borderRadius:'25px', cursor:'pointer'}}  //border: alarmColor!='transparent' ? `6px solid ${alarmColor}`: "", opacity:controlOpacity, boxShadow: '0px 0px 5px 5px white'
+      onMouseLeave={() => {setControlOpacity("0.8")}} onMouseEnter={() => {setControlOpacity("1")}} onClick={() => {console.log(props.communication_resource.id);setIsOpen(true)}}
       >
+        <ButtonBase sx={{width:'100%', borderRadius:'25px'}}>
+        {/* <Link to="devicedata" style={{ textDecoration: 'none' }} state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}> */}
         
-        <Link to="devicedata" style={{ textDecoration: 'none' }} state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}>
-        <Paper elevation={2} sx={{ borderRadius: "25px", backgroundColor:'transparent', opacity:controlOpacity, boxShadow: `0px 0px 5px 5px ${alarmColor}`}}>
           <Card
-            style={{ backgroundColor: "transparent", borderRadius: "25px", height:"300px",
-             }}
+            style={{width:'100%', backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)', borderRadius: "25px", height:"300px", opacity:controlOpacity, boxShadow: `0px 0px 30px 5px ${isBlinking ? alarmColor: '#202020'}`, border:'1px solid #606060'
+        }}
           >
             {newData ? (<>
                 <Stack width={'100%'} height={'100%'}>
-                    <Box display={'flex'} width={'100%'} height={'20%'} paddingTop={'2%'}>
-                        <Box width={'70%'} height={'100%'} textAlign={'right'}>
-                            <div style={{fontSize: '130%', paddingRight:'3%' ,paddingTop:'3%', fontWeight:800}} >
+                    
+                <Box display={'flex'} width={'100%'} height={'10%'} paddingTop={'2.5%'}>
+                        <Box width={'30%'} height={'100%'} textAlign={'left'} paddingLeft={'5%'} >
+                        <Typography variant="subtitle2" sx={{fontWeight:"bold", marginLeft:'5px'}} color={'#CBCFE5'}>
+                                    {props.patient?.identifier && props?.patient?.identifier[0]?.value}
+                                    </Typography>
+                        </Box>
+                        <Box width={'40%'} height={'100%'} textAlign={'center'}>
+                            <div style={{fontSize: '100%', paddingRight:'3%' , fontWeight:500}} >
                                 {(() => {
                                     let data = findData("MODE")
                                     return (data.unit+" "+"MODE")
                                 })()}
                             </div>
+                            
                         </Box> 
-                        <FontAwesomeIcon icon={faPersonBreastfeeding} fontSize={'200%'} color='#CBCFE5'/>
+                        {/* <FontAwesomeIcon icon={faPersonBreastfeeding} fontSize={'250%'} color='#CBCFE5'/> */}
                         <Box display={'flex'} width={'30%'} height={'100%'}>
-                            <Box width={'30%'} height={'65%'} sx={{backgroundColor:'transparent'}}>
-                                <Typography variant='caption' sx={{fontWeight:"bold",marginTop:'5px', marginLeft:'5px'}} color={'#CBCFE5'}>
-                                    {props.patient?.identifier && props?.patient?.identifier[0]?.value}<br />
-                                    <Typography variant='caption' color={'#CBCFE5'}>
+                            
+                            <Box paddingRight={'2%'} width={'100%'} height={'65%'} sx={{backgroundColor:'transparent'}}>
+                                
+                                    <Typography variant="subtitle2"  color={'#CBCFE5'}>
                                         {props?.device_id}
                                     </Typography>
-                                </Typography>
+                                
                             </Box>
                         </Box>                         
                     </Box>
-                    <Stack width={"100%"} height={'40%'} direction={'row'}>
-                        <Box width={'33.3%'} height={'100%'} sx={{ borderRight:'1px solid #A8A8A8', borderTop:'1px solid #A8A8A8'}} justifyContent={'center'} textAlign={'center'}>
-                            <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography>
+                    <Stack width={"100%"} height={'50%'} direction={'row'}>
+                        <Box width={'33.33%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                            <div style={{marginTop:'7%'}}><Typography variant='caption' color={"#A8C5D4"}>Heater Temp %</Typography></div>
+                            {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-                                <WavesIcon sx={{paddingTop:'6%', paddingRight:'7%', fontSize:'200%'}}/>
+                               
                                 <Typography variant='h3'>
                                     {(() => {
                                         let data = findData("Heater Level")
                                         return (data.data)
                                     })()}
                                 </Typography>
-                                <Typography variant='subtitle1' color={"#26C5E4"} paddingTop={'13%'} paddingLeft={'3%'}>
+                                <Typography variant='subtitle2' color={"#5db673"} paddingTop={'13%'} paddingLeft={'3%'}>
                                     {(() => {
                                         if(props.observation_resource?.component[0].valueQuantity.unit=="MANUAL"){
                                             let data = findData("Set Heater")
@@ -271,17 +297,17 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                                 </Typography>
                             </div>
                         </Box>
-                        <Box width={'33.3%'} height={'100%'} sx={{ borderRight:'1px solid #A8A8A8', borderTop:'1px solid #A8A8A8'}} justifyContent={'center'} textAlign={'center'}>
-                        <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Baby Temp °C</Typography>
+                        <Box width={'33.33%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                        <div style={{marginTop:'7%'}}><Typography variant='caption' color={"#A8C5D4"}>Baby Temp °C</Typography></div>
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-                            <FontAwesomeIcon icon={faBaby} color='#CBCFE5' style={{paddingTop:'6%', paddingRight:'7%', fontSize:'200%'}}/>
+                            {/* <FontAwesomeIcon icon={faBaby} color='#CBCFE5' style={{paddingTop:'6%', paddingRight:'7%', fontSize:'200%'}}/> */}
                                 <Typography variant='h3'>
                                     {(() => {
                                         let data = findData("Measured Skin Temp 1")
                                         return (data.data)
                                     })()}
                                 </Typography>
-                                <Typography variant='h6' color={"#26C5E4"} paddingTop={'13%'} paddingLeft={'3%'}>
+                                <Typography variant='h6' color={"#5db673"} paddingTop={'13%'} paddingLeft={'3%'}>
                                     {(() => {
                                         if(props.observation_resource?.component[0].valueQuantity.unit=="BABY"){
                                             let data = findData("Set Skin Temp 1")
@@ -291,7 +317,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                                     })()}
                                 </Typography>
                             </div>
-                            <Typography variant='h6' color={"#26C5E4"} paddingLeft={'3%'}>
+                            <Typography variant='h6' color={"#5db673"} paddingLeft={'3%'}>
                                 {(() => {
                                         let data = findData("Measured Skin Temp 2")
                                         return (data.data)
@@ -299,10 +325,20 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                                 )()}
                             </Typography>
                         </Box>
-                        <Box width={'33.3%'} height={'100%'} justifyContent={'center'} textAlign={'center'}>
-                            <Box width={"100%"} height={"50%"} sx={{ borderTop:'1px solid #A8A8A8'}}>
-                                <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>PR (BPM)</Typography>
-                                <Typography variant='h5' color={"#26C5E4"}>
+                        <Box width={'33.33%'} height={'100%'} justifyContent={'center'} textAlign={'center'}>
+                            <Box  display={'flex'}  width={"100%"} justifyContent={'space-between'}  height={"33.33%"} sx={{ borderTop:'2px solid grey'}}>
+                            <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'7%'} paddingLeft={'5%'}>SpO2 %</Typography>
+                                    <Typography variant='h6' color={"#5db673"} paddingTop={'3%'} paddingRight={'5%'}>
+                                        {(() => {
+                                                let data = findData("SpO2")
+                                                return (data.data)
+                                            }
+                                        )()}
+                                    </Typography>
+                            </Box>
+                            <Box width={"100%"} display={'flex'} justifyContent={'space-between'}  height={"33.33%"} sx={{ borderTop:'2px solid grey'}}>
+                                <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'7%'} paddingLeft={'5%'}>PR (BPM)</Typography>
+                                <Typography variant='h6' color={"#5db673"} paddingTop={'3%'} paddingRight={'5%'}>
                                     {(() => {
                                             let data = findData("Pulse Rate")
                                             return (data.data)
@@ -310,40 +346,49 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                                     )()}
                                 </Typography>
                             </Box>
-                            <Box width={"100%"} height={"50%"} sx={{ borderTop:'1px solid #A8A8A8'}}>
-                                <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>SpO2 %</Typography>
-                                <Typography variant='h5' color={"#26C5E4"}>
+                            <Box width={"100%"} display={'flex'} justifyContent={'space-between'}  height={"33.33%"} sx={{ borderTop:'2px solid grey'}}>
+                                <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'5%'} paddingLeft={'5%'}>Wt (g)</Typography>
+                                <Typography variant='h6' color={"#5db673"} paddingTop={'1%'} paddingRight={'5%'}>
                                     {(() => {
-                                            let data = findData("SpO2")
+                                            let data = findData("Weight")
                                             return (data.data)
                                         }
                                     )()}
                                 </Typography>
                             </Box>
+                            
                         </Box>
                     </Stack>
-                    <Stack width={"100%"} height={'48%'} direction={'row'}>
-                        <Box width={'33%'} height={'100%'} sx={{ borderRight:'1px solid #A8A8A8', borderTop:'1px solid #A8A8A8'}} justifyContent={'center'} textAlign={'center'}>
-                            <Typography variant='h6'>
-                                {alarm}
-                            </Typography>
-                        </Box>
-                        <Box width={'42%'} height={'100%'} sx={{ borderRight:'1px solid #A8A8A8', borderTop:'1px solid #A8A8A8'}}></Box>
-                        <Box width={'25%'} height={'100%'} >
-                            <Box display={'flex'} width={'100%'} height={'33%'} sx={{ borderTop:'1px solid #A8A8A8'}} justifyContent={'space-between'} textAlign={'center'}>
+                    <Stack width={"100%"} height={'50%'} direction={'row'} >
+                        <Box width={'33.33%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                        <Box marginTop={'5%'}><Typography variant='caption' color={"#A8C5D4"}  paddingTop={'7%'} paddingRight={'10px'} >
+                                Alarm  
+                                </Typography>
+                                <FontAwesomeIcon icon={faBell} /></Box>
+                           
+                            <Typography  variant='subtitle1' color={`${alarmColor}`} >
                                 
-                                <Typography variant='subtitle2' color={"#A8C5D4"} paddingLeft={'5%'} paddingTop={'7%'}>PVI</Typography>
-                                <Typography variant='h5' color={"#26C5E4"} paddingRight={'13%'} paddingTop={'2%'}>
+                                {alarm}
+                                
+                            </Typography>
+                            
+                        </Box>
+                        <Box width={'33.33%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}}></Box>
+                        <Box width={'33.33%'} height={'100%'} >
+                            {/* <Box display={'flex'} width={'100%'} height={'33%'} sx={{ borderTop:'2px solid grey'}} justifyContent={'space-between'} textAlign={'center'}>
+                                
+                                <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'7%'} paddingLeft={'5%'}>PVI</Typography>
+                                <Typography variant='h6' color={"#5db673"} paddingTop={'2%'} paddingRight={'5%'}>
                                     {(() => {
                                             let data = findData("PVI")
                                             return (data.data)
                                         }
                                     )()}
                                 </Typography>
-                            </Box>
-                            <Box display={'flex'} width={'100%'} height={'33%'} sx={{ borderTop:'1px solid #A8A8A8'}} justifyContent={'space-between'} textAlign={'center'}>
-                                <Typography variant='subtitle2' color={"#A8C5D4"} paddingLeft={'5%'} paddingTop={'7%'}>PI</Typography>
-                                <Typography variant='h5' color={"#26C5E4"} paddingRight={'13%'} paddingTop={'2%'}>
+                            </Box> */}
+                            <Box display={'flex'} width={'100%'} height={'50%'} sx={{ borderTop:'2px solid grey'}} justifyContent={'space-between'} textAlign={'center'}>
+                                <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'15%'} paddingLeft={'5%'}>PI</Typography>
+                                <Typography variant='h6' color={"#5db673"} paddingTop={'11%'} paddingRight={'5%'}>
                                     {(() => {
                                             let data = findData("PI")
                                             return (data.data)
@@ -351,9 +396,9 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                                     )()}
                                 </Typography>
                             </Box>
-                            <Box display={'flex'} width={'100%'} height={'34%'} sx={{ borderTop:'1px solid #A8A8A8'}} justifyContent={'space-between'} textAlign={'center'}>
-                                <Typography variant='subtitle2' color={"#A8C5D4"} paddingLeft={'5%'} paddingTop={'5%'}>SIQ</Typography>
-                                <Box width={'40%'} marginRight={'13%'} height={'60%'} sx={{border:'2px solid #A8C5D4' , borderRadius:'3px'}}>
+                            <Box display={'flex'} width={'100%'} height={'50%'} sx={{ borderTop:'2px solid grey'}} justifyContent={'space-between'} >
+                                <Typography variant='caption' color={"#A8C5D4"} paddingLeft={'5%'} paddingTop={'15%'} >SIQ</Typography>
+                                <Box width={'40%'} marginRight={'4%'} marginTop={'11%'} height={'50%'} sx={{border:'2px solid #A8C5D4' , borderRadius:'3px'}}>
                                     {(() => {
                                         let data = findData("SIQ")
                                         return(
@@ -370,17 +415,29 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
             </>):(<>
             <Box width={'100%'} height={'100%'} sx={{backgroundColor:'transparent'}} display={'flex'} textAlign={"center"} justifyContent={"center"}>
             <Stack width={'100%'} height={'100%'} justifyContent={"center"} textAlign={"center"}>
-                    <PowerSettingsNewIcon sx={{fontSize: 150, color:'red', marginLeft:'auto', marginRight:'auto'}}/>
-                    <Typography variant='h6' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'white'}}>Device {props?.device_id} not active/connected</Typography>
-                </Stack>
+                    <FontAwesomeIcon icon={faPowerOff} style={{fontSize: 70, color:'white', marginLeft:'auto', marginRight:'auto', fontWeight:'lighter', paddingBottom:'3%'}} />
+                    <Typography variant='subtitle1' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'grey'}}>{props?.device_id}</Typography>
+                    <Typography variant='subtitle1' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'grey'}}>Not Active/Connected</Typography>
+            </Stack>
             </Box>
                 
             </>)}
             
 
           </Card>
-        </Paper>
-        </Link>
+          </ButtonBase>
+        {/* </Link> */}
+        <NewDeviceDetails 
+        isDialogOpened={isOpen} 
+        handleCloseDialog={() => {console.log("MY BOI");setIsOpen(false)}}
+        observation_resource={props.observation_resource}
+        communication_resource={props.communication_resource}
+        device_id={props.device_id}
+        device_resource_id={props.device_resource_id}
+        patient={props.patient}
+        newData={newData}
+        />
+
         
       </Box>
   )

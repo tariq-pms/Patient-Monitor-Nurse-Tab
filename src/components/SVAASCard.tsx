@@ -1,13 +1,12 @@
 // import { AccountCircle } from '@mui/icons-material'
-import { Box, Paper, Card, Stack, Typography} from '@mui/material'
+import { Box, Card, Stack, Typography} from '@mui/material'
 // import { red } from '@mui/material/colors'
 import { FC, useEffect, useState } from 'react'
 // import { Link } from 'react-router-dom'
-import { Divider } from '@mui/material';
-import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
-import { Link } from 'react-router-dom';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPersonBreastfeeding, } from '@fortawesome/free-solid-svg-icons'
+import { faBell, faPowerOff, } from '@fortawesome/free-solid-svg-icons'
+import { NewDeviceDetails } from './NewDeviceDetails';
 
 export interface DeviceDetails {
   key: string;
@@ -31,7 +30,7 @@ export interface DeviceDetails {
             "value": string;
         }[];
     
-};
+} | null;
   device_resource_id: string;
   observation_resource: {
     "resourceType": string;
@@ -127,9 +126,9 @@ export interface DeviceDetails {
 
 export const SVAASCard: FC<DeviceDetails> = (props): JSX.Element => {
 
-    const [alarmColor, setAlarmColor] = useState("white")
+    const [alarmColor, setAlarmColor] = useState("#202020")
     // const devicetimer = setInterval(timer, 10000)
-
+    const [isOpen, setIsOpen] = useState(false);
 
 
     // const devicetimer = setInterval(timer, 10000)
@@ -145,7 +144,25 @@ export const SVAASCard: FC<DeviceDetails> = (props): JSX.Element => {
     const [requiredForTimer, setRequiredForTimer] = useState(false)
 
     const [requiredForBorderColor, setRequiredForBorderColor] = useState(false)
+    const [isBlinking, setIsBlinking] = useState(false);
+
+    useEffect(() => {
+        let intervalId: number | undefined;
     
+        if (newData) {
+          intervalId = setInterval(() => {
+            setIsBlinking((prevIsBlinking) => !prevIsBlinking);
+          }, 300); // Adjust the blinking interval (in milliseconds) as needed
+        } else {
+          clearInterval(intervalId);
+          setIsBlinking(false);
+        }
+    
+        return () => {
+          clearInterval(intervalId);
+        };
+      }, [alarmColor]);
+
     useEffect(() => {
     // let devicetimer = setInterval(timer, 10000)    
     setRunNo(runNo+1)
@@ -191,7 +208,7 @@ export const SVAASCard: FC<DeviceDetails> = (props): JSX.Element => {
         let timer: number | undefined;
         
         if(newData){
-            timer = setInterval(() => {setNewData(false);setAlarmColor("white");clearInterval(timer)},7000)
+            timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},7000)
 
         }
         return () => {
@@ -217,150 +234,49 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
         sm: "500px",
         md: "500px",
         lg: "500px"
-      }} sx={{backgroundColor:'#00547A', borderRadius:'25px'}} //border: alarmColor!='transparent' ? `6px solid ${alarmColor}`: ""
-      onMouseLeave={() => {setControlOpacity("0.8")}} onMouseEnter={() => {setControlOpacity("1")}}>
+      }} sx={{borderRadius:'25px'}} //border: alarmColor!='transparent' ? `6px solid ${alarmColor}`: ""
+      onMouseLeave={() => {setControlOpacity("0.8")}} onMouseEnter={() => {setControlOpacity("1")}} onClick={() => {setIsOpen(true)}}>
         
-        <Link to="devicedata" style={{ textDecoration: 'none' }} state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}>
-        <Paper elevation={2} sx={{ borderRadius: "25px", backgroundColor:'transparent', opacity:controlOpacity, boxShadow: `0px 0px 5px 5px ${alarmColor}`}}>
-          <Card
-            style={{ backgroundColor: "transparent", borderRadius: "25px", height:"300px", boxShadow:'none'
-             }}
+        {/* <Link to="devicedata" style={{ textDecoration: 'none' }} state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}> */}
+        <Card
+style={{ backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)', borderRadius: "25px", height:"300px", opacity:controlOpacity, boxShadow: `0px 0px 30px 5px ${isBlinking ? alarmColor: '#202020'}`, border:'1px solid #606060'             }}
           >
             {newData ? (<>
-                <Stack width={'100%'} height={'100%'} justifyContent={'center'}>
-                    <Box display={'flex'} width={'100%'} height={'20%'} paddingTop={'2%'}>
-                        <Box width={'70%'} height={'100%'} textAlign={'right'}>
-                            <div style={{fontSize: '130%', paddingRight:'3%' ,paddingTop:'3%', fontWeight:800}} >
+                <Stack width={'100%'} height={'100%'}>
+                    <Box display={'flex'} width={'100%'} height={'12%'} paddingTop={'2%'}>
+                        <Box width={'30%'} height={'100%'} textAlign={'left'} paddingLeft={'5%'} >
+                        <Typography variant="subtitle2" sx={{fontWeight:"bold", marginLeft:'5px'}} color={'#CBCFE5'}>
+                                    {props.patient?.identifier && props?.patient?.identifier[0]?.value}
+                                    </Typography>
+                        </Box>
+                        <Box width={'40%'} height={'100%'} textAlign={'center'}>
+                            <div style={{fontSize: '100%', paddingRight:'3%' , fontWeight:500}} >
                                 {(() => {
                                     let data = findData("MODE")
                                     return (data.unit+" "+"MODE")
                                 })()}
                             </div>
+                            
                         </Box> 
-                        <FontAwesomeIcon icon={faPersonBreastfeeding} fontSize={'250%'} color='#CBCFE5'/>
+                        {/* <FontAwesomeIcon icon={faPersonBreastfeeding} fontSize={'250%'} color='#CBCFE5'/> */}
                         <Box display={'flex'} width={'30%'} height={'100%'}>
                             
-                            <Box width={'30%'} height={'65%'} sx={{backgroundColor:'transparent'}}>
-                                <Typography variant="subtitle2" sx={{fontWeight:"bold",marginTop:'5px', marginLeft:'5px'}} color={'#CBCFE5'}>
-                                    {props.patient?.identifier && props?.patient?.identifier[0]?.value}<br />
-                                    <Typography fontSize={'70%'} sx={{fontWeight:"bold"}} color={'#CBCFE5'}>
+                            <Box paddingRight={'2%'} width={'100%'} height={'65%'} sx={{backgroundColor:'transparent'}}>
+                                
+                                    <Typography variant="subtitle2"  color={'#CBCFE5'}>
                                         {props?.device_id}
                                     </Typography>
-                                </Typography>
+                                
                             </Box>
                         </Box>                         
                     </Box>
-                    <Divider style={{backgroundColor:'#A8A8A8', height:'0.5%'}}/>
-                    <Stack direction={'row'} width={'100%'} justifyContent={'space-evenly'} height={'60%'} marginTop={'3%'}>
-                        <Stack spacing={'5%'} width={'46%'} height={'100%'}>
-                            <Box width={'100%'} height={'40%'} sx={{backgroundColor:'#12232B', borderRadius:'5px'}}></Box>
-                            <Box width={'100%'} height={'40%'} sx={{backgroundColor:'#003548', borderRadius:'5px'}}>
-                                <Stack direction={'row'} width={'100%'} height={'100%'}>
-                                    <Box width={'18%'} height={'100%'} textAlign={'center'} justifyContent={'center'}>
-                                        <Typography variant='caption'>SIQ</Typography>
-                                        <Box width={'30%'} height={'50%'} sx={{border:'2px solid white' , borderRadius:'3px', margin:'auto'}}>
-                                            {(() => {
-                                                let data = findData("SIQ")
-                                                return(
-                                                    <Box width={'100%'} height={`${data.data}`+"%"} sx={{backgroundColor:'#26C5E4', marginTop:'auto'}}></Box>
-                                                )
-                                            })()}
-                                        </Box>
-                                    </Box>
-                                    <Divider orientation='vertical' sx={{height:'70%', marginTop:'auto', marginBottom:'auto'}}/>
-                                    <Box width={'27%'} height={'100%'} textAlign={'center'} justifyContent={'center'}>
-                                        <Typography variant='caption'>PI (%)</Typography>
-                                        <Typography variant='h5' color={"#26C5E4"} paddingTop={'2%'}>
-                                            {(() => {
-                                                    let data = findData("PI")
-                                                    return (data.data)
-                                                }
-                                            )()}
-                                        </Typography>
-                                    </Box>
-                                    <Divider orientation='vertical' sx={{height:'70%', marginTop:'auto', marginBottom:'auto'}}/>
-                                    <Box width={'27%'} height={'100%'}  textAlign={'center'} justifyContent={'center'}>
-                                        <Typography variant='caption'>SpO2 (%)</Typography>
-                                        <Typography variant='h5' color={"#26C5E4"} paddingTop={'2%'}>
-                                            {(() => {
-                                                    let data = findData("SPO2")
-                                                    return (data.data)
-                                                }
-                                            )()}
-                                        </Typography>
-                                    </Box>
-                                    <Divider orientation='vertical' sx={{height:'70%', marginTop:'auto', marginBottom:'auto'}}/>
-                                    <Box width={'27%'} height={'100%'} textAlign={'center'} justifyContent={'center'}>
-                                        <Typography variant='caption'>PR (bpm)</Typography>
-                                        <Typography variant='h5' color={"#26C5E4"} paddingTop={'2%'}>
-                                            {(() => {
-                                                    let data = findData("Pulse Rate")
-                                                    return (data.data)
-                                                }
-                                            )()}
-                                        </Typography>
-                                    </Box>
-                                </Stack>
-                            </Box>
-                        </Stack>
-                        <Box width={'46%'} height={'86%'} sx={{backgroundColor:'#003548', borderRadius:'5px'}}>
-                            <Stack width={'100%'} height={'100%'}>
-                                <Stack direction={'row'} width={'100%'} height={'50%'}>
-                                    <Box width={'50%'} height={'100%'} sx={{ borderTopLeftRadius:'5px'}} justifyContent={'center'} textAlign={'center'}>
-                                        <Typography variant='caption'>Apnea (s)</Typography>
-                                        <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-                                            <Typography variant='h5' color={"#26C5E4"} paddingTop={'2%'}>
-                                                {(() => {
-                                                        let data = findData("Apnea")
-                                                        return (data.data)
-                                                    }
-                                                )()}
-                                            </Typography>
-                                        </div>
-                                    </Box>
-                                    <Divider orientation='vertical' sx={{height:'70%', marginTop:'auto', marginBottom:'auto'}}/>
-                                    <Box width={'50%'} height={'100%'} sx={{ borderTopRightRadius:'5px'}} justifyContent={'center'} textAlign={'center'}>
-                                        <Typography variant='caption'>FiO2 (%)</Typography>
-                                        <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-                                            <Typography variant='h5' color={"#26C5E4"} paddingTop={'2%'}>
-                                                {(() => {
-                                                        let data = findData("Current FiO2 Flow")
-                                                        return (data.data)
-                                                    }
-                                                )()}
-                                            </Typography>
-                                            <Typography variant='caption' color={"#26C5E4"} paddingTop={'13%'} paddingLeft={'3%'}>
-                                                {(() => {
-                                                        let data = findData("Set FiO2")
-                                                        return (data.data)
-                                                })()}
-                                            </Typography>
-                                        </div>
+                    <Stack width={"100%"} height={'40%'} direction={'row'}>
+                        <Box width={'37.5%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                        <div style={{marginTop:'7%'}}><Typography variant='caption' color={"#A8C5D4"}>Flow (L/min)</Typography></div>
 
-
-                                    </Box>
-                                    
-                                </Stack>
-                                <Divider orientation='horizontal' sx={{width:'35%', marginLeft:'7%', marginRight:'auto'}}/>
-                                <Divider orientation='horizontal' sx={{width:'35%', marginLeft:'auto', marginRight:'7%'}}/>
-                                <Stack direction={'row'} width={'100%'} height={'50%'}>
-                                    <Box width={'50%'} height={'100%'} sx={{ borderBottomLeftRadius:'5px'}} justifyContent={'center'} textAlign={'center'}>
-                                        <Typography variant='caption' >Pressure (cmH2O)</Typography>
+                        {/* <Typography variant='caption' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Flow (L/min)</Typography> */}
                                         <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-                                            <Typography variant='h5' color={"#26C5E4"} paddingTop={'2%'}>
-                                                {(() => {
-                                                        let data = findData("CPAP Pressure") //CPAP Pressure?? Check with SVAAS Team
-                                                        return (data.data)
-                                                    }
-                                                )()}
-                                            </Typography>
-                                        </div>
-                                    </Box>
-                                    <Divider orientation='vertical' sx={{height:'70%', marginTop:'auto', marginBottom:'auto'}}/>
-                                    <Box width={'50%'} height={'100%'} sx={{ borderBottomRightRadius:'5px'}} justifyContent={'center'} textAlign={'center'}>
-                                        <Typography variant='caption'>Flow (L/min)</Typography>
-                                        <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-                                            <Typography variant='h5' color={"#26C5E4"} paddingTop={'2%'}>
+                                            <Typography variant='h3' color={"#5db673"} paddingTop={'5%'} >
                                                 {(() => {
                                                         let data = findData("Current FiO2 Flow") //Current FiO2 Flow?? Check with SVAAS Team
                                                         return (data.data)
@@ -368,33 +284,192 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                                                 )()}
                                             </Typography>
                                         </div>
-                                    </Box>
-                                </Stack>
-                            </Stack>
                         </Box>
-                        
+                        <Box width={'37.5%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                        <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'} >Pressure (cmH2O) </Typography>
+                                        <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
+                                            <Typography variant='h3' color={"#5db673"} paddingTop={'5%'} >
+                                                {(() => {
+                                                        let data = findData("CPAP Pressure") //CPAP Pressure?? Check with SVAAS Team
+                                                        return (data.data)
+                                                    }
+                                                )()}
+                                                
+                                            </Typography>
+                                            </div>
+                                           
+                        </Box>
+                        <Box width={'33.33%'} height={'100%'} justifyContent={'center'} textAlign={'center'} sx={{borderTop:'2px solid grey'}}>
+
+                        <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>FiO2 (%)</Typography>
+                                        <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
+                                            <Typography variant='h3' color={"#5db673"} paddingTop={'5%'} >
+                                                {(() => {
+                                                        let data = findData("Current FiO2 Flow")
+                                                        return (data.data)
+                                                    }
+                                                )()}
+                                            </Typography>
+                                            <Typography variant='h5' color={"#5db673"} paddingTop={'5%'} paddingLeft={'3%'}>
+                                                {(() => {
+                                                        let data = findData("Set FiO2")
+                                                        return (data.data)
+                                                })()}
+                                            </Typography>
+                                        </div>
+     
+
+
+
+                        </Box>
                     </Stack>
-                    <Box width={'90%'} height={'15%'} marginLeft={'auto'} marginRight={'auto'} marginBottom={'5%'} sx={{backgroundColor:'transparent', border:'2px solid #A8A8A8', borderRadius:'5px'}}>
-                        <Typography variant='h6' paddingLeft={'2%'} paddingTop={'0.5%'}>
-                            {alarm}
-                        </Typography>
-                    </Box>
+                    <Stack width={"100%"} height={'44%'} direction={'row'}>
+                        <Box width={'37.5%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                        <Box marginTop={'5%'}><Typography variant='caption' color={"#A8C5D4"}  paddingTop={'7%'} paddingRight={'10px'} >
+                                Alarm  
+                                </Typography>
+                                <FontAwesomeIcon icon={faBell} /></Box>
+                           
+                            <Typography variant='subtitle1' color={`${alarmColor}`} >
+                                
+                                {alarm}
+                                
+                            </Typography>
+                            </Box>
+                        
+                        <Box width={'37.5%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}}>
+                            <Box display={'flex'} height={'100%'}>
+                            <Box display={'flex'} width={'50%'} sx={{borderRight:'2px solid grey',borderTop:'2px solid grey'}} marginTop={'47%'}justifyContent={'space-around'}>
+                            <Typography variant='caption'  color={"#A8C5D4"} paddingTop={'15%'}  >PR(BPM)</Typography>
+                            <Typography variant='h6' paddingTop={'5%'} color={"#5db673"}>
+                                    {(() => {
+                                            let data = findData("PR")
+                                            return (data.data)
+                                        }
+                                    )()}
+                                </Typography>
+                        </Box>
+                        <Box display={'flex'} width={'50%'} height={'25%'} sx={{borderTop:'2px solid grey'}} marginTop={'47%'} justifyContent={'space-around'}>
+                            <Typography variant='caption' paddingTop={'15%'} color={"#A8C5D4"}  >SPO2</Typography>
+                            <Typography variant='h6' color={"#5db673"} paddingTop={'5%'}>
+                                    {(() => {
+                                            let data = findData("SPO2")
+                                            return (data.data)
+                                        }
+                                    )()}
+                                </Typography>
+                        </Box>
+                     </Box>
+                       </Box>
+                        <Box width={'33.33%'} height={'100%'} >
+                            <Box display={'flex'} width={'100%'} height={'30%'} sx={{ borderTop:'2px solid grey'}} justifyContent={'space-between'}>
+                                
+                                <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'7%'} paddingLeft={'5%'}>Apnea (s)</Typography>
+                                <Typography variant='h6' color={"#5db673"}  paddingTop={'2%'}  paddingRight={'5%'}>
+                                    {(() => {
+                                            let data = findData("Apnea")
+                                            return (data.data)
+                                        }
+                                    )()}
+                                </Typography>
+
+                            </Box>
+                            <Box display={'flex'} width={'100%'} height={'30%'} sx={{ borderTop:'2px solid grey'}} justifyContent={'space-between'}>
+                                <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'7%'} paddingLeft={'5%'}>PI</Typography>
+                                <Typography variant='h6' color={"#5db673"} paddingTop={'2%'} paddingRight={'5%'}>
+                                    {(() => {
+                                            let data = findData("PI")
+                                            return (data.data)
+                                        }
+                                    )()}
+                                </Typography>
+                            </Box>
+                            
+                            {/* <Box display={'flex'} width={'100%'} height={'20%'} sx={{ borderTop:'2px solid grey'}} justifyContent={'space-around'}>
+                                <Typography variant='caption' color={"#A8C5D4"} paddingTop={'7%'}>SIQ</Typography>
+                                <Typography variant='h5' color={"#5db673"} paddingTop={'2%'}>
+                                    {(() => {
+                                            let data = findData("SIQ")
+                                            return(
+                                            <Box width={`${data.data}`+"%"} height={'100%'} sx={{backgroundColor:'#5db673'}}></Box>
+                                        )
+                                        }
+                                    )()}
+                                </Typography></Box> */}
+                                {/* <Box width={'40%'} height={'60%'} sx={{border:'2px solid #A8C5D4' , borderRadius:'3px'}}>
+                                    {(() => {
+                                        let data = findData("SIQ")
+                                        return(
+                                            <Box width={`${data.data}`+"%"} height={'100%'} sx={{backgroundColor:'#5db673'}}></Box>
+                                        )
+                                    })()}
+                                </Box> */}
+                                    
+                                        {/* <Box  width={'100%'} height={'34%'} sx={{ borderTop:'1px solid #A8A8A8'}} justifyContent={'space-between'} textAlign={'left'} marginTop={'0%'} paddingTop={'0%'}>
+                                        <Typography variant='subtitle2' color={"#A8C5D4"} paddingLeft={'0%'} paddingTop={'10%'}>SIQ</Typography>
+                                                <Box width={'50%'} marginLeft={'30%'} marginTop={'0%'} height={'50%'} sx={{border:'2px solid #A8C5D4' , borderRadius:'3px'}}>
+                                                     {(() => {
+                                             let data = findData("SIQ")
+                                                 return(
+                                               <Box width={`${data.data}`+"%"} height={'100%'} sx={{backgroundColor:'#5db673'}}></Box>
+                                                 )
+                                              })()}
+                                         </Box>
+                                                                        
+                                          </Box>
+                                 */}
+                                 <Box display={'flex'} width={'100%'} height={'34%'} sx={{ borderTop:'2px solid #A8A8A8'}} justifyContent={'space-between'} >
+                                <Typography variant='caption' color={"#A8C5D4"} paddingLeft={'5%'} paddingTop={'7%'} >SIQ</Typography>
+                                <Box width={'40%'} marginRight={'4%'} marginTop={'5%'} height={'50%'} sx={{border:'2px solid #A8C5D4' , borderRadius:'3px'}}>
+                                    {(() => {
+                                        let data = findData("SIQ")
+                                        return(
+                                            <Box width={`${data.data}`+"%"} height={'100%'} sx={{backgroundColor:'#26C5E4'}}></Box>
+                                        )
+                                    })()}
+                                </Box>
+                                
+                            </Box>
+                            
+                            {/* <Box display={'flex'} width={'100%'} height={'20%'} sx={{ borderTop:'2px solid grey'}} justifyContent={'space-around'}>
+                                <Typography variant='caption' color={"#A8C5D4"} paddingTop={'5%'}>PI</Typography>
+                                <Typography variant='h5' color={"#5db673"} paddingTop={'2%'}>
+                                    {(() => {
+                                            let data = findData("PI")
+                                            return (data.data)
+                                        }
+                                    )()}
+                                </Typography>
+                            </Box> */}
+                            
+                        </Box>
+                    </Stack>
+                    
                 </Stack>
             </>):(<>
             <Box width={'100%'} height={'100%'} sx={{backgroundColor:'transparent'}} display={'flex'} textAlign={"center"} justifyContent={"center"}>
             <Stack width={'100%'} height={'100%'} justifyContent={"center"} textAlign={"center"}>
-                    <PowerSettingsNewIcon sx={{fontSize: 150, color:'red', marginLeft:'auto', marginRight:'auto'}}/>
-                    <Typography variant='h6' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'white'}}>Device {props?.device_id} not active/connected</Typography>
-                </Stack>
+                    <FontAwesomeIcon icon={faPowerOff} style={{fontSize: 70, color:'white', marginLeft:'auto', marginRight:'auto', fontWeight:'lighter', paddingBottom:'3%'}} />
+                    <Typography variant='subtitle1' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'grey'}}>{props?.device_id}</Typography>
+                    <Typography variant='subtitle1' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'grey'}}>Not Active/Connected</Typography>
+            </Stack>
             </Box>
                 
             </>)}
             
 
-          </Card>
-        </Paper>
-        </Link>
-        
+        </Card>
+        {/* </Link> */}
+        <NewDeviceDetails 
+        isDialogOpened={isOpen} 
+        handleCloseDialog={() => setIsOpen(false)}
+        observation_resource={props.observation_resource}
+        communication_resource={props.communication_resource}
+        device_id={props.device_id}
+        device_resource_id={props.device_resource_id}
+        patient={props.patient}
+        newData={newData}
+        />
       </Box>
   )
 }

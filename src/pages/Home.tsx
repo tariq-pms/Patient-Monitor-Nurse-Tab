@@ -10,7 +10,6 @@ import { useAuth0 } from '@auth0/auth0-react';
 // import MenuItem from '@mui/material/MenuItem';
 // import Menu from '@mui/material/Menu';
 
-import { useTheme } from "@material-ui/core/styles";
 import { ExpandMoreRounded } from '@mui/icons-material';
 import Accordion from '@mui/material/Accordion/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -88,7 +87,7 @@ export const Home = (currentRoom: any) => {
 //         },
 //     ]
 // })
-  const theme = useTheme();
+console.log(loading)
   const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();
 
   const [devices, setDevices] = useState({
@@ -141,7 +140,6 @@ export const Home = (currentRoom: any) => {
       },
     ],
   });
-  console.log(loading)  
 
   
   useEffect(() => {
@@ -186,20 +184,17 @@ export const Home = (currentRoom: any) => {
           })
         // }
       }
-      else if (recieved_data.location.split("/")[0] == "Device"){
-        // if (devArray.includes(recieved_data.resourceId)){
-          fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${JSON.parse(data.data).location}`, {
-          credentials: "omit",
-          headers: {
-            Authorization: "Basic "+ btoa("fhiruser:change-password"),
-            },
-          })
-          .then((response) => response.json())
-          .then((data) => {
-
-          })
-        // }
-      }
+      // else if (recieved_data.location.split("/")[0] == "Device"){
+      //   // if (devArray.includes(recieved_data.resourceId)){
+      //     fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${JSON.parse(data.data).location}`, {
+      //     credentials: "omit",
+      //     headers: {
+      //       Authorization: "Basic "+ btoa("fhiruser:change-password"),
+      //       },
+      //     })
+      //     .then((response) => response.json())
+      //   // }
+      // }
       
       // console.log(data.data);
     };
@@ -282,7 +277,7 @@ export const Home = (currentRoom: any) => {
 
  
   const warmer = devices.entry?.map((device) => {
-    if(String(device.resource.identifier[1]?.value)=="Comprehensive Infant Care Centre"){
+    if(String(device.resource.identifier[1]?.value)=="Comprehensive Infant Care Centre" ){
     var correct = false
     // var temp = String(device.resource.id)
     if(device.resource.patient && parentcomm[String(device.resource.id)] && parentobs[String(device.resource.id)]){
@@ -432,8 +427,10 @@ export const Home = (currentRoom: any) => {
                       gap: '2rem',
                       justifyContent: "left",
                       width:"100%",
+                      marginBottom:'2%'
                     }}
-                  >{warmer}</Box>
+                  >{warmer}
+                  </Box>
                 </AccordionDetails>
               </Accordion>
               <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent" , backgroundImage:'none' , marginBottom:"10px", borderBottom:'2px solid #00B1FD'}}>
@@ -482,7 +479,7 @@ export const Home = (currentRoom: any) => {
                       gap: '2rem',
                       justifyContent: "left",
                       width:"100%",
-                      
+                      marginBottom:'2%'
                     }}
                   >
                     {cpap}
@@ -494,7 +491,7 @@ export const Home = (currentRoom: any) => {
             </Box>
             )}
             {!isAuthenticated && !isLoading && (
-              <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'3%'} width={'70%'}>
+              <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
                 <img src={pmsLogo} alt="Phoenix" style={{
                   maxWidth: '50%', // Set the maximum width to 100%
                   height: 'auto', // Maintain the aspect ratio
@@ -502,10 +499,10 @@ export const Home = (currentRoom: any) => {
                   marginRight:'auto'
                 }}/>
                 <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
-                <Typography variant='h6'>Placeholder for some subtitles ig</Typography>
-                <Stack direction={'row'} spacing={'5%'} justifyContent={'space-evenly'}>
-                <Button variant='outlined'sx={{width:'30%', height:'140%'}} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Check out our product page</Button>
-                <Button variant='contained' sx={{width:'30%', height:'140%'}} onClick={() => loginWithRedirect()}>Sign In</Button>
+                <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
+                <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
+                <Button variant='outlined'sx={{width:'200px', height:'50px', borderRadius:'100px'}} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>
+                <Button variant='contained' sx={{width:'200px', height:'50px', borderRadius:'100px'}} onClick={() => loginWithRedirect()}>Sign In</Button>
                 
                 </Stack>
               </Stack>

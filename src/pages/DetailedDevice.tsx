@@ -467,11 +467,10 @@ export const DetailedDevice: FC = () => {
         };
         socket.onerror = () => {console.log(`Error in socket connection`)}
       }, [])
-    const [vvtemp, setvvtemp] = useState(false)
     const alarmUI = newalarm[selectAlarm].time.alarm.map((vals,index) => {
     if(newalarm[selectAlarm].time.priority[index]=="High Priority"){
         return (
-            <Box width={'180px'} height={'100px'} sx={{border:'2px solid red', borderRadius:'10px', margin:'15px'}} justifyContent={'center'} textAlign={'center'}>
+            <Box width={'180px'} height={'100px'} sx={{border:'2px solid red', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 40px 1px #6e6f88`}} justifyContent={'center'} textAlign={'center'}>
                 <Typography variant='subtitle1' paddingTop={'13%'}>{vals}</Typography>
                 <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
                     <Typography variant='subtitle2' >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
@@ -482,7 +481,7 @@ export const DetailedDevice: FC = () => {
     }
     if(newalarm[selectAlarm].time.priority[index]=="Medium Priority"){
         return (
-            <Box width={'180px'} height={'100px'} sx={{border:'2px solid yellow', borderRadius:'10px', margin:'15px'}} justifyContent={'center'} textAlign={'center'}>
+            <Box width={'180px'} height={'100px'} sx={{border:'2px solid yellow', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 40px 1px #6e6f88`}} justifyContent={'center'} textAlign={'center'}>
                 <Typography variant='subtitle1' paddingTop={'13%'}>{vals}</Typography>
                 <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
                     <Typography variant='subtitle2' >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
@@ -492,7 +491,7 @@ export const DetailedDevice: FC = () => {
     }
     if(newalarm[selectAlarm].time.priority[index]=="Low Priority"){
         return (
-            <Box width={'180px'} height={'100px'} sx={{border:'2px solid cyan', borderRadius:'10px', margin:'15px'}} justifyContent={'center'} textAlign={'center'}>
+            <Box width={'180px'} height={'100px'} sx={{border:'2px solid cyan', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 40px 1px #6e6f88`}} justifyContent={'center'} textAlign={'center'}>
                 <Typography variant='subtitle1' paddingTop={'13%'}>{vals}</Typography>
                 <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
                     <Typography variant='subtitle2' >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
@@ -524,8 +523,9 @@ export const DetailedDevice: FC = () => {
                 let weekmonth = (Number(weekNewDate.getMonth())+1).toString().padStart(2,'0')
                 let weekyear = weekNewDate.getUTCFullYear()
                 let weekDate = weekyear+"-"+weekmonth+"-"+weekdate
+                // url.push(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource?.id}/_history?_count=1&_since=${weekDate}T00:00:00Z`)
                 for (let index2 = 0; index2 < 24; index2++) {
-                    url.push(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource?.id}/_history?_count=50&_since=${weekDate}T${index2.toString().padStart(2,'0')}:00:00Z`)
+                    url.push(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${observation_resource?.id}/_history?_count=1&_since=${weekDate}T${index2.toString().padStart(2,'0')}:00:00Z`)
                 }
                 
                                 
@@ -542,7 +542,7 @@ export const DetailedDevice: FC = () => {
             }
         }
         let temparr: any[] = []
-        let prevdate: string | any[] = []
+        let prevdate = ""
         Promise.all(
             url.map((query) => {
                 return fetch(query, {
@@ -555,9 +555,12 @@ export const DetailedDevice: FC = () => {
                 .then((response) => response.json())
                 .then((data) => {
                     // console.log(data.entry)
+                    // console.log((data.entry[0].resource.meta.lastUpdated).toString())
+
                     if(data.total===0){return null}
-                    if(prevdate.includes((data.entry[0].resource.meta.lastUpdated).toString())){return null}
-                    prevdate += (data.entry[0].resource.meta.lastUpdated).toString()
+                    if(((data.entry[0].resource.meta.lastUpdated).toString())==prevdate){return null}
+                    
+                    prevdate = (data.entry[0].resource.meta.lastUpdated).toString()
 
                     // var totaldata = data.total 
                     // let page = 1
@@ -565,7 +568,7 @@ export const DetailedDevice: FC = () => {
                     //     totaldata = 10000
                     // }
                     // temparr.push(data.entry.map((val: { resource: any; }) => (val.resource)))
-                   
+                    
                     return (data.entry.map((val: any)=>(val)))
                     
                     
@@ -606,10 +609,12 @@ export const DetailedDevice: FC = () => {
                     // })
                 })
             })
+            
         )
         .then((results) => {
             const dats = results.filter((entry) => entry!==null)
             .reduce((accumulator, currentvalue) => accumulator.concat(currentvalue),[])
+            console.log(dats)
             setObservation(dats)
         })
         
@@ -1372,7 +1377,7 @@ export const DetailedDevice: FC = () => {
                 
             </Stack> */}
             <Divider sx={{marginTop:'20px'}} />
-            {newData && newObs?.component[7]?.code ? 
+            {newData && newObs?.component[7]?.code ?
             <Box
             sx={{
                 display: "flex",
@@ -1473,12 +1478,14 @@ export const DetailedDevice: FC = () => {
                 })} */}
             </Box>
             
-            </Box>:<Box
+            </Box>:
+            <Box
             sx={{
                 display: "flex",
                 flexWrap: "wrap",
                 justifyContent: "center"}}>
-                    <Typography variant='h2' sx={{fontWeight:'bold'}}>{newData && 'Oximeter Not connected'}{!newData && ''}</Typography></Box>}
+                    <Typography variant='h2' sx={{fontWeight:'bold'}}>{newData && 'Oximeter Not connected'}{!newData && ''}</Typography>
+                    </Box>}
             <Divider sx={{marginTop:'20px', border:'1px solid white'}}/>
             <div style={{marginTop:'25px'}}>
             
@@ -1652,7 +1659,7 @@ export const DetailedDevice: FC = () => {
                 </Box>
                 <IconButton onClick={() => {if(selectAlarm<newalarm.length){setSelectAlarm(selectAlarm+1)}}}><KeyboardArrowRightIcon style={{ fontSize: '400%', color:`${rightarrowcolor}` }}/></IconButton>  
             </Stack>
-            <Button variant='contained' sx={{width:'40%', height:'70px', margin:'auto', marginTop:'6%', marginBottom:'3%'}} onClick={() => {setTableVisible(!tableVisisble)}} endIcon={tableVisisble ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}>
+            <Button sx={{width:'20%', height:'70px', margin:'auto', marginTop:'6%', marginBottom:'3%', borderRadius:'50px', color:'white', backgroundImage:'linear-gradient(to bottom, #465782, #070B13, #34405D)', border:'0.5px solid grey', boxShadow: `0px 0px 20px 5px #6e6f88`, textTransform:'capitalize'}} onClick={() => {setTableVisible(!tableVisisble)}} endIcon={tableVisisble ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}>
                 <Typography variant='h5'>{tableVisisble && "Collapse"}{!tableVisisble && "Alarm Log"}</Typography>
             </Button>
             <Box width={'60%'} marginLeft={'auto'} marginRight={'auto'}>

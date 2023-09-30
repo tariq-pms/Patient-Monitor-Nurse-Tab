@@ -1,12 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, FC } from 'react'
 import { useAuth0 } from '@auth0/auth0-react';
 import Box from '@mui/material/Box';
 import { RoomCard } from '../components/RoomCard';
-import { Alert, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Snackbar, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Alert, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle,  Paper, Snackbar, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { CustomOkButton } from '../components/CustomOkButton';
+import { CustomNoButton } from '../components/CustomNoButton';
 
-export const Rooms = () => {
+export interface roomdata{
+  roomModified: Function;
+}
+
+export const Rooms:FC<roomdata> = (props) => {
     const {isAuthenticated} = useAuth0();
     const theme = useTheme();
     const [temproom, settemproom] = useState([{
@@ -27,8 +32,10 @@ export const Rooms = () => {
             
         }
     }])
+    const [roomAddedRemoved, setRoomAddedRemoved] = useState(false)
     useEffect(() => {
         if(isAuthenticated){
+        
         fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Location`, {
           credentials: "omit",
           headers: {
@@ -37,15 +44,16 @@ export const Rooms = () => {
         })
         .then((response) => response.json())
         .then((data) => {if(data.entry){
+          props.roomModified()
           settemproom(data.entry)
         }})
         }  
-      },[])
-      const [controlBorder, setControlboarder] = useState('grey')
-      const [controlOpacity, setOpacity] = useState("0.8")
-      const [addnewbutton, setaddnewbutton] = useState(false);
-      const [newRoomName, setNewRoomName] = useState("")
-      const [snackSucc, setSnackSucc] = useState(false);
+    },[roomAddedRemoved])
+    const [controlBorder, setControlboarder] = useState('grey')
+    const [controlOpacity, setOpacity] = useState("0.8")
+    const [addnewbutton, setaddnewbutton] = useState(false);
+    const [newRoomName, setNewRoomName] = useState("")
+    const [snackSucc, setSnackSucc] = useState(false);
     const [snack, setSnack] = useState(false)
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
@@ -56,7 +64,8 @@ export const Rooms = () => {
     
         setSnack(false);
         console.log(event);
-      };
+    };
+    
       const addNewRoom = () => {
         const data = {
             "resourceType": "Location",
@@ -83,6 +92,8 @@ export const Rooms = () => {
             setSnack(true)
             if(response.status==201){setSnackSucc(true)}
             else{setSnackSucc(false)}
+
+
         })
     }
       const addNewRoomButton = () => {
@@ -92,20 +103,21 @@ export const Rooms = () => {
             open={addnewbutton}
             onClose={() => setaddnewbutton(false)}
             aria-labelledby="responsive-dialog-title"
+            PaperProps={{style:{borderRadius:'40px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', minWidth:'400px', minHeight:'250px', textAlign:'center'}}}
         >
-            <DialogTitle id="responsive-dialog-title">
+            <DialogTitle sx={{textAlign:"center", fontWeight:'bold', paddingTop:'9%'}}>
             {"Add New Room"}
             </DialogTitle>
             <DialogContent>
-                <TextField id="standard-basic" label="Room Name" variant="standard" onChange={(e) => {setNewRoomName(e.target.value)}} />
+                <TextField id="standard-basic" label="Room Name" variant="standard" onChange={(e) => {setNewRoomName(e.target.value)}} sx={{width:'90%'}} />
             </DialogContent>
-            <DialogActions>
-            <Button onClick={() => setaddnewbutton(false)}>
-                Close
-            </Button>
-            <Button onClick={() => {addNewRoom();setaddnewbutton(false)}} autoFocus>
-                Add
-            </Button>
+            <DialogActions >
+              <Stack direction={'row'} width={'100%'} justifyContent={'space-around'} sx={{marginBottom:'7%'}}>
+              <Box onClick={() => {setaddnewbutton(false)}} ><CustomNoButton text="Cancel"></CustomNoButton></Box>
+              
+              {/* <Button onClick={() => {setMiniDialog(false)}}>Cancel</Button> */}
+              <Box onClick={() => {addNewRoom(); setaddnewbutton(false); setRoomAddedRemoved(!roomAddedRemoved)}}><CustomOkButton text="Confirm"></CustomOkButton></Box>
+              </Stack>     
             </DialogActions>
         </Dialog>
     
@@ -113,7 +125,7 @@ export const Rooms = () => {
     }
     const roomBoxes = temproom.map((room) => {
         return(
-            <RoomCard roomName={String(room.resource.identifier[0].value)} roomId={String(room.resource.id)}></RoomCard>
+            <RoomCard roomChange={() => {setRoomAddedRemoved(!roomAddedRemoved)}} roomName={String(room.resource.identifier[0].value)} roomId={String(room.resource.id)}></RoomCard>
         )
     })
   return (
@@ -150,10 +162,10 @@ export const Rooms = () => {
           >
             
             {temproom[0]?.resource.status!="" && roomBoxes}
-            <Box  width={"350px"} sx={{opacity:controlOpacity, backgroundColor:'transparent', border:`4px solid ${controlBorder}`, borderRadius:'30px'}} onMouseLeave={() => {setControlboarder("grey");setOpacity("0.8")}} onMouseEnter={() => {setControlboarder("#2BA0E0");setOpacity("1")}} onClick={() => {setaddnewbutton(true)}}>
-              <Paper  elevation={2} sx={{ borderRadius: "25px",background:'transparent'}}>
+            <Box  width={"350px"} sx={{opacity:controlOpacity, backgroundColor:'transparent', borderRadius:'30px'}} onMouseLeave={() => {setControlboarder("grey");setOpacity("0.8")}} onMouseEnter={() => {setControlboarder("#2BA0E0");setOpacity("1")}} onClick={() => {setaddnewbutton(true)}}>
+              <Paper  elevation={5} sx={{ borderRadius: "25px",background:'transparent'}}>
                 <Card
-                  style={{ background: "transparent", borderRadius: "25px", minHeight:"280px"
+                  style={{ background: "transparent", borderRadius: "25px", minHeight:"280px", border: `1px solid ${controlBorder}`
                   }}
                 >
                   <Stack width={"100%"} direction={"row"} sx={{justifyContent:"center", marginTop:"20px"}}>
