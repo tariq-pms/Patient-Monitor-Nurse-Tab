@@ -210,7 +210,7 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
     useEffect(() => {
         let timer: number | undefined;
         if(newData){
-            timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},1500000)
+            timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},15000)
 
         }
         return () => {

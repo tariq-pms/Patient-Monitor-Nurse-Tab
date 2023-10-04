@@ -99,6 +99,7 @@ export interface DeviceDetails {
           }[];
     };
     communication_resource: {
+      meta: any;
       "id" : string;
       "status" : string;
       "resourceType": string;
@@ -144,15 +145,8 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
     const chartRef3 = useRef<any | null>(null);
     const theme = useTheme();
     const [graphData, setGraphData] = useState(false)
-    const [selectAlarm, setSelectAlarm] = useState(0)
-    const [newalarm, setNewAlarm] = useState([{
-        'date': String,
-        'time': {
-            'val': String,
-            'alarm': [],
-            'priority': []
-        }
-    }])
+    const [selectAlarm, setSelectAlarm] = useState(1)
+    const [newalarm, setNewAlarm] = useState<Array<{ date: string; time: { val: string; alarm: string[]; priority: string[]; }; }>>([]);
     const leftarrowcolor = selectAlarm==0 ? '#606060' : 'white'
     const rightarrowcolor = selectAlarm==newalarm.length-1 ? '#606060' : 'white'
     const [tableVisisble, setTableVisible] = useState(false)
@@ -330,7 +324,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         stacked: false,
         plugins: {
             decimation:{
-                enabled: false,
+                enabled: true,
                 algorithm: 'min-max',
             },
           colors: {
@@ -399,7 +393,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         stacked: false,
         plugins: {
             decimation:{
-                enabled: false,
+                enabled: true,
                 algorithm: 'min-max',
             },
           colors: {
@@ -471,7 +465,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         stacked: false,
         plugins: {
             decimation:{
-                enabled: false,
+                enabled: true,
                 algorithm: 'min-max',
             },
           colors: {
@@ -480,6 +474,8 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
           legend: {
             display: false,
           },
+         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+         //   @ts-ignore
           htmlLegend: {
             // ID of the container to put the legend in
             containerID: 'legend-container',
@@ -539,7 +535,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
             position: 'right' as const,
             grid: {
                 color: '#303030',  
-              drawOnChartArea: true,
+              drawOnChartArea: false,
             },
             title: {
                 display: true,
@@ -562,7 +558,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         stacked: false,
         plugins: {
             decimation:{
-                enabled: false,
+                enabled: true,
                 algorithm: 'min-max',
             },
           colors: {
@@ -630,7 +626,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         stacked: false,
         plugins: {
             decimation:{
-                enabled: false,
+                enabled: true,
                 algorithm: 'min-max',
             },
           colors: {
@@ -688,13 +684,22 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
           },
         },
     };
-    const [temperatureData, setTemperatureData] = useState({})
-    const [weightData, setWeightData] = useState({})
-    const [pulseoximeterData, setPulseoximeterData] = useState({})
-    const alarmUI = newalarm[selectAlarm]?.time.alarm.map((vals,index) => {
+    const [temperatureData, setTemperatureData] = useState({
+        labels: [], // Initially, there are no labels
+        datasets: [], // Initially, there are no datasets
+      })
+    const [weightData, setWeightData] = useState({
+        labels: [], // Initially, there are no labels
+        datasets: [], // Initially, there are no datasets
+      })
+    const [pulseoximeterData, setPulseoximeterData] = useState({
+  labels: [], // Initially, there are no labels
+  datasets: [], // Initially, there are no datasets
+})
+    const alarmUI = newalarm[selectAlarm]?.time?.alarm.map((vals,index) => {
         if(newalarm[selectAlarm].time.priority[index]=="High Priority"){
             return (
-                <Box width={'180px'} height={'100px'} sx={{border:'1px solid red', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 15px 1px red`}} justifyContent={'center'} textAlign={'center'}>
+                <Box width={'200px'} height={'110px'} sx={{border:'1px solid red', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px red`}} justifyContent={'center'} textAlign={'center'}>
                     <Typography variant='subtitle1' paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
                         <Typography variant='subtitle2' >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
@@ -705,7 +710,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         }
         if(newalarm[selectAlarm].time.priority[index]=="Medium Priority"){
             return (
-                <Box width={'180px'} height={'100px'} sx={{border:'1px solid #ffd700', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 15px 1px #ffd700`}} justifyContent={'center'} textAlign={'center'}>
+                <Box width={'200px'} height={'110px'} sx={{border:'1px solid #ffd700', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px #ffd700`}} justifyContent={'center'} textAlign={'center'}>
                     <Typography variant='subtitle1' paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
                         <Typography variant='subtitle2' >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
@@ -715,7 +720,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         }
         if(newalarm[selectAlarm].time.priority[index]=="Low Priority"){
             return (
-                <Box width={'180px'} height={'100px'} sx={{border:'1px solid cyan', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 15px 1px cyan`}} justifyContent={'center'} textAlign={'center'}>
+                <Box width={'200px'} height={'110px'} sx={{border:'1px solid cyan', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px cyan`}} justifyContent={'center'} textAlign={'center'}>
                     <Typography variant='subtitle1' paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
                         <Typography variant='subtitle2' >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
@@ -724,12 +729,8 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
             )
         }
     })
-    const [rows, setRows] = useState([{
-        date: String,
-        time: String,
-        alarm: Array,
-        priority: String
-    }])
+    const [rows, setRows] = useState<Array<{ date: string; time: string; alarm: string[][]; }>>([]);
+
     const columns = useMemo<MRT_ColumnDef[]>(
         () => [
             
@@ -762,28 +763,58 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                 accessorKey: "alarm",
                 header: "Alarm",
                 id: "alarm",
-                Cell: ({ cell,row }) => (
-                    <Box
-                        display={'inline-block'}
-                        paddingTop={"5px"}
-                        paddingBottom={"5px"}
-                        paddingLeft={'10px'}
-                        paddingRight={'10px'}
-                        justifyContent={'center'}
-                        textAlign={'center'}
-                        color={'black'}
-                        sx={() => ({
-                            borderRadius: "20px",
-                            backgroundColor:
-                            row.original.priority == "Low Priority"
-                            ? "cyan"
-                            : row.original.priority == "Medium Priority"
-                            ? "yellow  " : "red ",
-                        })}
-                    >
-                        {cell.getValue<string>()}
+                Cell: ({ cell,row }) => {
+                    return (
+                        <Box width={'100%'} height={'100%'} display={'flex'} flexWrap={'wrap'}>
+                        {cell.getValue<Array<string>>().map((val) => {
+                        return (
+                            <Box
+                                display={'inline-block'}
+                                paddingTop={"5px"}
+                                paddingBottom={"5px"}
+                                paddingLeft={'10px'}
+                                paddingRight={'10px'}
+                                justifyContent={'center'}
+                                textAlign={'center'}
+                                color={'black'}
+                                margin={'10px'}
+                                sx={() => ({
+                                    borderRadius: "20px",
+                                    backgroundColor:
+                                    val[1] == "Low Priority"
+                                    ? "cyan"
+                                    : val[1] == "Medium Priority"
+                                    ? "yellow  " : "red ",
+                                })}
+                            >
+                                {val[0]}
+                            </Box>
+                        )
+                    })}
                     </Box>
-                ),
+                    
+                    )
+                    // <Box
+                    //     display={'inline-block'}
+                    //     paddingTop={"5px"}
+                    //     paddingBottom={"5px"}
+                    //     paddingLeft={'10px'}
+                    //     paddingRight={'10px'}
+                    //     justifyContent={'center'}
+                    //     textAlign={'center'}
+                    //     color={'black'}
+                    //     sx={() => ({
+                    //         borderRadius: "20px",
+                    //         backgroundColor:
+                    //         row.original.priority == "Low Priority"
+                    //         ? "cyan"
+                    //         : row.original.priority == "Medium Priority"
+                    //         ? "yellow  " : "red ",
+                    //     })}
+                    // >
+                    //     {cell.getValue<Array>()[1]}
+                    // </Box>
+            },
                 maxSize: 50,
                 // muiTableHeadCellProps: {
                 //     align: 'center',
@@ -845,8 +876,8 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         scrollto.current?.scrollIntoView({behavior: 'smooth'});
     };
     useEffect(() => {
-        console.log(labels)
-        console.log(times)
+        console.log("***********************")
+           console.log(dataset)
         setTemperatureData(() => {
             if(dataset[0]?.length > 1) {
                 return (
@@ -886,7 +917,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         })
         setWeightData(() => {
            
-            if(dataset[2]?.length > 1) {
+            if(dataset[2]?.length > 0) {
                 
                 return (
                     {
@@ -971,8 +1002,8 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         }
     },[props.communication_resource?.id])
     useEffect(() => {
-        var x: { date: String; time: String; alarm: String; priority: String; }[] = []
-        var y: React.SetStateAction<{ date: StringConstructor; time: { val: StringConstructor; alarm: never[]; priority: never[]; }; }[]> | { date: string; time: { val: string; alarm: StringConstructor[]; priority: StringConstructor[]; }; }[] = []
+        let x: { date: string; time: string; alarm: string[][]; }[] = []
+        let y: { date: string; time: { val: string; alarm: string[]; priority: string[]; }; }[] = []
         communication.map((commres) => 
              {
                 if(commres.resource.extension){
@@ -981,21 +1012,23 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                         date: (lastUpdatedDate.toLocaleDateString()),
                         time: {
                             val: (lastUpdatedDate.toLocaleTimeString()),
-                            alarm: commres.resource.extension[0].valueCodeableConcept.coding.map((val) => {return val.display}),
-                            priority: commres.resource.extension[1].valueCodeableConcept.coding.map((val) => {return val.display})
+                            alarm: commres.resource.extension[0].valueCodeableConcept.coding.map((val) => {return val.display.toString()}),
+                            priority: commres.resource.extension[1].valueCodeableConcept.coding.map((val) => {return val.display.toString()})
                         }
                     })
+                    var xx: string[][] = []
                     commres.resource.extension[0].valueCodeableConcept.coding.map((val,index) => 
                     {  
-                        
-                       x.push({
-                           date: (lastUpdatedDate.toLocaleDateString()),
-                           time: (lastUpdatedDate.toLocaleTimeString()),
-                           alarm: String(val.display),
-                           priority: String(commres.resource.extension[1].valueCodeableConcept.coding[index].display)
-                       })
+                        xx.push([val.display.toString(), commres.resource.extension[1].valueCodeableConcept.coding[index].display.toString()])
+
                     }
+
                )
+                    x.push({
+                        date: (lastUpdatedDate.toLocaleDateString()),
+                        time: (lastUpdatedDate.toLocaleTimeString()),
+                        alarm: xx,
+                    })
                 }
 
                     }
@@ -1005,8 +1038,9 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
     },[communication])
     useEffect(() => {
         if(props.communication_resource?.id!=null){
-            let x: { date: string; time: string; alarm: string; priority: string; }[] = [];
-            var y = []
+            console.log(props.communication_resource)
+            var x: { date: string; time: string; alarm: string[][]; }[] = []
+            var y: { date: string; time: { val: string; alarm: string[]; priority: string[]; }; }[] = []
             if(props.communication_resource.extension){
                 const lastUpdatedDate = new Date(props.communication_resource.meta.lastUpdated);
                 // y.push({                                                                                 // This is for live updation of the new alarm ui
@@ -1021,23 +1055,30 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                     date: (lastUpdatedDate.toLocaleDateString()),
                     time: {
                         val: (lastUpdatedDate.toLocaleTimeString()),
-                        alarm: props.communication_resource.extension[0].valueCodeableConcept.coding.map((val) => {return val.display}),
-                        priority: props.communication_resource.extension[1].valueCodeableConcept.coding.map((val) => {return val.display})
+                        alarm:  props.communication_resource.extension[0].valueCodeableConcept.coding.map((val) => {return val.display.toString()}),
+                        priority:  props.communication_resource.extension[1].valueCodeableConcept.coding.map((val) => {return val.display.toString()})
                     }
                 })
-                props.communication_resource.extension[0].valueCodeableConcept.coding.map((val: { display: any; },index: string | number) => 
+                var xx: string[][] = []
+                props.communication_resource.extension[0].valueCodeableConcept.coding.map((val, index) => 
                 {  
-                    
+                    xx.push([val.display.toString(), props.communication_resource.extension[1].valueCodeableConcept.coding[index].display.toString()])
+
+
+                
+                }
+                )
 
 
                 x.push({
                     date: (lastUpdatedDate.toLocaleDateString()),
                     time: (lastUpdatedDate.toLocaleTimeString()),
-                    alarm: String(val.display),
-                    priority: String(props.communication_resource.extension[1].valueCodeableConcept.coding[index].display)
+                    alarm: xx,
                 })
-                }
-                )
+                // console.log(y)
+                // console.log(newalarm)
+                // setNewAlarm((rows) => [y, ...rows])
+
                 x.map((val) => {
                     setRows((rows) => [val,...rows])
                 })
@@ -1072,6 +1113,17 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                 
                                 
             }
+            // url.push(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${props.observation_resource?.id}/_history?_count=1`)
+            // fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${props.observation_resource?.id}/_history?_count=1`,{
+            //     credentials:'omit',
+            //     method:'GET',
+            //     headers: {
+            //         Authorization: "Basic "+ btoa("fhiruser:change-password")
+            //     }
+            // }).then((response) => response.json())
+            // .then((data) => {
+            //     pr
+            // })
         }
         else if(timeFrame==2){
             let monthNewDate = new Date(currentNewDate.setMonth(currentNewDate.getMonth() - 1));
@@ -1122,16 +1174,8 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
             setTimes(observation.map((obs) => {
                 let zeroth: {}[] = []
                 let first: {}[] = []
-                let second = [{
-                    label: "",
-                    data: [] as string[],
-                    yAxisID: "y"
-                }]
-                let third = [{
-                    label: "",
-                    data: [] as string[],
-                    yAxisID: "y"
-                }]
+                let second: {}[] = []
+                let third: {}[] = []
 
                 observation[0].resource.component.map((data, index) => {
                     if(data.valueQuantity.unit.toString() == "C" || data.valueQuantity.unit.toString()=="C°" || data.valueQuantity.unit.toString() == "C°" || data.code.text.toString()=="Set Heater" || data.code.text.toString()=="Heater Level"){
@@ -1143,9 +1187,6 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                                     return (
                                         data2?.resource?.component[index]?.valueQuantity?.value.toString()
                                     )
-                                }
-                                else{
-                                    return null
                                 }
                                 
                             }),
@@ -1162,9 +1203,6 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                                         data2?.resource?.component[index]?.valueQuantity?.value.toString()
                                     )
                                 }
-                                else{
-                                    return null
-                                }
                             }),
                             yAxisID: pulseoximeterYaxis[unit2] || "y"
                         })
@@ -1177,9 +1215,6 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                                     return (
                                         data2?.resource?.component[index]?.valueQuantity?.value.toString()
                                     )
-                                }
-                                else{
-                                    return null
                                 }
                             }),
                             yAxisID: "y"
@@ -1196,9 +1231,6 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                                         data2?.resource?.component[index]?.valueQuantity?.value.toString()
                                     )
                                 }
-                                else{
-                                    return null
-                                }
                             }),
                             yAxisID: pressure1OptionYaxis[unit] || "y"
                         })
@@ -1212,9 +1244,6 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                                     return (
                                         data2?.resource?.component[index]?.valueQuantity?.value.toString()
                                     )
-                                }
-                                else{
-                                    return null
                                 }
                             }),
                             yAxisID: pressure2OptionYaxis[unit] || "y"
@@ -1236,7 +1265,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                 })
                 
                 setDataSet([zeroth, first, second, third])
-                var fd = new Date(obs.resource.meta.lastUpdated)
+                var fd = new Date(obs.resource.meta.lastUpdated.toString())
                 var t = fd.toLocaleTimeString()
                 var d = fd.getDate()+"/"+(fd.getMonth()+1)
                 return(
@@ -1255,7 +1284,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                 }]
                 setDataSet([second, second, second, second])
                 return(
-                    new Date(obs?.resource?.meta.lastUpdated).toLocaleTimeString())
+                    new Date(obs?.resource?.meta.lastUpdated.toString()).toLocaleTimeString())
                 }))
         }
             // setLoading(false)
@@ -1312,7 +1341,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                     chart.toggleDataVisibility(item.index);
                   } else {
                     chart.setDatasetVisibility(item.datasetIndex, !chart.isDatasetVisible(item.datasetIndex));
-                    chart.isDatasetVisible(item.datasetIndex) ? setSelectedLegends((prev) => [...prev,item.text]) : setSelectedLegends(current => current.filter(lol => {return lol!=item.text}))
+                    chart.isDatasetVisible(item.datasetIndex) ? setSelectedLegends((prev: any) => [...prev,item.text]) : setSelectedLegends((current: any[]) => current.filter(lol => {return lol!=item.text}))
                   }
                   chart.update();   
                 };
@@ -1412,7 +1441,12 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
             {setvarq(!varq)}}
             // fullWidth
             maxWidth="lg"
-            PaperProps={{style:{borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)' }}}
+            PaperProps={{sx:{minWidth:{
+                xs: '90%',
+                sm: '90%',
+                md: '70%',
+                lg: '50%',
+              },borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)' }}}
             >
             <DialogTitle
                 sx={{
@@ -1441,7 +1475,6 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                 <Typography>LIVE</Typography>
             </Box> */}
                 <Stack
-                ref={scrollto}
                 direction={'row'}
                 divider={
                 <Divider orientation='vertical' flexItem/>
@@ -1591,11 +1624,11 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                 display: "flex",
                 flexWrap: "wrap",
                 justifyContent: "center"}}>
-                <Typography variant='h2' sx={{fontWeight:'bold'}}>{props.newData && 'Oximeter Not connected'}{!props.newData && ''}</Typography>
+                <Typography variant='h6' sx={{fontWeight:'bold', paddingTop:'1%', opacity:'0.5'}}>{props.newData && 'Oximeter Not connected'}{!props.newData && ''}</Typography>
                 </Box>}
             <Divider sx={{marginTop:'20px', backgroundColor:'white', color:'white'}}/>
             <div style={{marginTop:'25px'}}>
-            {
+            {   
                     graphData && (<>
                     <Stack direction={'row'} width={"100%"} justifyContent={'space-between'}>
                     {/* <Button color="primary" startIcon={<FileDownloadIcon />} variant="contained" sx={{width:'100px', marginLeft:'2%'}}>
@@ -1700,14 +1733,14 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                         
                     </div> */}
                         {(() => {
-                            // console.log(device_id)
-                            if(props.observation_resource?.identifier[0]?.value?.toString()=="PMSCIC"){
+                            console.log('HELLO WORLD')
+                            if(props.observation_resource?.identifier[0]?.value?.toString()=="PMS-CIC"){
                                 return (
                                     <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={
                                         <Divider orientation='vertical' flexItem sx={{marginLeft:'1%',backgroundColor:'#505050', color:'#505050'}}/>
                                     }>
                                         <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
-                                            <Line ref={chartRef1} options={temperatureOption} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]}></Line>
+                                            <Line ref={chartRef1} options={temperatureOption} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                                             <div id="legend-container"></div>
                                             <Divider />
                                             <Line ref={chartRef2} options={pulseoximeterOption} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
@@ -1734,7 +1767,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                                     </Stack>
                                 )
                             }
-                            if(props.observation_resource?.identifier[0]?.value?.toString()=="PMSinc" || props.observation_resource?.identifier[0]?.value?.toString()=="PMSINC"){
+                            if(props.observation_resource?.identifier[0]?.value?.toString()=="PMSinc" || props.observation_resource?.identifier[0]?.value?.toString()=="PMS-INC"){
                                 
                                 return (
                                     <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={
@@ -1775,21 +1808,16 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                                     <Stack width={'100%'} height={'100%'} direction={'row'} divider={
                                         <Divider orientation='vertical' flexItem sx={{marginLeft:'1%'}}/>
                                     }>
-                                        <Stack height={'100%'} width={'65%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'}>
+                                        <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
                                             <Line ref={chartRef1} options={pressure1Option} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]}></Line>
-                                            <Divider />
-                                            <Line ref={chartRef2} options={pulseoximeterOption} data={pulseoximeterData} height={'100%'}></Line>
-                                            <Divider />
-                                            <Line ref={chartRef3} options={pressure2Option} data={weightData} height={'100%'} ></Line>
-                                        </Stack>
-                                        <Box width={'35%'} justifyContent={'center'} textAlign={'center'}>
-                                            <Stack spacing={'10px'} sx={{marginLeft:'7%', width:'100%', justifyContent:'center', textAlign:'center' }} className="legendBox">
                                             <div id="legend-container"></div>
+                                            <Divider />
+                                            <Line ref={chartRef2} options={pulseoximeterOption} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                                             <div id="legend-container2"></div>
+                                            <Divider />
+                                            <Line ref={chartRef3} options={pressure2Option} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                                             <div id="legend-container3"></div>
-                                            </Stack>
-                                            
-                                        </Box>
+                                        </Stack>
 
                                     </Stack>
 
@@ -1821,13 +1849,14 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                 <IconButton sx={{height:'50px', width:'50px', borderRadius:'100px', marginTop:'auto', marginBottom:'auto'}} onClick={() => {if(selectAlarm<newalarm.length){setSelectAlarm(selectAlarm+1)}}}><FontAwesomeIcon fontSize={'30px'} icon={faChevronRight} style={{color:`${rightarrowcolor}`}} /></IconButton>  
             </Stack>
             {/* onClick={() => {setTableVisible(!tableVisisble)}} endIcon={tableVisisble ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />} */}
-            <Button sx={{width:'20%', height:'50px', marginLeft:'40%', marginTop:'3%', marginBottom:'3%', borderRadius:'50px', color:'white', backgroundColor:'#111522', border:'0.5px solid grey', fontWeight:50, boxShadow: `0px 0px 20px 1px #6e6f88`, textTransform:'capitalize'}}  endIcon={tableVisisble ? <KeyboardArrowUpIcon sx={{ fontSize: 80 }} /> : <KeyboardArrowDownIcon sx={{ fontSize: 80 }}  />} onClick={() => { handleClick();setTableVisible(!tableVisisble);}}> 
+            <Button sx={{width:'20%', height:'50px', marginLeft:'40%', marginTop:'3%', marginBottom:'3%', borderRadius:'50px', color:'white', backgroundColor:'#111522', border:'0.5px solid grey', fontWeight:50, boxShadow: `0px 0px 10px 1px #6e6f88`, textTransform:'capitalize'}}  endIcon={tableVisisble ? <KeyboardArrowUpIcon sx={{ fontSize: 80 }} /> : <KeyboardArrowDownIcon sx={{ fontSize: 80 }}  />} onClick={() => { handleClick();setTableVisible(!tableVisisble);}}> 
             <Box sx={{ fontWeight: 'regular', m: 1, fontSize:16, }}>Alarm Log</Box>
             </Button>
-            <div style={{marginLeft:'auto', width:'85%', marginRight:'auto'}} >
+            <div  style={{marginLeft:'auto', width:'85%', marginRight:'auto'}} >
             {tableVisisble && <Table rows={rows} columns={columns}/>}
+            {/* <div ref={scrollto} style={{width:'100px', height:'20px', backgroundColor:'red', marginTop:tableVisisble ? '300px'  : '0px'}}></div> */}
             </div>
-                        {/* <div style={{width:'10px', height:'10px', backgroundColor:'yellow'}} ref={scrollto}></div> */}
+            {/* <div style={{width:'10px', height:'10px', backgroundColor:'yellow'}} ref={scrollto}></div> */}
 
             </DialogContent>
         </Dialog>
