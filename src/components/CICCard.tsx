@@ -88,6 +88,7 @@ export interface DeviceDetails {
         }[];
   };
   communication_resource: {
+    meta: any;
     "id" : string;
     "status" : string;
     "resourceType": string;
@@ -208,7 +209,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
     useEffect(() => {
         let timer: number | undefined;
         if(newData){
-            timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},1500000)
+            timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},15000)
 
         }
         return () => {
@@ -310,7 +311,7 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                                 <Typography variant='h6' color={"#5db673"} paddingTop={'13%'} paddingLeft={'3%'}>
                                     {(() => {
                                         if(props.observation_resource?.component[0].valueQuantity.unit=="BABY"){
-                                            let data = findData("Set Skin Temp 1")
+                                            let data = findData("Set Skin Temp")
                                             return (data.data)
                                         }
                                         else{return ""}
@@ -350,7 +351,7 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                                 <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'5%'} paddingLeft={'5%'}>Wt (g)</Typography>
                                 <Typography variant='h6' color={"#5db673"} paddingTop={'1%'} paddingRight={'5%'}>
                                     {(() => {
-                                            let data = findData("Weight")
+                                            let data = findData("Measure Weigh")
                                             return (data.data)
                                         }
                                     )()}
@@ -401,9 +402,11 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                                 <Box width={'40%'} marginRight={'4%'} marginTop={'11%'} height={'50%'} sx={{border:'2px solid #A8C5D4' , borderRadius:'3px'}}>
                                     {(() => {
                                         let data = findData("SIQ")
-                                        return(
-                                            <Box width={`${data.data}`+"%"} height={'100%'} sx={{backgroundColor:'#26C5E4'}}></Box>
-                                        )
+                                        if(data.data!="--"){
+                                            return( 
+                                                <Box width={`${data.data}`+"%"} height={'100%'} sx={{backgroundColor:'#26C5E4'}}></Box>
+                                            )
+                                        }
                                     })()}
                                 </Box>
                                 
