@@ -1,14 +1,11 @@
 import { ElementType, FC, ReactNode, useEffect, useMemo, useState } from "react";
-import { MaterialReactTable, MRT_Row, type MRT_ColumnDef } from "material-react-table";
-import { Box, Button, Stack, SvgIconClasses, SvgIconPropsColorOverrides, SvgIconPropsSizeOverrides, SxProps, Theme, ThemeProvider, Typography, createTheme, useTheme } from "@mui/material";
+import { MaterialReactTable,  type MRT_ColumnDef } from "material-react-table";
+import { Box, Button, Stack, SvgIconClasses, SvgIconPropsColorOverrides, SvgIconPropsSizeOverrides, SxProps, Theme, ThemeProvider, createTheme, useTheme } from "@mui/material";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { ExportToCsv } from 'export-to-csv';
-import { Divider } from "@material-ui/core";
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
-import Brightness2Icon from '@mui/icons-material/Brightness2';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBarsStaggered, faChevronDown, faGripLines, faSortDown, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { color } from "chart.js/helpers";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { CommonProps } from "@mui/material/OverridableComponent";
 import { OverridableStringUnion } from "@mui/types";
 import { JSX } from "react/jsx-runtime";
@@ -17,12 +14,11 @@ export interface rowsandcolumns {
     date: StringConstructor;
     time: StringConstructor;
     alarm: ArrayConstructor;
-    priority: StringConstructor;
 }[];
   columns: MRT_ColumnDef[];
 }
 export const Table: FC<rowsandcolumns> = (props) => {
-  const [tableData, setTableData]=useState(props)
+  const [tableData, setTableData]= useState(props)
   useEffect(() => {
     setTableData(props);
 },[props])
@@ -107,11 +103,12 @@ export const Table: FC<rowsandcolumns> = (props) => {
   );
 
 
-
+    // const cols = 
 
 
   return (
     <ThemeProvider theme={tableTheme}>
+
             <MaterialReactTable 
             columns={tableData.columns}
             data={tableData.rows} 
@@ -137,7 +134,6 @@ export const Table: FC<rowsandcolumns> = (props) => {
             enableFilters={false}
             enableHiding={false}
             enableFullScreenToggle={false}
-            muitable
             icons={{
               //change sort icon, connect internal props so that it gets styled correctly//best practice
 
@@ -218,14 +214,13 @@ export const Table: FC<rowsandcolumns> = (props) => {
             initialState={{
                 density: 'compact',        
                 expanded: true, //expand all groups by default        
-                grouping: ['date','time'], //an array of columns to group by by default (can be multiple)        
+                grouping: ['date'], //an array of columns to group by by default (can be multiple)        
                 pagination: { pageIndex: 0, pageSize: 20 },
                 sorting: [{ id: 'date', desc: true }], //sort by state by defaul
                 columnVisibility:{priority:false}
               }} 
               
               positionToolbarAlertBanner="bottom"   
-              full
               muiTablePaperProps={{
                 elevation: 0, //change the mui box shadow
                 //customize paper styles
@@ -249,6 +244,10 @@ export const Table: FC<rowsandcolumns> = (props) => {
                         Download
                     </Button>
                 </Box>
+                {(() => {
+                    console.log("FROM TABLE")
+                    return null
+                })()}
                 <Stack direction={'row'} paddingTop={'10px'} sx={{fontSize:'12px'}}>
                   <Box width={'20px'} height={'20px'} sx={{backgroundColor:'red', borderRadius:'5px'}}></Box>
                   <div style={{fontSize:'12px', marginTop:'2px'}} >&nbsp; - High Priority &nbsp;</div>
@@ -261,8 +260,7 @@ export const Table: FC<rowsandcolumns> = (props) => {
                 </Stack>
                 </Stack>
                 
-            )}>
-              </MaterialReactTable>
+            )} />
     </ThemeProvider>
 
   );

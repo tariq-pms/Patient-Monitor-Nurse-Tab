@@ -1,4 +1,4 @@
-import { Alert, Button, Dialog, DialogActions,Menu, DialogContent, DialogContentText, DialogTitle,  List, ListItem, ListItemButton, Select, Snackbar, Stack, Typography, MenuItem, Divider, TextField,} from '@mui/material'
+import { Alert, Button, Dialog, DialogActions,Menu, DialogContent, DialogContentText, DialogTitle, Select, Snackbar, Stack, Typography, MenuItem, Divider, TextField,} from '@mui/material'
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -6,7 +6,6 @@ import Paper from '@mui/material/Paper'
 import { FC, useEffect, useState } from 'react'
 import SettingsIcon from '@mui/icons-material/Settings';
 import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
 import { CustomNoButton } from './CustomNoButton'
 import { CustomOkButton } from './CustomOkButton'
 
@@ -23,7 +22,7 @@ export const RoomCard: FC<roomData> = (props) => {
     const [snack, setSnack] = useState(false)
 
     const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
-        // console.log(event)
+        console.log(event)
         if (reason === 'clickaway') {
           return;
         }
@@ -120,7 +119,7 @@ export const RoomCard: FC<roomData> = (props) => {
                 open={renameRoom}
                 onClose={() => setRenameRoom(false)}
                 aria-labelledby="responsive-dialog-title"
-                PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', width:'20%',textAlign:'center', minHeight:'200px'}}}
+                PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', width:'400px',textAlign:'center', minHeight:'200px'}}}
             >
                 <DialogTitle id="responsive-dialog-title">
                 {`Rename ${props.roomName}?`}
@@ -163,27 +162,37 @@ export const RoomCard: FC<roomData> = (props) => {
 
 
     }
-    const removeButton = (index: any) => {
-        let data;
-        data = {
-            ...deviceList[Number(index)].resource,
-        }
-        delete data.location;
-        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`, {
-            credentials: "omit", // send cookies and HTTP authentication information
-            method: "PUT",
-            body: JSON.stringify(data),
-            headers: {
-                "Constent-Type": "application/json",
-                Authorization: "Basic " + btoa("fhiruser:change-password"), // set HTTP basic auth header
-            },
-        })
-        .then((response) => {
-            setSnack(true)
-            if(response.status==200){setSnackSucc(true);setDeviceChanged(!deviceChanged)}
-            else{setSnackSucc(false)}
-        })
-    }
+    const removeButton = (index: number) => {
+        // Get the device object from the list
+        const device = deviceList[Number(index)].resource;
+      
+        // Create a new object without the 'location' property
+        const { location, ...data } = device;
+      
+        // Define the URL and request options
+        const apiUrl = `http://13.126.5.10:9444/fhir-server/api/v4/Device/${device.id}`;
+        const requestOptions: RequestInit = {
+          credentials: "omit",
+          method: "PUT",
+          body: JSON.stringify(data),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+          },
+        };
+      
+        // Send the PUT request
+        fetch(apiUrl, requestOptions)
+          .then((response) => {
+            setSnack(true);
+            if (response.status === 200) {
+              setSnackSucc(true);
+              setDeviceChanged(!deviceChanged);
+            } else {
+              setSnackSucc(false);
+            }
+          });
+      };
     const [deleteDevice, setDeleteDevice] = useState(false)
     const [deleteRoom, setDeleteRoom] = useState(false)
     const removeRoomButton = () => {
@@ -210,7 +219,7 @@ export const RoomCard: FC<roomData> = (props) => {
             open={deleteRoom}
             onClose={() => setDeleteDevice(false)}
             aria-labelledby="responsive-dialog-title"
-            PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', width:'20%',textAlign:'center', minHeight:'200px'}}}
+            PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', width:'400px',textAlign:'center', minHeight:'200px'}}}
 
         >
             <DialogTitle id="responsive-dialog-title">
@@ -283,6 +292,7 @@ export const RoomCard: FC<roomData> = (props) => {
         </Dialog>
         )
     }
+
     const addToRoom = () => {
         const [miniDialog, setMiniDialog] = useState(false)
         const [selectedDevice, setSelectedDevice] = useState(Number)
