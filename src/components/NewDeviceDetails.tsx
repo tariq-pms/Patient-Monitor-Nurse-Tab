@@ -1,21 +1,17 @@
-import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, DialogProps, Box, Stack, Typography, Divider, IconButton, ToggleButtonGroup, ToggleButton, useMediaQuery, useTheme } from '@mui/material'
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button,  Box, Stack, Typography, Divider, IconButton, ToggleButtonGroup, ToggleButton } from '@mui/material'
 import React, { FC, useEffect, useMemo, useRef, useState } from 'react'
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Table } from './Table';
-import { AlarmTable } from '../pages/DetailedDevice';
 import { Line } from 'react-chartjs-2';
-import { CloseRounded } from '@mui/icons-material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { CustomNoButton } from './CustomNoButton';
 import { CustomOkButton } from './CustomOkButton';
 import { ExportToCsv } from 'export-to-csv';
 import { MRT_ColumnDef } from 'material-react-table';
+import { ChartOptions, LegendItem, Plugin } from 'chart.js';
 export interface DeviceDetails {
     newData: boolean;
     isDialogOpened: boolean;
@@ -143,7 +139,6 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
     const chartRef1 = useRef<any | null>(null);
     const chartRef2 = useRef<any | null>(null);
     const chartRef3 = useRef<any | null>(null);
-    const theme = useTheme();
     const [graphData, setGraphData] = useState(false)
     const [selectAlarm, setSelectAlarm] = useState(1)
     const [newalarm, setNewAlarm] = useState<Array<{ date: string; time: { val: string; alarm: string[]; priority: string[]; }; }>>([]);
@@ -300,7 +295,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
     };
     const pulseoximeterYaxis = {
         "%": "y",
-        "BPM": "y1"
+        'BPM': "y1"
     }
     const pressure1OptionYaxis = {
         "%": "y",
@@ -684,15 +679,19 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
           },
         },
     };
-    const [temperatureData, setTemperatureData] = useState({
+    type TemperatureData = {
+        labels: any[];
+        datasets: any[]; 
+      };
+    const [temperatureData, setTemperatureData] = useState<TemperatureData>({
         labels: [], // Initially, there are no labels
         datasets: [], // Initially, there are no datasets
       })
-    const [weightData, setWeightData] = useState({
+    const [weightData, setWeightData] = useState<TemperatureData>({
         labels: [], // Initially, there are no labels
         datasets: [], // Initially, there are no datasets
       })
-    const [pulseoximeterData, setPulseoximeterData] = useState({
+    const [pulseoximeterData, setPulseoximeterData] = useState<TemperatureData>({
   labels: [], // Initially, there are no labels
   datasets: [], // Initially, there are no datasets
 })
@@ -763,7 +762,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                 accessorKey: "alarm",
                 header: "Alarm",
                 id: "alarm",
-                Cell: ({ cell,row }) => {
+                Cell: ({ cell }) => {
                     return (
                         <Box width={'100%'} height={'100%'} display={'flex'} flexWrap={'wrap'}>
                         {cell.getValue<Array<string>>().map((val) => {
@@ -876,8 +875,6 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         scrollto.current?.scrollIntoView({behavior: 'smooth'});
     };
     useEffect(() => {
-        console.log("***********************")
-           console.log(dataset)
         setTemperatureData(() => {
             if(dataset[0]?.length > 1) {
                 return (
@@ -1127,7 +1124,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         }
         else if(timeFrame==2){
             let monthNewDate = new Date(currentNewDate.setMonth(currentNewDate.getMonth() - 1));
-            let monthdate = monthNewDate.getUTCDate().toString().padStart(2,'0')
+            // let monthdate = monthNewDate.getUTCDate().toString().padStart(2,'0')
             let monthmonth = (Number(monthNewDate.getMonth())+1).toString().padStart(2,'0')
             let monthyear = monthNewDate.getUTCFullYear()
             for (let index = 1; index < 30; index++) {
@@ -1135,7 +1132,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                 url.push(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${props.observation_resource?.id}/_history?_count=1&_since=${monthDate}T00:00:00Z`)
             }
         }
-        let temparr: any[] = []
+        // let temparr: any[] = []
         let prevdate = ""
         Promise.all(
             url.map((query) => {
@@ -1179,7 +1176,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
 
                 observation[0].resource.component.map((data, index) => {
                     if(data.valueQuantity.unit.toString() == "C" || data.valueQuantity.unit.toString()=="C°" || data.valueQuantity.unit.toString() == "C°" || data.code.text.toString()=="Set Heater" || data.code.text.toString()=="Heater Level"){
-                        let unit = data.valueQuantity.unit.toString();
+                        let unit = data.valueQuantity.unit.toString() as keyof typeof heaterYaxis;
                         zeroth.push({
                             label: data.code.text.toString(),
                             data: observation.map((data2) => {
@@ -1194,9 +1191,9 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                         })
                     }
                     else if(data.code.text.toString() == "Pulse Rate" || data.code.text.toString() == "SpO2" || data.code.text.toString() == "SPO2"){
-                        let unit2 = data.valueQuantity.unit.toString();
+                        let unit2 = data.valueQuantity.unit.toString() as keyof typeof pulseoximeterYaxis;
                         first.push({
-                            label: data.code.text.toString(),
+                            label: data.code.text.toString() ,
                             data: observation.map((data2) => {
                                 if(data2?.resource?.component){
                                     return (
@@ -1222,7 +1219,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                     }
                     else if(data.valueQuantity.unit.toString() == "LPM" || data.code.text.toString() == "Set FiO2")
                     {
-                        let unit = data.valueQuantity.unit.toString();
+                        let unit = data.valueQuantity.unit.toString() as keyof typeof pressure1OptionYaxis;
                         zeroth.push({
                             label: data.code.text.toString(),
                             data: observation.map((data2) => {
@@ -1236,7 +1233,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                         })
                     }
                     else if(data.valueQuantity.unit.toString() == "CmH2O" || data.valueQuantity.unit.toString() == "Bar"){
-                        let unit = data.valueQuantity.unit.toString();
+                        let unit = data.valueQuantity.unit.toString() as keyof typeof pressure2OptionYaxis;
                         second.push({
                             label: data.code.text.toString(),
                             data: observation.map((data2) => {
@@ -1292,7 +1289,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
     // useEffect(() => {if(props.isDialogOpened){setTimeFrame(2)}},[props.isDialogOpened])
     const getOrCreateLegendList = (_chart: any, id: string) => {
         const legendContainer = document.getElementById(id);
-        let listContainer = legendContainer.querySelector('div');
+        let listContainer = legendContainer!.querySelector('div');
         if (!listContainer) {
           listContainer = document.createElement('div');
           listContainer.style.display = 'flex';
@@ -1300,16 +1297,16 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
           listContainer.style.flexWrap = 'wrap'
 
           listContainer.className = 'listContainer';
-          legendContainer.appendChild(listContainer);
+          legendContainer!.appendChild(listContainer);
         }
       
         return listContainer;
     };   
-    const temperatureLegendPlugin = {
+    const temperatureLegendPlugin: Plugin = {
+        
         id: 'htmlLegend',
-        afterUpdate(chart: { options: { plugins: { legend: { labels: { generateLabels: (arg0: any) => any; }; }; }; }; config: { type: any; }; toggleDataVisibility: (arg0: any) => void; setDatasetVisibility: (arg0: any, arg1: boolean) => void; isDatasetVisible: (arg0: any) => any; update: () => void; }, _args: any, options: { containerID: string; }) {
-          const ul = getOrCreateLegendList(chart, options.containerID);
-            
+        afterUpdate(chart, _args, options) {
+            const ul = getOrCreateLegendList(chart, options.containerID);
           // Remove old legend items
           while (ul.firstChild) {
             ul.firstChild.remove();
@@ -1319,10 +1316,13 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
           ul.style.lineHeight = '300%';
           ul.style.gap='5%';
           // Reuse the built-in legendItems generator
-          const items = chart.options.plugins.legend.labels.generateLabels(chart);
+         
+
           
-          items.forEach((item: { index: any; datasetIndex: any; fillStyle: string; strokeStyle: string; lineWidth: string; fontColor: string; hidden: any; text: string; }) => {
-            if(item.text!=""){
+          const items: LegendItem[] = chart.options?.plugins?.legend?.labels?.generateLabels?.(chart) || [];
+
+items.forEach((item) => {
+  if (item.text !== '') {
                 const li = document.createElement('div');
                 li.style.alignItems = 'left';
                 li.style.cursor = 'pointer';
@@ -1335,20 +1335,27 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
           
                 li.onclick = () => {
                   setS_and_D(2)
-                  const {type} = chart.config;
+                  const type = (chart.config as any)?.type;
+                 
                   if (type === 'pie' || type === 'doughnut') {
                     // Pie and doughnut charts only have a single dataset and visibility is per item
-                    chart.toggleDataVisibility(item.index);
+                    if (item.index !== undefined) {
+                        chart.toggleDataVisibility(item.index);
+                      }
                   } else {
-                    chart.setDatasetVisibility(item.datasetIndex, !chart.isDatasetVisible(item.datasetIndex));
-                    chart.isDatasetVisible(item.datasetIndex) ? setSelectedLegends((prev: any) => [...prev,item.text]) : setSelectedLegends((current: any[]) => current.filter(lol => {return lol!=item.text}))
+                    if (item.datasetIndex !== undefined) {
+                      chart.setDatasetVisibility(item.datasetIndex, !chart.isDatasetVisible(item.datasetIndex));
+                      chart.isDatasetVisible(item.datasetIndex)
+                        ? setSelectedLegends((prev: any) => [...prev, item.text])
+                        : setSelectedLegends((current: any[]) => current.filter((lol) => lol !== item.text));
+                    }
                   }
-                  chart.update();   
+                  chart.update();
                 };
           
                 // Color box
                 const boxSpan = document.createElement('span');
-                boxSpan.style.background = item.hidden ? 'transparent' : item.fillStyle;
+                boxSpan.style.background = item.hidden ? 'transparent' : (typeof item.fillStyle === 'string' ? item.fillStyle : 'transparent');
                 // boxSpan.style.borderColor = item.strokeStyle;
                 boxSpan.style.border = `2px solid ${item.strokeStyle}`;
                 boxSpan.style.display = 'inline-block';
@@ -1394,7 +1401,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
     const handleExportData = () => {
         if(temperatureData.labels.length!=0 && selectedLegends.length!=0){
             let vvtemp: any[] = []
-            selectedLegends.map((item) => {
+            selectedLegends.map((item: any) => {
                 temperatureData.datasets.map((val: { data: any; label: any; }) => {
                     console.log(val.data)
                     if(val.label == item){
@@ -1416,7 +1423,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
             })
             console.log(vvtemp)
             let temprow = [];
-            temprow.push(selectedLegends.map((vals, index) => {
+            temprow.push(selectedLegends.map((vals: any, index: number) => {
                 return (
                     {
                         Parameter: vals,
@@ -1740,13 +1747,13 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                                         <Divider orientation='vertical' flexItem sx={{marginLeft:'1%',backgroundColor:'#505050', color:'#505050'}}/>
                                     }>
                                         <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
-                                            <Line ref={chartRef1} options={temperatureOption} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
+                                            <Line ref={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                                             <div id="legend-container"></div>
                                             <Divider />
-                                            <Line ref={chartRef2} options={pulseoximeterOption} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                            <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                                             <div id="legend-container2"></div>
                                             <Divider />
-                                            <Line ref={chartRef3} options={weightOption} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                            <Line ref={chartRef3} options={weightOption as ChartOptions} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                                             <div id="legend-container3"></div>
                                         </Stack>
                                         {/* <Box width={'35%'} justifyContent={'center'} textAlign={'center'} sx={{borderRadius:'20px', marginTop:'-50px'}}>
@@ -1774,13 +1781,13 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                                         <Divider orientation='vertical' flexItem sx={{marginLeft:'1%',backgroundColor:'#505050', color:'#505050'}}/>
                                     }>
                                         <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
-                                            <Line ref={chartRef1} options={temperatureOption} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]}></Line>
+                                            <Line ref={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]}></Line>
                                             <div id="legend-container"></div>
                                             <Divider />
-                                            <Line ref={chartRef2} options={pulseoximeterOption} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                            <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                                             <div id="legend-container2"></div>
                                             <Divider />
-                                            <Line ref={chartRef3} options={weightOption} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                            <Line ref={chartRef3} options={weightOption as ChartOptions} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                                             <div id="legend-container3"></div>
                                         </Stack>
                                         {/* <Box width={'35%'} justifyContent={'center'} textAlign={'center'} sx={{borderRadius:'20px', marginTop:'-50px'}}>
@@ -1809,13 +1816,13 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                                         <Divider orientation='vertical' flexItem sx={{marginLeft:'1%'}}/>
                                     }>
                                         <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
-                                            <Line ref={chartRef1} options={pressure1Option} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]}></Line>
+                                            <Line ref={chartRef1} options={pressure1Option as ChartOptions} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]}></Line>
                                             <div id="legend-container"></div>
                                             <Divider />
-                                            <Line ref={chartRef2} options={pulseoximeterOption} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                            <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                                             <div id="legend-container2"></div>
                                             <Divider />
-                                            <Line ref={chartRef3} options={pressure2Option} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                            <Line ref={chartRef3} options={pressure2Option as ChartOptions} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                                             <div id="legend-container3"></div>
                                         </Stack>
 

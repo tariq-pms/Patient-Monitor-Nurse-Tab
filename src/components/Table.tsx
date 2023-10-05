@@ -11,9 +11,9 @@ import { OverridableStringUnion } from "@mui/types";
 import { JSX } from "react/jsx-runtime";
 export interface rowsandcolumns {
   rows: {
-    date: StringConstructor;
-    time: StringConstructor;
-    alarm: ArrayConstructor;
+    date: string;
+    time: string;
+    alarm: Array<Array<string>>;
 }[];
   columns: MRT_ColumnDef[];
 }

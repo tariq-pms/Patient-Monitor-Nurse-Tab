@@ -89,6 +89,7 @@ export interface DeviceDetails {
         }[];
   };
   communication_resource: {
+    meta: any;
     "id" : string;
     "status" : string;
     "resourceType": string;
