@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { Alert, Button, Dialog, DialogActions,Menu, DialogContent, DialogContentText, DialogTitle, Select, Snackbar, Stack, Typography, MenuItem, Divider, TextField, Skeleton,} from '@mui/material'
+=======
+import { Alert, Button, Dialog, DialogActions,Menu, DialogContent, DialogContentText, DialogTitle, Select, Snackbar, Stack, Typography, MenuItem, Divider, TextField,} from '@mui/material'
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -173,7 +177,11 @@ export const RoomCard: FC<roomData> = (props) => {
         const { location, ...data } = device;
       
         // Define the URL and request options
+<<<<<<< HEAD
         const apiUrl = `http://3.110.169.17:9444/fhir-server/api/v4/Device/${device.id}`;
+=======
+        const apiUrl = `http://13.126.5.10:9444/fhir-server/api/v4/Device/${device.id}`;
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
         const requestOptions: RequestInit = {
           credentials: "omit",
           method: "PUT",
@@ -293,8 +301,12 @@ export const RoomCard: FC<roomData> = (props) => {
         </Dialog>
         )
     }
+<<<<<<< HEAD
     const [miniDialog, setMiniDialog] = useState(false)
     const [selectedDevice, setSelectedDevice] = useState(Number)
+=======
+
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
     const addToRoom = () => {
        
         return (

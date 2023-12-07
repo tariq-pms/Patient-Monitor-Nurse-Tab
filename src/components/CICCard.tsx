@@ -328,7 +328,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                                 <Typography variant='h6' color={"#5db673"} paddingTop={'13%'} paddingLeft={'3%'}>
                                     {(() => {
                                         if(props.observation_resource?.component[0].valueQuantity.unit=="BABY"){
-                                            let data = findData("Set Skin Temp 1")
+                                            let data = findData("Set Skin Temp")
                                             return (data.data)
                                         }
                                         else{return ""}
@@ -392,9 +392,11 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                                 <Box width={'40%'} marginRight={'4%'} marginTop={'8%'} height={'40%'} sx={{border:'2px solid #A8C5D4' , borderRadius:'3px'}}>
                                     {(() => {
                                         let data = findData("SIQ")
-                                        return(
-                                            <Box width={`${data.data}`+"%"} height={'100%'} sx={{backgroundColor:'#26C5E4'}}></Box>
-                                        )
+                                        if(data.data!="--"){
+                                            return( 
+                                                <Box width={`${data.data}`+"%"} height={'100%'} sx={{backgroundColor:'#26C5E4'}}></Box>
+                                            )
+                                        }
                                     })()}
                                 </Box>
                             </Box>

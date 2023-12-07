@@ -1,9 +1,17 @@
+<<<<<<< HEAD
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button,  Box, Stack, Typography, Divider, IconButton, ToggleButtonGroup, ToggleButton, Tooltip } from '@mui/material'
+=======
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button,  Box, Stack, Typography, Divider, IconButton, ToggleButtonGroup, ToggleButton } from '@mui/material'
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
 import React, { FC, useEffect, useMemo, useRef, useState } from 'react'
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Table } from './Table';
+<<<<<<< HEAD
+=======
+import { Line } from 'react-chartjs-2';
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { CustomNoButton } from './CustomNoButton';
@@ -11,7 +19,10 @@ import { CustomOkButton } from './CustomOkButton';
 import { ExportToCsv } from 'export-to-csv';
 import { MRT_ColumnDef } from 'material-react-table';
 import { ChartOptions, LegendItem, Plugin } from 'chart.js';
+<<<<<<< HEAD
 import { Line } from 'react-chartjs-2';
+=======
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
 export interface DeviceDetails {
     newData: boolean;
     isDialogOpened: boolean;
@@ -139,7 +150,11 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
     const chartRef2 = useRef<any | null>(null);
     const chartRef3 = useRef<any | null>(null);
     const [graphData, setGraphData] = useState(false)
+<<<<<<< HEAD
     const [selectAlarm, setSelectAlarm] = useState(0)
+=======
+    const [selectAlarm, setSelectAlarm] = useState(1)
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
     const [newalarm, setNewAlarm] = useState<Array<{ date: string; time: { val: string; alarm: string[]; priority: string[]; }; }>>([]);
     const leftarrowcolor = selectAlarm==0 ? '#606060' : 'white'
     const rightarrowcolor = selectAlarm==newalarm.length-1 ? '#606060' : 'white'
@@ -557,16 +572,25 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
       
         stacked: false,
         plugins: {
+<<<<<<< HEAD
           decimation: {
             enabled: true,
             algorithm: 'min-max',
           },
+=======
+            decimation:{
+                enabled: true,
+                algorithm: 'min-max',
+            },
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
           colors: {
             forceOverride: true,
           },
           legend: {
             display: false,
           },
+         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+         //   @ts-ignore
           htmlLegend: {
             containerID: 'legend-container',
           },
@@ -601,8 +625,13 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
             display: true,
             position: 'left',
             grid: {
+<<<<<<< HEAD
               color: '#303030',
               drawOnChartArea: true,
+=======
+                color: '#303030',  
+              drawOnChartArea: false,
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
             },
             title: {
               display: true,
@@ -777,6 +806,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
           },
         },
     };
+<<<<<<< HEAD
     
     const [weightData, setWeightData] = useState<TemperatureData>({
         labels: [], // Initially, there are no labels
@@ -786,6 +816,24 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
     labels: [], // Initially, there are no labels
     datasets: [], // Initially, there are no datasets
     })
+=======
+    type TemperatureData = {
+        labels: any[];
+        datasets: any[]; 
+      };
+    const [temperatureData, setTemperatureData] = useState<TemperatureData>({
+        labels: [], // Initially, there are no labels
+        datasets: [], // Initially, there are no datasets
+      })
+    const [weightData, setWeightData] = useState<TemperatureData>({
+        labels: [], // Initially, there are no labels
+        datasets: [], // Initially, there are no datasets
+      })
+    const [pulseoximeterData, setPulseoximeterData] = useState<TemperatureData>({
+  labels: [], // Initially, there are no labels
+  datasets: [], // Initially, there are no datasets
+})
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
     const alarmUI = newalarm[selectAlarm]?.time?.alarm.map((vals,index) => {
         if(newalarm[selectAlarm].time.priority[index]=="High Priority"){
             return (
@@ -820,6 +868,10 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         }
     })
     const [rows, setRows] = useState<Array<{ date: string; time: string; alarm: string[][]; }>>([]);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
     const columns = useMemo<MRT_ColumnDef[]>(
         () => [
             
@@ -856,6 +908,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                         <Box width={'100%'} height={'100%'} display={'flex'} flexWrap={'wrap'}>
                         {cell.getValue<Array<string>>().map((val) => {
                         return (
+<<<<<<< HEAD
                             <Tooltip title={val[0]} placement="top">
                                 <Box
                                     display={'inline-block'}
@@ -888,6 +941,29 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                                 </Box>
                             </Tooltip>
 
+=======
+                            <Box
+                                display={'inline-block'}
+                                paddingTop={"5px"}
+                                paddingBottom={"5px"}
+                                paddingLeft={'10px'}
+                                paddingRight={'10px'}
+                                justifyContent={'center'}
+                                textAlign={'center'}
+                                color={'black'}
+                                margin={'10px'}
+                                sx={() => ({
+                                    borderRadius: "20px",
+                                    backgroundColor:
+                                    val[1] == "Low Priority"
+                                    ? "cyan"
+                                    : val[1] == "Medium Priority"
+                                    ? "yellow  " : "red ",
+                                })}
+                            >
+                                {val[0]}
+                            </Box>
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
                         )
                     })}
                     </Box>
@@ -914,6 +990,10 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                     //     {cell.getValue<Array>()[1]}
                     // </Box>
             },
+<<<<<<< HEAD
+=======
+                maxSize: 50,
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
                 // muiTableHeadCellProps: {
                 //     align: 'center',
                 //   },
@@ -1337,6 +1417,10 @@ items.forEach((item) => {
     },[communication])
     useEffect(() => {
         if(props.communication_resource?.id!=null){
+<<<<<<< HEAD
+=======
+            console.log(props.communication_resource)
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
             var x: { date: string; time: string; alarm: string[][]; }[] = []
             var y: { date: string; time: { val: string; alarm: string[]; priority: string[]; }; }[] = []
             if(props.communication_resource.extension){
@@ -1517,8 +1601,45 @@ items.forEach((item) => {
                 //     pr
                 // })
             }
+            // url.push(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${props.observation_resource?.id}/_history?_count=1`)
+            // fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${props.observation_resource?.id}/_history?_count=1`,{
+            //     credentials:'omit',
+            //     method:'GET',
+            //     headers: {
+            //         Authorization: "Basic "+ btoa("fhiruser:change-password")
+            //     }
+            // }).then((response) => response.json())
+            // .then((data) => {
+            //     pr
+            // })
         }
+<<<<<<< HEAD
         
+=======
+        else if(timeFrame==2){
+            let monthNewDate = new Date(currentNewDate.setMonth(currentNewDate.getMonth() - 1));
+            // let monthdate = monthNewDate.getUTCDate().toString().padStart(2,'0')
+            let monthmonth = (Number(monthNewDate.getMonth())+1).toString().padStart(2,'0')
+            let monthyear = monthNewDate.getUTCFullYear()
+            for (let index = 1; index < 30; index++) {
+                let monthDate = monthyear+"-"+monthmonth+"-"+index.toString().padStart(2,'0')
+                url.push(`http://13.126.5.10:9444/fhir-server/api/v4/Observation/${props.observation_resource?.id}/_history?_count=1&_since=${monthDate}T00:00:00Z`)
+            }
+        }
+        // let temparr: any[] = []
+        let prevdate = ""
+        Promise.all(
+            url.map((query) => {
+                return fetch(query, {
+                    credentials: "omit",
+                    method: "GET",
+                    headers: {
+                        Authorization: "Basic "+ btoa("fhiruser:change-password"),
+                    },
+                })
+                .then((response) => response.json())
+                .then((data) => {
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
 
         // let temparr: any[] = []
         
@@ -1753,6 +1874,7 @@ items.forEach((item) => {
         }
             // setLoading(false)
     },[observation])
+<<<<<<< HEAD
     useEffect(() => {console.log(selectedLegends)},[selectedLegends])
     useEffect(() => {props.handleCloseDialog()},[varq])
     const graph = useMemo(() => {
@@ -1773,6 +1895,193 @@ items.forEach((item) => {
                         {/* <MyChart height={'100%'} forwardedRef={chartRef3} options={weightOption as ChartOptions} data={weightData} plugins={temperatureLegendPlugin} />                                             */}
                         <Line ref={chartRef3} options={weightOption as ChartOptions} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                         <div id="legend-container3"></div>
+=======
+    // useEffect(() => {if(props.isDialogOpened){setTimeFrame(2)}},[props.isDialogOpened])
+    const getOrCreateLegendList = (_chart: any, id: string) => {
+        const legendContainer = document.getElementById(id);
+        let listContainer = legendContainer!.querySelector('div');
+        if (!listContainer) {
+          listContainer = document.createElement('div');
+          listContainer.style.display = 'flex';
+          listContainer.style.flexDirection = 'row';
+          listContainer.style.flexWrap = 'wrap'
+
+          listContainer.className = 'listContainer';
+          legendContainer!.appendChild(listContainer);
+        }
+      
+        return listContainer;
+    };   
+    const temperatureLegendPlugin: Plugin = {
+        
+        id: 'htmlLegend',
+        afterUpdate(chart, _args, options) {
+            const ul = getOrCreateLegendList(chart, options.containerID);
+          // Remove old legend items
+          while (ul.firstChild) {
+            ul.firstChild.remove();
+          }
+          ul.style.margin = '0px';
+          ul.style.padding = '0px';
+          ul.style.lineHeight = '300%';
+          ul.style.gap='5%';
+          // Reuse the built-in legendItems generator
+         
+
+          
+          const items: LegendItem[] = chart.options?.plugins?.legend?.labels?.generateLabels?.(chart) || [];
+
+items.forEach((item) => {
+  if (item.text !== '') {
+                const li = document.createElement('div');
+                li.style.alignItems = 'left';
+                li.style.cursor = 'pointer';
+                li.style.display = 'flex';
+                li.style.flexDirection = 'row';
+                // li.style.flexWrap = 'wrap'
+                li.style.padding = '0px';
+                li.style.margin = '0px';
+                // li.style.backgroundColor= 'red';
+          
+                li.onclick = () => {
+                  setS_and_D(2)
+                  const type = (chart.config as any)?.type;
+                 
+                  if (type === 'pie' || type === 'doughnut') {
+                    // Pie and doughnut charts only have a single dataset and visibility is per item
+                    if (item.index !== undefined) {
+                        chart.toggleDataVisibility(item.index);
+                      }
+                  } else {
+                    if (item.datasetIndex !== undefined) {
+                      chart.setDatasetVisibility(item.datasetIndex, !chart.isDatasetVisible(item.datasetIndex));
+                      chart.isDatasetVisible(item.datasetIndex)
+                        ? setSelectedLegends((prev: any) => [...prev, item.text])
+                        : setSelectedLegends((current: any[]) => current.filter((lol) => lol !== item.text));
+                    }
+                  }
+                  chart.update();
+                };
+          
+                // Color box
+                const boxSpan = document.createElement('span');
+                boxSpan.style.background = item.hidden ? 'transparent' : (typeof item.fillStyle === 'string' ? item.fillStyle : 'transparent');
+                // boxSpan.style.borderColor = item.strokeStyle;
+                boxSpan.style.border = `2px solid ${item.strokeStyle}`;
+                boxSpan.style.display = 'inline-block';
+                boxSpan.style.flexShrink = '0px';
+                boxSpan.style.height = '20px'; // Added height
+                boxSpan.style.marginRight = '5px';
+                boxSpan.style.width = '20px';
+                boxSpan.style.borderRadius = '8px'
+    
+          
+                // Text
+                const textContainer = document.createElement('p');
+                textContainer.style.fontSize = '12px'
+                textContainer.style.color = 'white';
+                textContainer.style.marginTop = '-12px';
+                textContainer.style.padding = '0px';
+                // textContainer.style.textDecoration = item.hidden ? 'line-through' : '';
+          
+                const text = document.createTextNode("- "+item.text);
+                textContainer.appendChild(text);
+          
+                li.appendChild(boxSpan);
+                li.appendChild(textContainer);
+                ul.appendChild(li);
+            }
+
+          });
+        }
+    };
+    useEffect(() => {console.log(selectedLegends)},[selectedLegends])
+    const [S_and_D, setS_and_D] = useState(0)
+    const [downloadConfirmation, setDownloadConfirmation] = useState(false)
+    const csvOptions = {
+        fieldSeparator: ',',
+        quoteStrings: '"',
+        decimalSeparator: '.',
+        showLabels: true,
+        useBom: true,
+        useKeysAsHeaders: false,
+        headers: ['Parameter','Values'],
+    };
+    const csvExporter = new ExportToCsv(csvOptions);
+    const handleExportData = () => {
+        if(temperatureData.labels.length!=0 && selectedLegends.length!=0){
+            let vvtemp: any[] = []
+            selectedLegends.map((item: any) => {
+                temperatureData.datasets.map((val: { data: any; label: any; }) => {
+                    console.log(val.data)
+                    if(val.label == item){
+                        vvtemp.push(val.data)
+                    }
+                })
+                pulseoximeterData.datasets.map((val: { data: any; label: any; }) => {
+                    console.log(val.data)
+                    if(val.label == item){
+                        vvtemp.push(val.data)
+                    }
+                })
+                weightData.datasets.map((val: { data: any; label: any; }) => {
+                    console.log(val.data)
+                    if(val.label == item){
+                        vvtemp.push(val.data)
+                    }
+                })
+            })
+            console.log(vvtemp)
+            let temprow = [];
+            temprow.push(selectedLegends.map((vals: any, index: number) => {
+                return (
+                    {
+                        Parameter: vals,
+                        Values: vvtemp[index]
+                    }
+                )
+            }))
+            csvExporter.generateCsv(temprow[0])
+        }
+        setDownloadConfirmation(false)
+    };
+    const [varq, setvarq] = useState(false)
+    useEffect(() => {props.handleCloseDialog()},[varq])
+  return (
+    <React.Fragment>
+        <Dialog
+            open={props.isDialogOpened}
+            sx={{
+                backdropFilter :"blur(5px)"
+            }}
+            onClose={() =>
+            {setvarq(!varq)}}
+            // fullWidth
+            maxWidth="lg"
+            PaperProps={{sx:{minWidth:{
+                xs: '90%',
+                sm: '90%',
+                md: '70%',
+                lg: '50%',
+              },borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)' }}}
+            >
+            <DialogTitle
+                sx={{
+                    borderBottom:'1px solid white'
+                }}
+            >
+                {/* <IconButton sx={{marginLeft:'96%'}}><CloseRounded/></IconButton> */}
+                <Stack direction={'row'} width={'102%'} >
+                    <Stack direction={'row'} width={'100%'} sx={{justifyContent:'space-between', marginLeft:'auto', marginRight:'auto'}}>
+                    <Typography variant="h6" fontWeight={'regular'} >
+                    {props.patient?.extension[0]?.valueString} &nbsp; | &nbsp; {props.patient?.identifier[0]?.value}
+                    
+                    </Typography>
+                    <Typography variant="h6">
+                    {props.device_id}
+                    </Typography>
+                    
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
                     </Stack>
                     {/* <Box width={'35%'} justifyContent={'center'} textAlign={'center'} sx={{borderRadius:'20px', marginTop:'-50px'}}>
                         <Stack spacing={'10px'} sx={{marginLeft:'7%', width:'100%', justifyContent:'center', marginTop:'60px', textAlign:'center' }} className="legendBox">
@@ -1781,13 +2090,267 @@ items.forEach((item) => {
                         
                         </Stack>
 
+<<<<<<< HEAD
                         <Button color="primary"  startIcon={<FileDownloadIcon />} variant="contained" sx={{marginTop:'70%', borderRadius:'25px', width:'200px'}} onClick={() => {
+=======
+                
+            </DialogTitle>
+            <DialogContent dividers={true} sx={{justifyContent:'center', overflowY: 'scroll'}}>
+            {/* <Box width={'60px'} height={'30px'} borderRadius={'25px'} sx={{backgroundColor:'red', marginLeft:'auto', opacity:`${liveOpacity ? '1':'0'}`, textAlign:'center'}}>
+                <Typography>LIVE</Typography>
+            </Box> */}
+                <Stack
+                direction={'row'}
+                divider={
+                <Divider orientation='vertical' flexItem/>
+                }
+                sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: {
+                xs: "2rem",
+                sm: "2rem",
+                md: "4rem",
+                lg: "4rem",
+                xl: "4rem",
+                },
+                mt: {
+                xs: 5,
+                sm: 6,
+                md: 7,
+                lg: 8,
+                },
+                mb: {
+                xs: 5,
+                sm: 6,
+                md: 7,
+                lg: 8,
+                },
+                justifyContent: "center",
+                }}
+                >
+                <Stack alignItems={'center'} spacing={'10px'}>
+                    
+                <Typography variant="subtitle1" >
+                    {props.newData && props.observation_resource?.component[0]?.code.text}
+                </Typography>
+                <Typography variant="h4" sx={{fontWeight:'bold'}}>
+                    {(() => {
+                    if(props.newData){
+                    return (props.observation_resource?.component[0]?.valueQuantity.unit=='1' || props.observation_resource?.component[0]?.valueQuantity.unit)
+                    }
+                    else{
+                    return "Device Not Active"
+                    }
+                    })()}
+                </Typography>
+                </Stack>
+                {props.newData && props.observation_resource?.component.map((_obs: any,index: number) => {
+                if((index<4 || index>8) && index!=0){
+                return (
+                <Stack alignItems={'center'} spacing={'10px'}>
+                <Typography variant="subtitle1" >
+                    {props.observation_resource?.component[index]?.code.text}
+                </Typography>
+                <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                <Typography variant='h4'>
+                    {Math.round((props.observation_resource?.component[index]?.valueQuantity?.value + Number.EPSILON) * 100) / 100}&nbsp;
+                </Typography>
+                <Typography variant='h5'>
+                    {props.observation_resource?.component[index]?.valueQuantity?.unit}
+                </Typography>
+                </div>
+                </Stack>
+                )
+                }
+                })}
+                </Stack>
+                {props.newData && (
+                    <Divider sx={{marginTop:'20px'}} />
+                )}
+                
+                {props.newData && props.observation_resource?.component[7]?.code ?
+                (
+                <>
+                    <Typography variant='h5' paddingLeft={'2%'} paddingTop={'3%'}>Pulse Oximeter</Typography>
+                    <Stack
+                        direction={'row'}
+                        divider={
+                            <Divider orientation='vertical' flexItem/>
+                            }
+                        sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: {
+                        xs: "2rem",
+                        sm: "4rem",
+                        md: "4rem",
+                        lg: "4rem",
+                        xl: "4rem",
+                        },
+                        mt: {
+                        xs: 2,
+                        sm: 3,
+                        md: 3,
+                        lg: 3,
+                        },
+                        mb: {
+                        xs: 3,
+                        sm: 4,
+                        md: 5,
+                        lg: 6,
+                        },
+                        justifyContent: "center",
+                        textAlign:'center',
+                        width:'100%'
+                        }}
+                        >
+                        
+                        {props.newData && props.observation_resource?.component.map((_obs: any, index: number) => {
+                            if(props.observation_resource?.component[index]?.code.text=="SIQ"|| props.observation_resource?.component[index]?.code.text=="PVI" || props.observation_resource?.component[index]?.code.text=="PI"|| props.observation_resource?.component[index]?.code.text=="SpO2" || props.observation_resource?.component[index]?.code.text=="Pulse Rate"){
+                                var temp = false
+                                if(props.observation_resource?.component[index]?.code.text=="SIQ"){
+                                    temp = true
+                                }
+                                if(index<9 && index>3){
+                                return (
+                                    <Stack alignItems={'center'} spacing={'10px'} justifyContent={'center'}>
+                                    <Typography variant="subtitle1" >
+                                        {props.newData && props.observation_resource?.component[index]?.code.text}
+                                    </Typography>
+                                    {temp && <Box width={'130px'} height={'45px'} sx={{backgroundColor:'white', borderRadius:'10px'}}>
+                                    <Box width={String(props.observation_resource?.component[index]?.valueQuantity?.value)+'%'} height={'100%'} sx={{backgroundColor:'blue', borderRadius:'10px'}}></Box>
+                                    </Box>}
+                                    {!temp && 
+                                    <Typography variant="h3">
+                                        {/* {props.newData && props.observation_resource?.component[index]?.valueQuantity?.value}{props.observation_resource?.component[index]?.valueQuantity?.unit} */}
+                                        <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                                        <Typography variant='h4'>
+                                            {Math.round((props.observation_resource?.component[index]?.valueQuantity?.value + Number.EPSILON) * 100) / 100}&nbsp;
+                                        </Typography>
+                                        <Typography variant='h5'>
+                                            {props.observation_resource?.component[index]?.valueQuantity?.unit}
+                                        </Typography>
+                                        </div>
+                                    </Typography>
+                                    }
+                                    </Stack>
+                                )}
+                                temp = false
+                            }
+
+                        })}
+                        
+                    </Stack>
+                </>
+                ):
+                <Box
+                sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center"}}>
+                <Typography variant='h6' sx={{fontWeight:'bold', paddingTop:'1%', opacity:'0.5'}}>{props.newData && 'Oximeter Not connected'}{!props.newData && ''}</Typography>
+                </Box>}
+            <Divider sx={{marginTop:'20px', backgroundColor:'white', color:'white'}}/>
+            <div style={{marginTop:'25px'}}>
+            {   
+                    graphData && (<>
+                    <Stack direction={'row'} width={"100%"} justifyContent={'space-between'}>
+                    {/* <Button color="primary" startIcon={<FileDownloadIcon />} variant="contained" sx={{width:'100px', marginLeft:'2%'}}>
+                            Export
+                    </Button> */}
+                    <Stack width={'100%'} direction={{ xs: 'row', sm: 'row', md:'row', lg:'column' }} marginBottom={{ xs: '30px', sm: '30px', md:'20px', lg:'20px' }}>
+                    <Typography variant='h5' paddingLeft={'2%'}>Trends</Typography>
+                    <Stack width={'100%'} direction={'row'} textAlign={'center'}  >
+                        
+                        <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'1%'}}>
+                            <ToggleButton value={0} key="left" sx={{height:'30px', width:'50px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(0)}}>
+                            Day
+                            </ToggleButton>,
+                            <ToggleButton value={1} key="center" sx={{height:'30px', width:'50px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(1)}}>
+                                Week
+                            </ToggleButton>,
+                            <ToggleButton value={2} key="right" sx={{height:'30px', width:'50px', borderTopRightRadius:'20px',borderBottomRightRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(2)}}>
+                                Month
+                            </ToggleButton>
+                        </ToggleButtonGroup>
+                        <ToggleButtonGroup value={S_and_D} exclusive size="small" sx={{marginRight:'1%'}}>
+                            <ToggleButton value={0} key="left" sx={{height:'30px', width:'80px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {
+                                setS_and_D(0)
+                                let temp: any[] = []
+                                chartRef1.current.data.datasets.forEach((dataset: { label: any; }, datasetIndex: any) => {
+                                    temp.push(dataset.label)    
+                                    chartRef1.current.setDatasetVisibility(datasetIndex, true);
+                                    });
+                                chartRef1.current.update();
+                                chartRef2.current.data.datasets.forEach((dataset: { label: any; }, datasetIndex: any) => {
+                                    temp.push(dataset.label)
+                                    chartRef2.current.setDatasetVisibility(datasetIndex, true);
+                                    });
+                                chartRef2.current.update();
+                                chartRef3.current.data.datasets.forEach((dataset: { label: any; }, datasetIndex: any) => {
+                                    temp.push(dataset.label)
+                                    chartRef3.current.setDatasetVisibility(datasetIndex, true);
+                                    });
+                                chartRef3.current.update();
+                                setSelectedLegends(temp.filter(val => val!=""))
+                            }}>
+                                Select all
+                            </ToggleButton>
+                            <ToggleButton value={1} key="right" sx={{height:'30px', width:'80px', borderTopRightRadius:'20px',borderBottomRightRadius:'20px', fontSize:'10px', textTransform:'capitalize'}}  onClick={() => {
+                                setS_and_D(1)
+                                chartRef1.current.data.datasets.forEach((_dataset: any, datasetIndex: any) => {
+                                    chartRef1.current.setDatasetVisibility(datasetIndex, false);
+                                    });
+                                chartRef1.current.update();
+                                chartRef2.current.data.datasets.forEach((_dataset: any, datasetIndex: any) => {
+                                    chartRef2.current.setDatasetVisibility(datasetIndex, false);
+                                    });
+                                chartRef2.current.update();
+                                chartRef3.current.data.datasets.forEach((_dataset: any, datasetIndex: any) => {
+                                    chartRef3.current.setDatasetVisibility(datasetIndex, false);
+                                    });
+                                chartRef3.current.update();
+                                setSelectedLegends([])
+                            }}>
+                                Deselect all
+                            </ToggleButton>
+                        </ToggleButtonGroup>
+                        <Button color="primary" startIcon={<FileDownloadIcon />} variant="contained" sx={{  borderRadius:'25px', width:'100px', height:'30px', textTransform:'capitalize', fontSize:'10px', color:'white'}} onClick={() => {
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
                             setDownloadConfirmation(true)
                         }}>
                             Download
                         </Button>
                         
+<<<<<<< HEAD
                     </Box> */}
+=======
+                    </div> */}
+                        {(() => {
+                            console.log('HELLO WORLD')
+                            if(props.observation_resource?.identifier[0]?.value?.toString()=="PMS-CIC"){
+                                return (
+                                    <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={
+                                        <Divider orientation='vertical' flexItem sx={{marginLeft:'1%',backgroundColor:'#505050', color:'#505050'}}/>
+                                    }>
+                                        <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
+                                            <Line ref={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
+                                            <div id="legend-container"></div>
+                                            <Divider />
+                                            <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                            <div id="legend-container2"></div>
+                                            <Divider />
+                                            <Line ref={chartRef3} options={weightOption as ChartOptions} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                            <div id="legend-container3"></div>
+                                        </Stack>
+                                        {/* <Box width={'35%'} justifyContent={'center'} textAlign={'center'} sx={{borderRadius:'20px', marginTop:'-50px'}}>
+                                            <Stack spacing={'10px'} sx={{marginLeft:'7%', width:'100%', justifyContent:'center', marginTop:'60px', textAlign:'center' }} className="legendBox">
+                                            
+                                            
+                                            
+                                            </Stack>
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
 
                 </Stack>
             )
@@ -1818,6 +2381,7 @@ items.forEach((item) => {
                         
                         </Stack>
 
+<<<<<<< HEAD
                         <Button color="primary"  startIcon={<FileDownloadIcon />} variant="contained" sx={{marginTop:'70%', borderRadius:'25px', width:'200px'}} onClick={() => {
                             setDownloadConfirmation(true)
                         }}>
@@ -1825,6 +2389,33 @@ items.forEach((item) => {
                         </Button>
                         
                     </Box> */}
+=======
+                                    </Stack>
+                                )
+                            }
+                            if(props.observation_resource?.identifier[0]?.value?.toString()=="PMSinc" || props.observation_resource?.identifier[0]?.value?.toString()=="PMS-INC"){
+                                
+                                return (
+                                    <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={
+                                        <Divider orientation='vertical' flexItem sx={{marginLeft:'1%',backgroundColor:'#505050', color:'#505050'}}/>
+                                    }>
+                                        <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
+                                            <Line ref={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]}></Line>
+                                            <div id="legend-container"></div>
+                                            <Divider />
+                                            <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                            <div id="legend-container2"></div>
+                                            <Divider />
+                                            <Line ref={chartRef3} options={weightOption as ChartOptions} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                            <div id="legend-container3"></div>
+                                        </Stack>
+                                        {/* <Box width={'35%'} justifyContent={'center'} textAlign={'center'} sx={{borderRadius:'20px', marginTop:'-50px'}}>
+                                            <Stack spacing={'10px'} sx={{marginLeft:'7%', width:'100%', justifyContent:'center', marginTop:'60px', textAlign:'center' }} className="legendBox">
+                                            
+                                            
+                                            
+                                            </Stack>
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
 
                 </Stack>
             )
@@ -1847,7 +2438,25 @@ items.forEach((item) => {
                         <div id="legend-container3"></div>
                     </Stack>
 
+<<<<<<< HEAD
                 </Stack>
+=======
+                                    <Stack width={'100%'} height={'100%'} direction={'row'} divider={
+                                        <Divider orientation='vertical' flexItem sx={{marginLeft:'1%'}}/>
+                                    }>
+                                        <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
+                                            <Line ref={chartRef1} options={pressure1Option as ChartOptions} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]}></Line>
+                                            <div id="legend-container"></div>
+                                            <Divider />
+                                            <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                            <div id="legend-container2"></div>
+                                            <Divider />
+                                            <Line ref={chartRef3} options={pressure2Option as ChartOptions} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                            <div id="legend-container3"></div>
+                                        </Stack>
+
+                                    </Stack>
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
 
 
 
@@ -2237,6 +2846,32 @@ items.forEach((item) => {
                                     <Divider sx={{marginTop:'40px', backgroundColor:'white', color:'white'}} />           
                                 </div>
                 }
+<<<<<<< HEAD
+=======
+                {
+                    !graphData && (<div></div>)
+                }            
+            </div>
+            <Divider sx={{marginTop:'40px', marginBottom:'20px',backgroundColor:'white', color:'white'}} />
+            <Typography variant='h5' paddingLeft={'2%'}>Alarms</Typography>
+            <Stack direction={'row'} width={'100%'} justifyContent={'space-between'} marginTop={'3%'}>
+                <IconButton sx={{height:'50px', width:'50px', borderRadius:'100px', marginTop:'auto', marginBottom:'auto'}} onClick={() => {if(selectAlarm>0){setSelectAlarm(selectAlarm-1)}}}><FontAwesomeIcon fontSize={'30px'} icon={faChevronLeft} style={{color:`${leftarrowcolor}`}}/></IconButton>
+                <Box width={'100%'} display={'flex'} textAlign={'center'} justifyContent={'center'} flexWrap={'wrap'}>
+                {alarmUI}
+                    {/* <div style={{marginTop:'2.5%', display:'flex', width:'100%', height:'100%', justifyContent:'space-evenly'}}></div>  */}
+                </Box>
+                <IconButton sx={{height:'50px', width:'50px', borderRadius:'100px', marginTop:'auto', marginBottom:'auto'}} onClick={() => {if(selectAlarm<newalarm.length){setSelectAlarm(selectAlarm+1)}}}><FontAwesomeIcon fontSize={'30px'} icon={faChevronRight} style={{color:`${rightarrowcolor}`}} /></IconButton>  
+            </Stack>
+            {/* onClick={() => {setTableVisible(!tableVisisble)}} endIcon={tableVisisble ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />} */}
+            <Button sx={{width:'20%', height:'50px', marginLeft:'40%', marginTop:'3%', marginBottom:'3%', borderRadius:'50px', color:'white', backgroundColor:'#111522', border:'0.5px solid grey', fontWeight:50, boxShadow: `0px 0px 10px 1px #6e6f88`, textTransform:'capitalize'}}  endIcon={tableVisisble ? <KeyboardArrowUpIcon sx={{ fontSize: 80 }} /> : <KeyboardArrowDownIcon sx={{ fontSize: 80 }}  />} onClick={() => { handleClick();setTableVisible(!tableVisisble);}}> 
+            <Box sx={{ fontWeight: 'regular', m: 1, fontSize:16, }}>Alarm Log</Box>
+            </Button>
+            <div  style={{marginLeft:'auto', width:'85%', marginRight:'auto'}} >
+            {tableVisisble && <Table rows={rows} columns={columns}/>}
+            {/* <div ref={scrollto} style={{width:'100px', height:'20px', backgroundColor:'red', marginTop:tableVisisble ? '300px'  : '0px'}}></div> */}
+            </div>
+            {/* <div style={{width:'10px', height:'10px', backgroundColor:'yellow'}} ref={scrollto}></div> */}
+>>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
 
                 
                 <Typography variant='h5' paddingLeft={'2%'} paddingTop={'3%'}>Alarms</Typography>
