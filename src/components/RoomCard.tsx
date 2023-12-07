@@ -1,12 +1,10 @@
-import { Alert, Button, Dialog, DialogActions,Menu, DialogContent, DialogContentText, DialogTitle,  List, ListItem, ListItemButton, Select, Snackbar, Stack, Typography, MenuItem, Divider, TextField,} from '@mui/material'
+import { Alert, Button, Dialog, DialogActions,Menu, DialogContent, DialogContentText, DialogTitle, Select, Snackbar, Stack, Typography, MenuItem, Divider, TextField, Skeleton,} from '@mui/material'
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import Paper from '@mui/material/Paper'
 import { FC, useEffect, useState } from 'react'
 import SettingsIcon from '@mui/icons-material/Settings';
 import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
 import { CustomNoButton } from './CustomNoButton'
 import { CustomOkButton } from './CustomOkButton'
 
@@ -14,6 +12,8 @@ export interface roomData {
     roomName: string;
     roomId: string;
     roomChange: Function;
+    deviceChange: Function;
+    deviceChangeToggle: Boolean;
 }
 
 
@@ -21,9 +21,9 @@ export interface roomData {
 export const RoomCard: FC<roomData> = (props) => {
     const [snackSucc, setSnackSucc] = useState(false);
     const [snack, setSnack] = useState(false)
-
+   
     const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
-        // console.log(event)
+        console.log(event)
         if (reason === 'clickaway') {
           return;
         }
@@ -61,9 +61,10 @@ export const RoomCard: FC<roomData> = (props) => {
 
     const [open, setOpen] = useState(false);
     const [deviceChanged, setDeviceChanged] = useState(false)
+    useEffect(() => {setDeviceChanged(!deviceChanged)},[props.deviceChangeToggle])
     const [renameRoom, setRenameRoom] = useState(false)
     useEffect(() => {
-        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Device?_count=20`, {
+        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Device?_count=20`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -96,7 +97,7 @@ export const RoomCard: FC<roomData> = (props) => {
             "status": "suspended",
             "name": x
         }
-        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Location/${props.roomId}`, {
+        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location/${props.roomId}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "PUT",
             body: JSON.stringify(data),
@@ -113,14 +114,15 @@ export const RoomCard: FC<roomData> = (props) => {
             else{setSnackSucc(false)}
         })
     }
+    const [renameRoomName, setRenameRoomName] = useState("")
     const renameRoomButton = () => {
-        const [renameRoomName, setRenameRoomName] = useState("")
+       
             return (
                 <Dialog 
                 open={renameRoom}
                 onClose={() => setRenameRoom(false)}
                 aria-labelledby="responsive-dialog-title"
-                PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', width:'20%',textAlign:'center', minHeight:'200px'}}}
+                PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', width:'400px',textAlign:'center', minHeight:'200px'}}}
             >
                 <DialogTitle id="responsive-dialog-title">
                 {`Rename ${props.roomName}?`}
@@ -145,7 +147,7 @@ export const RoomCard: FC<roomData> = (props) => {
             ...deviceList[Number(index)].resource,
             location: vvtemp
         }
-        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`, {
+        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "PUT",
             body: JSON.stringify(data),
@@ -156,39 +158,49 @@ export const RoomCard: FC<roomData> = (props) => {
         })
         .then((response) => {
             setSnack(true)
-            if(response.status==200){setSnackSucc(true);setDeviceChanged(!deviceChanged)}
+            if(response.status==200){setSnackSucc(true);setDeviceChanged(!deviceChanged);props.deviceChange()}
             else{setSnackSucc(false)}
         })
 
 
 
     }
-    const removeButton = (index: any) => {
-        let data;
-        data = {
-            ...deviceList[Number(index)].resource,
-        }
-        delete data.location;
-        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`, {
-            credentials: "omit", // send cookies and HTTP authentication information
-            method: "PUT",
-            body: JSON.stringify(data),
-            headers: {
-                "Constent-Type": "application/json",
-                Authorization: "Basic " + btoa("fhiruser:change-password"), // set HTTP basic auth header
-            },
-        })
-        .then((response) => {
-            setSnack(true)
-            if(response.status==200){setSnackSucc(true);setDeviceChanged(!deviceChanged)}
-            else{setSnackSucc(false)}
-        })
-    }
+    const removeButton = (index: number) => {
+        // Get the device object from the list
+        const device = deviceList[Number(index)].resource;
+      
+        // Create a new object without the 'location' property
+        const { location, ...data } = device;
+      
+        // Define the URL and request options
+        const apiUrl = `http://3.110.169.17:9444/fhir-server/api/v4/Device/${device.id}`;
+        const requestOptions: RequestInit = {
+          credentials: "omit",
+          method: "PUT",
+          body: JSON.stringify(data),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+          },
+        };
+      
+        // Send the PUT request
+        fetch(apiUrl, requestOptions)
+          .then((response) => {
+            setSnack(true);
+            if (response.status === 200) {
+              setSnackSucc(true);
+              setDeviceChanged(!deviceChanged);
+            } else {
+              setSnackSucc(false);
+            }
+          });
+      };
     const [deleteDevice, setDeleteDevice] = useState(false)
     const [deleteRoom, setDeleteRoom] = useState(false)
     const removeRoomButton = () => {
         console.log("Called")
-        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Location/${props.roomId}`, {
+        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location/${props.roomId}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "DELETE",
             headers: {
@@ -210,7 +222,7 @@ export const RoomCard: FC<roomData> = (props) => {
             open={deleteRoom}
             onClose={() => setDeleteDevice(false)}
             aria-labelledby="responsive-dialog-title"
-            PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', width:'20%',textAlign:'center', minHeight:'200px'}}}
+            PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', width:'400px',textAlign:'center', minHeight:'200px'}}}
 
         >
             <DialogTitle id="responsive-dialog-title">
@@ -234,8 +246,6 @@ export const RoomCard: FC<roomData> = (props) => {
         )
     }
     const removeFromRoom = () => {
-        const [miniDialog, setMiniDialog] = useState(false)
-        const [selectedDevice, setSelectedDevice] = useState(Number)
         return (
             <Dialog
             open={deleteDevice}
@@ -283,16 +293,17 @@ export const RoomCard: FC<roomData> = (props) => {
         </Dialog>
         )
     }
+    const [miniDialog, setMiniDialog] = useState(false)
+    const [selectedDevice, setSelectedDevice] = useState(Number)
     const addToRoom = () => {
-        const [miniDialog, setMiniDialog] = useState(false)
-        const [selectedDevice, setSelectedDevice] = useState(Number)
+       
         return (
             <Dialog
             open={open}
             onClose={() => setOpen(false)}
             scroll='paper'
             PaperProps={{style:{borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', minWidth:'400px', minHeight:'200px'}}} // borderRadius:'3%', boxShadow: `0px 0px 20px 10px #7B7B7B`, border:'1px solid #7B7B7B
-        >
+ >
             <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', padding:'9%'}}>
             {`Add device to ${props.roomName}`}
             
@@ -301,7 +312,6 @@ export const RoomCard: FC<roomData> = (props) => {
                 <Stack width={'100%'} display={'flex'} direction={'row'} flexWrap={'wrap'}
                 >
                 {deviceList.map((device, index) => {
-                    console.log("HELLO WORLD")
                         if(device?.resource?.location?.reference.split("/")[1] != props.roomId){
                             return(
                                     <Button onClick={() => {setMiniDialog(true); setSelectedDevice(index)}} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:'white', border:'0.1px solid #282828'}}>
@@ -318,8 +328,7 @@ export const RoomCard: FC<roomData> = (props) => {
             <Dialog
                 open={miniDialog}
                 onClose={() => setMiniDialog(false)}
-                PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', height:'20%', justifyContent:'center', textAlign:'center'}}}
-            >
+                PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', height:'20%', justifyContent:'center', textAlign:'center'}}}>
                 <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', paddingBottom:'9%'}}>
                     {`Shift device `}<i>{`${deviceList[selectedDevice].resource.identifier[0].value} `}</i>{`to room `}<i>{`${props.roomName}`}?</i>
                 </DialogTitle>
@@ -335,77 +344,125 @@ export const RoomCard: FC<roomData> = (props) => {
         
         )
   }
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+      const timer = setTimeout(() => {
+        setLoading(false);
+      }, 2000);
+  
+      return () => clearTimeout(timer);
+    }, []);
+  
   const [controlColor, setControlColor] = useState("grey")
   const [controlOpacity, setOpacity] = useState("0.8")
   return (
-    <Box width={"350px"} sx={{ opacity:controlOpacity, backgroundColor:'transparent'}} onMouseLeave={() => {setControlColor("grey");setOpacity("0.8")}} onMouseEnter={() => {setControlColor("#2BA0E0");setOpacity("1")}} > { /* onClick={() => setOpen(true)}> */}
-        <Paper  elevation={5} sx={{ borderRadius: "25px", background:'transparent'}}>
-          <Card
-            style={{ boxShadow:'none' ,background: "transparent", borderRadius: "25px", minHeight:"280px", border: `1px solid ${controlColor}`
-             }}
-          >
-            <Stack width={'100%'} direction={'row'} justifyContent={'center'} textAlign={'center'}>
-            <CardContent sx={{marginTop:'0%', width:'100%', justifyContent:'center', textAlign:'center'}}>
-                    <Stack marginTop={'0%'}>
-                    <IconButton sx={{width:'10%',marginLeft:'auto',marginRight:'3%'}} onClick={handleClick1}><SettingsIcon /></IconButton>
-                    <Menu
-        id="demo-positioned-menu"
-        aria-labelledby="demo-positioned-button"
-        anchorEl={anchorEl}
-        open={open1}
-        onClose={handleClose1}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #3C4661, #3C4661, #3C4661)', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', textAlign:'center'}}}        
-        MenuListProps={{sx:{py:0}}}
+      <Box>
+        {loading ? (
+          <Skeleton animation="wave" variant="rectangular" width={"350px"} height={"280px"} sx={{borderRadius:"25px"}} />
+        ) : (
         
-      >
-        <Stack divider={<Divider sx={{backgroundColor:'white'}} flexItem />}>
-        <Button onClick={() => {setRenameRoom(true)}}  sx={{color:'white', padding:'5%'}}><Typography variant='caption' textTransform={'capitalize'}>Rename</Typography></Button>
-        <Button onClick={() => {setDeleteRoom(true)}} sx={{backgroundColor:'#E48227',color:'white', paddingTop:'5%', paddingBottom:'5%'}}><Typography variant='caption' textTransform={'capitalize'}>Delete Room</Typography></Button>
-        </Stack>
-        
-        </Menu>
-            <Typography sx={{userSelect:"none" ,marginTop:'5%'}}>{props.roomName}</Typography>
-                </Stack>
-            <Stack spacing={"10%"} marginTop={'10%'} width={'70%'} marginLeft={'auto'} marginRight={'auto'}>
-                <Select sx={{fontSize:'10%', borderRadius:'25px'}} >
-                    {deviceList.map((device) => {
-                        if(device?.resource?.location?.reference.split("/")[1] == props.roomId){
-                            return (
-                                <MenuItem>{device.resource.identifier[0].value.toString()}</MenuItem>
-                            )
-                        }
-                    })}
-                </Select>
-                <Button variant="outlined" sx={{borderRadius:'25px'}} onClick={()=> {setOpen(true)}}>Add/Move Devices</Button>
-                <Button variant="outlined" sx={{borderRadius:'25px'}} color='warning' onClick={() => {setDeleteDevice(true)}}>Remove Device</Button>
-            
-            {/* <Stack direction={'row'} width={"100%"} justifyContent={'space-between'}> */}
-                
-            {/* </Stack> */}
-            
-            </Stack>
-            </CardContent>
-            {addToRoom()}
-            {removeFromRoom()}
-            {removeRoom()}
-            {renameRoomButton()}
-            <Snackbar open={snack} autoHideDuration={5000} onClose={handleClose}>
-                    <Alert onClose={handleClose} variant="filled" severity={snackSucc ? 'success':'error'}>
-                        {snackSucc && "Operation Completed Successfully"}
-                        {!snackSucc && "Operation Failed"}
-                    </Alert>
-            </Snackbar>
-            </Stack>
-            
-              
-            
-          </Card>
-        </Paper>
-        
-    </Box>
+      <Card elevation={5} onMouseLeave={() => { setControlColor('grey'); setOpacity('0.8') }} onMouseEnter={() => { setControlColor('#2BA0E0'); setOpacity('1') }}style={{width: '350px',opacity: controlOpacity, backgroundColor: 'transparent', boxShadow: 'none', background: 'transparent', borderRadius: '25px', minHeight: '280px', border: `1px solid ${controlColor}` }}>
+              <Stack width={'100%'} direction={'row'} justifyContent={'center'} textAlign={'center'}>
+              <CardContent sx={{marginTop:'0%', width:'100%', justifyContent:'center', textAlign:'center'}}>
+                      <Stack marginTop={'0%'}>
+                      <IconButton sx={{width:'10%',marginLeft:'auto',marginRight:'3%'}} onClick={handleClick1}><SettingsIcon /></IconButton>
+                      <Menu id="demo-positioned-menu" aria-labelledby="demo-positioned-button" anchorEl={anchorEl} open={open1} onClose={handleClose1} anchorOrigin={{vertical: 'top', horizontal: 'right', }}  PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #3C4661, #3C4661, #3C4661)', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', textAlign:'center'}}} MenuListProps={{sx:{py:0}}} >
+          <Stack divider={<Divider sx={{backgroundColor:'white'}} flexItem />}>
+          <Button onClick={() => {setRenameRoom(true)}}  sx={{color:'white', padding:'5%'}}><Typography variant='caption' textTransform={'capitalize'}>Rename</Typography></Button>
+          <Button onClick={() => {setDeleteRoom(true)}} sx={{backgroundColor:'#E48227',color:'white', paddingTop:'5%', paddingBottom:'5%'}}><Typography variant='caption' textTransform={'capitalize'}>Delete Room</Typography></Button>
+          </Stack>
+          
+          </Menu>
+              <Typography sx={{userSelect:"none" ,marginTop:'5%'}}>{props.roomName}</Typography>
+                  </Stack>
+              <Stack spacing={"10%"} marginTop={'10%'} width={'70%'} marginLeft={'auto'} marginRight={'auto'}>
+                  <Select sx={{fontSize:'10%', borderRadius:'25px'}} >
+                      {deviceList.map((device) => {
+                          if(device?.resource?.location?.reference.split("/")[1] == props.roomId){
+                              return (
+                                  <MenuItem>{device.resource.identifier[0].value.toString()}</MenuItem>
+                              )
+                          }
+                      })}
+                  </Select>
+                  <Button variant="outlined" sx={{borderRadius:'25px'}} onClick={()=> {setOpen(true)}}>Add/Move Devices</Button>
+                  <Button variant="outlined" sx={{borderRadius:'25px'}} color='warning' onClick={() => {setDeleteDevice(true)}}>Remove Device</Button>
+              </Stack>
+              </CardContent>
+              {addToRoom()}
+              {removeFromRoom()}
+              {removeRoom()}
+              {renameRoomButton()}
+              <Snackbar open={snack} autoHideDuration={5000} onClose={handleClose}>
+                      <Alert onClose={handleClose} variant="filled" severity={snackSucc ? 'success':'error'}>
+                          {snackSucc && "Operation Completed Successfully"}
+                          {!snackSucc && "Operation Failed"}
+                      </Alert>
+              </Snackbar>
+              </Stack>
+            </Card>
+            )}
+            </Box>
+   
+  //     <Card elevation={5} onMouseLeave={() => { setControlColor('grey'); setOpacity('0.8') }} onMouseEnter={() => { setControlColor('#2BA0E0'); setOpacity('1') }}style={{width: '350px',opacity: controlOpacity, backgroundColor: 'transparent', boxShadow: 'none', background: 'transparent', borderRadius: '25px', minHeight: '280px', border: `1px solid ${controlColor}` }}>
+  //       <Stack width="100%" direction="row" justifyContent="center" textAlign="center">
+  //         <CardContent sx={{ marginTop: '0%', width: '100%', justifyContent: 'center', textAlign: 'center' }}>
+  //           {loading ? (
+  //             <Skeleton variant="rounded" width={350} height={250} />
+  //           ) : (
+  //             <><Stack marginTop="0%">
+  //                 <IconButton sx={{ width: '10%', marginLeft: 'auto', marginRight: '3%' }} onClick={handleClick1}>
+  //                   <SettingsIcon />
+  //                 </IconButton>
+  //                 <Menu
+  //                   id="demo-positioned-menu"
+  //                   anchorEl={anchorEl}
+  //                   open={open1}
+  //                   onClose={handleClose1}
+  //                   anchorOrigin={{
+  //                     vertical: 'top',
+  //                     horizontal: 'right',
+  //                   }}
+  //                   PaperProps={{ style: { backgroundImage: 'linear-gradient(to bottom, #3C4661, #3C4661, #3C4661)', boxShadow: `0px 0px 40px 1px #404040`, border: '0.4px solid #505050', justifyContent: 'center', textAlign: 'center' } }} MenuListProps={{ sx: { py: 0 } }}>
+  //                   <Stack divider={<Divider sx={{ backgroundColor: 'white' }} flexItem />}>
+  //                     <Button onClick={() => { setRenameRoom(true) } } sx={{ color: 'white', padding: '5%' }}>
+  //                       <Typography variant="caption" textTransform="capitalize">Rename</Typography>
+  //                     </Button>
+  //                     <Button onClick={() => { setDeleteRoom(true) } } sx={{ backgroundColor: '#E48227', color: 'white', paddingTop: '5%', paddingBottom: '5%' }}>
+  //                       <Typography variant="caption" textTransform="capitalize">Delete Room</Typography>
+  //                     </Button>
+  //                   </Stack>
+  //                 </Menu>
+  //                 <Typography sx={{ userSelect: 'none', marginTop: '5%' }}>{props.roomName}</Typography>
+  //               </Stack><Stack spacing="10%" marginTop="10%" width="70%" marginLeft="auto" marginRight="auto">
+  //                   <Select sx={{ fontSize: '10%', borderRadius: '25px' }}>
+  //                     {deviceList.map((device) => {
+  //                       if (device?.resource?.location?.reference.split('/')[1] == props.roomId) {
+  //                         return (
+  //                           <MenuItem>{device.resource.identifier[0].value.toString()}</MenuItem>
+  //                         )
+  //                       }
+  //                     })}
+  //                   </Select>
+  //                   <Button variant="outlined" sx={{ borderRadius: '25px' }} onClick={() => { setOpen(true) } }>Add/Move Devices</Button>
+  //                   <Button variant="outlined" sx={{ borderRadius: '25px' }} color="warning" onClick={() => { setDeleteDevice(true) } }>Remove Device</Button>
+  //                 </Stack></>
+  //           )}
+  //         </CardContent>
+  //  {addToRoom()}
+  //         {removeFromRoom()}
+  //         {removeRoom()}
+  //         {renameRoomButton()}
+  //         <Snackbar open={snack} autoHideDuration={5000} onClose={handleClose}>
+  //           <Alert onClose={handleClose} variant="filled" severity={snackSucc ? 'success' : 'error'}>
+  //             {snackSucc && 'Operation Completed Successfully'}
+  //             {!snackSucc && 'Operation Failed'}
+  //           </Alert>
+  //         </Snackbar>
+  //       </Stack>
+  //     </Card>
+
+
   )
 }
+

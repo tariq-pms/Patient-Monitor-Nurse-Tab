@@ -9,29 +9,9 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { useTheme } from '@mui/material/styles';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    Colors,
-  } from 'chart.js';
+import {Chart as ChartJS, CategoryScale,LinearScale, PointElement,LineElement,Title,Tooltip,Legend, Colors, } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    Colors,
-    zoomPlugin
-);
+ChartJS.register(CategoryScale,LinearScale,PointElement,LineElement,Title,Tooltip,Legend,Colors,zoomPlugin);
 import {faker} from '@faker-js/faker';
 import { Table } from '../components/Table';
 import IconButton from '@mui/material/IconButton';
@@ -298,7 +278,7 @@ export const DetailedDevice: FC = () => {
     useEffect(() => {
 
         
-        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Communication/${communication_resource.id}/_history`, {
+        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Communication/${communication_resource.id}/_history`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -318,7 +298,7 @@ export const DetailedDevice: FC = () => {
             
             while(totaldata>=100){
                 
-                fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Communication/${communication_resource.id}/_history?_page=${page}&_count=100`,{
+                fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Communication/${communication_resource.id}/_history?_page=${page}&_count=100`,{
                     credentials: "omit",
                     headers: {
                         Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -336,7 +316,7 @@ export const DetailedDevice: FC = () => {
                 page+=1
             }
             if(totaldata <100){
-                fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Communication/${communication_resource.id}/_history?_page=${page}&_count=100`,{
+                fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Communication/${communication_resource.id}/_history?_page=${page}&_count=100`,{
                     credentials: "omit",
                     headers: {
                         Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -375,7 +355,7 @@ export const DetailedDevice: FC = () => {
 
               // console.log(data)
             // if (obsArray.includes(recieved_data.resourceId)){
-              fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`, {
+              fetch(`http://3.110.169.17:9444/fhir-server/api/v4/${recieved_data.location}`, {
               credentials: "omit",
               headers: {
                 Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -401,7 +381,7 @@ export const DetailedDevice: FC = () => {
 
           if (recieved_data.location.split("/")[0] == "Communication" && recieved_data.location.split("/")[1] == communication_resource.id){
             
-            fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${recieved_data.location}`, {
+            fetch(`http://3.110.169.17:9444/fhir-server/api/v4/${recieved_data.location}`, {
               credentials: "omit",
               headers: {
                 Authorization: "Basic "+ btoa("fhiruser:change-password"),

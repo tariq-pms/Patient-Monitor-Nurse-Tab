@@ -1,18 +1,20 @@
+
 import { useState, useEffect, FC } from 'react'
 import { useAuth0 } from '@auth0/auth0-react';
 import Box from '@mui/material/Box';
 import { RoomCard } from '../components/RoomCard';
-import { Alert, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle,  Paper, Snackbar, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Alert, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle,  Paper, Snackbar, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { CustomOkButton } from '../components/CustomOkButton';
 import { CustomNoButton } from '../components/CustomNoButton';
-
+import pmsLogo from '../assets/phx_logo.png';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 export interface roomdata{
   roomModified: Function;
 }
 
 export const Rooms:FC<roomdata> = (props) => {
-    const {isAuthenticated} = useAuth0();
+    const {isAuthenticated, loginWithRedirect} = useAuth0();
     const theme = useTheme();
     const [temproom, settemproom] = useState([{
         "resource": {
@@ -36,7 +38,7 @@ export const Rooms:FC<roomdata> = (props) => {
     useEffect(() => {
         if(isAuthenticated){
         
-        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Location`, {
+        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -78,7 +80,7 @@ export const Rooms:FC<roomdata> = (props) => {
             "name": newRoomName
         }
         // console.log
-        fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Location`, {
+        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "POST",
             body: JSON.stringify(data),
@@ -123,19 +125,22 @@ export const Rooms:FC<roomdata> = (props) => {
     
         )
     }
+    const [vvtemp, setvvtemp] = useState(false)
     const roomBoxes = temproom.map((room) => {
         return(
-            <RoomCard roomChange={() => {setRoomAddedRemoved(!roomAddedRemoved)}} roomName={String(room.resource.identifier[0].value)} roomId={String(room.resource.id)}></RoomCard>
+            <RoomCard deviceChangeToggle={vvtemp} deviceChange={() => {setvvtemp(!vvtemp)}} roomChange={() => {setRoomAddedRemoved(!roomAddedRemoved)}} roomName={String(room.resource.identifier[0].value)} roomId={String(room.resource.id)}></RoomCard>
         )
     })
   return (
+    
     <div>
-      {/* <Box width={'8%'} height={'50px'}><CustomOkButton text="YES"/></Box> */}
-      
-      <Stack width={'100%'} direction={'row'} paddingTop={'2%'} justifyContent={'center'} textAlign={'center'}>
+      {isAuthenticated && (
+        <div>
+                <Stack width={'100%'} direction={'row'} paddingTop={'2%'} justifyContent={'center'} textAlign={'center'}>
               <Typography variant='h5' color={'white'}>Rooms & Device Settings</Typography>
               {/* <Settings  sx={{marginLeft:'1%', fontSize:'200%', color:'white'}}/> */}
             </Stack>
+            
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
           
         <Box
@@ -162,12 +167,10 @@ export const Rooms:FC<roomdata> = (props) => {
           >
             
             {temproom[0]?.resource.status!="" && roomBoxes}
-            <Box  width={"350px"} sx={{opacity:controlOpacity, backgroundColor:'transparent', borderRadius:'30px'}} onMouseLeave={() => {setControlboarder("grey");setOpacity("0.8")}} onMouseEnter={() => {setControlboarder("#2BA0E0");setOpacity("1")}} onClick={() => {setaddnewbutton(true)}}>
+            <Box  width={"350px"} minHeight={'300px'} maxHeight={'300px'} sx={{opacity:controlOpacity, backgroundColor:'transparent', borderRadius:'30px'}} onMouseLeave={() => {setControlboarder("grey");setOpacity("0.8")}} onMouseEnter={() => {setControlboarder("#2BA0E0");setOpacity("1")}} onClick={() => {setaddnewbutton(true)}}>
               <Paper  elevation={5} sx={{ borderRadius: "25px",background:'transparent'}}>
-                <Card
-                  style={{ background: "transparent", borderRadius: "25px", minHeight:"280px", border: `1px solid ${controlBorder}`
-                  }}
-                >
+                <Card style={{ background: "transparent", borderRadius: "25px", minHeight:"280px", border: `1px solid ${controlBorder}`
+                  }} >
                   <Stack width={"100%"} direction={"row"} sx={{justifyContent:"center", marginTop:"20px"}}>
                     <CardContent>
                         <Typography sx={{paddingLeft:'45px'}}>Add new room</Typography>
@@ -186,6 +189,29 @@ export const Rooms:FC<roomdata> = (props) => {
             </Snackbar>
             {addNewRoomButton()}
         </div>
+        </div>
+      )}
+      {/* <Box width={'8%'} height={'50px'}><CustomOkButton text="YES"/></Box> */}
+
+      {!isAuthenticated && (
+        <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} >
+          <img src={pmsLogo} alt="Phoenix" style={{
+            maxWidth: '20%', // Set the maximum width to 100%
+            height: 'auto', // Maintain the aspect ratio
+            marginLeft:'auto',
+            marginRight:'auto'
+          }}/>
+          <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
+          <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
+          <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
+          <Button variant='outlined'sx={{width:'200px', height:'50px', borderRadius:'100px'}} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>
+          <Button variant='contained' sx={{width:'200px', height:'50px', borderRadius:'100px'}} onClick={() => loginWithRedirect()}>Sign In</Button>
+          
+          </Stack>
+        </Stack>
+      )}
     </div>
   )
 }
+
+

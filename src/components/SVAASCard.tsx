@@ -1,9 +1,6 @@
 // import { AccountCircle } from '@mui/icons-material'
 import { Box, Card, Stack, Typography} from '@mui/material'
-// import { red } from '@mui/material/colors'
 import { FC, useEffect, useState } from 'react'
-// import { Link } from 'react-router-dom'
-
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBell, faPowerOff, } from '@fortawesome/free-solid-svg-icons'
 import { NewDeviceDetails } from './NewDeviceDetails';
@@ -89,6 +86,7 @@ export interface DeviceDetails {
         }[];
   };
   communication_resource: {
+    meta: any;
     "id" : string;
     "status" : string;
     "resourceType": string;
@@ -137,10 +135,6 @@ export const SVAASCard: FC<DeviceDetails> = (props): JSX.Element => {
     const [newData, setNewData] = useState(false);
     const [alarm, setAlarm] = useState("")
     const [runNo, setRunNo] = useState(0)
-
-    // function secondTimer() {
-        
-    // }
     const [requiredForTimer, setRequiredForTimer] = useState(false)
 
     const [requiredForBorderColor, setRequiredForBorderColor] = useState(false)
@@ -208,7 +202,7 @@ export const SVAASCard: FC<DeviceDetails> = (props): JSX.Element => {
         let timer: number | undefined;
         
         if(newData){
-            timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},7000)
+            timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},15000)
 
         }
         return () => {
@@ -294,13 +288,11 @@ style={{ backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)'
                                                         return (data.data)
                                                     }
                                                 )()}
-                                                
                                             </Typography>
                                             </div>
                                            
                         </Box>
                         <Box width={'33.33%'} height={'100%'} justifyContent={'center'} textAlign={'center'} sx={{borderTop:'2px solid grey'}}>
-
                         <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>FiO2 (%)</Typography>
                                         <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
                                             <Typography variant='h3' color={"#5db673"} paddingTop={'5%'} >
@@ -317,27 +309,21 @@ style={{ backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)'
                                                 })()}
                                             </Typography>
                                         </div>
-     
-
-
-
-                        </Box>
+                    </Box>
                     </Stack>
                     <Stack width={"100%"} height={'44%'} direction={'row'}>
                         <Box width={'37.5%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}} justifyContent={'center'} textAlign={'center'}>
-                        <Box marginTop={'5%'}><Typography variant='caption' color={"#A8C5D4"}  paddingTop={'7%'} paddingRight={'10px'} >
+                        <Box marginTop={'5%'}>
+                            <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'7%'} paddingRight={'10px'} >
                                 Alarm  
                                 </Typography>
                                 <FontAwesomeIcon icon={faBell} /></Box>
                            
                             <Typography variant='subtitle1' color={`${alarmColor}`} >
-                                
-                                {alarm}
-                                
+                            {alarm}
                             </Typography>
                             </Box>
-                        
-                        <Box width={'37.5%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}}>
+                            <Box width={'37.5%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}}>
                             <Box display={'flex'} height={'100%'}>
                             <Box display={'flex'} width={'50%'} sx={{borderRight:'2px solid grey',borderTop:'2px solid grey'}} marginTop={'47%'}justifyContent={'space-around'}>
                             <Typography variant='caption'  color={"#A8C5D4"} paddingTop={'15%'}  >PR(BPM)</Typography>

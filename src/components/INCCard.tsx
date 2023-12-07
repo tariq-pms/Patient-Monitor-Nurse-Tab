@@ -1,13 +1,8 @@
-// import { AccountCircle } from '@mui/icons-material'
 import { Box, Card,Stack, Typography, ButtonBase, } from '@mui/material'
-// import { red } from '@mui/material/colors'
 import { FC, useEffect, useState } from 'react'
-// import { Link } from 'react-router-dom'
-// import { Divider } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBell, faPowerOff } from '@fortawesome/free-solid-svg-icons'
 import { NewDeviceDetails } from './NewDeviceDetails';
-// import { Container } from '@material-ui/core';
 export interface DeviceDetails {
   key: string;
   device_id: string;
@@ -89,6 +84,7 @@ export interface DeviceDetails {
         }[];
   };
   communication_resource: {
+    meta: any;
     "id" : string;
     "status" : string;
     "resourceType": string;
@@ -128,41 +124,18 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
 
     const [isOpen, setIsOpen] = useState(false);
     const [alarmColor, setAlarmColor] = useState("#202020")
-    // const devicetimer = setInterval(timer, 10000)
-
-
-
-    // const devicetimer = setInterval(timer, 10000)
-
-    // setInterval(secondTimer,7000)
     const [newData, setNewData] = useState(false);
     const [alarm, setAlarm] = useState("")
     const [runNo, setRunNo] = useState(0)
-
-    // function secondTimer() {
-        
-    // }
     const [requiredForTimer, setRequiredForTimer] = useState(false)
-
     const [requiredForBorderColor, setRequiredForBorderColor] = useState(false)
-    
     const [isBlinking, setIsBlinking] = useState(false);
 
     useEffect(() => {
-    // let devicetimer = setInterval(timer, 10000)    
-    setRunNo(runNo+1)
-    // clearInterval(devicetimer)
-    // console.log(devicetimer)
-    // runtimer = setInterval(timer, 10000)
-
-    if (props.observation_resource?.component?.[1] && runNo>=2 && props.communication_resource?.extension?.[1]) {
-        
+      setRunNo(runNo+1)
+        if (props.observation_resource?.component?.[1] && runNo>=2 && props.communication_resource?.extension?.[1]) {
         setNewData(true);
-        
         setRequiredForBorderColor(!requiredForBorderColor)
-        // clearInterval(tick);
-        
-        // console.log(props.observation_resource.identifier[0].value);
         for (var i=0; i< props?.communication_resource?.extension?.[1].valueCodeableConcept?.coding?.length; i++){
         console.log(props.communication_resource?.extension[1]?.valueCodeableConcept?.coding[i]?.code)
         if(props.communication_resource?.extension[1]?.valueCodeableConcept?.coding[i]?.code=='High Priority'){
@@ -210,37 +183,25 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
     useEffect(() => {
         let timer: number | undefined;
         if(newData){
-            timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},1500000)
+            timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},15000)
 
         }
         return () => {
             clearInterval(timer); 
         };
     }, [requiredForTimer])
-    // function timer() {
-    //     // if((tempColor!=alarmColor) && (newData==true)){
-    //     //     const x = alarmColor
-    //     //     setAlarmColor(tempColor)
-    //     //     setTempColor(x)
-    //     // }
-    //     console.log(newData)
-    // }
+    
 
-    // const tick =setInterval(timer,1000)
-//   useEffect(() => {console.log(props.patient_id)},[props.patient_id])
-const [controlOpacity, setControlOpacity] = useState("0.8")
 
   return (
-      <Box  width={{
-        xs: "350px",
-        sm: "500px",
-        md: "500px",
-        lg: "500px"
-      }} sx={{ borderRadius:'25px', cursor:'pointer'}} 
-      onMouseLeave={() => {setControlOpacity("0.8")}} onMouseEnter={() => {setControlOpacity("1")}} onClick={() => {setIsOpen(true)}}>
+    <Box
+  width={{ xs: "350px", sm: "500px", md: "500px", lg: "500px" }}
+  sx={{ borderRadius: '25px', cursor: 'pointer' }}
+  onClick={() => { setIsOpen(true) }}
+>
         <ButtonBase sx={{width:'100%', borderRadius:'25px'}}>
         <Card
-            style={{width:'100%', backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)', borderRadius: "25px", height:"300px", opacity:controlOpacity, boxShadow: `0px 0px 30px 5px ${isBlinking ? alarmColor: '#202020'}`, border:'1px solid #606060'
+            style={{width:'100%', backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)', borderRadius: "25px", height:"300px", opacity: newData ? 1 : 0.4, boxShadow: `0px 0px 30px 5px ${isBlinking ? alarmColor: '#202020'}`, border:'1px solid #606060'
         }}
           >
             {newData ? (<>
@@ -391,17 +352,6 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                                     </Typography>
                             </Box>
                             <Box display={'flex'} height={'100%'}>
-                            
-                        {/* <Box display={'flex'} width={'50%'} height={'25%'} sx={{borderTop:'2px solid grey'}} marginTop={'49.5%'} justifyContent={'space-around'}>
-                            <Typography variant='caption' paddingTop={'15%'} color={"#A8C5D4"}  >SPO2</Typography>
-                            <Typography variant='h6' color={"#5db673"} paddingTop={'7%'}>
-                                    {(() => {
-                                            let data = findData("SpO2")
-                                            return (data.data)
-                                        }
-                                    )()}
-                                </Typography>
-                        </Box> */}
                      </Box>
                        </Box>
                         <Box width={'33.33%'} height={'100%'} >
@@ -451,15 +401,9 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                     <Typography variant='subtitle1' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'grey'}}>Not Active/Connected</Typography>
             </Stack>
             </Box>
-                
             </>)}
-            
-
           </Card>
         </ButtonBase>
-        {/* <Link to="devicedata" style={{ textDecoration: 'none' }} state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}> */}
-
-
         <NewDeviceDetails 
         isDialogOpened={isOpen} 
         handleCloseDialog={() => {console.log("MY BOI");setIsOpen(false)}}

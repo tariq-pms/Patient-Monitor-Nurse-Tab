@@ -6,6 +6,8 @@ import { FC, useEffect, useState } from 'react'
 import { Divider } from '@mui/material';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import { Link } from 'react-router-dom';
+import { faPowerOff } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export interface DeviceDetails {
   key: string;
@@ -152,18 +154,13 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
 //   useEffect(() => {console.log(props.patient_id)},[props.patient_id])
   return (
 
-      <Box  width={{
-        xs: "320px",
-        sm: "350px",
-        md: "480px",
-        lg: "480px"
-      }} sx={{backgroundColor:'transparent', borderRadius:'25px', border: `4px solid ${alarmColor}`}} >
+      <Box  width={{ xs: "350px", sm: "500px", md: "500px", lg: "500px" }} sx={{ borderRadius:'25px'}} >
         
         <Link to="devicedata" style={{ textDecoration: 'none' }} state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}>
-        <Paper  elevation={2} sx={{ borderRadius: "25px", backgroundColor:'transparent' }}>
-          <Card
-            style={{ backgroundColor: "transparent", borderRadius: "25px", minHeight:"280px",
-             }}
+       
+        <Card
+            style={{width:'100%', backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)', borderRadius: "25px", height:"300px",  border:'1px solid #606060'
+        }}
           >
               <div>
                 <CardContent>
@@ -173,17 +170,10 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
                     useFlexGap
                     flexWrap={"wrap"}
                   >
-                    <Stack direction={'row'} width={"100%"}>
-                      <Typography variant="subtitle1" component={"h2"}>
-                      {props?.device_id}
-                      </Typography>
-                      <Typography variant="subtitle1" sx={{marginLeft:'auto'}}>
-                      {props.patient?.identifier && props?.patient?.identifier[0]?.value}
-                      </Typography>
-                    </Stack>
+                    
                     
                   </Stack>
-                  <Divider />
+                  
                   { newData ? (<>
                   <Stack marginTop={'10px'} marginBottom={'10px'}>
                     <Stack spacing={'5px'} direction={'row'} width={'100%'} sx={{ justifyContent:'center', display: 'flex', alignItems: 'center'}}>
@@ -453,16 +443,19 @@ export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
                 }
                 {/* <Divider /> */}
                 </>) : (
-                <Stack width={"100%"}>
-                    <PowerSettingsNewIcon sx={{fontSize: 150, color:'red', marginLeft:'auto', marginRight:'auto'}}/>
-                    <Typography variant='h6' sx={{marginLeft:'auto', marginRight:'auto'}}>Device not active/connected</Typography>
+                <Box width={'100%'} height={'100%'} marginTop={'15%'} sx={{backgroundColor:'transparent'}} display={'flex'} textAlign={"center"} justifyContent={"center"}>
+                <Stack width={'100%'} height={'100%'} justifyContent={"center"} textAlign={"center"}>
+                        <FontAwesomeIcon icon={faPowerOff} style={{fontSize: 70, color:'white', marginLeft:'auto', marginRight:'auto', fontWeight:'lighter', paddingBottom:'3%'}} />
+                        <Typography variant='subtitle1' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'grey'}}>{props?.device_id}</Typography>
+                        <Typography variant='subtitle1' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'grey'}}>Not Active/Connected</Typography>
                 </Stack>
+                </Box>
                   )}               
                 </CardContent>
               </div>
             
           </Card>
-        </Paper>
+        
         </Link>
         
       </Box>

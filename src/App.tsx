@@ -11,9 +11,11 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { UserInfo } from "./pages/UserInfo";
 import { useState } from "react";
 import "@fontsource/noto-sans";
+import {PatientMonitor} from "./pages/PatientMonitor";
+import { DeviceMonitor } from "./pages/DeviceMonitor";
+import {AdminPage} from "./pages/AdminPage";
 const theme = createTheme({
   typography: {
-    fontFamily: 'Roboto',
     allVariants:{
       userSelect: 'none'
     }
@@ -28,6 +30,7 @@ const theme = createTheme({
       main: "#00A0E3"
     }
   },
+  
 });
  
             
@@ -64,6 +67,9 @@ function App() {
           <Route path="/user" element={<UserInfo />} />
           <Route path="/rooms" element={<Rooms roomModified={roomModified}/>} />
           <Route path="/devicedata" element={<DetailedDevice />} />
+          <Route path="/patient-monitor" element={<PatientMonitor currentRoom={currentRoom}/>} />
+          <Route path="/device-monitor" element={<DeviceMonitor currentRoom={currentRoom}/>} />
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </ThemeProvider>
     </div>

@@ -16,8 +16,6 @@ export const Selector:  React.FC<SelectorProps> = ({ onTabChange }) => {
       onTabChange(newValue); 
     };
 
-
-    
   return (
     <Box sx={{ marginTop:'25px'}} >
       <Tabs

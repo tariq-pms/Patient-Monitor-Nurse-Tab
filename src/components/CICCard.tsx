@@ -88,6 +88,7 @@ export interface DeviceDetails {
         }[];
   };
   communication_resource: {
+    meta: any;
     "id" : string;
     "status" : string;
     "resourceType": string;
@@ -127,9 +128,6 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
     const [isOpen, setIsOpen] = useState(false);
     const [alarmColor, setAlarmColor] = useState("#202020")
     // const devicetimer = setInterval(timer, 10000)
-
-
-
     // const devicetimer = setInterval(timer, 10000)
 
     // setInterval(secondTimer,7000)
@@ -208,13 +206,17 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
     useEffect(() => {
         let timer: number | undefined;
         if(newData){
-            timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},1500000)
+            timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},15000)
 
         }
         return () => {
             clearInterval(timer); 
         };
     }, [requiredForTimer])
+    function setControlOpacity(arg0: string) {
+        throw new Error('Function not implemented.');
+    }
+
     // function timer() {
     //     // if((tempColor!=alarmColor) && (newData==true)){
     //     //     const x = alarmColor
@@ -226,7 +228,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
 
     // const tick =setInterval(timer,1000)
 //   useEffect(() => {console.log(props.patient_id)},[props.patient_id])
-const [controlOpacity, setControlOpacity] = useState("0.8")
+
   return (
 
       <Box  width={{
@@ -235,13 +237,13 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
         md: "500px",
         lg: "500px"
       }} sx={{ borderRadius:'25px', cursor:'pointer'}}  //border: alarmColor!='transparent' ? `6px solid ${alarmColor}`: "", opacity:controlOpacity, boxShadow: '0px 0px 5px 5px white'
-      onMouseLeave={() => {setControlOpacity("0.8")}} onMouseEnter={() => {setControlOpacity("1")}} onClick={() => {console.log(props.communication_resource.id);setIsOpen(true)}}
+        onClick={() => {console.log(props.communication_resource.id);setIsOpen(true)}}
       >
         <ButtonBase sx={{width:'100%', borderRadius:'25px'}}>
         {/* <Link to="devicedata" style={{ textDecoration: 'none' }} state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}> */}
         
           <Card
-            style={{width:'100%', backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)', borderRadius: "25px", height:"300px", opacity:controlOpacity, boxShadow: `0px 0px 30px 5px ${isBlinking ? alarmColor: '#202020'}`, border:'1px solid #606060'
+            style={{width:'100%', backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)', borderRadius: "25px", height:"300px", opacity: newData ? 1 : 0.5, boxShadow: `0px 0px 30px 5px ${isBlinking ? alarmColor: '#202020'}`, border:'1px solid #606060'
         }}
           >
             {newData ? (<>
@@ -274,8 +276,9 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                             </Box>
                         </Box>                         
                     </Box>
-                    <Stack width={"100%"} height={'50%'} direction={'row'}>
-                        <Box width={'33.33%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                    <Stack width={"100%"} height={'100%'} direction={'row'} >
+                    <Stack width={"33.33%"} height={'100%'} direction={'column'}>
+                        <Box width={'100%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}} justifyContent={'center'} textAlign={'center'}>
                             <div style={{marginTop:'7%'}}><Typography variant='caption' color={"#A8C5D4"}>Heater Temp %</Typography></div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
@@ -297,7 +300,22 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                                 </Typography>
                             </div>
                         </Box>
-                        <Box width={'33.33%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                        <Box width={'100%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}} justifyContent={'center'} textAlign={'center'}>
+                        <Box marginTop={'5%'}><Typography variant='caption' color={"#A8C5D4"}  paddingTop={'7%'} paddingRight={'10px'} >
+                                Alarm  
+                                </Typography>
+                                <FontAwesomeIcon icon={faBell} /></Box>
+                           
+                            <Typography  variant='subtitle1' color={`${alarmColor}`} >
+                                
+                                {alarm}
+                                
+                            </Typography>
+                            
+                        </Box>
+                        </Stack>
+                        <Stack width={"33.33%"} height={'100%'} direction={'column'}>
+                        <Box width={'100%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}} justifyContent={'center'} textAlign={'center'}>
                         <div style={{marginTop:'7%'}}><Typography variant='caption' color={"#A8C5D4"}>Baby Temp °C</Typography></div>
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
                             {/* <FontAwesomeIcon icon={faBaby} color='#CBCFE5' style={{paddingTop:'6%', paddingRight:'7%', fontSize:'200%'}}/> */}
@@ -325,10 +343,13 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                                 )()}
                             </Typography>
                         </Box>
-                        <Box width={'33.33%'} height={'100%'} justifyContent={'center'} textAlign={'center'}>
-                            <Box  display={'flex'}  width={"100%"} justifyContent={'space-between'}  height={"33.33%"} sx={{ borderTop:'2px solid grey'}}>
-                            <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'7%'} paddingLeft={'5%'}>SpO2 %</Typography>
-                                    <Typography variant='h6' color={"#5db673"} paddingTop={'3%'} paddingRight={'5%'}>
+                        <Box width={'100%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}} justifyContent={'center'} textAlign={'center'}>    
+                        </Box>
+                        </Stack>  
+                        <Stack width={"33.33%"} height={'100%'} direction={'column'}>
+                        <Box  display={'flex'}  width={"100%"} justifyContent={'space-between'}  height={"20%"} sx={{ borderTop:'2px solid grey'}}>
+                            <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'10%'} paddingLeft={'5%'}>SpO2 %</Typography>
+                                    <Typography variant='h6' color={"#5db673"} paddingTop={'7%'} paddingRight={'5%'}>
                                         {(() => {
                                                 let data = findData("SpO2")
                                                 return (data.data)
@@ -336,9 +357,9 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                                         )()}
                                     </Typography>
                             </Box>
-                            <Box width={"100%"} display={'flex'} justifyContent={'space-between'}  height={"33.33%"} sx={{ borderTop:'2px solid grey'}}>
-                                <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'7%'} paddingLeft={'5%'}>PR (BPM)</Typography>
-                                <Typography variant='h6' color={"#5db673"} paddingTop={'3%'} paddingRight={'5%'}>
+                        <Box width={"100%"} display={'flex'} justifyContent={'space-between'}  height={"20%"} sx={{ borderTop:'2px solid grey'}}>
+                                <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'10%'} paddingLeft={'5%'}>PR (BPM)</Typography>
+                                <Typography variant='h6' color={"#5db673"} paddingTop={'7%'} paddingRight={'5%'}>
                                     {(() => {
                                             let data = findData("Pulse Rate")
                                             return (data.data)
@@ -346,49 +367,19 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                                     )()}
                                 </Typography>
                             </Box>
-                            <Box width={"100%"} display={'flex'} justifyContent={'space-between'}  height={"33.33%"} sx={{ borderTop:'2px solid grey'}}>
-                                <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'5%'} paddingLeft={'5%'}>Wt (g)</Typography>
-                                <Typography variant='h6' color={"#5db673"} paddingTop={'1%'} paddingRight={'5%'}>
+                        <Box width={"100%"} display={'flex'} justifyContent={'space-between'}  height={"20%"} sx={{ borderTop:'2px solid grey'}}>
+                                <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'10%'} paddingLeft={'5%'}>Wt (g)</Typography>
+                                <Typography variant='h6' color={"#5db673"} paddingTop={'7%'} paddingRight={'5%'}>
                                     {(() => {
-                                            let data = findData("Weight")
+                                            let data = findData("Measure Weigh")
                                             return (data.data)
                                         }
                                     )()}
                                 </Typography>
                             </Box>
-                            
-                        </Box>
-                    </Stack>
-                    <Stack width={"100%"} height={'50%'} direction={'row'} >
-                        <Box width={'33.33%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}} justifyContent={'center'} textAlign={'center'}>
-                        <Box marginTop={'5%'}><Typography variant='caption' color={"#A8C5D4"}  paddingTop={'7%'} paddingRight={'10px'} >
-                                Alarm  
-                                </Typography>
-                                <FontAwesomeIcon icon={faBell} /></Box>
-                           
-                            <Typography  variant='subtitle1' color={`${alarmColor}`} >
-                                
-                                {alarm}
-                                
-                            </Typography>
-                            
-                        </Box>
-                        <Box width={'33.33%'} height={'100%'} sx={{ borderRight:'2px solid grey', borderTop:'2px solid grey'}}></Box>
-                        <Box width={'33.33%'} height={'100%'} >
-                            {/* <Box display={'flex'} width={'100%'} height={'33%'} sx={{ borderTop:'2px solid grey'}} justifyContent={'space-between'} textAlign={'center'}>
-                                
-                                <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'7%'} paddingLeft={'5%'}>PVI</Typography>
-                                <Typography variant='h6' color={"#5db673"} paddingTop={'2%'} paddingRight={'5%'}>
-                                    {(() => {
-                                            let data = findData("PVI")
-                                            return (data.data)
-                                        }
-                                    )()}
-                                </Typography>
-                            </Box> */}
-                            <Box display={'flex'} width={'100%'} height={'50%'} sx={{ borderTop:'2px solid grey'}} justifyContent={'space-between'} textAlign={'center'}>
-                                <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'15%'} paddingLeft={'5%'}>PI</Typography>
-                                <Typography variant='h6' color={"#5db673"} paddingTop={'11%'} paddingRight={'5%'}>
+                        <Box display={'flex'} width={'100%'} height={'20%'} sx={{ borderTop:'2px solid grey'}} justifyContent={'space-between'} textAlign={'center'}>
+                                <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'10%'} paddingLeft={'5%'}>PI</Typography>
+                                <Typography variant='h6' color={"#5db673"} paddingTop={'7%'} paddingRight={'5%'}>
                                     {(() => {
                                             let data = findData("PI")
                                             return (data.data)
@@ -396,9 +387,9 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                                     )()}
                                 </Typography>
                             </Box>
-                            <Box display={'flex'} width={'100%'} height={'50%'} sx={{ borderTop:'2px solid grey'}} justifyContent={'space-between'} >
-                                <Typography variant='caption' color={"#A8C5D4"} paddingLeft={'5%'} paddingTop={'15%'} >SIQ</Typography>
-                                <Box width={'40%'} marginRight={'4%'} marginTop={'11%'} height={'50%'} sx={{border:'2px solid #A8C5D4' , borderRadius:'3px'}}>
+                        <Box display={'flex'} width={'100%'} height={'20%'} sx={{ borderTop:'2px solid grey'}} justifyContent={'space-between'} >
+                                <Typography variant='caption' color={"#A8C5D4"} paddingLeft={'5%'} paddingTop={'10%'} >SIQ</Typography>
+                                <Box width={'40%'} marginRight={'4%'} marginTop={'8%'} height={'40%'} sx={{border:'2px solid #A8C5D4' , borderRadius:'3px'}}>
                                     {(() => {
                                         let data = findData("SIQ")
                                         return(
@@ -406,12 +397,10 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
                                         )
                                     })()}
                                 </Box>
-                                
                             </Box>
-                        </Box>
+                        </Stack> 
                     </Stack>
-                    
-                </Stack>
+             </Stack>
             </>):(<>
             <Box width={'100%'} height={'100%'} sx={{backgroundColor:'transparent'}} display={'flex'} textAlign={"center"} justifyContent={"center"}>
             <Stack width={'100%'} height={'100%'} justifyContent={"center"} textAlign={"center"}>
@@ -422,9 +411,7 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
             </Box>
                 
             </>)}
-            
-
-          </Card>
+            </Card>
           </ButtonBase>
         {/* </Link> */}
         <NewDeviceDetails 
@@ -439,6 +426,6 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
         />
 
         
-      </Box>
+      </Box>    
   )
 }
