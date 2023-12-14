@@ -45,15 +45,18 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onUserClick, onDeleteU
 
   const handleDialogClose = () => {
     setDialogOpen(false);
+    setControlboarder("grey");
+    setControlOpacity("0.8");
+
   };
 
   const handleUserClick = () => {
-    setUpdatedUserData({
-      email: user.email || '',
-      username: user.name || '',
-      role: user.app_metadata?.role || 'hospitalTechnician',
+    setUserInfo({
+      userEmail: user.email || '',
+      userRole: user.app_metadata?.role || '',
+      userName: user.name || '',
     });
-    onUserClick(user);
+    onUserClick(user); // Invoke the onUserClick function with the user information
     setDialogOpen(true);
   };
 
@@ -66,33 +69,70 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onUserClick, onDeleteU
     setDeleteConfirmationOpen(false);
   };
 
+  // const handleUpdateUser = () => {
+  //   const { email, username, role } = updatedUserData;
+  //   const userId = user.user_id;
+
+  //   // Make an API call to update the user information
+  //   fetch(`http://localhost:5000/rename/${userId}`, {
+  //     method: 'PUT',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       // Add any other headers you need, such as authorization
+  //     },
+  //     body: JSON.stringify({ email, username, app_metadata: { role } }),
+  //   })
+  //     .then(response => {
+  //       if (response.ok) {
+  //         // Handle successful update
+  //         console.log(`User with ID ${userId} updated successfully`);
+  //         setUpdateUser(false); // Close the update dialog if needed
+  //       } else {
+  //         console.error(`Error updating user: ${response.statusText}`);
+  //       }
+  //     })
+  //     .catch(error => {
+  //       console.error('Error:', error);
+  //     });
+  // };
   const handleUpdateUser = () => {
     const { email, username, role } = updatedUserData;
-    const userId = user.user_id;
+    const userId = decodeURIComponent(user.user_id);
 
     // Make an API call to update the user information
-    fetch(`https://neolife-sentinel.eu.auth0.com/api/v2/users/${userId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        // Add any other headers you need, such as authorization
-      },
-      body: JSON.stringify({ email, username, app_metadata: { role } }),
+    fetch(`http://localhost:5000/rename/${userId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            // Add any other headers you need, such as authorization
+        },
+        body: JSON.stringify({  "username": username, "connection": "Username-Password-Authentication" }),
     })
-      .then(response => {
+    .then(response => {
         if (response.ok) {
-          // Handle successful update
-          console.log(`User with ID ${userId} updated successfully`);
-          setUpdateUser(false); // Close the update dialog if needed
+            // Handle successful update
+            console.log(`User with ID ${userId} updated successfully`);
+            setUpdateUser(false); // Close the update dialog if needed
         } else {
-          console.error(`Error updating user: ${response.statusText}`);
+            // Log the error response
+            console.error(`Error updating user: ${response.statusText}`);
+            return response.json(); // Parse the response as JSON
         }
-      })
-      .catch(error => {
+    })
+    .then(errorData => {
+        // If there is an error message, log it
+        if (errorData) {
+            console.error('Error details:', errorData);
+        }
+    })
+    .catch(error => {
         console.error('Error:', error);
-      });
-  };
+    });
+};
 
+
+
+  
   return (
     <Box
       width={"350px"}
@@ -164,6 +204,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onUserClick, onDeleteU
           <Dialog
             open={updateUser}
             onClose={() => setUpdateUser(false)}
+            
             PaperProps={{
               style: {
                 borderRadius: '25px',

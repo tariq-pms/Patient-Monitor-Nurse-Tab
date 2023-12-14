@@ -1,6 +1,5 @@
 import { Box, Card, Stack, Typography, ButtonBase  } from '@mui/material'
 import { FC, useEffect, useState } from 'react'
-
 import { NewDeviceDetails } from './NewDeviceDetails';
 import { faBell, faPowerOff, faSyringe } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -119,7 +118,6 @@ export interface DeviceDetails {
             };
         }[];
   };
-
 }
 
 export const SyringeCard: FC<DeviceDetails> = (props): JSX.Element => {
@@ -205,7 +203,7 @@ export const SyringeCard: FC<DeviceDetails> = (props): JSX.Element => {
                 <Box width={'30%'} height={'100%'} textAlign={'left'} paddingLeft={'5%'}>
                 <Typography variant="subtitle2" sx={{fontWeight:"bold", marginLeft:'5px'}} color={'#CBCFE5'}>
                                     {props.patient?.identifier && props?.patient?.identifier[0]?.value}
-                                    </Typography>
+                </Typography>
                 </Box>
                 <Box width={'40%'} height={'100%'} textAlign={'center'}>
                   <div style={{ fontSize: '100%', paddingRight: '3%', fontWeight: 500 }}>
@@ -372,7 +370,6 @@ export const SyringeCard: FC<DeviceDetails> = (props): JSX.Element => {
                             
                         </Box>
                     </Stack>
-
               {/* <Stack width={'100%'} height={'45%'} direction={'row'}>
                 <Box width={'33.3%'} height={'100%'} sx={{ borderRight: '2px solid grey', borderTop: '2px solid grey' }} justifyContent={'center'} textAlign={'center'}>
                   <Box marginTop={'5%'}>
@@ -497,8 +494,7 @@ export const SyringeCard: FC<DeviceDetails> = (props): JSX.Element => {
         </Box>
     </Box>
 </Stack>
-
-  </Stack>
+</Stack>
             </>):(<>
               <Box width={'100%'} height={'100%'} sx={{backgroundColor:'transparent'}} display={'flex'} textAlign={"center"} justifyContent={"center"}>
             <Stack width={'100%'} height={'100%'} justifyContent={"center"} textAlign={"center"}>

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import { Alert, Button, Dialog, DialogActions,Menu, DialogContent, DialogContentText, DialogTitle, Select, Snackbar, Stack, Typography, MenuItem, Divider, TextField, Skeleton,} from '@mui/material'
-=======
-import { Alert, Button, Dialog, DialogActions,Menu, DialogContent, DialogContentText, DialogTitle, Select, Snackbar, Stack, Typography, MenuItem, Divider, TextField,} from '@mui/material'
->>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -19,9 +15,6 @@ export interface roomData {
     deviceChange: Function;
     deviceChangeToggle: Boolean;
 }
-
-
-
 export const RoomCard: FC<roomData> = (props) => {
     const [snackSucc, setSnackSucc] = useState(false);
     const [snack, setSnack] = useState(false)
@@ -33,8 +26,7 @@ export const RoomCard: FC<roomData> = (props) => {
         }
     
         setSnack(false);
-      };
-    
+      }; 
     const [deviceList, setDeviceList] = useState([{
         resource: {
             "resourceType": String,
@@ -62,8 +54,7 @@ export const RoomCard: FC<roomData> = (props) => {
             } 
         }
     }])
-
-    const [open, setOpen] = useState(false);
+const [open, setOpen] = useState(false);
     const [deviceChanged, setDeviceChanged] = useState(false)
     useEffect(() => {setDeviceChanged(!deviceChanged)},[props.deviceChangeToggle])
     const [renameRoom, setRenameRoom] = useState(false)
@@ -101,7 +92,7 @@ export const RoomCard: FC<roomData> = (props) => {
             "status": "suspended",
             "name": x
         }
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location/${props.roomId}`, {
+        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location?organization=18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c / ${props.roomId}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "PUT",
             body: JSON.stringify(data),
@@ -146,7 +137,7 @@ export const RoomCard: FC<roomData> = (props) => {
         }
     const addButton = (index: any) => {
         let data = {}
-        let vvtemp = {"reference": `Location/${props.roomId}`}
+        let vvtemp = {"reference": `Location?organization=18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c /${props.roomId}`}
         data = {
             ...deviceList[Number(index)].resource,
             location: vvtemp
@@ -177,11 +168,7 @@ export const RoomCard: FC<roomData> = (props) => {
         const { location, ...data } = device;
       
         // Define the URL and request options
-<<<<<<< HEAD
         const apiUrl = `http://3.110.169.17:9444/fhir-server/api/v4/Device/${device.id}`;
-=======
-        const apiUrl = `http://13.126.5.10:9444/fhir-server/api/v4/Device/${device.id}`;
->>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
         const requestOptions: RequestInit = {
           credentials: "omit",
           method: "PUT",
@@ -208,7 +195,7 @@ export const RoomCard: FC<roomData> = (props) => {
     const [deleteRoom, setDeleteRoom] = useState(false)
     const removeRoomButton = () => {
         console.log("Called")
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location/${props.roomId}`, {
+        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location?organization=18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c /${props.roomId}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "DELETE",
             headers: {
@@ -301,12 +288,8 @@ export const RoomCard: FC<roomData> = (props) => {
         </Dialog>
         )
     }
-<<<<<<< HEAD
     const [miniDialog, setMiniDialog] = useState(false)
     const [selectedDevice, setSelectedDevice] = useState(Number)
-=======
-
->>>>>>> 1cdd69373efcac37c0264085b981a9586ee3e5cd
     const addToRoom = () => {
        
         return (
@@ -364,8 +347,7 @@ export const RoomCard: FC<roomData> = (props) => {
   
       return () => clearTimeout(timer);
     }, []);
-  
-  const [controlColor, setControlColor] = useState("grey")
+    const [controlColor, setControlColor] = useState("grey")
   const [controlOpacity, setOpacity] = useState("0.8")
   return (
       <Box>

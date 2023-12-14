@@ -1,4 +1,4 @@
-
+//Rooms.tsx
 import { useState, useEffect, FC } from 'react'
 import { useAuth0 } from '@auth0/auth0-react';
 import Box from '@mui/material/Box';
@@ -34,11 +34,13 @@ export const Rooms:FC<roomdata> = (props) => {
             
         }
     }])
+    const organizationId = '18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c'; // Replace this with the actual organization identifier
     const [roomAddedRemoved, setRoomAddedRemoved] = useState(false)
     useEffect(() => {
         if(isAuthenticated){
-        
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location`, {
+         
+
+          fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location?organization=${organizationId}`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -80,7 +82,7 @@ export const Rooms:FC<roomdata> = (props) => {
             "name": newRoomName
         }
         // console.log
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location`, {
+        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location?organization=${organizationId}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "POST",
             body: JSON.stringify(data),

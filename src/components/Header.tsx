@@ -25,7 +25,7 @@ export const Header: FC<HeaderProps> = (props) => {
   const theme = useTheme();
   const screenSize = useMediaQuery(theme.breakpoints.up('md'));
   const { user, isLoading, isAuthenticated, logout, getIdTokenClaims } = useAuth0();
-  const[UserRole, setUserRole] = useState("")
+  const[UserRole, setUserRole] = useState("");
   // getIdTokenClaims().then(res => {console.log('result',res)}).catch(err => {console.log("FAIL FUCL:"+err)})
   
   // console.log(user)
@@ -179,14 +179,47 @@ export const Header: FC<HeaderProps> = (props) => {
      navigate('/device-monitor');
     }
   };
-  useEffect(() => {
+//   useEffect(() => {
+//   getIdTokenClaims()
+//     .then((res) => {
+//       console.log('Role:', res);
+//       setUserRole(res?.role);
+      
+
+//       if (isAuthenticated) {
+//         fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location`, {
+//           credentials: 'omit',
+//           headers: {
+//             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
+//           },
+//         })
+//           .then((response) => response.json())
+//           .then((data) => {
+//             if (data.entry) {
+//               settemproom(data.entry);
+//             }
+//           })
+//           .catch((error) => {
+//             console.error('Failed to fetch rooms:', error);
+//           });
+//       }
+//     })
+//     .catch((error) => {
+//       console.error('Failed to fetch role:', error);
+//     });
+// }, [isAuthenticated]);
+// Dependency array includes isAuthenticated
+
+
+useEffect(() => {
   getIdTokenClaims()
     .then((res) => {
       console.log('Role:', res);
       setUserRole(res?.role);
 
       if (isAuthenticated) {
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location`, {
+        // Fetch location data for the specified organization
+        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location?organization=${res?.organization}`, {
           credentials: 'omit',
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -199,7 +232,7 @@ export const Header: FC<HeaderProps> = (props) => {
             }
           })
           .catch((error) => {
-            console.error('Failed to fetch rooms:', error);
+            console.error('Failed to fetch locations:', error);
           });
       }
     })
@@ -207,7 +240,11 @@ export const Header: FC<HeaderProps> = (props) => {
       console.error('Failed to fetch role:', error);
     });
 }, [isAuthenticated]);
-// Dependency array includes isAuthenticated
+
+
+
+
+
 useEffect(() => {
   // Assuming userRole is set appropriately based on your authentication logic
   if (UserRole === 'Hospital Technician' && location.pathname === '/patient-monitor') {
@@ -223,7 +260,7 @@ useEffect(() => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location`, {
+      fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location?organization=18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c`, {
         credentials: 'omit',
         headers: {
           Authorization: 'Basic ' + btoa('fhiruser:change-password'),
