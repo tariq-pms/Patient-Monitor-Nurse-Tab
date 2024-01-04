@@ -50,7 +50,7 @@ const handleSnackbarClose = () => {
 
   // useEffect(() => {
   //   try {
-  //     fetch('http://localhost:5000/list')
+  //     fetch('https://pmsind.co.in:5000list')
   //       .then((response) => {
   //         if (!response.ok) {
   //           throw new Error('Failed to fetch user data');
@@ -73,7 +73,7 @@ const handleSnackbarClose = () => {
     try {
       const organization = '18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c';
 
-      fetch('http://localhost:5000/list', {
+      fetch('https://pmsind.co.in:5000/list', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ const handleSnackbarClose = () => {
   //   const { email, username, password, role } = newUser;
   
   //   // Add your logic to make the API call for adding a new user
-  //   fetch('http://localhost:5000/create', {
+  //   fetch('https://pmsind.co.in:5000create', {
   //     method: 'POST',
   //     headers: {
   //       'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ const handleSnackbarClose = () => {
   //   const { email, username, password, role, organization } = newUser;
 
   //   // Add your logic to make the API call for adding a new user
-  //   fetch('http://localhost:5000/create', {
+  //   fetch('https://pmsind.co.in:5000create', {
   //     method: 'POST',
   //     headers: {
   //       'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ const handleSnackbarClose = () => {
     const { email, username, password, role, organization } = newUser;
   
     // Add your logic to make the API call for adding a new user
-    fetch('http://localhost:5000/create', {
+    fetch('https://pmsind.co.in:5000/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -188,7 +188,7 @@ const handleSnackbarClose = () => {
         console.log('API response:', data);
   
         // After creating the user, fetch the updated user data
-        fetch('http://localhost:5000/list', {
+        fetch('https://pmsind.co.in:5000/list', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -228,7 +228,7 @@ const handleSnackbarClose = () => {
   
   
   const handleDeleteUser = (userId: string) => {
-    fetch(`http://localhost:5000/delete/${userId}`, {
+    fetch(`https://pmsind.co.in:5000/delete/${userId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
