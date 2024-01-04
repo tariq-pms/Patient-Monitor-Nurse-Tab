@@ -178,7 +178,7 @@ export const PatientMonitor = (currentRoom: any) => {
         console.error(error);
       });
   
-    const socket = new WebSocket('wss://pmsind.co.in/notification');
+    const socket = new WebSocket('wss://pmsind.co.in:5000/notification');
   
     socket.onopen = () => {
       console.log('Socket open successful');

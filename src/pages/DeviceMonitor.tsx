@@ -105,7 +105,7 @@ export const DeviceMonitor = (currentRoom: any) => {
     });
     useEffect(() => {
         setIsLoading(true)
-        const socket = new WebSocket("wss://pmsind.co.in/notification");
+        const socket = new WebSocket("wss://pmsind.co.in:5000/notification");
         socket.onopen = () => {
             console.log("Socket open successful");
         };

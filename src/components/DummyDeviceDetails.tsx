@@ -805,77 +805,7 @@ const columns = useMemo<MRT_ColumnDef[]>(
                     >
                         <Stack alignItems={'center'} spacing={'10px'}>
                             <Typography variant="subtitle1" >
-                                Spo2
-                            </Typography>
-                            <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
-                            <Typography variant='h4'>
-                                95&nbsp;
-                            </Typography>
-                            <Typography variant='h5'>
-                                %
-                            </Typography>
-                            </div>
-                        </Stack>
-
-                        <Stack alignItems={'center'} spacing={'10px'}>
-                            <Typography variant="subtitle1" >
-                            Pulse Rate
-                            </Typography>
-                            <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
-                            <Typography variant='h4'>
-                                120&nbsp;
-                            </Typography>
-                            <Typography variant='h5'>
-                                BPM
-                            </Typography>
-                            </div>
-                        </Stack>
-
-                        <Stack alignItems={'center'} spacing={'10px'}>
-                            <Typography variant="subtitle1" >
-                                Weight
-                            </Typography>
-                            <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
-                            <Typography variant='h4'>
-                                950&nbsp;
-                            </Typography>
-                            <Typography variant='h5'>
-                                g
-                            </Typography>
-                            </div>
-                        </Stack>
-
-                        <Stack alignItems={'center'} spacing={'10px'}>
-                            <Typography variant="subtitle1" >
-                            Measured Skin Temp
-                            </Typography>
-                            <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
-                            <Typography variant='h4'>
-                                34&nbsp;
-                            </Typography>
-                            <Typography variant='h5'>
-                            °C
-                            </Typography>
-                            </div>
-                        </Stack>
-
-                        <Stack alignItems={'center'} spacing={'10px'}>
-                            <Typography variant="subtitle1" >
-                            Set Skin Temp
-                            </Typography>
-                            <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
-                            <Typography variant='h4'>
-                                36&nbsp;
-                            </Typography>
-                            <Typography variant='h5'>
-                            °C
-                            </Typography>
-                            </div>
-                        </Stack>
-
-                        <Stack alignItems={'center'} spacing={'10px'}>
-                            <Typography variant="subtitle1" >
-                            PI
+                                Heater Set Temp
                             </Typography>
                             <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
                             <Typography variant='h4'>
@@ -886,18 +816,74 @@ const columns = useMemo<MRT_ColumnDef[]>(
                             </Typography>
                             </div>
                         </Stack>
-
                         <Stack alignItems={'center'} spacing={'10px'}>
                             <Typography variant="subtitle1" >
-                                Spo2
+                                Heater Temp
                             </Typography>
                             <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
                             <Typography variant='h4'>
-                                95&nbsp;
+                                80&nbsp;
                             </Typography>
                             <Typography variant='h5'>
                                 %
                             </Typography>
+                            </div>
+                        </Stack>
+
+                        <Stack alignItems={'center'} spacing={'10px'}>
+                            <Typography variant="subtitle1" >
+                            Baby Set Temp
+                            </Typography>
+                            <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                            <Typography variant='h4'>
+                                36&nbsp;
+                            </Typography>
+                            <Typography variant='h5'>
+                                 °C
+                            </Typography>
+                            </div>
+                        </Stack>
+                        <Stack alignItems={'center'} spacing={'10px'}>
+                            <Typography variant="subtitle1" >
+                            Baby Temp
+                            </Typography>
+                            <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                            <Typography variant='h4'>
+                                34.3&nbsp;
+                            </Typography>
+                            <Typography variant='h5'>
+                                 °C
+                            </Typography>
+                            </div>
+                        </Stack>
+                <Stack alignItems={'center'} spacing={'10px'}>
+                            <Typography variant="subtitle1" >Spo2</Typography>
+                            <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                            <Typography variant='h4'>95&nbsp;</Typography>
+                            <Typography variant='h5'>%</Typography>
+                            </div>
+                        </Stack>
+
+                        <Stack alignItems={'center'} spacing={'10px'}>
+                            <Typography variant="subtitle1" >PR</Typography>
+                            <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                            <Typography variant='h4'>37.8&nbsp;</Typography>
+                            <Typography variant='h5'>%</Typography>
+                            </div>
+                        </Stack>
+                        <Stack alignItems={'center'} spacing={'10px'}>
+                            <Typography variant="subtitle1" >Weight</Typography>
+                            <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                            <Typography variant='h4'>950&nbsp;</Typography>
+                            <Typography variant='h5'>g</Typography>
+                            </div>
+                        </Stack>
+
+                        <Stack alignItems={'center'} spacing={'10px'}>
+                            <Typography variant="subtitle1" >PI</Typography>
+                            <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                            <Typography variant='h4'>100&nbsp;</Typography>
+                            <Typography variant='h5'>%</Typography>
                             </div>
                         </Stack>
           

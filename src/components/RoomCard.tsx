@@ -138,7 +138,7 @@ const [open, setOpen] = useState(false);
     const addButton = (index: any) => {
         let data = {}
         //let vvtemp = {"reference": `Location?organization=18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c /${props.roomId}`}
-        let vvtemp = {"reference": `Location /${props.roomId}`}
+        let vvtemp = {"reference": `Location/${props.roomId}`}
         data = {
             ...deviceList[Number(index)].resource,
             location: vvtemp
