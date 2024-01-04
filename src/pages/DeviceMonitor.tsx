@@ -23,11 +23,13 @@ import { Skeleton, Stack } from '@mui/material';
 import { BrammiCard } from '../components/BrammiCard';
 import { DeviceCard } from '../components/DeviceCard';
 import { SyringeCard } from '../components/SyringeCard';
+import { DummyCard } from '../components/DummyCard';
+
 
 
 
 export const DeviceMonitor = (currentRoom: any) => {
-  const [Loading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   // Define separate loading states for each accordion
   const [isLoadingWarmers, setIsLoadingWarmers] = useState(true);
   const [isLoadingIncubators, setIsLoadingIncubators] = useState(true);
@@ -103,7 +105,7 @@ export const DeviceMonitor = (currentRoom: any) => {
     });
     useEffect(() => {
         setIsLoading(true)
-        const socket = new WebSocket("ws://3.110.169.17:9444/fhir-server/api/v4/notification");
+        const socket = new WebSocket("wss://pmsind.co.in/notification");
         socket.onopen = () => {
             console.log("Socket open successful");
         };
@@ -111,7 +113,7 @@ export const DeviceMonitor = (currentRoom: any) => {
             var recieved_data = JSON.parse(data.data)
             if (recieved_data.location.split("/")[0] == "Observation"){
 
-                fetch(`http://3.110.169.17:9444/fhir-server/api/v4/${recieved_data.location}`, {
+                fetch(` https://pmsind.co.in:5000/${recieved_data.location}`, {
                 credentials: "omit",
                 headers: {
                 Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -128,7 +130,7 @@ export const DeviceMonitor = (currentRoom: any) => {
             // }
             }
             else if (recieved_data.location.split("/")[0] == "Communication"){
-                fetch(`http://3.110.169.17:9444/fhir-server/api/v4/${JSON.parse(data.data).location}`, {
+                fetch(` https://pmsind.co.in:5000/${JSON.parse(data.data).location}`, {
                 credentials: "omit",
                 headers: {
                 Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -145,7 +147,7 @@ export const DeviceMonitor = (currentRoom: any) => {
             }
             // else if (recieved_data.location.split("/")[0] == "Device"){
             //   // if (devArray.includes(recieved_data.resourceId)){
-            //     fetch(`http://13.126.5.10:9444/fhir-server/api/v4/${JSON.parse(data.data).location}`, {
+            //     fetch(` https://pmsind.co.in:5000/${JSON.parse(data.data).location}`, {
             //     credentials: "omit",
             //     headers: {
             //       Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -164,7 +166,7 @@ export const DeviceMonitor = (currentRoom: any) => {
         setIsLoading(true)
         
         // console.log(url)
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Device?location=${currentRoom.currentRoom}`, {
+        fetch(` https://pmsind.co.in:5000/Device?location=${currentRoom.currentRoom}`, {
         credentials: "omit",
         headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -184,7 +186,7 @@ export const DeviceMonitor = (currentRoom: any) => {
         // var correct = true;
         if(device.resource.patient){
         
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Patient/${device.resource.patient.reference.split("/")[1]}`,{
+        fetch(` https://pmsind.co.in:5000/Patient/${device.resource.patient.reference.split("/")[1]}`,{
             credentials: "omit",
             headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -195,7 +197,7 @@ export const DeviceMonitor = (currentRoom: any) => {
             var temp = String(device.resource.id);
             setPatient((prevPatient) => ({...prevPatient, [temp]: data}))
         })
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Observation?patient=${device.resource.patient.reference.split("/")[1]}&_count=1&_sort=-_lastUpdated`, {
+        fetch(` https://pmsind.co.in:5000/Observation?patient=${device.resource.patient.reference.split("/")[1]}&_count=1&_sort=-_lastUpdated`, {
         credentials: "omit",
         headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -203,7 +205,7 @@ export const DeviceMonitor = (currentRoom: any) => {
         })
         .then((response) => response.json())
         .then((data) => {
-            if(!data.entry){console.log(`http://13.126.5.10:9444/fhir-server/api/v4/Observation?patient=${device.resource.patient.reference.split("/")[1]}&_count=1&_sort=-_lastUpdated`)}
+            if(!data.entry){console.log(` https://pmsind.co.in:5000/Observation?patient=${device.resource.patient.reference.split("/")[1]}&_count=1&_sort=-_lastUpdated`)}
             else{
             var temp = String(device.resource.id);
           
@@ -211,7 +213,7 @@ export const DeviceMonitor = (currentRoom: any) => {
             setParentObs((prevParentobs) => ({...prevParentobs, [temp]: data.entry[0]["resource"]}))
             }})
         
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Communication?sender=${device.resource.id}&_count=1&_sort=-_lastUpdated`, {
+        fetch(` https://pmsind.co.in:5000/Communication?sender=${device.resource.id}&_count=1&_sort=-_lastUpdated`, {
         credentials: "omit",
         headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -219,7 +221,7 @@ export const DeviceMonitor = (currentRoom: any) => {
         })
         .then((response) => response.json())
         .then((data) => {
-            if(!data.entry){console.log(`http://3.110.169.17:9444/fhir-server/api/v4/Communication?sender=${device.resource.id}&_count=1&_sort=-_lastUpdated`)}
+            if(!data.entry){console.log(` https://pmsind.co.in:5000/Communication?sender=${device.resource.id}&_count=1&_sort=-_lastUpdated`)}
             else{
             var temp = String(device.resource.id);
             
@@ -232,6 +234,7 @@ export const DeviceMonitor = (currentRoom: any) => {
         }
         setIsLoading(false)
     })
+    console.log(devices);
     },[devices])
     const warmer = devices.entry?.map((device) => {
     if ((String(device.resource.identifier[1]?.value)=="Comprehensive Infant Care Centre" ) ){
@@ -495,13 +498,15 @@ export const DeviceMonitor = (currentRoom: any) => {
                           marginBottom:'2%'
                         }}
                       >
+ <DummyCard/>
                          {isLoadingWarmers ? (
                     // Display loading skeleton while loading
                     <Skeleton  variant="rounded" width={500} height={300} animation="wave"  sx={{ borderRadius: '25px' }}/>
                   ) : (
+                    
                     warmer
                   )}
-                      </Box>
+                     </Box>
                     </AccordionDetails>
                   </Accordion>
                   <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent" , backgroundImage:'none' , marginBottom:"10px", borderBottom:'2px solid #00B1FD',borderTop: 'none','&:before': {opacity: 0,}}}>

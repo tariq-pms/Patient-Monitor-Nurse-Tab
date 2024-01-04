@@ -59,7 +59,7 @@ const [open, setOpen] = useState(false);
     useEffect(() => {setDeviceChanged(!deviceChanged)},[props.deviceChangeToggle])
     const [renameRoom, setRenameRoom] = useState(false)
     useEffect(() => {
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Device?_count=20`, {
+        fetch(` https://pmsind.co.in:5000/Device?_count=20`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -92,7 +92,7 @@ const [open, setOpen] = useState(false);
             "status": "suspended",
             "name": x
         }
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location?organization=18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c / ${props.roomId}`, {
+        fetch(` https://pmsind.co.in:5000/Location/${props.roomId}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "PUT",
             body: JSON.stringify(data),
@@ -137,12 +137,13 @@ const [open, setOpen] = useState(false);
         }
     const addButton = (index: any) => {
         let data = {}
-        let vvtemp = {"reference": `Location?organization=18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c /${props.roomId}`}
+        //let vvtemp = {"reference": `Location?organization=18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c /${props.roomId}`}
+        let vvtemp = {"reference": `Location /${props.roomId}`}
         data = {
             ...deviceList[Number(index)].resource,
             location: vvtemp
         }
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`, {
+        fetch(` https://pmsind.co.in:5000/Device/${deviceList[Number(index)].resource.id}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "PUT",
             body: JSON.stringify(data),
@@ -168,7 +169,7 @@ const [open, setOpen] = useState(false);
         const { location, ...data } = device;
       
         // Define the URL and request options
-        const apiUrl = `http://3.110.169.17:9444/fhir-server/api/v4/Device/${device.id}`;
+        const apiUrl = ` https://pmsind.co.in:5000/Device/${device.id}`;
         const requestOptions: RequestInit = {
           credentials: "omit",
           method: "PUT",
@@ -195,7 +196,7 @@ const [open, setOpen] = useState(false);
     const [deleteRoom, setDeleteRoom] = useState(false)
     const removeRoomButton = () => {
         console.log("Called")
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location?organization=18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c /${props.roomId}`, {
+        fetch(` https://pmsind.co.in:5000/Location/${props.roomId}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "DELETE",
             headers: {
@@ -259,8 +260,8 @@ const [open, setOpen] = useState(false);
                             return(
                                 <Button onClick={() => {setMiniDialog(true); setSelectedDevice(index)}} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:'white', border:'0.1px solid #282828'}}>                                   
                                     <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
-                                    {(device.resource.identifier[0].value).toString()}
-                                    </Typography>
+                                 {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}
+                                </Typography>
                                 </Button>
                             )
                         }
@@ -311,7 +312,8 @@ const [open, setOpen] = useState(false);
                             return(
                                     <Button onClick={() => {setMiniDialog(true); setSelectedDevice(index)}} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:'white', border:'0.1px solid #282828'}}>
                                         <Typography variant="subtitle1" component={"h2"}>
-                                        {(device.resource.identifier[0].value).toString()}
+                                         {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}
+                                         {/* changed the identifier to display the device name and mac address */}
                                         </Typography>
                                     </Button>
                             )
@@ -374,7 +376,9 @@ const [open, setOpen] = useState(false);
                       {deviceList.map((device) => {
                           if(device?.resource?.location?.reference.split("/")[1] == props.roomId){
                               return (
-                                  <MenuItem>{device.resource.identifier[0].value.toString()}</MenuItem>
+                                //   <MenuItem>{device.resource.identifier[0].value.toString()}</MenuItem>
+                <MenuItem> {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}</MenuItem>
+
                               )
                           }
                       })}

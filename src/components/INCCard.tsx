@@ -201,7 +201,7 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
 >
         <ButtonBase sx={{width:'100%', borderRadius:'25px'}}>
         <Card
-            style={{width:'100%', backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)', borderRadius: "25px", height:"300px", opacity: newData ? 1 : 0.4, boxShadow: `0px 0px 30px 5px ${isBlinking ? alarmColor: '#202020'}`, border:'1px solid #606060'
+            style={{width:'100%', backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)', borderRadius: "25px", height:"300px", opacity: newData ? 1 : 0.7, boxShadow: `0px 0px 30px 5px ${isBlinking ? alarmColor: '#202020'}`, border:'1px solid #606060'
         }}
           >
             {newData ? (<>

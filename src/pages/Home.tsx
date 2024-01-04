@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 // import AppBar from '@mui/material/AppBar';
 // import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -14,7 +14,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-export const Home = (currentRoom: any) => {
+export const Home = (_currentRoom: any) => {
 
 
   const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();

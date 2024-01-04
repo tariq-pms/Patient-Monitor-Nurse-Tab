@@ -17,7 +17,7 @@ interface MyChartProps {
   const MyChart: FC<MyChartProps> = ({ forwardedRef, data, options, plugins, height }) => {
     // Use useMemo to memoize the chart component
     const chartComponent = useMemo(() => {
-      return <Line ref={forwardedRef} data={data} options={options as ChartOptions} plugins={plugins} height={height} />;
+      return <Line ref={forwardedRef} data={data} options={options as ChartOptions <'line'>} plugins={plugins} height={height} />;
     }, [data, options, plugins, height]);
   
     return chartComponent;

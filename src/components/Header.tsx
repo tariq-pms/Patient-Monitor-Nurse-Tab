@@ -4,18 +4,18 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import SettingsIcon from '@mui/icons-material/Settings';
 import Button from '@mui/material/Button';
-import { AccountCircle, ExpandLess, ExpandMore, Style } from '@mui/icons-material';
+import { AccountCircle, ExpandLess, ExpandMore } from '@mui/icons-material';
 import { useNavigate,useLocation } from 'react-router-dom';
 import pmsLogo from '../assets/phx_logo.png';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Avatar, Typography } from '@material-ui/core';
 import MenuIcon from '@mui/icons-material/Menu';
-
-
+import PersonIcon from '@mui/icons-material/Person';
 export interface HeaderProps {
   currentRoom: string;
   roomChange: (roomId: string) => void;
   roomAltered: boolean;
+ 
 }
 
 export const Header: FC<HeaderProps> = (props) => {
@@ -26,6 +26,8 @@ export const Header: FC<HeaderProps> = (props) => {
   const screenSize = useMediaQuery(theme.breakpoints.up('md'));
   const { user, isLoading, isAuthenticated, logout, getIdTokenClaims } = useAuth0();
   const[UserRole, setUserRole] = useState("");
+  //const[UserOrganization, setUserOrganization] = useState("");
+
   // getIdTokenClaims().then(res => {console.log('result',res)}).catch(err => {console.log("FAIL FUCL:"+err)})
   
   // console.log(user)
@@ -55,7 +57,7 @@ export const Header: FC<HeaderProps> = (props) => {
     },
   ]);
   const [room, setRoom] = useState('');
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const handleSetRoom = (event: SelectChangeEvent) => {
     setRoom(event.target.value);
     props.roomChange(
@@ -179,47 +181,20 @@ export const Header: FC<HeaderProps> = (props) => {
      navigate('/device-monitor');
     }
   };
-//   useEffect(() => {
-//   getIdTokenClaims()
-//     .then((res) => {
-//       console.log('Role:', res);
-//       setUserRole(res?.role);
-      
-
-//       if (isAuthenticated) {
-//         fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location`, {
-//           credentials: 'omit',
-//           headers: {
-//             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
-//           },
-//         })
-//           .then((response) => response.json())
-//           .then((data) => {
-//             if (data.entry) {
-//               settemproom(data.entry);
-//             }
-//           })
-//           .catch((error) => {
-//             console.error('Failed to fetch rooms:', error);
-//           });
-//       }
-//     })
-//     .catch((error) => {
-//       console.error('Failed to fetch role:', error);
-//     });
-// }, [isAuthenticated]);
-// Dependency array includes isAuthenticated
-
 
 useEffect(() => {
   getIdTokenClaims()
     .then((res) => {
       console.log('Role:', res);
       setUserRole(res?.role);
+      //setUserOrganization(res?.organization);
+       //console.log("organization",res?.organization )
+
 
       if (isAuthenticated) {
         // Fetch location data for the specified organization
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location?organization=${res?.organization}`, {
+        fetch(` https://pmsind.co.in:5000/Location`, {
+          //fetch(` https://pmsind.co.in:5000/Location?organization=${res?.organization}`, {
           credentials: 'omit',
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -241,10 +216,6 @@ useEffect(() => {
     });
 }, [isAuthenticated]);
 
-
-
-
-
 useEffect(() => {
   // Assuming userRole is set appropriately based on your authentication logic
   if (UserRole === 'Hospital Technician' && location.pathname === '/patient-monitor') {
@@ -252,7 +223,7 @@ useEffect(() => {
     navigate('/device-monitor');
   }
 
-  if (UserRole === 'Hospital Clinician' && location.pathname === '/rooms') {
+  if (UserRole === 'Hospital Clinician' && (location.pathname === '/rooms' || location.pathname === '/Admin' )) {
     // Redirect to the appropriate page if the user tries to access an unauthorized page
     navigate('/device-monitor'); // You might want to redirect to another page or show an error
   }
@@ -260,7 +231,8 @@ useEffect(() => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Location?organization=18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c`, {
+      fetch(` https://pmsind.co.in:5000/Location`, {
+      //fetch(` https://pmsind.co.in:5000/Location?organization=${UserOrganization}`, {
         credentials: 'omit',
         headers: {
           Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -329,7 +301,7 @@ useEffect(() => {
                                     setNotHome(true);
                                     if (darkMode) {
                                       // Check user role before navigating to patient-monitor
-                                      if (UserRole === 'Hospital Technician') {
+                                      if (UserRole === undefined) {
                                         // Technician should not access patient-monitor
                                         // Redirect or show an error message as needed
                                         console.log("Hospital Technicians cannot access patient-monitor");
@@ -346,7 +318,7 @@ useEffect(() => {
                                     padding: '6%',
                                     backgroundColor: '#131726',
                                   }}
-                                  disabled={UserRole === 'Hospital Technician'}
+                                  // disabled={UserRole === 'Hospital Technician'}
                                 >
                                   {room.resource.name.toString()}
                                 </MenuItem>
@@ -356,7 +328,7 @@ useEffect(() => {
               <MenuItem value="R&D"
                 sx={{
                   width: '250px',padding: '6%', paddingLeft:'20px',backgroundColor: '#131726'}} onClick={() => {navigate('/rooms');setNotHome(false);setPrevRoom(room);}}>
-                Rooms & Device Settings <SettingsIcon sx={{ paddingLeft: '5px' }} />
+                Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }}/>
               </MenuItem>
               <MenuItem
       value="R&D"
@@ -368,7 +340,7 @@ useEffect(() => {
       }}
       onClick={handleAdminClick}
     >
-      Admin Access <SettingsIcon sx={{ paddingLeft: '5px' }} />
+      Admin Access <PersonIcon sx={{ marginLeft: 'auto' }} />
     </MenuItem>
                           </Select>
                           
@@ -441,7 +413,7 @@ useEffect(() => {
                       endIcon={<AccountCircle />}
                     >
                       <Typography variant="subtitle1" component="h2">
-                        &nbsp; {user?.nickname} &nbsp;
+                        &nbsp; {user?.name} &nbsp;
                       </Typography>
                     </Button>
                     <Menu
@@ -516,6 +488,7 @@ useEffect(() => {
     </ToggleButtonGroup>
   </Stack>
 )}
+{/* mobile view */}
                       <List>
                         <ListItemButton onClick={() => setSmallList(!smallList)}>
                           <ListItemText>
@@ -544,24 +517,40 @@ useEffect(() => {
                                 >
                                   {room.resource.name.toString()}
                                 </ListItemButton>
+                                
                               </ListItem>
                             ))}
                             {notHome && UserRole === 'Hospital Technician' && (
-                              <MenuItem
-                                value="R&D"
-                                sx={{
-                                  width: 'auto', padding: '6%', backgroundColor: '#131726', borderTop: '1px solid grey',
-                                }}
-                                onClick={() => {
-                                  navigate('/rooms');
-                                  setNotHome(false);
-                                  setPrevRoom(room);
-                                }}
-                              >
-                                Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }} />
-                              </MenuItem>
+                              <><MenuItem
+                                  value="R&D"
+                                  sx={{
+                                    width: 'auto', padding: '6%', backgroundColor: '#131726', borderTop: '1px solid grey',
+                                  }}
+                                  onClick={() => {
+                                    navigate('/rooms');
+                                    setNotHome(false);
+                                    setPrevRoom(room);
+                                  } }
+                                >
+                                  Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }} />
+                                </MenuItem><MenuItem
+                                  value="R&D"
+                                  sx={{
+                                    width: '100%',
+                                    padding: '6%',
+                                    paddingLeft: '20px',
+                                    backgroundColor: '#131726',
+                                    textAlign:'space-between,'
+                                  }}
+                                  onClick={handleAdminClick}
+                                  
+                                >
+                                    Admin Access <PersonIcon sx={{ marginLeft: 'auto' }} />
+                                  </MenuItem></>
+                              
                             )}
                           </List>
+                          
                         </Collapse>
                       </List>
                       <Box width={'100%'} height={'200px'} marginTop={'auto'} sx={{ backgroundColor: '#131726' }}>

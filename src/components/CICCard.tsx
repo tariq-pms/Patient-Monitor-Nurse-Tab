@@ -213,9 +213,6 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
             clearInterval(timer); 
         };
     }, [requiredForTimer])
-    function setControlOpacity(arg0: string) {
-        throw new Error('Function not implemented.');
-    }
 
     // function timer() {
     //     // if((tempColor!=alarmColor) && (newData==true)){
@@ -243,7 +240,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
         {/* <Link to="devicedata" style={{ textDecoration: 'none' }} state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}> */}
         
           <Card
-            style={{width:'100%', backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)', borderRadius: "25px", height:"300px", opacity: newData ? 1 : 0.5, boxShadow: `0px 0px 30px 5px ${isBlinking ? alarmColor: '#202020'}`, border:'1px solid #606060'
+            style={{width:'100%', backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)', borderRadius: "25px", height:"300px", boxShadow: `0px 0px 30px 5px ${isBlinking ? alarmColor: '#202020'}`, border:'1px solid #606060',opacity: newData ? 1 : 0.7,
         }}
           >
             {newData ? (<>

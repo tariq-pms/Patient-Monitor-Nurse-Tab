@@ -2,9 +2,14 @@
 import { useState, useEffect } from 'react';
 import { Box, Skeleton, Typography, Button, Paper, Dialog, DialogTitle, TextField, Select, MenuItem, DialogContent, CardContent, Card, InputLabel } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { UserCard } from '../components/UserCard'; // Import the modified UserCard component
+import { UserCard } from '../components/UserCard';
+
 import { User } from '@auth0/auth0-react';
 import { useAuth0 } from '@auth0/auth0-react';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert, { AlertProps } from '@mui/material/Alert';
+
+
 
 export const AdminPage = () => {
   const { isAuthenticated, loginWithRedirect } = useAuth0();
@@ -13,8 +18,19 @@ export const AdminPage = () => {
 
   const [controlOpacity1, setControlOpacity1] = useState('0.8');
   const [controlBorder1, setControlboarder1] = useState('grey');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+const [snackbarMessage, setSnackbarMessage] = useState('');
+const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+const handleSnackbarOpen = (message: string, severity: 'success' | 'error') => {
+  setSnackbarMessage(message);
+  setSnackbarSeverity(severity);
+  setSnackbarOpen(true);
+};
+const handleSnackbarClose = () => {
+  setSnackbarOpen(false);
+};
 
-  const [userInfo, setUserInfo] = useState({
+  const [, setUserInfo] = useState({
     userEmail: '',
     userRole: '',
     userName: '',
@@ -24,16 +40,46 @@ export const AdminPage = () => {
     email: '',
     username: '',
     password: '',
-    role: 'Hospital Technician', // default role
+    role: '',
+    organization:'18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c', // default role
   });
   const onUserClick = (user: User) => {
     // Define the logic you want to execute when a user is clicked
     console.log('User clicked:', user);
   };
 
+  // useEffect(() => {
+  //   try {
+  //     fetch('http://localhost:5000/list')
+  //       .then((response) => {
+  //         if (!response.ok) {
+  //           throw new Error('Failed to fetch user data');
+  //         }
+  //         return response.json();
+  //       })
+  //       .then((data) => {
+  //         setUserData(data);
+  //         setLoading(false);
+  //       })
+  //       .catch((error) => {
+  //         console.error('Error fetching user data:', error);
+  //       });
+  //   } catch (error) {
+  //     console.error('Error in useEffect:', error);
+  //   }
+  // }, []);
+  
   useEffect(() => {
     try {
-      fetch('http://localhost:5000/list')
+      const organization = '18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c';
+
+      fetch('http://localhost:5000/list', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ organization: organization }),
+      })
         .then((response) => {
           if (!response.ok) {
             throw new Error('Failed to fetch user data');
@@ -41,6 +87,7 @@ export const AdminPage = () => {
           return response.json();
         })
         .then((data) => {
+          console.log('Fetched User Data:', data);
           setUserData(data);
           setLoading(false);
         })
@@ -51,6 +98,7 @@ export const AdminPage = () => {
       console.error('Error in useEffect:', error);
     }
   }, []);
+
   const handleUserClick = (user: User) => {
     setUserInfo({
       userEmail: user.email || '',
@@ -61,9 +109,63 @@ export const AdminPage = () => {
     setDialogOpen(true);
   };
 
+  // const handleAddUser = () => {
+  //   // Extract username and password from state or form fields
+  //   const { email, username, password, role } = newUser;
+  
+  //   // Add your logic to make the API call for adding a new user
+  //   fetch('http://localhost:5000/create', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({ email, username, password, role }),
+  //   })
+  //     .then(response => response.json())
+  //     .then(data => {
+  //       console.log('API response:', data);
+  
+  //       // Update the state to include the newly created user
+  //       setUserData((prevUserData: User[]) => [...prevUserData, data]);
+  
+  //       // Add any additional logic you need after the API call
+  //     })
+  //     .catch(error => {
+  //       console.error('Error:', error);
+  //     });
+  
+  //   handleDialog2Close();
+  // };
+  // const handleAddUser = () => {
+  //   // Extract username, password, role, and organizationId from state or form fields
+  //   const { email, username, password, role, organization } = newUser;
+
+  //   // Add your logic to make the API call for adding a new user
+  //   fetch('http://localhost:5000/create', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({ email, username, password, role, organization }), // Include organizationId in the request
+  //   })
+  //     .then(response => response.json())
+  //     .then(data => {
+  //       console.log('API response:', data);
+
+  //       // Update the state to include the newly created user
+  //       setUserData((prevUserData: User[]) => [...prevUserData, data]);
+
+  //       // Add any additional logic you need after the API call
+  //     })
+  //     .catch(error => {
+  //       console.error('Error:', error);
+  //     });
+
+  //   handleDialog2Close();
+  // };
   const handleAddUser = () => {
-    // Extract username and password from state or form fields
-    const { email, username, password, role } = newUser;
+    // Extract username, password, role, and organizationId from state or form fields
+    const { email, username, password, role, organization } = newUser;
   
     // Add your logic to make the API call for adding a new user
     fetch('http://localhost:5000/create', {
@@ -71,23 +173,58 @@ export const AdminPage = () => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, username, password, role }),
+      body: JSON.stringify({ email, username, password, role, organization }), // Include organizationId in the request
     })
-      .then(response => response.json())
+      .then(response => {
+        // Check explicitly for success status (2xx)
+        if (response.status >= 200 && response.status < 300) {
+          return response.json();
+        } else {
+          // If there's an error, throw an error to go to the catch block
+          throw new Error(`Failed to create user. Server responded with status: ${response.status}`);
+        }
+      })
       .then(data => {
         console.log('API response:', data);
   
-        // Update the state to include the newly created user
-        setUserData((prevUserData: User[]) => [...prevUserData, data]);
+        // After creating the user, fetch the updated user data
+        fetch('http://localhost:5000/list', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ organization: organization }),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('Failed to fetch updated user data');
+            }
+            return response.json();
+          })
+          .then((updatedData) => {
+            console.log('Fetched Updated User Data:', updatedData);
   
-        // Add any additional logic you need after the API call
+            // Update the state to include the newly created user
+            setUserData(updatedData);
+  
+            // Show success snackbar
+            handleSnackbarOpen('User created successfully', 'success');
+          })
+          .catch((error) => {
+            // Show error snackbar
+            handleSnackbarOpen('Failed to fetch updated user data', 'error');
+            console.error('Error fetching updated user data:', error);
+          });
       })
       .catch(error => {
+        // Show error snackbar
+        handleSnackbarOpen(error.message, 'error');
         console.error('Error:', error);
       });
   
     handleDialog2Close();
   };
+  
   
   
   const handleDeleteUser = (userId: string) => {
@@ -102,18 +239,26 @@ export const AdminPage = () => {
           console.log(`User with ID ${userId} deleted successfully`);
           // Update the state to remove the deleted user
           setUserData(prevUserData => prevUserData.filter(user => user.user_id !== userId));
+          
         } else {
           console.error(`Error deleting user: ${response.statusText}`);
+         
         }
       })
       .catch(error => {
         console.error('Error:', error);
+       
       });
   };
   
-  
+  const updateUserInList = (updatedUser: User) => {
+    setUserData(prevUserData =>
+      prevUserData.map(user => (user.user_id === updatedUser.user_id ? updatedUser : user))
+    );
+    handleSnackbarOpen('User updated successfully', 'success');
+  };
 
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [, setDialogOpen] = useState(false);
 
   const handleDialog2Close = () => {
     setOpenDialog2(false);
@@ -124,7 +269,7 @@ export const AdminPage = () => {
       {isAuthenticated ? (
         <Box display="flex" justifyContent="center" minHeight="100vh">
           {loading ? (
-            <Skeleton animation="wave" variant="rectangular" width={"350px"} height={"280px"} sx={{ borderRadius: "25px" }} />
+            <Skeleton animation="wave" variant="rectangular" width={"350px"}  height={"200px"} sx={{ borderRadius: "25px",marginTop:"120px",marginRight:"400px" }} />
           ) : (
             <Box display="flex" flexDirection="column" alignItems="center">
               <Box width={'100%'} marginBottom={'10%'} paddingTop={'2%'} textAlign={'center'}>
@@ -132,14 +277,14 @@ export const AdminPage = () => {
               </Box>
               <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center">
                 {userData.map((user: User, index: number) => (
-                 <UserCard key={index} user={user} onUserClick={handleUserClick} onDeleteUser={handleDeleteUser} user_id={''} />
+                 <UserCard key={index} user={user} onUserClick={handleUserClick} onDeleteUser={handleDeleteUser} updateUserInList={updateUserInList} user_id={''} />
 
 
                 ))}
                 <Box
                   width={'350px'}
-                  minHeight={'300px'}
-                  maxHeight={'300px'}
+                 height={'200px'}
+                  
                   sx={{ opacity: controlOpacity1, backgroundColor: 'transparent', borderRadius: '30px' }}
                   onMouseLeave={() => {
                     setControlboarder1('grey');
@@ -155,14 +300,14 @@ export const AdminPage = () => {
                       sx={{
                         background: 'transparent',
                         borderRadius: '25px',
-                        minHeight: '280px',
+                        height: '200px',
                         border: `1px solid ${controlBorder1}`,
                       }}
                     >
-                      <Box width={'100%'} display="flex" flexDirection="row" justifyContent="center" marginTop={'20px'}>
-                        <CardContent sx={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => setOpenDialog2(true)}>
-                          <Typography sx={{ paddingLeft: '0px' }}>Add new User</Typography>
-                          <AddIcon sx={{ fontSize: 200, color: controlBorder1 }} />
+                      <Box sx={{cursor:"pointer"}} width={'100%'} display="flex" flexDirection="row" justifyContent="center" marginTop={'5px'} onClick={() => setOpenDialog2(true)}>
+                        <CardContent sx={{marginTop:'0px', textAlign: 'center'}} >
+                          <Typography sx={{ padding: '0px',marginTop:'0px' }}>Add new User</Typography>
+                          <AddIcon sx={{ fontSize: 150, color: controlBorder1 }} />
                         </CardContent>
                       </Box>
                     </Card>
@@ -203,8 +348,8 @@ export const AdminPage = () => {
                     value={newUser.role}
                     onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
                   >
-                    <MenuItem value="hospitalTechnician">Hospital Technician</MenuItem>
-                    <MenuItem value="hospitalClinician">Hospital Clinician</MenuItem>
+                    <MenuItem value="Hospital Technician">Hospital Technician</MenuItem>
+                    <MenuItem value="Hospital Clinician">Hospital Clinician</MenuItem>
                   </Select>
                   <Button
                     sx={{
@@ -222,8 +367,10 @@ export const AdminPage = () => {
                 </DialogContent>
               </Dialog>
             </Box>
+            
           )}
         </Box>
+        
       ) : (
         <Box marginTop={'9%'} textAlign={'center'}>
           <Typography variant='h3' color={'white'} fontWeight={'50'}>Admin Portal</Typography>
@@ -232,7 +379,18 @@ export const AdminPage = () => {
             <Button variant='contained' sx={{ width: '200px', height: '50px', borderRadius: '100px' }} onClick={() => loginWithRedirect()}>Sign In</Button>
           </Box>
         </Box>
+        
       )}
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity as AlertProps['severity']}
+        >
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 };

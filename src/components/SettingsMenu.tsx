@@ -92,7 +92,7 @@
 //         setSnack(false);
 //       };
 //     useEffect(() => {
-//         fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Location`, {
+//         fetch(` https://pmsind.co.in:5000/Location`, {
 //           credentials: "omit",
 //           headers: {
 //             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -111,9 +111,9 @@
 //             ...deviceList[Number(index)].resource,
 //             location: vvtemp
 //         }
-//         //console.log(`http://13.126.5.10:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`)
+//         //console.log(` https://pmsind.co.in:5000/Device/${deviceList[Number(index)].resource.id}`)
 
-//         fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Device/${deviceList[Number(index)].resource.id}`, {
+//         fetch(` https://pmsind.co.in:5000/Device/${deviceList[Number(index)].resource.id}`, {
 //             credentials: "omit", // send cookies and HTTP authentication information
 //             method: "PUT",
 //             body: JSON.stringify(data),
@@ -132,7 +132,7 @@
         
 //         // let deviceList: any[] = []
 //         useEffect(() =>{
-//             fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Device`, {
+//             fetch(` https://pmsind.co.in:5000/Device`, {
 //           credentials: "omit",
 //           headers: {
 //             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -193,7 +193,7 @@
 //             "name": newRoomName
 //         }
 //         // console.log
-//         fetch(`http://13.126.5.10:9444/fhir-server/api/v4/Location`, {
+//         fetch(` https://pmsind.co.in:5000/Location`, {
 //             credentials: "omit", // send cookies and HTTP authentication information
 //             method: "POST",
 //             body: JSON.stringify(data),

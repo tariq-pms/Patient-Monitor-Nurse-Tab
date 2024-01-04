@@ -1,10 +1,7 @@
 
-import { faBell, faPowerOff } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, Card, Divider, Stack, Typography } from "@mui/material";
+import { Box, Card, Stack, Typography } from "@mui/material";
 import { isArray } from "chart.js/helpers";
 import { FC, useEffect, useState } from "react";
-import { NewDeviceDetails } from "./NewDeviceDetails";
 import { NewPatientDetails } from "./NewPatientDetails";
 
 
@@ -130,28 +127,29 @@ export interface PatientDetails {
 
 export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
     console.log('PatientCard props:', props);
-    
+    const [obsResource, setObsResource] = useState<any[]>([])
     const [isOpen, setIsOpen] = useState(false);
     const [isBlinking, setIsBlinking] = useState(false);
     const [alarmColor, setAlarmColor] = useState("#202020")
-    const [controlOpacity, setControlOpacity] = useState("0.8")
-    const [obsmeta, setobsmeta] = useState([])
-    const [commeta, setcommeta] = useState([])
-    const [requiredForBorderColor, setRequiredForBorderColor] = useState(false)
+    
+    const [obsmeta, setobsmeta] = useState<any[]>([])
+    const [commeta, setcommeta] = useState<any[]>([])
+    
     // const [newData, setNewData] = useState(false);
     const [requiredForTimer, setRequiredForTimer] = useState(false)
     const [borderRadiusForRerender, setBorderRadiusForRerender] = useState(true)
     const [newData, setNewData] = useState(false)
-    const [obsResource, setObsResource] = useState([])
+    
     const [displayAlarm, setDisplayAlarm] = useState("")
-    const [dontRunFirstTime, setDontRunFirstTime] = useState(0)
+    // const [dontRunFirstTime, setDontRunFirstTime] = useState(0)
     const getDevices = () => {
         
         if(props.device?.length>0){
            
-            return (props.device?.map((val, index) => {
+            return (props.device?.map((val) => {
                 return(
-                    <Box boxShadow={`0px 0px 10px 2px #00B1FD`} border={'1px solid #00B1FD'} textAlign={'center'} borderRadius={'10px'} minWidth={'70px'} maxWidth={'70px'} >
+                    <Box boxShadow={`0px 0px 10px 2px #00B1FD`} border={'1px solid #00B1FD'} textAlign={'center'} borderRadius={'10px'} minWidth={'70px'} maxWidth={'70px'} overflow="hidden"        // Handle overflow by hiding it
+                    textOverflow="ellipsis"    >
                         <Typography variant='caption' color={"#A8C5D4"}>
                             {val.identifier[1].value}
                         </Typography>

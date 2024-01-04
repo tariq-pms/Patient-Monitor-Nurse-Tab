@@ -1,7 +1,7 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {Tooltip, Accordion, AccordionDetails, AccordionSummary, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Stack, ToggleButton, ToggleButtonGroup, Typography, Tab, Tabs } from "@mui/material";
-import React, { SyntheticEvent, useEffect, useMemo, useRef, useState } from "react";
+import {Tooltip, Accordion, AccordionDetails, AccordionSummary, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Stack, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FC } from "react";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -516,7 +516,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
         const accumulatedData: any[] = []
         var meta = 0;
         function fetchData(when: string, times:number): Promise<void> {
-            return fetch(`http://pmscloud.in:9444/fhir-server/api/v4/Observation/${props.observation_resource[index]?.id}/_history?_count=1&_since=${when}&_page=${page}`,{
+            return fetch(` https://pmsind.co.in:5000/Observation/${props.observation_resource[index]?.id}/_history?_count=1&_since=${when}&_page=${page}`,{
                 credentials: "omit",
                 method: "GET",
                 headers: {
@@ -529,7 +529,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                 if(data.total>0){
                     
                     var lastpage = Math.floor(data.total/10)+data.total%10
-                    return fetch(`http://pmscloud.in:9444/fhir-server/api/v4/Observation/${props.observation_resource[index].id}/_history?_count=1&_since=${when}&_page=${lastpage}`,{
+                    return fetch(` https://pmsind.co.in:5000/Observation/${props.observation_resource[index].id}/_history?_count=1&_since=${when}&_page=${lastpage}`,{
                         credentials: "omit",
                         method: "GET",
                         headers: {
@@ -558,6 +558,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
         }
         return fetchData(when,1).then(() => accumulatedData.reverse());
     
+
     }
 
     function subtractDaysFromDate(dateString: string, days: number) {
@@ -566,6 +567,9 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
         console.log(date)
         return date.toISOString();
     }
+
+
+
 
     useEffect(() => {
         let url: string[] = []
@@ -580,7 +584,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                 props.observation_resource?.map((val,i) => {
                     console.log(val)
                     let prevdate = ""
-                    url.push(`http://pmscloud.in:9444/fhir-server/api/v4/Observation/${props.observation_resource[i].id}/_history?_since=${currentDate}T00:00:00Z&_count=10000`)
+                    url.push(` https://pmsind.co.in:5000/Observation/${props.observation_resource[i].id}/_history?_since=${currentDate}T00:00:00Z&_count=10000`)
                     Promise.all(
                         
                         url.map((query) => {
@@ -598,8 +602,10 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                                 if(((data.entry[0].resource.meta.lastUpdated).toString())==prevdate){return null}
                                 
                                 prevdate = (data.entry[0].resource.meta.lastUpdated).toString()
- 
+            
+                                
                                 return (data.entry.map((val: any)=>(val)))
+                                
                             })
                         })
                         
@@ -1023,7 +1029,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
     }
     const infscrollfunc = (page: Number) => {
         props.communication_resource.map((communication,index ) => {
-            fetch(`http://pmscloud.in:9444/fhir-server/api/v4/Communication/${communication.id}/_history/?_page=${page}`, {
+            fetch(` https://pmsind.co.in:5000/Communication/${communication.id}/_history/?_page=${page}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "GET",
             headers: {
@@ -1490,17 +1496,17 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                                             }>
                                                 <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
                                                     {/* <MyChart height={'100%'} forwardedRef={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} plugins={temperatureLegendPlugin} /> */}
-                                                    <Line ref={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
+                                                    <Line ref={chartRef1} options={temperatureOption as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                                                     <div id="legend-container"></div>
                                                     
                                                     {props.observation_resource[0]?.identifier[0]?.value?.toString()!="PMS-HCM" && (
                                                         <>
                                                         <Divider />
-                                                        <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                                        <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions<'line'>} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                                                     <div id="legend-container2"></div>
                                                     <Divider />
                                                     {/* <MyChart height={'100%'} forwardedRef={chartRef3} options={weightOption as ChartOptions} data={weightData} plugins={temperatureLegendPlugin} />                                             */}
-                                                    <Line ref={chartRef3} options={weightOption as ChartOptions} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                                    <Line ref={chartRef3} options={weightOption as ChartOptions<'line'>} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                                                     <div id="legend-container3"></div></>
                                                     ) }
                                                     {/* <MyChart height={'100%'} forwardedRef={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} plugins={temperatureLegendPlugin} /> */}
@@ -1671,11 +1677,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
         
     }
 
-    const [selectedTab, setSelectedTab] = useState(0);
 
-    const handleChange2 = (newValue:any) => {
-      setSelectedTab(newValue);
-    };
 
     const connectedDevices = () => {
         if(props.device?.length>0){
@@ -1759,49 +1761,25 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                        <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'white', color:'white'}}/>
                        <Typography variant='h5' paddingLeft={'2%'}>Alarms</Typography>
                        {props.communication_resource?.map((comms, index) => {
-                        // console.log(comms)
+                        console.log(comms)
                         if(comms.meta.versionId!="1"){
-                            function handleChange(event: SyntheticEvent<Element, Event>, value: any): void {
-                                throw new Error("Function not implemented.");
-                            }
-
                             return (
-                                // <Accordion elevation={0} defaultExpanded={true} sx={{ width:'100%',backgroundColor:"transparent", backgroundImage:'none', marginTop:'10px' , marginBottom:"10px", border:'1px solid grey', borderRadius:'15px', '&:before': {opacity: 0}}} >
-                                //     <AccordionSummary
-                                //             expandIcon={<ExpandMoreRounded sx={{ fontSize:'200%'}}/>}
-                                //             aria-controls="panel1a-content"
-                                //             id="panel1a-header"
+                                <Accordion elevation={0} defaultExpanded={true} sx={{ width:'100%',backgroundColor:"transparent", backgroundImage:'none', marginTop:'10px' , marginBottom:"10px", border:'1px solid grey', borderRadius:'15px', '&:before': {opacity: 0}}} >
+                                    <AccordionSummary
+                                            expandIcon={<ExpandMoreRounded sx={{ fontSize:'200%'}}/>}
+                                            aria-controls="panel1a-content"
+                                            id="panel1a-header"
                                             
-                                //             >
-                                //             <Typography variant='h5' component={"h2"} >{props.device && props.device[index] && props.device[index].identifier[1].value }
-                                //             {(props.device==undefined || (!props.device && !props.device[index])) && props.observation_resource[index].identifier[0].value}</Typography>
-                                //     </AccordionSummary>
-                                //     <AccordionDetails>
-                                //     <Box width={'100%'} display={'flex'} textAlign={'center'} justifyContent={'center'} flexWrap={'wrap'}>
-                                //         {alarmCard(index)}
-                                //     </Box>
-                                //     </AccordionDetails>
-                                // </Accordion>
-                                <Box width="100%" sx={{ backgroundColor: 'transparent', marginTop: '10px', marginBottom: '10px', border: '1px solid grey', borderRadius: '15px' }}>
-                                <Tabs
-                                  value={selectedTab}
-                                  onChange={(e, newValue) => handleChange2(newValue)}
-                                  variant="scrollable"
-                                  scrollButtons="auto"
-                                >
-                                  {props.device && props.device.map((device, index) => (
-                                    <Tab
-                                      key={index}
-                                      label={device.identifier[1]?.value || props.observation_resource[index]?.identifier[0]?.value || 'No Identifier'}
-                                    />
-                                  ))}
-                                </Tabs>
-                              
-                                <Box width="100%" display="flex" textAlign="center" justifyContent="center" flexWrap="wrap">
-                                  {/* Render content for the selected tab */}
-                                  {props.device && props.device[selectedTab] && alarmCard(selectedTab)}
-                                </Box>
-                              </Box>
+                                            >
+                                            <Typography variant='h5' component={"h2"} >{props.device && props.device[index] && props.device[index].identifier[1].value }
+                                            {(props.device==undefined || (!props.device && !props.device[index])) && props.observation_resource[index].identifier[0].value}</Typography>
+                                    </AccordionSummary>
+                                    <AccordionDetails>
+                                    <Box width={'100%'} display={'flex'} textAlign={'center'} justifyContent={'center'} flexWrap={'wrap'}>
+                                        {alarmCard(index)}
+                                    </Box>
+                                    </AccordionDetails>
+                                </Accordion>
                             )
                         }
                         

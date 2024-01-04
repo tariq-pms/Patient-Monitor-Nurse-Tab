@@ -1,7 +1,7 @@
 import { Box, Card, Stack, Typography, ButtonBase  } from '@mui/material'
 import { FC, useEffect, useState } from 'react'
 import { NewDeviceDetails } from './NewDeviceDetails';
-import { faBell, faPowerOff, faSyringe } from '@fortawesome/free-solid-svg-icons';
+import { faPowerOff } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export interface DeviceDetails {

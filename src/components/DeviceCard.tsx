@@ -1,10 +1,10 @@
 // import { AccountCircle } from '@mui/icons-material'
-import { Box, Paper, Card, CardContent, Stack, Typography  } from '@mui/material'
+import { Box, Card, CardContent, Stack, Typography  } from '@mui/material'
 // import { red } from '@mui/material/colors'
 import { FC, useEffect, useState } from 'react'
 // import { Link } from 'react-router-dom'
 import { Divider } from '@mui/material';
-import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
+
 import { Link } from 'react-router-dom';
 import { faPowerOff } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -31,7 +31,7 @@ export interface DeviceDetails {
             "value": string;
         }[];
     
-};
+} | null;
   device_resource_id: string;
   observation_resource: {
     "resourceType": string;
@@ -126,7 +126,7 @@ export interface DeviceDetails {
 }
 
 export const DeviceCard: FC<DeviceDetails> = (props): JSX.Element => {
-    const [alarmColor, setAlarmColor] = useState("")
+    const [, setAlarmColor] = useState("")
     // const devicetimer = setInterval(timer, 10000)
   const [newData, setNewData] = useState(false);
   const [runNo, setRunNo] = useState(0)

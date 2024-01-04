@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import  { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Card, CardContent, Skeleton, Stack, Button } from '@mui/material';
 import { useAuth0 } from '@auth0/auth0-react';
 import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { PatientCard } from '../components/PatientCard';
+import { DummyPatientCard } from '../components/DummyPatientCard';
 
 type Patient = {
   resourceType: string;
@@ -32,28 +33,28 @@ export const PatientMonitor = (currentRoom: any) => {
   const [isLoading, setIsLoading] = useState(true);
   const [pageNumber, setPageNumber] = useState(1);
 
-  const fetchPatients = async (page: number) => {
-    const patientDataURL = `http://3.110.169.17:9444/fhir-server/api/v4/Patient?page=${page}&_count=10`;
+  // const fetchPatients = async (page: number) => {
+  //   const patientDataURL = ` https://pmsind.co.in:5000/Patient?page=${page}&_count=10`;
 
-    const response = await fetch(patientDataURL, {
-      credentials: 'omit',
-      headers: {
-        Authorization: 'Basic ' + btoa('fhiruser:change-password'),
-      },
-    });
+  //   const response = await fetch(patientDataURL, {
+  //     credentials: 'omit',
+  //     headers: {
+  //       Authorization: 'Basic ' + btoa('fhiruser:change-password'),
+  //     },
+  //   });
 
-    if (response.ok) {
-      const data = await response.json();
-      if (data.entry) {
-        const patients = data.entry.map((entry: { resource: any }) => entry.resource);
-        setPatientList((prevPatients) => (prevPatients ? [...prevPatients, ...patients] : patients));
-      }
-    }
-  };
+  //   if (response.ok) {
+  //     const data = await response.json();
+  //     if (data.entry) {
+  //       const patients = data.entry.map((entry: { resource: any }) => entry.resource);
+  //       setPatientList((prevPatients) => (prevPatients ? [...prevPatients, ...patients] : patients));
+  //     }
+  //   }
+  // };
 
   const fetchObservations = (patient: { id: any }) => {
     return fetch(
-      `http://3.110.169.17:9444/fhir-server/api/v4/Observation?patient=${patient.id}`,
+      ` https://pmsind.co.in:5000/Observation?patient=${patient.id}`,
       {
         credentials: 'omit',
         headers: {
@@ -73,7 +74,7 @@ export const PatientMonitor = (currentRoom: any) => {
 
   const fetchCommunication = (patient: { id: any }) => {
     return fetch(
-      `http://3.110.169.17:9444/fhir-server/api/v4/Communication?patient=${patient.id}`,
+      ` https://pmsind.co.in:5000/Communication?patient=${patient.id}`,
       {
         credentials: 'omit',
         headers: {
@@ -93,7 +94,7 @@ export const PatientMonitor = (currentRoom: any) => {
 
   const fetchDevice = (patient: { id: any }) => {
     return fetch(
-      `http://3.110.169.17:9444/fhir-server/api/v4/Device?patient=${patient.id}`,
+      ` https://pmsind.co.in:5000/Device?patient=${patient.id}`,
       {
         credentials: 'omit',
         headers: {
@@ -126,6 +127,7 @@ export const PatientMonitor = (currentRoom: any) => {
       patients.map(async (patient: { id: any }) => {
         const [observationResponse, communicationResponse, deviceResponse] =
           await Promise.all([
+            
             fetchObservations(patient),
             fetchCommunication(patient),
             fetchDevice(patient),
@@ -151,7 +153,7 @@ export const PatientMonitor = (currentRoom: any) => {
   const triggerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const patientDataURL = 'http://3.110.169.17:9444/fhir-server/api/v4/Patient';
+    const patientDataURL = ' https://pmsind.co.in:5000/Patient';
   
     fetch(patientDataURL, {
       credentials: 'omit',
@@ -176,7 +178,7 @@ export const PatientMonitor = (currentRoom: any) => {
         console.error(error);
       });
   
-    const socket = new WebSocket('ws://3.110.169.17:9444/fhir-server/api/v4/notification');
+    const socket = new WebSocket('wss://pmsind.co.in/notification');
   
     socket.onopen = () => {
       console.log('Socket open successful');
@@ -185,7 +187,7 @@ export const PatientMonitor = (currentRoom: any) => {
     socket.onmessage = (data) => {
       var received_data = JSON.parse(data.data);
       if (received_data.location.split('/')[0] === 'Observation') {
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/${received_data.location}`, {
+        fetch(` https://pmsind.co.in:5000/${received_data.location}`, {
           credentials: 'omit',
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -209,7 +211,7 @@ export const PatientMonitor = (currentRoom: any) => {
             });
           });
       } else if (received_data.location.split('/')[0] === 'Communication') {
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/${JSON.parse(data.data).location}`, {
+        fetch(` https://pmsind.co.in:5000/${JSON.parse(data.data).location}`, {
           credentials: 'omit',
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -306,11 +308,13 @@ export const PatientMonitor = (currentRoom: any) => {
 
   return (
     <Box display="flex" justifyContent="center" marginTop={'50px'}>
-      {isAuthenticated && patientList !== undefined && (
+      {isAuthenticated && patientList !== undefined &&   patientList !==null &&(
         <div>
           {patientList?.length > 0 ? (
             <Box display={'flex'} flexWrap={'wrap'} justifyContent={'center'} gap={'1rem'}>
+          <DummyPatientCard ></DummyPatientCard>
               {patientc}
+             
             </Box>
           ) : (
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>

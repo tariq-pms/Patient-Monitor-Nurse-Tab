@@ -1,4 +1,4 @@
-import { ElementType, FC, ReactNode, useEffect, useMemo, useState } from "react";
+import { ElementType, FC, ReactNode,  useEffect, useMemo,  useState } from "react";
 import { MaterialReactTable,  type MRT_ColumnDef } from "material-react-table";
 import { Box, Button, Stack, SvgIconClasses, SvgIconPropsColorOverrides, SvgIconPropsSizeOverrides, SxProps, Theme, ThemeProvider, createTheme, useTheme } from "@mui/material";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
@@ -11,11 +11,12 @@ import { OverridableStringUnion } from "@mui/types";
 import { JSX } from "react/jsx-runtime";
 export interface rowsandcolumns {
   rows: {
-    date: StringConstructor;
-    time: StringConstructor;
-    alarm: ArrayConstructor;
+    date: string;
+    time: string;
+    alarm: Array<Array<string>>;
 }[];
   columns: MRT_ColumnDef[];
+  infscrollfunc: Function;
 }
 export const Table: FC<rowsandcolumns> = (props) => {
   const [tableData, setTableData]= useState(props)
@@ -101,11 +102,60 @@ export const Table: FC<rowsandcolumns> = (props) => {
     [globalTheme],
 
   );
+  const [loading, setLoading] = useState(false)
 
+  const [page, setPage] = useState(2)
+  // const tableContainerRef = useRef<HTMLDivElement>(null);
+  // const fetchMoreOnBottomReached = useCallback(
+  //   (containerRefElement?: HTMLDivElement | null) => {
+  //     if (containerRefElement) {
+  //       const { scrollHeight, scrollTop, clientHeight } = containerRefElement;
+  //       //once the user has scrolled within 400px of the bottom of the table, fetch more data if we can
+  //       if (
+  //         scrollHeight - scrollTop - clientHeight < 400
+  //       ) {
+  //         setPage(page+1)
+  //         // props.infscrollfunc(page)
+  //         console.log(page)
+          
+  //       }
+  //     }
+  //   },
+  //   [],
+  // );
+  //   // const cols = 
 
-    // const cols = 
+  //   useEffect(() => {
+  //     fetchMoreOnBottomReached(tableContainerRef.current);
+  //   }, [fetchMoreOnBottomReached]);
+  const [hasReachedBottom, setHasReachedBottom] = useState(false);
 
+  const handleScrollToBottom = () => {
+    // Your code to execute when the user reaches the bottom
+    props.infscrollfunc(page)
+    setPage(page+1)
+    // You can also set hasReachedBottom to true to prevent further calls
+    setHasReachedBottom(true);
+  };
 
+  const handleTableScroll = (e: { target: any; }) => {
+    
+    const table = e.target
+    const isAtBottom =
+    table.scrollTop + table.clientHeight >= table.scrollHeight;
+
+    // Check if we're at the bottom and the function hasn't been called yet
+    if (isAtBottom && !hasReachedBottom) {
+      setLoading(true)
+      handleScrollToBottom();
+      setHasReachedBottom(true);
+    }
+    else{
+      setHasReachedBottom(false);
+    }
+    
+  }
+  useEffect(() => {setLoading(false); },[props.rows])
   return (
     <ThemeProvider theme={tableTheme}>
 
@@ -125,6 +175,9 @@ export const Table: FC<rowsandcolumns> = (props) => {
             //     // backgroundColor:'#2f79d0'
             //   }
             // }}
+            // enableColumnResizing
+            enablePagination={false}
+            enableRowVirtualization
             enableColumnActions={false}
             enableFilterMatchHighlighting={false}
             enableSorting={false}
@@ -161,11 +214,13 @@ export const Table: FC<rowsandcolumns> = (props) => {
               KeyboardDoubleArrowDownIcon: (_props: any) =>  <FontAwesomeIcon icon={faXmark} style={{visibility:'hidden',  pointerEvents: "none", cursor: "not-allowed"}} />,
             }}
             muiTableContainerProps={{
-              sx:{
+              sx: { maxHeight: '600px' }, //give the table a max height
+              onScroll:handleTableScroll
+              // sx:{
                 
-                // borderRadius:'100px',         //Responsible for the table body's changes
-                // backgroundColor:'yellow'
-              }
+              //   // borderRadius:'100px',         //Responsible for the table body's changes
+              //   // backgroundColor:'yellow'
+              // }
             }}
 
             muiTableHeadCellProps={{    // For the Header
@@ -215,10 +270,13 @@ export const Table: FC<rowsandcolumns> = (props) => {
                 density: 'compact',        
                 expanded: true, //expand all groups by default        
                 grouping: ['date'], //an array of columns to group by by default (can be multiple)        
-                pagination: { pageIndex: 0, pageSize: 20 },
+                // pagination: { pageIndex: 0, pageSize: 20 },
                 sorting: [{ id: 'date', desc: true }], //sort by state by defaul
                 columnVisibility:{priority:false}
               }} 
+              state={{
+                showProgressBars: loading,
+              }}
               
               positionToolbarAlertBanner="bottom"   
               muiTablePaperProps={{
@@ -245,7 +303,6 @@ export const Table: FC<rowsandcolumns> = (props) => {
                     </Button>
                 </Box>
                 {(() => {
-                    console.log("FROM TABLE")
                     return null
                 })()}
                 <Stack direction={'row'} paddingTop={'10px'} sx={{fontSize:'12px'}}>
@@ -265,4 +322,3 @@ export const Table: FC<rowsandcolumns> = (props) => {
 
   );
 };
-

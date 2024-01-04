@@ -12,6 +12,11 @@ import { ExportToCsv } from 'export-to-csv';
 import { MRT_ColumnDef } from 'material-react-table';
 import { ChartOptions, LegendItem, Plugin } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import 'chart.js/auto';
+import { Chart, CategoryScale } from 'chart.js';
+
+Chart.register(CategoryScale);
+
 export interface DeviceDetails {
     newData: boolean;
     isDialogOpened: boolean;
@@ -128,11 +133,15 @@ export interface DeviceDetails {
               };
           }[];
     };
+  
   }
 type TemperatureData = {
 labels: any[];
 datasets: any[]; 
 };
+
+
+
 export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
     const [selectedLegends, setSelectedLegends] = useState<any>([])
     const chartRef1 = useRef<any | null>(null);
@@ -307,7 +316,9 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         animation: false,
         tension: 0.3,
         responsive: true,
-        
+        // legend: {
+        //     position: 'bottom'
+        // },
         interaction: {
           mode: 'index' as const,
           intersect: false,
@@ -378,7 +389,9 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         animation: false,
         tension: 0.3,
         responsive: true,
-       
+        // legend: {
+        //     position: 'bottom'
+        // },
         interaction: {
           mode: 'index' as const,
           intersect: false,
@@ -390,7 +403,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                 algorithm: 'min-max',
             },
             htmlLegend: {
-                
+                // ID of the container to put the legend in
                 containerID: 'legend-container3',
               },
           colors: {
@@ -446,197 +459,101 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
           },
         },
     };
-    const [temperatureData, setTemperatureData] = useState<TemperatureData>({
-        labels: [], // Initially, there are no labels
-        datasets: [], // Initially, there are no datasets
-    })
-    // const temperatureOption = {
-    //     animation: false,
-    //     tension: 0.3,
-    //     responsive: true,
-    
-    //     // legend: {
-    //     //     position: 'bottom'
-    //     // },
-    //     interaction: {
-    //       mode: 'index' as const,
-    //       intersect: false,
-    //     },
-        
-    //     stacked: false,
-    //     plugins: {
-    //         decimation:{
-    //             enabled: true,
-    //             algorithm: 'min-max',
-    //         },
-    //       colors: {
-    //         forceOverride: true
-    //       },
-    //       legend: {
-    //         display: false,
-    //       },
-    //      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //      //   @ts-ignore
-    //       htmlLegend: {
-    //         // ID of the container to put the legend in
-    //         containerID: 'legend-container',
-    //       },
-    //       zoom: {
-    //         // pan: {
-    //         //     enabled: true,
-    //         //     mode: 'x',
-    //         // },
-    //         zoom: {
-    //             // pinch: {
-    //             //     enabled: true       // Enable pinch zooming
-    //             // },
-    //             wheel: {
-    //                 enabled: true,       // Enable wheel zooming
-    //                 modifierKey: 'ctrl'
-    //             },
-                
-    //             mode: 'x',
-
-    //         }
-    //     }
-    //     },
-    //     scales: {
-            
-    //         x: {
-    //             ticks: {
-    //                 autoSkip: true,
-    //                 maxTicksLimit: 10
-    //             },
-    //             border: {
-    //                 display: true
-    //             },
-    //             grid: {
-    //                 display: true,
-    //                 drawOnChartArea: true,
-    //                 drawTicks: true,
-    //                 color: 'grey'
-    //             }
-    //         },
-    //       y: {      // Celcius
-    //         type: 'linear' as const,
-    //         display: true,
-    //         position: 'left' as const,
-    //         grid: {
-    //             color: '#303030',
-    //             drawOnChartArea: true,
-    //           },
-    //         title: {
-    //             display: true,
-    //             text: "Percentage (%)"
-    //         }
-    //       },
-    //       y1: {     // %
-    //         type: 'linear' as const,
-    //         display: true,
-    //         position: 'right' as const,
-    //         grid: {
-    //             color: '#303030',  
-    //           drawOnChartArea: false,
-    //         },
-    //         title: {
-    //             display: true,
-    //             text: "Temperature (C°)"
-    //         }
-    //       },
-    //     },
-    // };
     const temperatureOption = {
         animation: false,
         tension: 0.3,
         responsive: true,
-      
+    
+        // legend: {
+        //     position: 'bottom'
+        // },
         interaction: {
-          mode: 'index',
+          mode: 'index' as const,
           intersect: false,
         },
-      
+        
         stacked: false,
         plugins: {
-          decimation: {
-            enabled: true,
-            algorithm: 'min-max',
-          },
+            decimation:{
+                enabled: true,
+                algorithm: 'min-max',
+            },
           colors: {
-            forceOverride: true,
+            forceOverride: true
           },
           legend: {
             display: false,
           },
+         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+         //   @ts-ignore
           htmlLegend: {
+            // ID of the container to put the legend in
             containerID: 'legend-container',
           },
           zoom: {
+            // pan: {
+            //     enabled: true,
+            //     mode: 'x',
+            // },
             zoom: {
-              wheel: {
-                enabled: true,
-                modifierKey: 'ctrl',
-              },
-              mode: 'x',
-            },
-          },
+                // pinch: {
+                //     enabled: true       // Enable pinch zooming
+                // },
+                wheel: {
+                    enabled: true,       // Enable wheel zooming
+                    modifierKey: 'ctrl'
+                },
+                
+                mode: 'x',
+
+            }
+        }
         },
         scales: {
-          x: {
-            ticks: {
-              autoSkip: true,
-              maxTicksLimit: 10,
+            
+            x: {
+                ticks: {
+                    autoSkip: true,
+                    maxTicksLimit: 10
+                },
+                border: {
+                    display: true
+                },
+                grid: {
+                    display: true,
+                    drawOnChartArea: true,
+                    drawTicks: true,
+                    color: 'grey'
+                }
             },
-            border: {
-              display: true,
-            },
-            grid: {
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: true,
-              color: 'grey',
-            },
-          },
-          y: {
-            type: 'linear',
+          y: {      // Celcius
+            type: 'linear' as const,
             display: true,
-            position: 'left',
+            position: 'left' as const,
             grid: {
-              color: '#303030',
-              drawOnChartArea: true,
-            },
+                color: '#303030',
+                drawOnChartArea: true,
+              },
             title: {
-              display: true,
-              text: "Percentage (%)"
+                display: true,
+                text: "Percentage (%)"
             }
           },
-          y1: {
-            type: 'linear',
+          y1: {     // %
+            type: 'linear' as const,
             display: true,
-            position: 'right',
+            position: 'right' as const,
             grid: {
-              color: '#303030',
+                color: '#303030',  
               drawOnChartArea: false,
             },
             title: {
-              display: true,
-              text: "Temperature (C°)"
+                display: true,
+                text: "Temperature (C°)"
             }
           },
         },
-        datasets: [{
-          borderColor: function (context: { chart: any; }) {
-            const chart = context.chart;
-            const ctx = chart.ctx;
-            const gradient = ctx.createLinearGradient(0, 20, 20, 400);
-            gradient.addColorStop(0, 'rgba(205,255,255,1)'); // start color
-            gradient.addColorStop(1, 'rgba(185,245,155,0)'); // end color
-            return gradient;
-          },
-          borderWidth: 2,
-          data: temperatureData, // Assuming you have data defined somewhere
-        }],
-      };
-      
+    };
     const weightOption = {
         animation: false,
         tension: 0.3,
@@ -777,7 +694,10 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
           },
         },
     };
-    
+    const [temperatureData, setTemperatureData] = useState<TemperatureData>({
+        labels: [], // Initially, there are no labels
+        datasets: [], // Initially, there are no datasets
+    })
     const [weightData, setWeightData] = useState<TemperatureData>({
         labels: [], // Initially, there are no labels
         datasets: [], // Initially, there are no datasets
@@ -961,7 +881,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         scrollto.current?.scrollIntoView({behavior: 'smooth'});
     };
     const infscrollfunc = (page: Number) => {
-        fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Communication/${props.communication_resource.id}/_history/?_page=${page}`, {
+        fetch(` https://pmsind.co.in:5000/Communication/${props.communication_resource.id}/_history/?_page=${page}`, {
         credentials: "omit", // send cookies and HTTP authentication information
         method: "GET",
         headers: {
@@ -1237,7 +1157,7 @@ items.forEach((item) => {
     useEffect(() => {
         if(props.communication_resource?.id!=null){
              
-            fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Communication/${props.communication_resource.id}/_history/`, {
+            fetch(` https://pmsind.co.in:5000/Communication/${props.communication_resource.id}/_history/`, {
             credentials: "omit",
             headers: {
                 Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -1393,7 +1313,7 @@ items.forEach((item) => {
         const accumulatedData: any[] = []
         var meta = 0;
         function fetchData(when: string, times:number): Promise<void> {
-            return fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Observation/${props.observation_resource.id}/_history?_count=1&_since=${when}&_page=${page}`,{
+            return fetch(` https://pmsind.co.in:5000/Observation/${props.observation_resource.id}/_history?_count=1&_since=${when}&_page=${page}`,{
                 credentials: "omit",
                 method: "GET",
                 headers: {
@@ -1406,7 +1326,7 @@ items.forEach((item) => {
                 if(data.total>0){
                     
                     var lastpage = Math.floor(data.total/10)+data.total%10
-                    return fetch(`http://3.110.169.17:9444/fhir-server/api/v4/Observation/${props.observation_resource.id}/_history?_count=1&_since=${when}&_page=${lastpage}`,{
+                    return fetch(` https://pmsind.co.in:5000/Observation/${props.observation_resource.id}/_history?_count=1&_since=${when}&_page=${lastpage}`,{
                         credentials: "omit",
                         method: "GET",
                         headers: {
@@ -1442,7 +1362,10 @@ items.forEach((item) => {
         console.log(date)
         return date.toISOString();
     }
-    
+
+
+
+
     useEffect(() => {
         let url = []
         let currentNewDate = new Date()
@@ -1453,7 +1376,7 @@ items.forEach((item) => {
         if(timeFrame!=-1){
             if(timeFrame==0){
                 let prevdate = ""
-                url.push(`http://3.110.169.17:9444/fhir-server/api/v4/Observation/${props.observation_resource?.id}/_history?_since=${currentDate}T00:00:00Z&_count=10000`)
+                url.push(` https://pmsind.co.in:5000/Observation/${props.observation_resource?.id}/_history?_since=${currentDate}T00:00:00Z&_count=10000`)
                 Promise.all(
                     url.map((query) => {
                         return fetch(query, {
@@ -1763,15 +1686,15 @@ items.forEach((item) => {
                 }>
                     <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
                         {/* <MyChart height={'100%'} forwardedRef={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} plugins={temperatureLegendPlugin} /> */}
-                        <Line ref={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
+                        <Line ref={chartRef1} options={temperatureOption as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                         <div id="legend-container"></div>
                         <Divider />
                         {/* <MyChart height={'100%'} forwardedRef={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} plugins={temperatureLegendPlugin} /> */}
-                        <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                        <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions<'line'>} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                         <div id="legend-container2"></div>
                         <Divider />
                         {/* <MyChart height={'100%'} forwardedRef={chartRef3} options={weightOption as ChartOptions} data={weightData} plugins={temperatureLegendPlugin} />                                             */}
-                        <Line ref={chartRef3} options={weightOption as ChartOptions} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                        <Line ref={chartRef3} options={weightOption as ChartOptions<'line'>} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                         <div id="legend-container3"></div>
                     </Stack>
                     {/* <Box width={'35%'} justifyContent={'center'} textAlign={'center'} sx={{borderRadius:'20px', marginTop:'-50px'}}>
@@ -1800,15 +1723,15 @@ items.forEach((item) => {
                 }>
                     <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
                         {/* <MyChart height={'100%'} forwardedRef={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} plugins={temperatureLegendPlugin} /> */}
-                        <Line ref={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
+                        <Line ref={chartRef1} options={temperatureOption as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                         <div id="legend-container"></div>
                         <Divider />
                         {/* <MyChart height={'100%'} forwardedRef={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} plugins={temperatureLegendPlugin} /> */}
-                        <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                        <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions<'line'>} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                         <div id="legend-container2"></div>
                         <Divider />
                         {/* <MyChart height={'100%'} forwardedRef={chartRef3} options={weightOption as ChartOptions} data={weightData} plugins={temperatureLegendPlugin} />                                             */}
-                        <Line ref={chartRef3} options={weightOption as ChartOptions} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                        <Line ref={chartRef3} options={weightOption as ChartOptions<'line'>} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                         <div id="legend-container3"></div>
                     </Stack>
                     {/* <Box width={'35%'} justifyContent={'center'} textAlign={'center'} sx={{borderRadius:'20px', marginTop:'-50px'}}>
@@ -1837,13 +1760,13 @@ items.forEach((item) => {
                     <Divider orientation='vertical' flexItem sx={{marginLeft:'1%'}}/>
                 }>
                     <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
-                        <Line ref={chartRef1} options={pressure1Option as ChartOptions} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
+                        <Line ref={chartRef1} options={pressure1Option as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                         <div id="legend-container"></div>
                         <Divider />
-                        <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                        <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions<'line'>} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                         <div id="legend-container2"></div>
                         <Divider />
-                        <Line ref={chartRef3} options={pressure2Option as ChartOptions} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                        <Line ref={chartRef3} options={pressure2Option as ChartOptions<'line'>} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                         <div id="legend-container3"></div>
                     </Stack>
 
@@ -1861,7 +1784,7 @@ items.forEach((item) => {
                 }>
                     <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
                         {/* <MyChart height={'100%'} forwardedRef={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} plugins={temperatureLegendPlugin} /> */}
-                        <Line ref={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
+                        <Line ref={chartRef1} options={temperatureOption as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                         <div id="legend-container"></div>
                         {/* <Divider /> */}
                         {/* <MyChart height={'100%'} forwardedRef={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} plugins={temperatureLegendPlugin} /> */}
@@ -1960,9 +1883,7 @@ items.forEach((item) => {
                 </Box> */}
                     <Stack
                     direction={'row'}
-                    divider={
-                    <Divider orientation='vertical' flexItem/>
-                    }
+                    divider={<Divider orientation='vertical' flexItem/>}
                     sx={{
                     display: "flex",
                     flexWrap: "wrap",
@@ -2088,7 +2009,7 @@ items.forEach((item) => {
                                                     {Math.round((props.observation_resource?.component[index]?.valueQuantity?.value + Number.EPSILON) * 100) / 100}&nbsp;
                                                 </Typography>
                                                 <Typography variant='h5'>
-                                                    {props.observation_resource?.component[index]?.valueQuantity?.unit} 
+                                                    {props.observation_resource?.component[index]?.valueQuantity?.unit}
                                                 </Typography>
                                                 </div>
                                             </Typography>
@@ -2130,6 +2051,7 @@ items.forEach((item) => {
                                         <Stack width={'100%'} direction={{ xs: 'row', sm: 'row', md:'row', lg:'column' }} marginBottom={{ xs: '30px', sm: '30px', md:'20px', lg:'20px' }}>
                                         <Typography variant='h5' paddingLeft={'2%'}>Trends</Typography>
                                         <Stack width={'100%'} direction={'row'} textAlign={'center'}  >
+                                            
                                             <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'1%'}}>
                                                 <ToggleButton value={0} key="left" sx={{height:'30px', width:'50px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(0)}}>
                                                 Day
@@ -2263,3 +2185,4 @@ items.forEach((item) => {
         </React.Fragment>
     )
 }
+
