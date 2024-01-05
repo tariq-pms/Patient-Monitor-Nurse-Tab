@@ -234,7 +234,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
         md: "500px",
         lg: "500px"
       }} sx={{ borderRadius:'25px', cursor:'pointer'}}  //border: alarmColor!='transparent' ? `6px solid ${alarmColor}`: "", opacity:controlOpacity, boxShadow: '0px 0px 5px 5px white'
-        onClick={() => {console.log(props.communication_resource.id);setIsOpen(true)}}
+        onClick={() => {setIsOpen(true)}}
       >
         <ButtonBase sx={{width:'100%', borderRadius:'25px'}}>
         {/* <Link to="devicedata" style={{ textDecoration: 'none' }} state={{device_id: props.device_id, device_resource_id: props.device_resource_id, patient: props.patient, observation_resource: props.observation_resource, communication_resource: props.communication_resource, key: props.device_resource_id}}> */}
@@ -244,7 +244,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
         }}
           >
             {newData ? (<>
-                <Stack width={'100%'} height={'100%'}>
+                <Stack width={'100%'} height={'100%'}>s
                     
                 <Box display={'flex'} width={'100%'} height={'10%'} paddingTop={'2.5%'}>
                         <Box width={'30%'} height={'100%'} textAlign={'left'} paddingLeft={'5%'} >

@@ -167,7 +167,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
         if(isArray(props.observation_resource)){
             if(props.observation_resource.length>0){
                 // console.log(props.observation_resource)
-                var change = true
+                var change = false
                     props.observation_resource.map((val, index) => {
                         if(val.meta.versionId!=obsmeta[index]){
                             // console.log(props.patient_id)
@@ -175,7 +175,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                             var tempVar = obsmeta
                             tempVar[index] = String(val.meta.versionId)
                             setobsmeta(tempVar)
-                            change = false
+                            change = true
                             
                         }
                         

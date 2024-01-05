@@ -732,12 +732,12 @@ const columns = useMemo<MRT_ColumnDef[]>(
                 PaperProps={{sx:{minWidth:{
                     xs: '90%',
                     sm: '90%',
-                    md: '50%',
+                    md: '70%',
                     lg: '50%',
                 },maxWidth:{
                     xs: '90%',
                     sm: '90%',
-                    md: '50%',
+                    md: '70%',
                     lg: '50%',
                 },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)' }}}
                 >

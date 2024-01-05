@@ -516,7 +516,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
         const accumulatedData: any[] = []
         var meta = 0;
         function fetchData(when: string, times:number): Promise<void> {
-            return fetch(` https://pmsind.co.in:5000/Observation/${props.observation_resource[index]?.id}/_history?_count=1&_since=${when}&_page=${page}`,{
+            return fetch(`https://pmsind.co.in:5000/Observation/${props.observation_resource[index]?.id}/_history?_count=1&_since=${when}&_page=${page}`,{
                 credentials: "omit",
                 method: "GET",
                 headers: {
@@ -529,7 +529,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                 if(data.total>0){
                     
                     var lastpage = Math.floor(data.total/10)+data.total%10
-                    return fetch(` https://pmsind.co.in:5000/Observation/${props.observation_resource[index].id}/_history?_count=1&_since=${when}&_page=${lastpage}`,{
+                    return fetch(`https://pmsind.co.in:5000/Observation/${props.observation_resource[index].id}/_history?_count=1&_since=${when}&_page=${lastpage}`,{
                         credentials: "omit",
                         method: "GET",
                         headers: {
@@ -584,7 +584,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                 props.observation_resource?.map((val,i) => {
                     console.log(val)
                     let prevdate = ""
-                    url.push(` https://pmsind.co.in:5000/Observation/${props.observation_resource[i].id}/_history?_since=${currentDate}T00:00:00Z&_count=10000`)
+                    url.push(`https://pmsind.co.in:5000/Observation/${props.observation_resource[i].id}/_history?_since=${currentDate}T00:00:00Z&_count=10000`)
                     Promise.all(
                         
                         url.map((query) => {
@@ -933,7 +933,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                         else{
                             return (
                                 obs.component?.map((val) => {
-                                    if(val.code.text=="SpO2" || val.code.text=="SPO2"||val.code.text=="Pulse Rate"||val.code.text=="Weight"||val.code.text=="Measured Skin Temp"||val.code.text=="Set Skin Temp"||val.code.text=="PI"||val.code.text=="APNEA"||val.code.text=="Rectal Measure Temp"||val.code.text=="Skin Measure Temp")
+                                    if(val.code.text=="Measured Skin Temp 1"|| val.code.text=="Measured Skin Temp 2"|| val.code.text=="SpO2" || val.code.text=="SPO2"||val.code.text=="Pulse Rate"||val.code.text=="Weight"|| val.code.text=="Measure Weigh"|| val.code.text=="Measured Skin Temp"||val.code.text=="Set Skin Temp"||val.code.text=="PI"||val.code.text=="APNEA"||val.code.text=="Rectal Measure Temp"||val.code.text=="Skin Measure Temp")
                                     return(
                                     <Stack alignItems={'center'} spacing={'10px'}>
                                         <Typography variant="subtitle1" >
@@ -1029,7 +1029,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
     }
     const infscrollfunc = (page: Number) => {
         props.communication_resource.map((communication,index ) => {
-            fetch(` https://pmsind.co.in:5000/Communication/${communication.id}/_history/?_page=${page}`, {
+            fetch(`https://pmsind.co.in:5000/Communication/${communication.id}/_history/?_page=${page}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "GET",
             headers: {
