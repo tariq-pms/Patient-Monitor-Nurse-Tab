@@ -71,33 +71,34 @@ const handleSnackbarClose = () => {
   
   useEffect(() => {
     try {
-      const organization = '18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c';
+        const organization = '18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c';
 
-      fetch('https://pmsind.co.in:5000/list', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ organization: organization }),
-      })
+        fetch('https://pmsind.co.in:5000/list', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ organization: organization }),
+        })
         .then((response) => {
-          if (!response.ok) {
-            throw new Error('Failed to fetch user data');
-          }
-          return response.json();
+            if (!response.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+            return response.json();
         })
         .then((data) => {
-          console.log('Fetched User Data:', data);
-          setUserData(data);
-          setLoading(false);
+            console.log('Fetched User Data:', data);
+            setUserData(data);
+            setLoading(false);
         })
         .catch((error) => {
-          console.error('Error fetching user data:', error);
+            console.error('Error fetching user data:', error);
         });
     } catch (error) {
-      console.error('Error in useEffect:', error);
+        console.error('Error in useEffect:', error);
     }
-  }, []);
+}, []);
+
 
   const handleUserClick = (user: User) => {
     setUserInfo({
@@ -189,7 +190,7 @@ const handleSnackbarClose = () => {
   
         // After creating the user, fetch the updated user data
         fetch('https://pmsind.co.in:5000/list', {
-          method: 'POST',
+        method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },

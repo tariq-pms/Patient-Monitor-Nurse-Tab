@@ -1931,14 +1931,48 @@ items.forEach((item) => {
                     <Typography variant="subtitle1" >
                         {props.observation_resource?.component[index]?.code.text}
                     </Typography>
-                    <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
-                    <Typography variant='h4'>
-                        {Math.round((props.observation_resource?.component[index]?.valueQuantity?.value + Number.EPSILON) * 100) / 100}&nbsp;
-                    </Typography>
-                    <Typography variant='h5'>
-                        {props.observation_resource?.component[index]?.valueQuantity?.unit}
-                    </Typography>
-                    </div>
+                    {(() => {
+                        if(props.observation_resource?.component[index]?.valueQuantity?.unit=="Min"){
+                            var value = Math.round((props.observation_resource?.component[index]?.valueQuantity?.value + Number.EPSILON) * 100) / 100
+
+                            if(value>=60){
+                                return (
+                                    <>
+                                        <Typography variant='h4'>
+                                            {value/60+":"+value%60}&nbsp;
+                                        </Typography>
+                                        <Typography variant='h5'>
+                                            {"Hr"}
+                                        </Typography>
+                                    </>
+                                )
+                            }
+                            else{
+                                return (
+                                    <>
+                                        <Typography variant='h4'>
+                                            {value}&nbsp;
+                                        </Typography>
+                                        <Typography variant='h5'>
+                                            {"Min"}
+                                        </Typography>
+                                    </>
+                                )
+                            }
+                        }
+                        else{
+                            return(
+                                <>
+                                    <Typography variant='h4'>
+                                        {Math.round((props.observation_resource?.component[index]?.valueQuantity?.value + Number.EPSILON) * 100) / 100}&nbsp;
+                                    </Typography>
+                                    <Typography variant='h5'>
+                                        {props.observation_resource?.component[index]?.valueQuantity?.unit}
+                                    </Typography>
+                                </>
+                            )
+                        }
+                    })()}
                     </Stack>
                     )
                     }

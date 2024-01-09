@@ -50,7 +50,7 @@ export const PatientMonitor = (currentRoom: any) => {
   //       setPatientList((prevPatients) => (prevPatients ? [...prevPatients, ...patients] : patients));
   //     }
   //   }
-  // };
+  // };   
 
   const fetchObservations = (patient: { id: any }) => {
     return fetch(
@@ -286,8 +286,6 @@ export const PatientMonitor = (currentRoom: any) => {
     };
   }, [pageNumber]);
   
-  
-
   const patientc = patientList?.map((patient) => {
     return (
       <PatientCard

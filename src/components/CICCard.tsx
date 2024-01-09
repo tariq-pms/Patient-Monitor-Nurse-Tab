@@ -244,7 +244,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
         }}
           >
             {newData ? (<>
-                <Stack width={'100%'} height={'100%'}>s
+                <Stack width={'100%'} height={'100%'}>
                     
                 <Box display={'flex'} width={'100%'} height={'10%'} paddingTop={'2.5%'}>
                         <Box width={'30%'} height={'100%'} textAlign={'left'} paddingLeft={'5%'} >
