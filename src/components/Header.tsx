@@ -15,6 +15,7 @@ export interface HeaderProps {
   currentRoom: string;
   roomChange: (roomId: string) => void;
   roomAltered: boolean;
+  userOrganization: string;
  
 }
 
@@ -26,8 +27,13 @@ export const Header: FC<HeaderProps> = (props) => {
   const screenSize = useMediaQuery(theme.breakpoints.up('md'));
   const { user, isLoading, isAuthenticated, logout, getIdTokenClaims } = useAuth0();
   const[UserRole, setUserRole] = useState("");
-  //const[UserOrganization, setUserOrganization] = useState("");
-
+  const[UserOrganization, setUserOrganization] = useState("");
+  
+  // useEffect(() => {
+  //   setUserOrganization(props.userOrganization); 
+  //   // Set UserOrganization from props
+  // }, [props.userOrganization]);
+  // console.log("hello from header",props.userOrganization)
   // getIdTokenClaims().then(res => {console.log('result',res)}).catch(err => {console.log("FAIL FUCL:"+err)})
   
   // console.log(user)
@@ -68,6 +74,7 @@ export const Header: FC<HeaderProps> = (props) => {
       ].resource.id
     );
   };
+
   const handleSetRoom2 = (value: any) => {
     console.log(value)
     setRoom(value);
@@ -75,9 +82,12 @@ export const Header: FC<HeaderProps> = (props) => {
       temproom[
         temproom.findIndex(
           (item) => item.resource.name.toString() === String(value)
+          // changed here (item) => item.resource.name.toString() === String(value)
         )
       ].resource.id
     );
+   
+
   }
   const [prevRoom, setPrevRoom] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -187,14 +197,13 @@ useEffect(() => {
     .then((res) => {
       console.log('Role:', res);
       setUserRole(res?.role);
-      //setUserOrganization(res?.organization);
-       //console.log("organization",res?.organization )
-
-
-      if (isAuthenticated) {
+      setUserOrganization(res?.organization);
+       console.log("organization is here",UserOrganization )
+       if (isAuthenticated) {
         // Fetch location data for the specified organization
-        fetch(` https://pmsind.co.in:5000/Location`, {
-          //fetch(` https://pmsind.co.in:5000/Location?organization=${res?.organization}`, {
+        
+        //fetch(` https://pmsind.co.in:5000/Location`, {
+        fetch(` https://pmsind.co.in:5000/Location?organization=${UserOrganization}`, {
           credentials: 'omit',
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -214,38 +223,44 @@ useEffect(() => {
     .catch((error) => {
       console.error('Failed to fetch role:', error);
     });
-}, [isAuthenticated]);
+}, [isAuthenticated,UserOrganization ]);
 
 useEffect(() => {
   // Assuming userRole is set appropriately based on your authentication logic
-  if (UserRole === 'Hospital Technician' && location.pathname === '/patient-monitor') {
+  if (UserRole === 'Hospital Technician' && (location.pathname === '/patient-monitor'  )) {
     // Redirect to the appropriate page if the user tries to access an unauthorized page
     navigate('/device-monitor');
   }
 
-  if (UserRole === 'Hospital Clinician' && (location.pathname === '/rooms' || location.pathname === '/Admin' )) {
+  if (UserRole === 'Hospital Clinician' && (location.pathname === '/rooms' || location.pathname === '/Admin'  )) {
     // Redirect to the appropriate page if the user tries to access an unauthorized page
     navigate('/device-monitor'); // You might want to redirect to another page or show an error
   }
-}, [UserRole, location.pathname, navigate]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetch(` https://pmsind.co.in:5000/Location`, {
-      //fetch(` https://pmsind.co.in:5000/Location?organization=${UserOrganization}`, {
-        credentials: 'omit',
-        headers: {
-          Authorization: 'Basic ' + btoa('fhiruser:change-password'),
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.entry) {
-            settemproom(data.entry);
-          }
-        });
-    }
-  }, [props.roomAltered, isAuthenticated]); // Dependencies include props.roomAltered and isAuthenticated
+  if (UserRole === 'Phoenix' && location.pathname !== '/organization') {
+    // Redirect to the Phoenix page if the user is authenticated with the role "Phoenix"
+    navigate('/organization');
+  }
+}, [isAuthenticated, UserRole, location.pathname, navigate]);
+
+
+  // useEffect(() => {n
+  //   if (isAuthenticated) {
+  //     //fetch(` https://pmsind.co.in:5000/Location`, {
+  //     fetch(` https://pmsind.co.in:5000/Location?organization=${UserOrganization}`, {
+  //       credentials: 'omit',
+  //       headers: {
+  //         Authorization: 'Basic ' + btoa('fhiruser:change-password'),
+  //       },
+  //     })
+  //       .then((response) => response.json())
+  //       .then((data) => {
+  //         if (data.entry) {
+  //           settemproom(data.entry);
+  //         }
+  //       });
+  //   }
+  // }, [props.roomAltered, isAuthenticated,UserOrganization]); // Dependencies include props.roomAltered and isAuthenticated
 
   const handleBackButtonClick = () => {
     setNotHome(true)
@@ -261,6 +276,7 @@ useEffect(() => {
 
 
   return (
+    
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" style={{ background: 'transparent', boxShadow: 'none' }} sx={{ boxShadow: '0px 5px 5px 0px yellow' }}>
         <Toolbar>
@@ -269,6 +285,7 @@ useEffect(() => {
               <div style={{ display: 'flex', marginRight: 'auto' }}>
                 <Box onClick={handleBackButtonClick} sx={{ cursor: 'pointer' }}>
                   <img src={pmsLogo} alt="Phoenix" style={{ maxWidth: '70%', height: 'auto' }} />
+                  
                 </Box>
               </div>
               {screenSize ? (
@@ -320,6 +337,7 @@ useEffect(() => {
                                   }}
                                   // disabled={UserRole === 'Hospital Technician'}
                                 >
+                                  {/* {room.resource.name.toString()} */} 
                                   {room.resource.name.toString()}
                                 </MenuItem>
                                 
@@ -330,18 +348,10 @@ useEffect(() => {
                   width: '250px',padding: '6%', paddingLeft:'20px',backgroundColor: '#131726'}} onClick={() => {navigate('/rooms');setNotHome(false);setPrevRoom(room);}}>
                 Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }}/>
               </MenuItem>
-              <MenuItem
-      value="R&D"
-      sx={{
-        width: '250px',
-        padding: '6%',
-        paddingLeft: '20px',
-        backgroundColor: '#131726',
-      }}
-      onClick={handleAdminClick}
-    >
+              <MenuItem value="R&D" sx={{width: '250px',padding: '6%',paddingLeft: '20px',backgroundColor: '#131726',}}onClick={handleAdminClick}>
       Admin Access <PersonIcon sx={{ marginLeft: 'auto' }} />
     </MenuItem>
+    
                           </Select>
                           
                         </FormControl>
@@ -371,6 +381,7 @@ useEffect(() => {
                             }}
                           >
                             {temproom.map((room) => {
+                              
                       return (
                         <MenuItem
                           key={room.resource.id}
@@ -391,10 +402,15 @@ useEffect(() => {
                           }}
                           disabled={!darkMode}
                         >
-                          {room.resource.name.toString()}
+                          {/* {room.resource.name.toString()} */}
+                          {room.resource.name.toString()} 
                         </MenuItem>
+                        
                       );
+                      
                     })}
+                    
+                    
                             
                           </Select>
                         </FormControl>
@@ -520,6 +536,8 @@ useEffect(() => {
                                 
                               </ListItem>
                             ))}
+
+                            
                             {notHome && UserRole === 'Hospital Technician' && (
                               <><MenuItem
                                   value="R&D"

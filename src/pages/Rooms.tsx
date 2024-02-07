@@ -11,6 +11,7 @@ import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 export interface roomdata{
   roomModified: Function;
+  userOrganization: string;
 }
 
 export const Rooms:FC<roomdata> = (props) => {
@@ -39,9 +40,12 @@ export const Rooms:FC<roomdata> = (props) => {
     useEffect(() => {
         if(isAuthenticated){
          
-
-          fetch(` https://pmsind.co.in:5000/Location`, {
-          //fetch(` https://pmsind.co.in:5000/Location?organization=${organizationId}`, {
+          console.log("In ROom Page:",props.userOrganization);
+          //fetch(` https://pmsind.co.in:5000/Location`, {
+            //changed here fetch(` https://pmsind.co.in:5000/Location?organization= 18d1c76ef29-ba9f998e-83b1-4c43-bc5b-b91b572a6454`, {
+          fetch(` https://pmsind.co.in:5000/Location?organization=${props.userOrganization}`, {
+            
+            
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -80,7 +84,11 @@ export const Rooms:FC<roomdata> = (props) => {
                 }
             ],
             "status": "suspended",
-            "name": newRoomName
+            "name": newRoomName,
+            "managingOrganization": {
+              // "reference": `Organization/18d1c76ef29-ba9f998e-83b1-4c43-bc5b-b91b572a6454`
+              "reference": `Organization/${props.userOrganization}`
+          }
         }
         // console.log
         fetch(` https://pmsind.co.in:5000/Location`, {
@@ -131,7 +139,7 @@ export const Rooms:FC<roomdata> = (props) => {
     const [vvtemp, setvvtemp] = useState(false)
     const roomBoxes = temproom.map((room) => {
         return(
-            <RoomCard deviceChangeToggle={vvtemp} deviceChange={() => {setvvtemp(!vvtemp)}} roomChange={() => {setRoomAddedRemoved(!roomAddedRemoved)}} roomName={String(room.resource.identifier[0].value)} roomId={String(room.resource.id)}></RoomCard>
+            <RoomCard deviceChangeToggle={vvtemp} deviceChange={() => { setvvtemp(!vvtemp); } } roomChange={() => { setRoomAddedRemoved(!roomAddedRemoved); } } roomName={String(room.resource.identifier[0].value)} roomId={String(room.resource.id)} userOrganization={props.userOrganization}></RoomCard>
         )
     })
   return (

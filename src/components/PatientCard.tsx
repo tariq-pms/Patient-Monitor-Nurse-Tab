@@ -187,11 +187,6 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                         setRequiredForTimer(!requiredForTimer)
                         setNewData(true);
                     }
-                    // else{
-                        
-                    // }
-                    
-                        
             }
 
         }

@@ -14,10 +14,11 @@ export interface roomData {
     roomChange: Function;
     deviceChange: Function;
     deviceChangeToggle: Boolean;
+    userOrganization:string;
 }
 export const RoomCard: FC<roomData> = (props) => {
     const [snackSucc, setSnackSucc] = useState(false);
-    const [snack, setSnack] = useState(false)
+    const [snack, setSnack] = useState(false);
    
     const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
         console.log(event)
@@ -48,6 +49,9 @@ export const RoomCard: FC<roomData> = (props) => {
             "manufacturer": String,
             "patient": {
                 "reference": String
+            },
+            "owner": {
+                "reference": ""
             },
             "location": {
                 "reference": ""
@@ -93,6 +97,7 @@ const [open, setOpen] = useState(false);
             "name": x
         }
         fetch(` https://pmsind.co.in:5000/Location/${props.roomId}`, {
+            //fetch(` https://pmsind.co.in:5000/Location?organization=${props.userOrganization}/${props.roomId}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "PUT",
             body: JSON.stringify(data),
@@ -137,7 +142,7 @@ const [open, setOpen] = useState(false);
         }
     const addButton = (index: any) => {
         let data = {}
-        //let vvtemp = {"reference": `Location?organization=18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c /${props.roomId}`}
+        //let vvtemp = {"reference": `Location?organization=${props.userOrganization}/${props.roomId}`}
         let vvtemp = {"reference": `Location/${props.roomId}`}
         data = {
             ...deviceList[Number(index)].resource,
@@ -197,6 +202,7 @@ const [open, setOpen] = useState(false);
     const removeRoomButton = () => {
         console.log("Called")
         fetch(` https://pmsind.co.in:5000/Location/${props.roomId}`, {
+            //fetch(` https://pmsind.co.in:5000/Location?organization=${props.userOrganization}/${props.roomId}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "DELETE",
             headers: {
@@ -258,7 +264,7 @@ const [open, setOpen] = useState(false);
                 {deviceList.map((device, index) => {
                         if(device?.resource?.location?.reference.split("/")[1] == props.roomId){
                             return(
-                                <Button onClick={() => {setMiniDialog(true); setSelectedDevice(index)}} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:'white', border:'0.1px solid #282828'}}>                                   
+                                <Button onClick={() => {setMiniDialog(true); setSelectedDevice(index)}} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:'white', border:'0.1px solid #282828',margin:'5px'}}>                                   
                                     <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
                                  {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}
                                 </Typography>
@@ -308,9 +314,10 @@ const [open, setOpen] = useState(false);
                 <Stack width={'100%'} display={'flex'} direction={'row'} flexWrap={'wrap'}
                 >
                 {deviceList.map((device, index) => {
-                        if(device?.resource?.location?.reference.split("/")[1] != props.roomId){
+                     if(device?.resource?.owner?.reference === `Organization/${props.userOrganization}` && device?.resource?.location?.reference.split("/")[1] != props.roomId){
+                        //changed if(device?.resource?.location?.reference.split("/")[1] != props.roomId){
                             return(
-                                    <Button onClick={() => {setMiniDialog(true); setSelectedDevice(index)}} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:'white', border:'0.1px solid #282828'}}>
+                                    <Button onClick={() => {setMiniDialog(true); setSelectedDevice(index)}} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:'white', border:'0.1px solid #282828',margin:'5px'}}>
                                         <Typography variant="subtitle1" component={"h2"}>
                                          {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}
                                          {/* changed the identifier to display the device name and mac address */}
@@ -320,6 +327,8 @@ const [open, setOpen] = useState(false);
                 }
                     
             })}
+        
+
                 </Stack>
             </DialogContent>
             <Dialog
@@ -374,7 +383,7 @@ const [open, setOpen] = useState(false);
               <Stack spacing={"10%"} marginTop={'10%'} width={'70%'} marginLeft={'auto'} marginRight={'auto'}>
                   <Select sx={{fontSize:'10%', borderRadius:'25px'}} >
                       {deviceList.map((device) => {
-                          if(device?.resource?.location?.reference.split("/")[1] == props.roomId){
+                          if(device?.resource?.owner?.reference === `Organization/${props.userOrganization}` && device?.resource?.location?.reference.split("/")[1] === props.roomId){
                               return (
                                 //   <MenuItem>{device.resource.identifier[0].value.toString()}</MenuItem>
                 <MenuItem> {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}</MenuItem>

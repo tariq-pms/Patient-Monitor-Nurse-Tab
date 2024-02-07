@@ -329,7 +329,7 @@ style={{ backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)'
                             <Typography variant='caption'  color={"#A8C5D4"} paddingTop={'15%'}  >PR(BPM)</Typography>
                             <Typography variant='h6' paddingTop={'5%'} color={"#5db673"}>
                                     {(() => {
-                                            let data = findData("PR")
+                                            let data = findData("Pulse Rate")
                                             return (data.data)
                                         }
                                     )()}

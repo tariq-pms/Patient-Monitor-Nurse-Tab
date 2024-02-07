@@ -55,6 +55,7 @@ useEffect(() => {if(isAuthenticated){navigate('/device-monitor')}},[isAuthentica
                   marginLeft:'auto',
                   marginRight:'auto'
                 }}/>
+      
                 <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
                 <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
                 <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
@@ -68,4 +69,3 @@ useEffect(() => {if(isAuthenticated){navigate('/device-monitor')}},[isAuthentica
     </div>
   )
 }
-	

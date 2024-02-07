@@ -5,7 +5,10 @@ import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { PatientCard } from '../components/PatientCard';
 import { DummyPatientCard } from '../components/DummyPatientCard';
-
+type PatientMonitorProps = {
+  userOrganization: string;
+  currentRoom: any; // Adjust the type according to your requirements
+};
 type Patient = {
   resourceType: string;
   id: string;
@@ -23,8 +26,11 @@ type Patient = {
   }[];
 };
 
-export const PatientMonitor = (currentRoom: any) => {
+//export const PatientMonitor = (currentRoom: any) => {
+  export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, currentRoom }) => {
   console.log(currentRoom);
+  console.log("in patient Monitor Page",userOrganization);
+
   const [patientList, setPatientList] = useState<Patient[] | null>(null);
   const [parentdevice, setParentDevice] = useState<{ [key: string]: any }>({});
   const [parentobs, setParentObs] = useState<{ [key: string]: any }>({});
@@ -32,6 +38,7 @@ export const PatientMonitor = (currentRoom: any) => {
   const { isAuthenticated, loginWithRedirect } = useAuth0();
   const [isLoading, setIsLoading] = useState(true);
   const [pageNumber, setPageNumber] = useState(1);
+  
 
   // const fetchPatients = async (page: number) => {
   //   const patientDataURL = ` https://pmsind.co.in:5000/Patient?page=${page}&_count=10`;
@@ -153,9 +160,10 @@ export const PatientMonitor = (currentRoom: any) => {
   const triggerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const patientDataURL = ' https://pmsind.co.in:5000/Patient';
+    //const patientDataURL = ' https://pmsind.co.in:5000/Patient';
+    //const patientDataURL = ' https://pmsind.co.in:5000/Patient?organization=${organization}';
   
-    fetch(patientDataURL, {
+    fetch(`https://pmsind.co.in:5000/Patient?organization=${userOrganization}`, {
       credentials: 'omit',
       headers: {
         Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -364,8 +372,7 @@ export const PatientMonitor = (currentRoom: any) => {
               sx={{ width: '200px', height: '50px', borderRadius: '100px' }}
               endIcon={<OpenInNewIcon />}
               target="_blank"
-              href="https://www.phoenixmedicalsystems.com/"
-            >
+              href="https://www.phoenixmedicalsystems.com/">
               Product page
             </Button>
             <Button variant="contained" sx={{ width: '200px', height: '50px', borderRadius: '100px' }} onClick={() => loginWithRedirect()}>

@@ -25,9 +25,6 @@ import { DeviceCard } from '../components/DeviceCard';
 import { SyringeCard } from '../components/SyringeCard';
 import { DummyCard } from '../components/DummyCard';
 
-
-
-
 export const DeviceMonitor = (currentRoom: any) => {
   const [, setIsLoading] = useState(true);
   // Define separate loading states for each accordion
@@ -174,7 +171,7 @@ export const DeviceMonitor = (currentRoom: any) => {
         })
         .then((response) => response.json())
         .then((data) => {setDevices(data)})
-        // console.log(currentRoom)
+         console.log("from devicemonitor",currentRoom)
         setIsLoading(false)
     }
     }, [currentRoom])

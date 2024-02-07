@@ -1,5 +1,5 @@
 // AdminPage.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FC } from 'react';
 import { Box, Skeleton, Typography, Button, Paper, Dialog, DialogTitle, TextField, Select, MenuItem, DialogContent, CardContent, Card, InputLabel } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { UserCard } from '../components/UserCard';
@@ -9,19 +9,20 @@ import { useAuth0 } from '@auth0/auth0-react';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 
+interface AdminPageProps {
+  userOrganization: string;
+}
 
-
-export const AdminPage = () => {
+export const AdminPage: FC<AdminPageProps>= ({ userOrganization }) => {
   const { isAuthenticated, loginWithRedirect } = useAuth0();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<User[]>([]);
-
   const [controlOpacity1, setControlOpacity1] = useState('0.8');
   const [controlBorder1, setControlboarder1] = useState('grey');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-const [snackbarMessage, setSnackbarMessage] = useState('');
-const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-const handleSnackbarOpen = (message: string, severity: 'success' | 'error') => {
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const handleSnackbarOpen = (message: string, severity: 'success' | 'error') => {
   setSnackbarMessage(message);
   setSnackbarSeverity(severity);
   setSnackbarOpen(true);
@@ -29,6 +30,7 @@ const handleSnackbarOpen = (message: string, severity: 'success' | 'error') => {
 const handleSnackbarClose = () => {
   setSnackbarOpen(false);
 };
+console.log("in admin page",userOrganization);
 
   const [, setUserInfo] = useState({
     userEmail: '',
@@ -41,7 +43,7 @@ const handleSnackbarClose = () => {
     username: '',
     password: '',
     role: '',
-    organization:'18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c', // default role
+    organization:userOrganization, // default role
   });
   const onUserClick = (user: User) => {
     // Define the logic you want to execute when a user is clicked
@@ -71,34 +73,34 @@ const handleSnackbarClose = () => {
   
   useEffect(() => {
     try {
-        const organization = '18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c';
+      // const organization = '18d1c76ef29-ba9f998e-83b1-4c43-bc5b-b91b572a6454';
 
-        fetch('https://pmsind.co.in:5000/list', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ organization: organization }),
-        })
+      fetch(' https://pmsind.co.in:5000/list', {
+        // fetch(`https://pmsind.co.in:5000/delete/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ organization:userOrganization }),
+      })
         .then((response) => {
-            if (!response.ok) {
-                throw new Error('Failed to fetch user data');
-            }
-            return response.json();
+          if (!response.ok) {
+            throw new Error('Failed to fetch user data');
+          }
+          return response.json();
         })
         .then((data) => {
-            console.log('Fetched User Data:', data);
-            setUserData(data);
-            setLoading(false);
+          console.log('Fetched User Data:', data);
+          setUserData(data);
+          setLoading(false);
         })
         .catch((error) => {
-            console.error('Error fetching user data:', error);
+          console.error('Error fetching user data:', error);
         });
     } catch (error) {
-        console.error('Error in useEffect:', error);
+      console.error('Error in useEffect:', error);
     }
-}, []);
-
+  }, [userOrganization]);
 
   const handleUserClick = (user: User) => {
     setUserInfo({
@@ -194,7 +196,7 @@ const handleSnackbarClose = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ organization: organization }),
+          body: JSON.stringify({ organization: userOrganization }),
         })
           .then((response) => {
             if (!response.ok) {
@@ -229,7 +231,9 @@ const handleSnackbarClose = () => {
   
   
   const handleDeleteUser = (userId: string) => {
-    fetch(`https://pmsind.co.in:5000/delete/${userId}`, {
+    // fetch(`http://localhost:5000/delete/${userId}`, {
+      fetch(`https://pmsind.co.in:5000/${userId}`, {
+      
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

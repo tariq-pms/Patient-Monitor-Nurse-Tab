@@ -6,7 +6,6 @@ import { faEnvelope, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { User } from '@auth0/auth0-react';
 import NewReleasesIcon from '@mui/icons-material/NewReleases';
-
 import { CustomOkButton } from '../components/CustomOkButton';
 import { CustomNoButton } from '../components/CustomNoButton';
 export interface UserCardProps {
@@ -99,7 +98,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onUserClick, onDeleteU
     const userId = decodeURIComponent(user.user_id);
   
     // Make an API call to update the user information
-    fetch(`https://pmsind.co.in:5000rename/${userId}`, {
+    fetch(`https://pmsind.co.in:5000/rename/${userId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -144,12 +143,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onUserClick, onDeleteU
         });
       });
   };
-  
-
-
-
-
-  
+   
   return (
     <Box
       width={"350px"}

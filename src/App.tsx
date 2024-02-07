@@ -8,11 +8,13 @@ import { Backdrop } from "@mui/material";
 import {CircularProgress} from "@mui/material";
 import { useAuth0 } from "@auth0/auth0-react";
 import { UserInfo } from "./pages/UserInfo";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "@fontsource/noto-sans";
 import {PatientMonitor} from "./pages/PatientMonitor";
 import { DeviceMonitor } from "./pages/DeviceMonitor";
 import {AdminPage} from "./pages/AdminPage";
+import { Organization } from "./pages/Organization";
+
 const theme = createTheme({
   typography: {
     allVariants:{
@@ -36,10 +38,24 @@ const theme = createTheme({
           
 function App() {
 
-  const {isLoading} = useAuth0(); 
+  const {isLoading,getIdTokenClaims,isAuthenticated} = useAuth0(); 
   const [currentRoom, setCurrentRoom] = useState("")
   const [roomAltered, setRoomAltered] = useState(false)
-
+  const [UserOrganization, setUserOrganization] = useState("");
+  
+  useEffect(() => {
+    if (isAuthenticated) {
+      getIdTokenClaims()
+        .then((res) => {
+          setUserOrganization(res?.organization);
+        })
+        .catch((error) => {
+          console.error('Failed to fetch organization:', error);
+        });
+    }
+  }, [isAuthenticated]);
+  
+  
   function roomChange (roomId: any) {
     setCurrentRoom(roomId)
   }
@@ -47,11 +63,6 @@ function App() {
   function roomModified (){
     setRoomAltered(!roomAltered)
   }
-  // useEffect(() => {console.log(currentRoom)},[currentRoom])
-  // const roomChange = (event) => {
-  //   console.log("HELLO WORLD")
-    
-  // }
  
   return (
     <div>
@@ -60,15 +71,16 @@ function App() {
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
           open={isLoading}
         ><CircularProgress color="inherit" /></Backdrop>
-        <Header roomAltered={roomAltered} currentRoom={currentRoom} roomChange={roomChange}  />
+        <Header roomAltered={roomAltered} currentRoom={currentRoom} roomChange={roomChange} userOrganization={UserOrganization}  />
         <Routes>
           <Route path="/" element={<Home  />}/>
           <Route path="/user" element={<UserInfo />} />
-          <Route path="/rooms" element={<Rooms roomModified={roomModified}/>} />
+          <Route path="/rooms" element={<Rooms roomModified={roomModified} userOrganization={UserOrganization} />} />
           {/* <Route path="/devicedata" element={<DetailedDevice />} /> */}
-          <Route path="/patient-monitor" element={<PatientMonitor currentRoom={currentRoom}/>} />
+          <Route path="/patient-monitor" element={<PatientMonitor currentRoom={currentRoom} userOrganization={UserOrganization}/>} />
           <Route path="/device-monitor" element={<DeviceMonitor currentRoom={currentRoom}/>} />
-          <Route path="/admin"  element={<AdminPage  />} />
+          <Route path="/admin"  element={<AdminPage userOrganization={UserOrganization}  />} />
+          <Route path="/organization"  element={<Organization  />} />
         </Routes>
       </ThemeProvider>
     </div>
