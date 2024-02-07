@@ -18,7 +18,8 @@ export const Organization: React.FC = () => {
     // Fetch organizations and setOrganizations with the response data
     const fetchData = async () => {
         try {
-          const response = await fetch('http://pmsind.co.in:5000/fhir-server/api/v4/Organization/', {
+          const response = await fetch('https://pmsind.co.in:5000/Organization/', {
+            
             headers: {
                 Authorization: 'Basic ' + btoa('fhiruser:change-password'),
             },

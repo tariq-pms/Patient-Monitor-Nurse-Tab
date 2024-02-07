@@ -231,8 +231,8 @@ console.log("in admin page",userOrganization);
   
   
   const handleDeleteUser = (userId: string) => {
-    // fetch(`http://localhost:5000/delete/${userId}`, {
-      fetch(`https://pmsind.co.in:5000/${userId}`, {
+    fetch(`'https://pmsind.co.in:5000/delete/${userId}`, {
+      
       
       method: 'DELETE',
       headers: {

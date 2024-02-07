@@ -49,7 +49,8 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({
     console.log('Selected device in useEffect:', selectedDevice);
     const fetchData = async () => {
       try {
-        const response = await fetch('http://pmsind.co.in:5000/fhir-server/api/v4/Device/', {
+        const response = await fetch('https://pmsind.co.in:5000/Device/', {
+         
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
           },
