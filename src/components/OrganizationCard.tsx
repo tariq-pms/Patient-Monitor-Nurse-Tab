@@ -7,6 +7,7 @@ import { CustomOkButton } from './CustomOkButton';
 import { CustomNoButton } from './CustomNoButton';
 import TextField from '@mui/material/TextField';
 import SearchIcon from '@mui/icons-material/Search';
+import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 
 
 interface OrganizationCardProps {
@@ -34,6 +35,7 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({
   const [miniDialog1, setMiniDialog1] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<number | null>(null);
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
   const handleCloseSnackbar = () => {
     setSnack(false);
   };
@@ -103,6 +105,19 @@ const addButton = () => {
     });
   }
 };
+const handleCopyOrganizationId = () => {
+  const organizationId = organizationData?.id;
+  if (organizationId) {
+    navigator.clipboard.writeText(organizationId)
+      .then(() => {
+        setShowTooltip(true);
+        setTimeout(() => setShowTooltip(false), 2000); 
+      })
+      .catch(err => {
+        console.error('Failed to copy organization ID:', err);
+      });
+  }
+};
 
 const removeButton = () => {
   if (selectedDevice !== null) {
@@ -161,12 +176,18 @@ const removeButton = () => {
         >
           <Stack width={'100%'} direction={'row'} justifyContent={'center'} textAlign={'center'}>
             <CardContent sx={{ marginTop: '0%', width: '100%', justifyContent: 'center', textAlign: 'center' }}>
-              <Stack marginTop={'0%'}>
-                <IconButton sx={{ width: '10%', marginLeft: 'auto', marginRight: '3%' }}>
-                  <SettingsIcon />
-                </IconButton>
-                <Typography sx={{ userSelect: 'none', marginTop: '5%' }}>{organizationData.name}</Typography>
-              </Stack>
+            <Stack marginTop={'0%'} justifyContent={'space-between'}sx={{ flexDirection: 'row',  alignItems: 'center' }}>
+            <Tooltip open={showTooltip} title="Organization ID copied" placement="bottom">
+        <IconButton onClick={handleCopyOrganizationId}>
+          <ContentCopyOutlinedIcon />
+        </IconButton>
+      </Tooltip>
+  <IconButton>
+    <SettingsIcon />
+  </IconButton>
+</Stack>
+
+              <Typography sx={{ userSelect: 'none', marginTop: '5%' }}>{organizationData.name}</Typography>
               <Stack spacing={'10%'} marginTop={'10%'} width={'70%'} marginLeft={'auto'} marginRight={'auto'}>
                
                 <Select sx={{ fontSize: '10%', borderRadius: '25px' ,placeholder:'Devices in this organization'}} >

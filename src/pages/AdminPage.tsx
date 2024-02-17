@@ -75,7 +75,7 @@ console.log("in admin page",userOrganization);
     try {
       // const organization = '18d1c76ef29-ba9f998e-83b1-4c43-bc5b-b91b572a6454';
 
-      fetch(' https://pmsind.co.in:5000/list', {
+      fetch(' http://localhost:5000/list', {
         // fetch(`https://pmsind.co.in:5000/delete/${userId}`, {
         method: 'POST',
         headers: {
@@ -171,7 +171,7 @@ console.log("in admin page",userOrganization);
     const { email, username, password, role, organization } = newUser;
   
     // Add your logic to make the API call for adding a new user
-    fetch('https://pmsind.co.in:5000/create', {
+    fetch('http://localhost:5000/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -191,7 +191,7 @@ console.log("in admin page",userOrganization);
         console.log('API response:', data);
   
         // After creating the user, fetch the updated user data
-        fetch('https://pmsind.co.in:5000/list', {
+        fetch(' http://localhost:5000/list', {
         method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -231,9 +231,7 @@ console.log("in admin page",userOrganization);
   
   
   const handleDeleteUser = (userId: string) => {
-    fetch(`'https://pmsind.co.in:5000/delete/${userId}`, {
-      
-      
+    fetch(`http://localhost:5000/delete/${userId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
