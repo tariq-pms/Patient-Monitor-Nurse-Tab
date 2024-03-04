@@ -302,7 +302,8 @@ export const DeviceMonitor = (currentRoom: any) => {
     })
     const cpap = devices.entry?.map((device) => {
     console.log(String(device.resource.id))
-    if (String(device.resource.identifier[1]?.value) == "SVAAS" || String(device.resource.identifier[1]?.value) == "Intensive Neonatal Care Center"){
+    if(String(device.resource.identifier[1]?.value)=="SVAAS"){
+    
        
         // Your code here
   
@@ -453,7 +454,7 @@ export const DeviceMonitor = (currentRoom: any) => {
     }}
     })
     return (
-        <div style={{ display: 'flex'}}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
           <Box
                 sx={{
                   // backgroundColor:'red',
