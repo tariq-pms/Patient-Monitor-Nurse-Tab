@@ -429,7 +429,7 @@ type Patient = {
                       display: "flex",
                       flexWrap: "wrap",
                       gap: '1rem',
-                      justifyContent: "left",
+                      justifyContent: "center",
                       width:"100%",
                       marginBottom:'2%'
                     }}

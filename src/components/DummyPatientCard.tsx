@@ -180,7 +180,7 @@ export const DummyPatientCard = ():JSX.Element => {
                                  92
                                </Typography>
                                <Typography variant='subtitle2' color={"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}>
-                                 BPM
+                                 %
                                </Typography>
                            </div></Box>
     <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'  color={"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>RR</Typography></div>
@@ -191,7 +191,7 @@ export const DummyPatientCard = ():JSX.Element => {
                                  44
                                </Typography>
                                <Typography variant='subtitle2' color={"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}>
-                                 RPM
+                                 BPM
                                </Typography>
                            </div></Box>
     <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'  color={"#38AAC3"}  style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  paddingLeft={'10%'}>Weight</Typography></div>
@@ -202,7 +202,7 @@ export const DummyPatientCard = ():JSX.Element => {
                                    1.2
                                </Typography>
                                <Typography variant='subtitle1' color={"#38AAC3"} paddingTop={'10%'} paddingLeft={'3%'}>
-                                 kg
+                                 KG
                                </Typography>
                            </div></Box>
 </Stack>

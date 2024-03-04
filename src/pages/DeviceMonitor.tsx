@@ -304,8 +304,6 @@ export const DeviceMonitor = (currentRoom: any) => {
     console.log(String(device.resource.id))
     if(String(device.resource.identifier[1]?.value)=="SVAAS"){
     
-       
-        // Your code here
   
     
         
@@ -474,7 +472,7 @@ export const DeviceMonitor = (currentRoom: any) => {
                     lg: 6,
                   },
                   justifyContent: "center",
-                  width:"100%",
+                  width:"95%",
                 }}
               >
                 {isAuthenticated && (

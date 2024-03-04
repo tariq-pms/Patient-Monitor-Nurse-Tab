@@ -70,6 +70,7 @@ export const DummyPatientDetails = (props: { isOpen: boolean;handleCloseDialog: 
             },
             {
                 label: 'Measured Skin Temperature',
+            
                 data: [9, 14, 14, 19, 11, 21, 12], 
                 borderColor: 'red',
                 borderWidth: 2,
@@ -808,14 +809,14 @@ const columns = useMemo<MRT_ColumnDef[]>(
             34.3
         </Typography>
         <Typography variant="subtitle1" color="#124D81">
-    {'>'}36°C
+    36°C
 </Typography>
 
     </Box>
 </Box>
 <Box width="35%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
     <Typography variant="h6" color="#4B7193" style={{ fontWeight: 'bold', fontFamily: 'Helvetica' }}>
-    Heater Temp
+    Heater Output
     </Typography>
     <Box display="flex" alignItems="baseline">
         <Typography variant="h1" color="#4B7193">
@@ -895,7 +896,7 @@ const columns = useMemo<MRT_ColumnDef[]>(
         92
         </Typography>
         <Typography variant="subtitle1" color="#3C89C0">
-        BPM
+        %
 </Typography>
 
     </Box>
@@ -909,7 +910,7 @@ const columns = useMemo<MRT_ColumnDef[]>(
         44
         </Typography>
         <Typography variant="subtitle1" color="#3C89C0">
-        RPM
+        BPM
 </Typography>
 
     </Box>
@@ -920,10 +921,10 @@ const columns = useMemo<MRT_ColumnDef[]>(
     </Typography>
     <Box display="flex" alignItems="baseline">
         <Typography variant="h2" color="#3C89C0">
-        44
+        
         </Typography>
         <Typography variant="subtitle1" color="#3C89C0">
-        RPM
+        
 </Typography>
 
     </Box>
