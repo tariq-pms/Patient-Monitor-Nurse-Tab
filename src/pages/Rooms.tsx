@@ -1,4 +1,3 @@
-//Rooms.tsx
 import { useState, useEffect, FC } from 'react'
 import { useAuth0 } from '@auth0/auth0-react';
 import Box from '@mui/material/Box';
@@ -176,7 +175,6 @@ export const Rooms:FC<roomdata> = (props) => {
               width:"95%",
             }}
           >
-            
             {temproom[0]?.resource.status!="" && roomBoxes}
             <Box  width={"350px"} minHeight={'300px'} maxHeight={'300px'} sx={{opacity:controlOpacity, backgroundColor:'transparent', borderRadius:'30px'}} onMouseLeave={() => {setControlboarder("grey");setOpacity("0.8")}} onMouseEnter={() => {setControlboarder("#2BA0E0");setOpacity("1")}} onClick={() => {setaddnewbutton(true)}}>
               <Paper  elevation={5} sx={{ borderRadius: "25px",background:'transparent'}}>

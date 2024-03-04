@@ -1,10 +1,11 @@
 import  { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Card, CardContent, Skeleton, Stack, Button } from '@mui/material';
+import { Box, Typography, Stack, Button, Accordion, AccordionSummary,  AccordionDetails } from '@mui/material';
 import { useAuth0 } from '@auth0/auth0-react';
 import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { PatientCard } from '../components/PatientCard';
 import { DummyPatientCard } from '../components/DummyPatientCard';
+import { ExpandMoreRounded } from '@mui/icons-material';
 type PatientMonitorProps = {
   userOrganization: string;
   currentRoom: any; // Adjust the type according to your requirements
@@ -312,76 +313,214 @@ type Patient = {
     console.log(parentdevice);
   }, [parentdevice]);
 
-  return (
-    <Box display="flex" justifyContent="center" marginTop={'50px'}>
-      {isAuthenticated && patientList !== undefined &&   patientList !==null &&(
-        <div>
-          {patientList?.length > 0 ? (
-            <Box display={'flex'} flexWrap={'wrap'} justifyContent={'center'} gap={'1rem'}>
-          <DummyPatientCard ></DummyPatientCard>
-              {patientc}
+  // return (
+  //   <Box display="flex" justifyContent="center" marginTop={'50px'}>
+  //     {isAuthenticated && patientList !== undefined &&   patientList !==null &&(
+  //       <div>
+  //         {patientList?.length > 0 ? (
+  //           <Box display={'flex'} flexWrap={'wrap'} justifyContent={'center'} gap={'1rem'}>
+  //         <DummyPatientCard ></DummyPatientCard>
+  //             {patientc}
              
-            </Box>
-          ) : (
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-              {isLoading ? (
-                Array.from({ length: 3 }, (_, i) => (
-                  <Card key={i} style={{ margin: '10px', width: '250px', borderRadius: '25px' }}>
-                    <CardContent>
-                      <Typography variant="h5" gutterBottom>
-                        <Skeleton animation="wave" width={200} />
-                      </Typography>
-                      <Typography variant="body1">
-                        <Skeleton animation="wave" width={200} />
-                      </Typography>
-                      <Typography variant="body1">
-                        <Skeleton animation="wave" width={120} />
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <Typography variant="h5" gutterBottom>
-                  No patients found.
-                </Typography>
-              )}
-            </div>
-          )}
-          {patientList?.length > 0 && (
-          <div ref={triggerRef} style={{ height: '10px' }} />
-          )}
-        </div>
-      )}
-      {!isAuthenticated && (
-        <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
+  //           </Box>
+            
+  //         ) : (
+  //           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+  //             {isLoading ? (
+  //               Array.from({ length: 3 }, (_, i) => (
+  //                 <Card key={i} style={{ margin: '10px', width: '250px', borderRadius: '25px' }}>
+  //                   <CardContent>
+  //                     <Typography variant="h5" gutterBottom>
+  //                       <Skeleton animation="wave" width={200} />
+  //                     </Typography>
+  //                     <Typography variant="body1">
+  //                       <Skeleton animation="wave" width={200} />
+  //                     </Typography>
+  //                     <Typography variant="body1">
+  //                       <Skeleton animation="wave" width={120} />
+  //                     </Typography>
+  //                   </CardContent>
+  //                 </Card>
+  //               ))
+  //             ) : (
+  //               <Typography variant="h5" gutterBottom>
+  //                 No patients found.
+  //               </Typography>
+  //             )}
+  //           </div>
+  //         )}
+  //         {patientList?.length > 0 && (
+  //         <div ref={triggerRef} style={{ height: '10px' }} />
+  //         )}
+  //       </div>
+  //     )}
+  //     {!isAuthenticated && (
+  //       <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
         
-          <img src={pmsLogo}  alt="Phoenix"  style={{ maxWidth: '20%',  height: 'auto', // Maintain the aspect ratio
-   marginLeft: 'auto',
-              marginRight: 'auto',
-            }}
-          />
-          <Typography variant="h3" color={'white'} fontWeight={'50'}>
-            NeoLife Sentinel
-          </Typography>
-          <Typography variant="h6" color={'grey'} fontWeight={'50'}>
-            Remote Device Monitoring System
-          </Typography>
-          <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
-            <Button
-              variant="outlined"
-              sx={{ width: '200px', height: '50px', borderRadius: '100px' }}
-              endIcon={<OpenInNewIcon />}
-              target="_blank"
-              href="https://www.phoenixmedicalsystems.com/">
-              Product page
-            </Button>
-            <Button variant="contained" sx={{ width: '200px', height: '50px', borderRadius: '100px' }} onClick={() => loginWithRedirect()}>
-              Sign In
-            </Button>
-          </Stack>
+  //         <img src={pmsLogo}  alt="Phoenix"  style={{ maxWidth: '20%',  height: 'auto', // Maintain the aspect ratio
+  //  marginLeft: 'auto',
+  //             marginRight: 'auto',
+  //           }}
+  //         />
+  //         <Typography variant="h3" color={'white'} fontWeight={'50'}>
+  //           NeoLife Sentinel
+  //         </Typography>
+  //         <Typography variant="h6" color={'grey'} fontWeight={'50'}>
+  //           Remote Device Monitoring System
+  //         </Typography>
+  //         <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
+  //           <Button
+  //             variant="outlined"
+  //             sx={{ width: '200px', height: '50px', borderRadius: '100px' }}
+  //             endIcon={<OpenInNewIcon />}
+  //             target="_blank"
+  //             href="https://www.phoenixmedicalsystems.com/">
+  //             Product page
+  //           </Button>
+  //           <Button variant="contained" sx={{ width: '200px', height: '50px', borderRadius: '100px' }} onClick={() => loginWithRedirect()}>
+  //             Sign In
+  //           </Button>
+  //         </Stack>
        
-        </Stack>
-      )}
-    </Box>
-  );
-};
+  //       </Stack>
+  //     )}
+  //   </Box>
+  // );
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+      <Box
+            sx={{
+              // backgroundColor:'red',
+              display: "flex",
+              flexWrap: "wrap",
+              gap: '2rem',
+              mt: {
+                xs: 5,
+                sm: 6,
+                md: 7,
+                lg: 8,
+              },
+              mb: {
+                xs: 3,
+                sm: 4,
+                md: 5,
+                lg: 6,
+              },
+              justifyContent: "center",
+              width:"100%",
+              
+            }}
+          >
+            {isAuthenticated && (
+              <Box sx={{width:"100%"}}>
+              <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' , marginBottom:"10px", borderBottom:'2px solid #386893',borderTop: 'none','&:before': {opacity: 0,}}}>
+                
+                <AccordionSummary
+                  expandIcon={<ExpandMoreRounded sx={{color:"#386893", fontSize:'300%'}}/>}
+                  aria-controls="panel1a-content"
+                  id="panel1a-header"
+                >
+                  <Typography variant='h5' component={"h2"} sx={{color:"#386893"}}>NICU LEVEL 1</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                <Box
+                    sx={{
+                      // backgroundColor:'red',
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: '1rem',
+                      justifyContent: "left",
+                      width:"100%",
+                      marginBottom:'2%'
+                    }}
+                  >
+<DummyPatientCard/>
+<DummyPatientCard/>
+<DummyPatientCard/>
+
+                  
+                  
+
+  </Box>
+                </AccordionDetails>
+              </Accordion>
+              <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' , marginBottom:"10px", borderBottom:'2px solid #386893',borderTop: 'none','&:before': {opacity: 0,}}}>
+                
+                <AccordionSummary
+                  expandIcon={<ExpandMoreRounded sx={{color:"#386893", fontSize:'300%'}}/>}
+                  aria-controls="panel1a-content"
+                  id="panel1a-header"
+                >
+                  <Typography variant='h5' component={"h2"} sx={{color:"#386893"}}>NICU LEVEL 2</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                <Box
+                    sx={{
+                      // backgroundColor:'red',
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: '2rem',
+                      justifyContent: "left",
+                      width:"100%",
+                      marginBottom:'2%'
+                    }}
+                  >
+<DummyPatientCard/>
+                  
+{patientc}
+  </Box>
+                </AccordionDetails>
+              </Accordion>
+              <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' , marginBottom:"10px", borderBottom:'2px solid #386893',borderTop: 'none','&:before': {opacity: 0,}}}>
+                
+                <AccordionSummary
+                  expandIcon={<ExpandMoreRounded sx={{color:"#386893", fontSize:'300%'}}/>}
+                  aria-controls="panel1a-content"
+                  id="panel1a-header"
+                >
+                  <Typography variant='h5' component={"h2"} sx={{color:"#386893"}}>NICU LEVEL 3</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                <Box
+                    sx={{
+                      // backgroundColor:'red',
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: '2rem',
+                      justifyContent: "left",
+                      width:"100%",
+                      marginBottom:'2%'
+                    }}
+                  >
+<DummyPatientCard/>
+  {patientc}
+  </Box>
+                </AccordionDetails>
+              </Accordion>
+             
+             
+              
+            </Box>
+            )}
+            {!isAuthenticated && !isLoading && (
+              <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
+                <img src={pmsLogo} alt="Phoenix" style={{maxWidth: '50%', // Set the maximum width to 100%
+height: 'auto', // Maintain the aspect ratio
+                  marginLeft:'auto',
+                  marginRight:'auto'
+                }}/>
+                <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
+                <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
+                <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
+                <Button variant='outlined'sx={{width:'200px', height:'50px', borderRadius:'100px'}} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>
+                <Button variant='contained' sx={{width:'200px', height:'50px', borderRadius:'100px'}} onClick={() => loginWithRedirect()}>Sign In</Button>
+                
+                </Stack>
+              </Stack>
+            )}
+      </Box>
+      
+    </div>
+    
+  )
+}

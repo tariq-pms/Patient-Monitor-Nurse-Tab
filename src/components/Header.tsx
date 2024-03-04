@@ -1,12 +1,12 @@
 import React, { FC, useEffect, useState } from 'react';
-import {AppBar, Collapse, Divider,Drawer,FormControl,IconButton,InputLabel,List,ListItem,ListItemButton,ListItemText,Menu,MenuItem,Select,SelectChangeEvent, Stack,Switch, SwitchProps, ToggleButton, ToggleButtonGroup, styled, useMediaQuery, useTheme} from '@mui/material';
+import {AppBar, Collapse, Divider,Drawer,FormControl,IconButton,InputLabel,List,ListItem,ListItemButton,ListItemText,Menu,MenuItem,Select,SelectChangeEvent, Stack,TextField, ToggleButton, ToggleButtonGroup, useMediaQuery, useTheme} from '@mui/material';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import SettingsIcon from '@mui/icons-material/Settings';
 import Button from '@mui/material/Button';
 import { AccountCircle, ExpandLess, ExpandMore } from '@mui/icons-material';
 import { useNavigate,useLocation } from 'react-router-dom';
-import pmsLogo from '../assets/phx_logo.png';
+import pmsLogo from '../assets/image 135.png';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Avatar, Typography } from '@material-ui/core';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -95,88 +95,6 @@ export const Header: FC<HeaderProps> = (props) => {
     setAnchorEl(event.currentTarget);
   };
   const state = Boolean(anchorEl);
-  const CustomSwitch = styled((props: SwitchProps) => (
-    <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
-  ))(({ theme }) => ({
-    marginTop: 10,
-    width: 130,
-    height: 30,
-    padding: 0,
-  
-    '& .MuiSwitch-switchBase': {
-      padding: 0,
-      margin: 2,
-      color:'#00B1FD',
-      transitionDuration: '300ms',
-      '&.Mui-checked': {
-        transform: 'translateX(100px)',
-        color: '#00B1FD',
-        '& + .MuiSwitch-track': {
-          backgroundColor: theme.palette.mode === 'dark' ? '#39393D' : '#65C466',
-          opacity: 1,
-          border: 0,
-        },
-        '&.Mui-disabled + .MuiSwitch-track': {
-          opacity: 0.5,
-        },
-      },
-      '&.Mui-focusVisible .MuiSwitch-thumb': {
-        color: '#33cf4d',
-        border: '6px solid #fff',
-      },
-      '&.Mui-disabled .MuiSwitch-thumb': {
-        color:
-          theme.palette.mode === 'light'
-            ? theme.palette.grey[100]
-            : theme.palette.grey[600],
-      },
-      '&.Mui-disabled + .MuiSwitch-track': {
-        opacity: theme.palette.mode === 'light' ? 0.7 : 0.3,
-      },
-    },
-    '& .MuiSwitch-thumb': {
-      boxSizing: 'border-box',
-      width: 22,
-      height: 22,
-      marginTop: 2,
-      marginLeft: 2,
-    },
-    '& .MuiSwitch-track': {
-      borderRadius: 22/ 2,
-      backgroundColor: theme.palette.mode === 'light' ? '#E9E9EA' : '#39393D',
-      opacity: 1,
-      transition: theme.transitions.create(['background-color'], {
-        duration: 500,
-      }),
-  
-      '&::before': {
-        content: '""', 
-        position: 'absolute',
-        top: '10%',
-        left: '1px', 
-        color: 'white',
-        padding: '5px', 
-        borderRadius: '4px', 
-      },
-  
-      '&::after': {
-        content: '"Baby Mode"', 
-        position: 'absolute',
-        top: '10%',
-        right: '5px', 
-        color: 'white',
-        padding: '5px', 
-        borderRadius: '4px',
-      },
-    },
-    '& .Mui-checked + .MuiSwitch-track::before': {
-      content: '"Device Mode"', 
-    },
-    '& .Mui-checked + .MuiSwitch-track::after': {
-      content: '""', 
-      
-    },
-  }));
   const [temp, settemp] = useState(false)
   
   const handleDMSChange = () => {
@@ -284,9 +202,92 @@ useEffect(() => {
             <>
               <div style={{ display: 'flex', marginRight: 'auto' }}>
                 <Box onClick={handleBackButtonClick} sx={{ cursor: 'pointer' }}>
-                  <img src={pmsLogo} alt="Phoenix" style={{ maxWidth: '70%', height: 'auto' }} />
+                  <img src={pmsLogo} alt="Phoenix" style={{ maxWidth: '90%',marginTop:'10px', height: 'auto' }} />
                   
                 </Box>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Button
+        size="small"
+        onClick={handleMenu}
+        variant="contained"
+        style={{
+          backgroundColor: 'white', // Set background color based on darkMode state
+          color: '#124D81', // Set text color based on darkMode state
+          borderRadius: '25px', // Set border radius
+           // Set padding
+          marginRight: '150px' // Add margin to separate from the search bar
+        }}
+        startIcon={<AccountCircle />}
+      >
+        <Typography variant="subtitle1" component="h2">
+          &nbsp; {user?.name} &nbsp;
+        </Typography>
+      </Button>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={state}
+                      onClose={() => {
+                        setAnchorEl(null);
+                      }}
+                      MenuListProps={{ disablePadding: true }}
+                    >
+                       <Box width={'350px'} height={'200px'} sx={{ backgroundColor: '#F3F2F7',color:'#124D81' }}>
+                          <Stack direction={'row'} justifyContent={'space-between'}>
+                            <Typography style={{ marginLeft: '5%', marginTop: '5%', marginBottom: '5%' }}>
+                              Hospital Name
+                            </Typography>
+                            <Button  onClick={() => logout()} sx={{ height:'10%',backgroundColor: '#124D81', color: 'white', textTransform: 'capitalize' }}>
+  <Typography variant="subtitle2">Sign out</Typography>
+</Button>
+
+                          </Stack>
+                          <Stack direction={'row'} width={'100%'}>
+                            <Avatar style={{ marginLeft: '5%', marginTop: '2%', width: 100, height: 100 }}>
+                              {(() => (
+                                <Typography variant="h3">{String(user?.nickname)[0].toUpperCase()}</Typography>
+                              ))()}
+                            </Avatar>
+                            <Stack>
+                              <Typography variant="h5" style={{ marginLeft: '10%', marginTop: '2%' }}>
+                                {user?.nickname}
+                              </Typography>
+                              <Typography variant="subtitle1" style={{ marginLeft: '10%', marginTop: '2%' }}>
+                                {user?.email}
+                              </Typography>
+                              <Typography variant="subtitle2" style={{ marginLeft: '10%', marginTop: '2%' }}>
+                                Designation
+                              </Typography>
+                            </Stack>
+                          </Stack>
+                        </Box>
+                    </Menu>
+                   <Stack marginLeft={'150px'} sx={{backgroundColor:'#FFFFFF', borderRadius: '25px'}}> 
+                   <TextField
+        variant="outlined"
+        size="small"
+        
+        inputProps={{ style: { color: '#124D81' } }} // Set text color to blue
+        sx={{
+          backgroundcolor:'#FFFFFF',
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '25px', // Set border radius
+            borderColor: '#F9F9F9', // Set border color
+            borderStyle: 'solid', // Set border style
+            borderWidth: '1px', // Set border width
+            '&:hover fieldset': {
+              borderColor: '#124D81' // Set border color on hover
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#124D81' // Set border color when focused
+            }
+          }
+        }}
+      
+        placeholder="Search Baby Name/ID"
+        style={{ width: '250px' }} // Adjust width as needed
+      /></Stack>
+                   
+                </div>
               </div>
               {screenSize ? (
                 <>
@@ -360,11 +361,8 @@ useEffect(() => {
                     {notHome && UserRole === 'Hospital Clinician' && (
                       <>
                         {/* Your content for Hospital Clinician */}
-                        <CustomSwitch onChange={handleDMSChange} checked={darkMode} />
-                        <Divider orientation="vertical" flexItem sx={{ marginRight: '20px', marginLeft: '20px' }} />
-                        {/* Render a disabled component for Room and Device Settings */}
-                        <FormControl variant="standard" sx={{ width: '200px' }}>
-                          <InputLabel id="demo-simple-select-standard-label" disabled>
+                        <FormControl variant="standard" sx={{ width: '200px', backgroundColor: '#F3F2F7'}}>
+                          <InputLabel id="demo-simple-select-standard-label" disabled sx={{ color: '#124D81 !important' }}>
                             Room
                           </InputLabel>
                           <Select
@@ -375,10 +373,12 @@ useEffect(() => {
                               MenuListProps: { disablePadding: true },
                               sx: {
                                 '&& .Mui-selected': {
-                                  backgroundColor: '#2BA0E0',
+                                  backgroundColor: '#124D81',
+                                  color: '#FFFFFF',
                                 },
                               },
                             }}
+                            sx={{ color: '#124D81' }}
                           >
                             {temproom.map((room) => {
                               
@@ -398,7 +398,8 @@ useEffect(() => {
                           sx={{
                             justifyContent: 'center',
                             padding: '6%',
-                            backgroundColor: '#131726',
+                            backgroundColor: '#F3F2F7',
+                            color: '#124D81',
                           }}
                           disabled={!darkMode}
                         >
@@ -414,61 +415,47 @@ useEffect(() => {
                             
                           </Select>
                         </FormControl>
+                        <Divider orientation="vertical" flexItem sx={{ marginLeft: '20px' }} />
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+  <Button
+    variant="text"
+    style={{
+      width: '150px', // Set a fixed width for the buttons
+      borderRadius: '25px',
+      backgroundColor: !darkMode ? '#124D81' : 'white',
+      color: !darkMode ? 'white' : '#124D81',
+      padding: '10px',
+      margin: '5px',
+    }}
+    onClick={handleDMSChange}
+  >
+    Baby Mode
+  </Button>
+  <Button
+    variant="text"
+    style={{
+      width: '150px', // Set a fixed width for the buttons
+      borderRadius: '25px',
+      backgroundColor: darkMode ? '#124D81' : 'white',
+      color: darkMode ? 'white' : '#124D81',
+      padding: '10px',
+      margin: '5px',
+    }}
+    onClick={handleDMSChange}
+  >
+    Device Mode
+  </Button>
+</div>
+
+
+                        
+                        {/* Render a disabled component for Room and Device Settings */}
+                        
                       </>
                     )}
                     {/* Common code for both roles */}
-                    <Divider orientation="vertical" flexItem sx={{ marginLeft: '20px' }} />
-                    <Button
-                      size="large"
-                      aria-label="account of current user"
-                      aria-controls="menu-appbar"
-                      aria-haspopup="true"
-                      onClick={handleMenu}
-                      color="inherit"
-                      sx={{ marginLeft: '10px', justifyContent: 'center', textAlign: 'center' }}
-                      endIcon={<AccountCircle />}
-                    >
-                      <Typography variant="subtitle1" component="h2">
-                        &nbsp; {user?.name} &nbsp;
-                      </Typography>
-                    </Button>
-                    <Menu
-                      anchorEl={anchorEl}
-                      open={state}
-                      onClose={() => {
-                        setAnchorEl(null);
-                      }}
-                      MenuListProps={{ disablePadding: true }}
-                    >
-                       <Box width={'350px'} height={'200px'} sx={{ backgroundColor: '#131726' }}>
-                          <Stack direction={'row'} justifyContent={'space-between'}>
-                            <Typography style={{ marginLeft: '5%', marginTop: '5%', marginBottom: '5%' }}>
-                              Hospital Name
-                            </Typography>
-                            <Button onClick={() => logout()} sx={{ color: 'white', textTransform: 'capitalize' }}>
-                              <Typography variant="subtitle2">Sign out</Typography>
-                            </Button>
-                          </Stack>
-                          <Stack direction={'row'} width={'100%'}>
-                            <Avatar style={{ marginLeft: '5%', marginTop: '2%', width: 100, height: 100 }}>
-                              {(() => (
-                                <Typography variant="h3">{String(user?.nickname)[0].toUpperCase()}</Typography>
-                              ))()}
-                            </Avatar>
-                            <Stack>
-                              <Typography variant="h5" style={{ marginLeft: '10%', marginTop: '2%' }}>
-                                {user?.nickname}
-                              </Typography>
-                              <Typography variant="subtitle1" style={{ marginLeft: '10%', marginTop: '2%' }}>
-                                {user?.email}
-                              </Typography>
-                              <Typography variant="subtitle2" style={{ marginLeft: '10%', marginTop: '2%' }}>
-                                Designation
-                              </Typography>
-                            </Stack>
-                          </Stack>
-                        </Box>
-                    </Menu>
+                   
+                    
                   </Stack>
                 </>
               ) : (

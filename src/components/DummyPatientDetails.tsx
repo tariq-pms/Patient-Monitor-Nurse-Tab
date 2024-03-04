@@ -11,9 +11,12 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { CustomOkButton } from './CustomOkButton';
 import { CustomNoButton } from './CustomNoButton';
 import 'chart.js/auto';
+import baby from '../assets/image 139.png';
 import { Chart, CategoryScale } from 'chart.js';
 import { MRT_ColumnDef } from 'material-react-table';
 import { Table } from "./Table";
+import ModeEditOutlineRoundedIcon from '@mui/icons-material/ModeEditOutlineRounded';
+
 Chart.register(CategoryScale);
 export const DummyPatientDetails = (props: { isOpen: boolean;handleCloseDialog: Function; }): JSX.Element => {
     type TemperatureData = {
@@ -24,6 +27,13 @@ export const DummyPatientDetails = (props: { isOpen: boolean;handleCloseDialog: 
         
     const [varq, setvarq] = useState(false)
     const [tableVisisble, setTableVisible] = useState(false)
+    const [selectedTab, setSelectedTab] = useState('connectedDevices');
+
+    const handleTabChange = (_event: any, newTab: React.SetStateAction<string> | null) => {
+        if (newTab !== null) {
+            setSelectedTab(newTab);
+        }
+    };
     const getOrCreateLegendList = (_chart: any, id: string) => {
         const legendContainer = document.getElementById(id);
         let listContainer = legendContainer!.querySelector('div');
@@ -44,7 +54,7 @@ export const DummyPatientDetails = (props: { isOpen: boolean;handleCloseDialog: 
     const chartRef3 = useRef<any | null>(null);
     const [S_and_D, setS_and_D] = useState(0)
     const [selectedLegends, setSelectedLegends] = useState<any>([])
-    const [timeFrame, setTimeFrame] = useState(5)
+    const [timeFrame, setTimeFrame] = useState(5)   
     useEffect(() => {props.handleCloseDialog()},[varq])
     const [downloadConfirmation, setDownloadConfirmation] = useState(false)
     const [temperatureData] = useState<TemperatureData>({
@@ -364,7 +374,7 @@ export const DummyPatientDetails = (props: { isOpen: boolean;handleCloseDialog: 
     
               
               const items: LegendItem[] = chart.options?.plugins?.legend?.labels?.generateLabels?.(chart) || [];
-    
+             
     items.forEach((item) => {
       if (item.text !== '') {
                     const li = document.createElement('div');
@@ -501,7 +511,7 @@ export const DummyPatientDetails = (props: { isOpen: boolean;handleCloseDialog: 
                     open={downloadConfirmation}
                     onClose={() => {setDownloadConfirmation(false)}}
                     scroll='paper'
-                    PaperProps={{style:{borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', minWidth:'400px', minHeight:'200px'}}} // borderRadius:'3%', boxShadow: `0px 0px 20px 10px #7B7B7B`, border:'1px solid #7B7B7B
+                    PaperProps={{style:{borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050',backgroundColor:'white', minWidth:'400px', minHeight:'200px'}}} // borderRadius:'3%', boxShadow: `0px 0px 20px 10px #7B7B7B`, border:'1px solid #7B7B7B
                 >
                     <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', padding:'9%'}}>
                         {`Confirm Download data of the following parameters` }
@@ -733,28 +743,28 @@ const columns = useMemo<MRT_ColumnDef[]>(
                     xs: '90%',
                     sm: '90%',
                     md: '70%',
-                    lg: '50%',
+                    lg: '70%',
                 },maxWidth:{
                     xs: '90%',
                     sm: '90%',
                     md: '70%',
-                    lg: '50%',
-                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)' }}}
+                    lg: '70%',
+                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundColor:'#FFFFFF' }}}
                 >
                     <DialogTitle
                         sx={{
-                            borderBottom:'1px solid white'
+                            borderBottom:'1px solid #E4E4E4'
                         }}
                     >
                         {/* <IconButton sx={{marginLeft:'96%'}}><CloseRounded/></IconButton> */}
                         <Stack direction={'row'} width={'102%'} >
                             <Stack direction={'row'} width={'100%'} sx={{justifyContent:'space-between', marginLeft:'auto', marginRight:'auto'}}>
-                            <Typography variant="h6" fontWeight={'regular'} >
+                            <Typography variant="h6" color={'#7E7E7E'} fontWeight={'regular'} >
                                 Jessica Adams 
                             
                             </Typography>
-                            <Typography variant="h6">
-                                INNC-100
+                            <Typography  color={'#7E7E7E'} variant="h6">
+                                INC-200
                             </Typography>
                             
                             </Stack>
@@ -763,189 +773,435 @@ const columns = useMemo<MRT_ColumnDef[]>(
 
                         
                     </DialogTitle>
-                    <DialogContent dividers={true} sx={{justifyContent:'center', overflowY: 'scroll'}}>
-                        <Box justifyContent={'center'} textAlign={'center'} width={'100%'} marginTop={"20px"}>
-                            <Stack
-                                direction={'row'}
-                                divider={
-                                <Divider orientation='vertical' flexItem/>
-                                }
-                                sx={{
-                                display: "flex",
-                                flexWrap: "wrap",
-                                gap: {
-                                xs: "2rem",
-                                sm: "2rem",
-                                md: "4rem",
-                                lg: "4rem",
-                                xl: "4rem",
-                                },
-                                mt: {
-                                xs: 5,
-                                sm: 6,
-                                md: 7,
-                                lg: 8,
-                                },
-                                mb: {
-                                xs: 5,
-                                sm: 6,
-                                md: 7,
-                                lg: 8,
-                                },
-                                justifyContent: "center",
-                                }}
-                            >
-                                <Stack alignItems={'center'} spacing={'10px'}>
-                                    <Typography variant="subtitle1" >
-                                        Spo2
-                                    </Typography>
-                                    <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
-                                    <Typography variant='h4'>
-                                        95&nbsp;
-                                    </Typography>
-                                    <Typography variant='h5'>
-                                        %
-                                    </Typography>
-                                    </div>
-                                </Stack>
+                    <DialogContent dividers={true} sx={{ justifyContent: 'center'}}>
+                <Box justifyContent={'center'} textAlign={'center'} width={'100%'} marginTop={"20px"}>
+                    {/* Toggle buttons for tabs */}
+                    <Stack>
+                    <ToggleButtonGroup
+                            value={selectedTab}
+                            exclusive
+                            onChange={handleTabChange}
+                            aria-label="selected tab"
+                            sx={{ width: '100%', marginBottom: '20px' }} // Full width and marginBottom
+                        >
+                            <ToggleButton value="overview" sx={{ width: '100%'}} style={{ backgroundColor: selectedTab === 'overview' ? '#124D81' : '#F3F2F7',color: selectedTab === 'overview' ? '#F3F2F7' : '#124D81'}}>Overview</ToggleButton>
+                            <ToggleButton value="trends" sx={{ width: '100%' }} style={{ backgroundColor: selectedTab === 'trends' ? '#124D81' : '#F3F2F7',color: selectedTab === 'trends' ? '#F3F2F7' : '#124D81' }}>Trends</ToggleButton>
+                            <ToggleButton value="alarms" sx={{ width: '100%' }} style={{ backgroundColor: selectedTab === 'alarms' ? '#124D81' : '#F3F2F7',color: selectedTab === 'alarms' ? '#F3F2F7' : '#124D81'  }}>Alarms</ToggleButton>
+                            <ToggleButton value="connectedDevices" sx={{ width: '100%' }} style={{ backgroundColor: selectedTab === 'connectedDevices' ? '#124D81' : '#F3F2F7',color: selectedTab === 'connectedDevices' ? '#F3F2F7' : '#124D81'}} >Patient Info</ToggleButton>                        
+                        </ToggleButtonGroup>
+</Stack>
 
-                                <Stack alignItems={'center'} spacing={'10px'}>
-                                    <Typography variant="subtitle1" >
-                                    Pulse Rate
-                                    </Typography>
-                                    <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
-                                    <Typography variant='h4'>
-                                        120&nbsp;
-                                    </Typography>
-                                    <Typography variant='h5'>
-                                        BPM
-                                    </Typography>
-                                    </div>
-                                </Stack>
+                    {/* Content based on selected tab */}
+                    {selectedTab === 'overview' && (
+                        <Box>
+                            {/* Connected Devices content */}
+                            
+                            <Stack direction="column" spacing={2} justifyContent="center">
+    {/* First Row */}
+    <Stack width={'100%'} direction="row" spacing={3} justifyContent="center">
+    <Box width="40%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Typography variant="h6" color="#124D81" style={{ fontWeight: 'bold', fontFamily: 'Helvetica' }}>
+        Baby Temp
+    </Typography>
+    <Box display="flex" alignItems="baseline">
+        <Typography variant="h1" color="#124D81">
+            34.3
+        </Typography>
+        <Typography variant="subtitle1" color="#124D81">
+    {'>'}36°C
+</Typography>
 
-                                <Stack alignItems={'center'} spacing={'10px'}>
-                                    <Typography variant="subtitle1" >
-                                        Weight
-                                    </Typography>
-                                    <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
-                                    <Typography variant='h4'>
-                                        950&nbsp;
-                                    </Typography>
-                                    <Typography variant='h5'>
-                                        g
-                                    </Typography>
-                                    </div>
-                                </Stack>
+    </Box>
+</Box>
+<Box width="35%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Typography variant="h6" color="#4B7193" style={{ fontWeight: 'bold', fontFamily: 'Helvetica' }}>
+    Heater Temp
+    </Typography>
+    <Box display="flex" alignItems="baseline">
+        <Typography variant="h1" color="#4B7193">
+        76
+        </Typography>
+        <Typography variant="subtitle1" color="#4B7193">
+        %
+</Typography>
 
-                                <Stack alignItems={'center'} spacing={'10px'}>
-                                    <Typography variant="subtitle1" >
-                                    Measured Skin Temp
-                                    </Typography>
-                                    <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
-                                    <Typography variant='h4'>
-                                        34&nbsp;
-                                    </Typography>
-                                    <Typography variant='h5'>
-                                    °C
-                                    </Typography>
-                                    </div>
-                                </Stack>
+    </Box>
+</Box>
+<Box width="20%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Typography variant="h6" color="#3C89C0" style={{ fontWeight: 'bold', fontFamily: 'Helvetica' }}>
+   PVI
+    </Typography>
+    <Box display="flex" alignItems="baseline">
+        <Typography variant="h2" color="#3C89C0">
+       69.1
+        </Typography>
+        <Typography variant="subtitle1" color="#3C89C0">
+        %
+</Typography>
 
-                                <Stack alignItems={'center'} spacing={'10px'}>
-                                    <Typography variant="subtitle1" >
-                                    Set Skin Temp
-                                    </Typography>
-                                    <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
-                                    <Typography variant='h4'>
-                                        36&nbsp;
-                                    </Typography>
-                                    <Typography variant='h5'>
-                                    °C
-                                    </Typography>
-                                    </div>
-                                </Stack>
+    </Box>
+</Box>
+<Box width="20%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Typography variant="h6" color="#3C89C0" style={{ fontWeight: 'bold', fontFamily: 'Helvetica' }}>
+    PI
+    </Typography>
+    <Box display="flex" alignItems="baseline">
+        <Typography variant="h2" color="#3C89C0">
+        77.5
+        </Typography>
+        <Typography variant="subtitle1" color="#3C89C0">
+        %
+</Typography>
 
-                                <Stack alignItems={'center'} spacing={'10px'}>
-                                    <Typography variant="subtitle1" >
-                                    PI
-                                    </Typography>
-                                    <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
-                                    <Typography variant='h4'>
-                                        100&nbsp;
-                                    </Typography>
-                                    <Typography variant='h5'>
-                                        %
-                                    </Typography>
-                                    </div>
-                                </Stack>
+    </Box>
+</Box>        
 
-                                <Stack alignItems={'center'} spacing={'10px'}>
-                                    <Typography variant="subtitle1" >
-                                        Spo2
-                                    </Typography>
-                                    <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
-                                    <Typography variant='h4'>
-                                        95&nbsp;
-                                    </Typography>
-                                    <Typography variant='h5'>
-                                        %
-                                    </Typography>
-                                    </div>
-                                </Stack>
-                  
-                            </Stack>
-                        </Box>
-                        <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'white', color:'white'}}/>
-                        <Typography variant='h5' paddingLeft={'2%'}>Connected Devices</Typography>
+
+
+<Box width="25%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+   
+        {/* Image from assets */}
+        <img src={baby} alt="Phoenix" style={{ maxWidth: '70%', height: 'auto', marginLeft: '5px' }} />
+   
+</Box>
+
+
+
+
+    </Stack>
+
+    {/* Second Row */}
+    <Stack direction="row" spacing={2} justifyContent="center">
+    <Box width="25%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Typography variant="h6" color="#3C89C0" style={{ fontWeight: 'bold', fontFamily: 'Helvetica' }}>
+    HeartRate
+    </Typography>
+    <Box display="flex" alignItems="baseline">
+        <Typography variant="h2" color="#3C89C0">
+        80
+        </Typography>
+        <Typography variant="subtitle1" color="#3C89C0">
+        BPM
+</Typography>
+
+    </Box>
+</Box>
+<Box width="25%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Typography variant="h6" color="#3C89C0" style={{ fontWeight: 'bold', fontFamily: 'Helvetica' }}>
+    Spo2
+    </Typography>
+    <Box display="flex" alignItems="baseline">
+        <Typography variant="h2" color="#3C89C0">
+        92
+        </Typography>
+        <Typography variant="subtitle1" color="#3C89C0">
+        BPM
+</Typography>
+
+    </Box>
+</Box>
+<Box width="25%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Typography variant="h6" color="#3C89C0" style={{ fontWeight: 'bold', fontFamily: 'Helvetica' }}>
+    RR
+    </Typography>
+    <Box display="flex" alignItems="baseline">
+        <Typography variant="h2" color="#3C89C0">
+        44
+        </Typography>
+        <Typography variant="subtitle1" color="#3C89C0">
+        RPM
+</Typography>
+
+    </Box>
+</Box>
+<Box width="25%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Typography variant="h6" color="#3C89C0" style={{ fontWeight: 'bold', fontFamily: 'Helvetica' }}>
+    SIQ
+    </Typography>
+    <Box display="flex" alignItems="baseline">
+        <Typography variant="h2" color="#3C89C0">
+        44
+        </Typography>
+        <Typography variant="subtitle1" color="#3C89C0">
+        RPM
+</Typography>
+
+    </Box>
+</Box>
+<Box width="25%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Typography variant="h6" color="#38AAC3" style={{ fontWeight: 'bold', fontFamily: 'Helvetica' }}>
+    Weight
+    </Typography>
+    <Box display="flex" alignItems="baseline">
+        <Typography variant="h2" color="#38AAC3">
+        950
+        </Typography>
+        <Typography variant="subtitle1" color="#38AAC3">
+        g
+</Typography>
+
+    </Box>
+</Box>
+       
+    </Stack>
+</Stack>
+
+                       
+                        <Divider sx={{ marginTop: '40px', marginBottom: '20px', backgroundColor: '#E4E4E4', color: '#E4E4E4' }} />
+                        <Box><Typography variant='h5' color={'#386893'} paddingLeft={'2%'}>Connected Devices</Typography>
                         <Box marginTop={'3%'} marginLeft={'3%'} display={'flex'} textAlign={'center'} justifyContent={'left'} flexWrap={'wrap'} width={'100%'} gap={'10px'}>
-                            <Box borderRadius={'10px'} justifyContent={'center'} textAlign={'center'} boxShadow={`0px 0px 10px 2px #00B1FD`} border={'1px solid #00B1FD'} height={'70px'}>
-                                <Typography paddingTop={'10px'} paddingLeft={'10px'} paddingRight={'10px'}>Comprehensive Infant Care Centre</Typography>
-                                <Typography variant="caption" paddingTop={'5px'} paddingLeft={'10px'} paddingRight={'10px'}>FF:FF:FF:FF:FF:FF</Typography>
-                            </Box>
+                                <Box borderRadius={'10px'}  justifyContent={'center'} textAlign={'center'}  border={'3px solid #124D81'} height={'70px'}>
+                                    <Typography paddingTop={'10px'} paddingLeft={'10px'} color={'#124D81'} paddingRight={'10px'}>Comprehensive Infant Care Centre</Typography>
+                                    <Typography variant="caption" paddingTop={'5px'} color={'#124D81'} paddingLeft={'10px'} paddingRight={'10px'}>FF:FF:FF:FF:FF:FF</Typography>
+                                </Box>
+                                <Box borderRadius={'10px'}  justifyContent={'center'} textAlign={'center'}  border={'3px solid #124D81'} height={'70px'}>
+                                    <Typography paddingTop={'10px'} paddingLeft={'10px'} color={'#124D81'} paddingRight={'10px'}>Comprehensive Infant Care Centre</Typography>
+                                    <Typography variant="caption" paddingTop={'5px'} color={'#124D81'} paddingLeft={'10px'} paddingRight={'10px'}>FF:FF:FF:FF:FF:FF</Typography>
+                                </Box>
+                            </Box><Divider sx={{ marginTop: '40px', marginBottom: '20px', backgroundColor: 'white', color: 'white' }} /></Box>
                         </Box>
-                        
-                            <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'white', color:'white'}}/>
-                            <Typography variant='h5' paddingLeft={'2%'}>Trends</Typography>
+                    )}
+                    {selectedTab === 'connectedDevices' && (
+                         <Stack direction="column" spacing={2}  justifyContent="center">
+                         {/* First Row */}
+                         <Stack width={'100%'} direction="row" spacing={3} justifyContent="center">
+                            
+                         <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                         
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography variant="subtitle1" color="#124D81" style={{ fontFamily: 'Helvetica' }}>
+            Baby Name:
+        </Typography>
+        <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold', fontFamily: 'Helvetica', marginLeft: '5px' }}>
+            Jessica
+        </Typography>
+    </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography variant="subtitle1" color="#124D81">
+            Birth Weight:
+        </Typography>
+        <Typography variant="subtitle1" color="#124D81" style={{fontWeight: 'bold', marginLeft: '5px' }}>
+            730 g
+        </Typography>
+    </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography variant="subtitle1" color="#124D81">
+            Gender:
+        </Typography>
+        <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold',marginLeft: '5px' }}>
+            Female
+        </Typography>
+    </Box>
+</Box>
+
+<Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography variant="subtitle1" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+           Blood Group :
+        </Typography>
+        <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold', fontFamily: 'Helvetica', marginLeft: '5px' }}>
+            O +ve
+        </Typography>
+    </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography variant="subtitle1" color="#124D81">
+           Mothers Name :
+        </Typography>
+        <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold',marginLeft: '5px' }}>
+            Sheela
+        </Typography>
+    </Box>
+   
+</Box>
+   </Stack>
+   
+   <Box width={'100%'}>
+   <Box sx={{ position: 'relative', marginBottom: '20px' }}>
+        {/* Edit icon */}
+        <IconButton sx={{ position: 'absolute', top: 0, right: 0 }} aria-label="edit" color="info">
+            <ModeEditOutlineRoundedIcon/>
+        </IconButton>
+        {/* Box content */}
+        <Typography variant="h6" color="#124D81" style={{ fontFamily: 'Helvetica', textAlign: 'left' }}>
+            Admission Details
+        </Typography>
+        <Divider sx={{ marginBottom: '20px', backgroundColor: '#E4E4E4', color: '#E4E4E4', height: '1px' }} />
+        <Stack width={'100%'} direction="row" minHeight={"100px"} spacing={3} justifyContent="center">
+     <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography variant="subtitle1" color="#124D81" style={{ fontFamily: 'Helvetica' }}>
+        Date of Admission : 
+        </Typography>
+        <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold', fontFamily: 'Helvetica', marginLeft: '5px' }}>
+           
+        </Typography>
+    </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography variant="subtitle1" color="#124D81">
+        Room No :
+        </Typography>
+        <Typography variant="subtitle1" color="#124D81" style={{fontWeight: 'bold', marginLeft: '5px' }}>
+            01
+        </Typography>
+    </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography variant="subtitle1" color="#124D81">
+        Reason of Admission :
+        </Typography>
+        <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold',marginLeft: '5px' }}>
+            
+        </Typography>
+    </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography variant="subtitle1" color="#124D81">
+        Reporting Nurse :
+        </Typography>
+        <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold',marginLeft: '5px' }}>
+           
+        </Typography>
+    </Box>
+</Box>
+
+<Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography variant="subtitle1" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+        Birth Date & Time : 
+        </Typography>
+        <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold', fontFamily: 'Helvetica', marginLeft: '5px' }}>
+          
+        </Typography>
+    </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography variant="subtitle1" color="#124D81">
+        Gestational Age: 
+        </Typography>
+        <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold',marginLeft: '5px' }}>
+           
+        </Typography>
+    </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography variant="subtitle1" color="#124D81">
+        Reporting Doctor :
+        </Typography>
+        <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold',marginLeft: '5px' }}>
+          
+        </Typography>
+    </Box>
+   
+   
+</Box>
+   </Stack>
+    </Box>
+</Box>
+   
+<Divider sx={{ marginBottom: '20px', backgroundColor: '#E4E4E4', color: '#E4E4E4',height:'1px' }} />
+   <Stack width={'100%'} direction="row" spacing={3} justifyContent="center">
+   <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography variant="h6" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+       Vital Signs
+        </Typography>
+      
+        
+    </Box>
+    <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'black', color:'black'}}/>
+   
+</Box>                     
+
+<Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography  variant="h6" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+       Anthropometry
+        </Typography>
+        
+    </Box>
+   
+</Box>
+   </Stack>
+   <Divider sx={{ marginBottom: '20px', backgroundColor: '#E4E4E4', color: '#E4E4E4',height:'1px' }} />
+   <Stack width={'100%'} direction="row"  spacing={3} justifyContent="center">
+   <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography variant="h6" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+       APGAR Details
+        </Typography>
+        
+        
+    </Box>
+    <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'black', color:'black'}}/>
+   
+</Box>                     
+
+<Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+        <Typography  variant="h6" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+       Skin Assessment
+        </Typography>
+        
+    </Box>
+   
+</Box>
+   </Stack>
+ 
+                     </Stack>
+                     
+                    )}
+
+                    {selectedTab === 'trends' && (
+                        <Box>
+                           <Typography variant='h5' paddingLeft={'2%'}>Trends</Typography>
                             {graphDataDisplay}
                         
                         
                        <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'white', color:'white'}}/>
-                       <Typography variant='h5' paddingLeft={'2%'}>Alarms</Typography>
-                       <Accordion elevation={0} defaultExpanded={true} sx={{ width:'100%',backgroundColor:"transparent", backgroundImage:'none', marginTop:'10px' , marginBottom:"10px", border:'1px solid grey', borderRadius:'15px', '&:before': {opacity: 0}}} >
+                        </Box>
+                    )}
+
+                    {selectedTab === 'alarms' && (
+                        <Box>
+                        {/* Alarms content */}
+                        <Accordion elevation={0} defaultExpanded={true} sx={{ width:'100%', backgroundColor:"#F3F2F7", backgroundImage:'none', marginTop:'10px', marginBottom:"10px", border:'1px solid grey', borderRadius:'15px', '&:before': {opacity: 0}}}>
                             <AccordionSummary
-                                    expandIcon={<ExpandMoreRounded sx={{ fontSize:'200%'}}/>}
-                                    aria-controls="panel1a-content"
-                                    id="panel1a-header"
-                                    
-                                    >
-                                    <Typography variant='h5' component={"h2"} >Compre
-                                    </Typography>
+                                expandIcon={<ExpandMoreRounded sx={{ fontSize:'200%', color:'#124D81'}}/>}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                            >
+                                <Typography variant='h5' component={"h2"} color={'#124D81'}>CIC</Typography>
                             </AccordionSummary>
                             <AccordionDetails>
-                            <Box width={'100%'} display={'flex'} textAlign={'center'} justifyContent={'center'} flexWrap={'wrap'}>
-                                <Box width={'200px'} height={'110px'} sx={{border:'1px solid red', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px red`}} justifyContent={'center'} textAlign={'center'}>
-                                    <Typography variant='subtitle1' paddingTop={'13%'}><b>Test Patient</b></Typography>
-                                    <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
-                                        <Typography variant='subtitle2' >25/12/2023 - 15:51</Typography>
-                                    </div>
-                                    
+                                <Box width={'100%'} display={'flex'} textAlign={'center'} justifyContent={'center'} flexWrap={'wrap'}>
+                                    <Box width={'200px'} height={'110px'} sx={{border:'1px solid red', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px red`}} justifyContent={'center'} textAlign={'center'}>
+                                        <Typography variant='subtitle1' color={'#124D81'} paddingTop={'13%'}><b>Test Patient</b></Typography>
+                                        <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
+                                            <Typography variant='subtitle1' color={'#124D81'}>25/12/2023 - 15:51</Typography>
+                                        </div>
+                                    </Box>
                                 </Box>
-                            </Box>
                             </AccordionDetails>
                         </Accordion>
+                    
+                        <Box sx={{display: 'flex', justifyContent: 'center', position: 'relative'}}>
+                            <Button sx={{width:'20%', height:'50px', marginTop:'3%', marginBottom:'3%', borderRadius:'50px', color:'white', backgroundColor:'#124D81', border:'0.5px solid grey', fontWeight:50}}  endIcon={tableVisisble ? <KeyboardArrowUpIcon sx={{ fontSize: 80 }} /> : <KeyboardArrowDownIcon sx={{ fontSize: 80 }} />} onClick={() => {setTableVisible(!tableVisisble);}}> 
+                                <Box sx={{ fontWeight: 'regular', m: 1, fontSize:16, }}>Alarm Log</Box>
+                            </Button>
+                        </Box>
+                       
+                        <div style={{ marginLeft: 'auto', width: '85%', marginRight: 'auto', backgroundColor: 'white' }}>
+    {tableVisisble && <Table rows={rows} columns={columns} infscrollfunc={() => { console.log("HELLO") }} />}
+</div>
 
-                        <Button sx={{width:'20%', height:'50px', marginLeft:'40%', marginTop:'3%', marginBottom:'3%', borderRadius:'50px', color:'white', backgroundColor:'#111522', border:'0.5px solid grey', fontWeight:50, boxShadow: `0px 0px 10px 1px #6e6f88`, textTransform:'capitalize'}}  endIcon={tableVisisble ? <KeyboardArrowUpIcon sx={{ fontSize: 80 }} /> : <KeyboardArrowDownIcon sx={{ fontSize: 80 }}  />} onClick={() => {setTableVisible(!tableVisisble);}}> 
-                            <Box sx={{ fontWeight: 'regular', m: 1, fontSize:16, }}>Alarm Log</Box>
-                        </Button>
-                        {/* <div  style={{marginLeft:'auto', width:'85%', marginRight:'auto'}} >
-                            {tableVisisble && <Table infscrollfunc={infscrollfunc} rows={rows} columns={columns}/>}
-                        </div> */}
-                        
-<div  style={{marginLeft:'auto', width:'85%', marginRight:'auto'}} >
-                            {tableVisisble && <Table rows={rows} columns={columns} infscrollfunc={() => {console.log("HELLO")}} />}
-                        </div>
+                    </Box>
+                    
+                    )}
+                </Box>
+
+                {/* Other content */}
+                {/* Ensure other content remains unchanged */}
+                
                        <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'white', color:'white'}}/>
-                    </DialogContent>
+            </DialogContent>
+
+                  
                 </Dialog>
         </React.Fragment>
     )

@@ -8,8 +8,6 @@ import { CustomNoButton } from './CustomNoButton';
 import TextField from '@mui/material/TextField';
 import SearchIcon from '@mui/icons-material/Search';
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
-
-
 interface OrganizationCardProps {
   organizationData: {
     id: string;
@@ -124,7 +122,7 @@ const removeButton = () => {
     const data = { ...deviceList[selectedDevice].resource };
     delete data.owner;
     fetch(`https://pmsind.co.in:5000/Device/${deviceList[selectedDevice].resource.id}`, {
-      credentials: 'omit',
+      credentials: 'omit',  
       method: 'PUT',
       body: JSON.stringify(data),
       headers: {
@@ -202,11 +200,7 @@ const removeButton = () => {
       </MenuItem>
     ))}
 </Select>
-
-
-
-
-          <Button
+ <Button
                   variant="contained"
                   
                   sx={{ borderRadius: '25px' }}
@@ -296,22 +290,22 @@ const removeButton = () => {
 >
   <DialogTitle id="responsive-dialog-title" sx={{ textAlign: 'center', fontWeight: 'bold', paddingBottom: '9%' }}>
     {`Add device `}<i>{`${selectedDevice !== null ? deviceList[selectedDevice]?.resource.identifier[0].value : ''} `}</i>{`to Organization `}<i>{`${organizationData.name}`}?</i> </DialogTitle>
-  <DialogActions sx={{ paddingBottom: '5%' }}>
-    <Stack direction={'row'} width={'100%'} justifyContent={'space-around'}>
-      <Box onClick={() => setMiniDialog(false)} sx={{ minWidth: '90px', minHeight: '45px' }}>
-        <CustomNoButton text="Cancel"></CustomNoButton>
-      </Box>
-      <Box
-        onClick={() => {
-          addButton();
-          setMiniDialog(false);
-        }}
-        sx={{ minWidth: '90px', minHeight: '45px' }}
-      >
-        <CustomOkButton text="Confirm"></CustomOkButton>
-      </Box>
-    </Stack>
-  </DialogActions>
+    <DialogActions sx={{ paddingBottom: '5%' }}>
+      <Stack direction={'row'} width={'100%'} justifyContent={'space-around'}>
+        <Box onClick={() => setMiniDialog(false)} sx={{ minWidth: '90px', minHeight: '45px' }}>
+          <CustomNoButton text="Cancel"></CustomNoButton>
+        </Box>
+        <Box
+          onClick={() => {
+            addButton();
+            setMiniDialog(false);
+          }}
+          sx={{ minWidth: '90px', minHeight: '45px' }}
+        >
+          <CustomOkButton text="Confirm"></CustomOkButton>
+        </Box>
+      </Stack>
+    </DialogActions>
 </Dialog>
 
             </Dialog>

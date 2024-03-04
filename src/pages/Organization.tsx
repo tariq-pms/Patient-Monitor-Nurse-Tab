@@ -117,10 +117,6 @@ export const Organization: React.FC = () => {
     });
     handleDialogClose()
   };
-  
-  
-  
-
   return (
     <div>
       {isAuthenticated && (
@@ -204,7 +200,7 @@ export const Organization: React.FC = () => {
             </DialogContent>
             <DialogActions >
      <Stack direction={'row'} width={'100%'} justifyContent={'space-around'} sx={{marginBottom:'7%'}}>
-              <Box onClick={() => {}} ><CustomNoButton text="Cancel"></CustomNoButton></Box>
+              <Box onClick={() => {setOpenDialog(false)}} ><CustomNoButton text="Cancel"></CustomNoButton></Box>
               
               {/* <Button onClick={() => {setMiniDialog(false)}}>Cancel</Button> */}
               <Box onClick={() => {handleAddOrganization();setOpenDialog(false)}}><CustomOkButton text="Confirm"></CustomOkButton></Box>

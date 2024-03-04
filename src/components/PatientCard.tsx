@@ -148,7 +148,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
            
             return (props.device?.map((val) => {
                 return(
-                    <Box boxShadow={`0px 0px 10px 2px #00B1FD`} border={'1px solid #00B1FD'} textAlign={'center'} borderRadius={'10px'} minWidth={'70px'} maxWidth={'70px'} overflow="hidden"        // Handle overflow by hiding it
+                    <Box boxShadow={`0px 0px 10px 2px #124D81`} border={'1px solid #124D81'} textAlign={'center'} borderRadius={'10px'} minWidth={'70px'} maxWidth={'70px'} overflow="hidden"        // Handle overflow by hiding it
                     textOverflow="ellipsis"    >
                         <Typography variant='caption' color={"#A8C5D4"}>
                             {val.identifier[1].value}

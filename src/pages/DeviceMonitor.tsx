@@ -171,7 +171,7 @@ export const DeviceMonitor = (currentRoom: any) => {
         })
         .then((response) => response.json())
         .then((data) => {setDevices(data)})
-         console.log("from devicemonitor",currentRoom)
+         console.log("from devicemonitor",currentRoom)  
         setIsLoading(false)
     }
     }, [currentRoom])
@@ -302,7 +302,11 @@ export const DeviceMonitor = (currentRoom: any) => {
     })
     const cpap = devices.entry?.map((device) => {
     console.log(String(device.resource.id))
-    if(String(device.resource.identifier[1]?.value)=="SVAAS"){
+    if (String(device.resource.identifier[1]?.value) == "SVAAS" || String(device.resource.identifier[1]?.value) == "Intensive Neonatal Care Center"){
+       
+        // Your code here
+  
+    
         
     var correct = false
     // var temp = String(device.resource.id)
@@ -449,7 +453,7 @@ export const DeviceMonitor = (currentRoom: any) => {
     }}
     })
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+        <div style={{ display: 'flex'}}>
           <Box
                 sx={{
                   // backgroundColor:'red',
@@ -469,19 +473,19 @@ export const DeviceMonitor = (currentRoom: any) => {
                     lg: 6,
                   },
                   justifyContent: "center",
-                  width:"95%",
+                  width:"100%",
                 }}
               >
                 {isAuthenticated && (
                   <Box sx={{width:"100%"}}>
-                  <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' , marginBottom:"10px", borderBottom:'2px solid #00B1FD',borderTop: 'none','&:before': {opacity: 0,}}}>
+                  <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' , marginBottom:"10px", borderBottom:'2px solid #124D81',borderTop: 'none','&:before': {opacity: 0,}}}>
                     
                     <AccordionSummary
-                      expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD", fontSize:'300%'}}/>}
+                      expandIcon={<ExpandMoreRounded sx={{color:"#124D81", fontSize:'300%'}}/>}
                       aria-controls="panel1a-content"
                       id="panel1a-header"
                     >
-                      <Typography variant='h5' component={"h2"} sx={{color:"#00B1FD"}}>Warmers</Typography>
+                      <Typography variant='h5' component={"h2"} sx={{color:"#124D81"}}>Warmers</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                     <Box
@@ -496,6 +500,9 @@ export const DeviceMonitor = (currentRoom: any) => {
                         }}
                       >
  <DummyCard/>
+ <DummyCard/>
+ <DummyCard/>
+ 
                          {isLoadingWarmers ? (
                     // Display loading skeleton while loading
                     <Skeleton  variant="rounded" width={500} height={300} animation="wave"  sx={{ borderRadius: '25px' }}/>
@@ -506,13 +513,13 @@ export const DeviceMonitor = (currentRoom: any) => {
                      </Box>
                     </AccordionDetails>
                   </Accordion>
-                  <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent" , backgroundImage:'none' , marginBottom:"10px", borderBottom:'2px solid #00B1FD',borderTop: 'none','&:before': {opacity: 0,}}}>
+                  <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent" , backgroundImage:'none' , marginBottom:"10px", borderBottom:'2px solid #124D81',borderTop: 'none','&:before': {opacity: 0,}}}>
                     <AccordionSummary
-                      expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD", fontSize:'300%'}}/>}
+                      expandIcon={<ExpandMoreRounded sx={{color:"#124D81", fontSize:'300%'}}/>}
                       aria-controls="panel2a-content"
                       id="panel2a-header"
                     >
-                      <Typography variant='h5' component={"h2"} sx={{color:"#00B1FD"}}>Incubators</Typography>
+                      <Typography variant='h5' component={"h2"} sx={{color:"#124D81"}}>Incubators</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                     <Box
@@ -534,12 +541,12 @@ export const DeviceMonitor = (currentRoom: any) => {
                       </Box>
                     </AccordionDetails>
                   </Accordion >
-                  <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' ,marginBottom:"10px", borderBottom:'2px solid #00B1FD',borderTop: 'none','&:before': {opacity: 0,}}}>
+                  <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' ,marginBottom:"10px", borderBottom:'2px solid #124D81',borderTop: 'none','&:before': {opacity: 0,}}}>
                     <AccordionSummary
-                      expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD", fontSize:'300%'}}/>}
+                      expandIcon={<ExpandMoreRounded sx={{color:"#124D81", fontSize:'300%'}}/>}
                       aria-controls="panel3a-content"
                       id="panel3a-header">
-                      <Typography variant='h5' component={"h2"} sx={{color:"#00B1FD"}}>CPAP</Typography>
+                      <Typography variant='h5' component={"h2"} sx={{color:"#124D81"}}>CPAP</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                     <Box
@@ -562,14 +569,14 @@ export const DeviceMonitor = (currentRoom: any) => {
                       </Box>
                    </AccordionDetails>
                   </Accordion>
-                  <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' ,marginBottom:"10px", borderBottom:'2px solid #00B1FD',borderTop: 'none','&:before': {opacity: 0,}}}>
+                  <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' ,marginBottom:"10px", borderBottom:'2px solid #124D81',borderTop: 'none','&:before': {opacity: 0,}}}>
                     <AccordionSummary
-                      expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD", fontSize:'300%'}}/>}
+                      expandIcon={<ExpandMoreRounded sx={{color:"#124D81", fontSize:'300%'}}/>}
                       aria-controls="panel3a-content"
                       id="panel3a-header"
                     
                     >
-                      <Typography variant='h5' component={"h2"} sx={{color:"#00B1FD"}}>Cooling Machine</Typography>
+                      <Typography variant='h5' component={"h2"} sx={{color:"#124D81"}}>Cooling Machine</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                     <Box
@@ -592,13 +599,13 @@ export const DeviceMonitor = (currentRoom: any) => {
                       </Box>
                     </AccordionDetails>
                   </Accordion>
-                  <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' ,marginBottom:"10px", borderBottom:'2px solid #00B1FD',borderTop: 'none','&:before': {opacity: 0,}}}>
+                  <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' ,marginBottom:"10px", borderBottom:'2px solid #124D81',borderTop: 'none','&:before': {opacity: 0,}}}>
                     <AccordionSummary
-                      expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD", fontSize:'300%'}}/>}
+                      expandIcon={<ExpandMoreRounded sx={{color:"#124D81", fontSize:'300%'}}/>}
                       aria-controls="panel3a-content"
                       id="panel3a-header"
                     >
-                      <Typography variant='h5' component={"h2"} sx={{color:"#00B1FD"}}>Syringe Pump</Typography>
+                      <Typography variant='h5' component={"h2"} sx={{color:"#124D81"}}>Syringe Pump</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                     <Box
@@ -623,14 +630,14 @@ export const DeviceMonitor = (currentRoom: any) => {
                         
                     </AccordionDetails>
                   </Accordion>
-                  <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' ,marginBottom:"10px", borderBottom:'2px solid #00B1FD',borderTop: 'none','&:before': {opacity: 0,}}}>
+                  <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' ,marginBottom:"10px", borderBottom:'2px solid #124D81',borderTop: 'none','&:before': {opacity: 0,}}}>
                     <AccordionSummary
-                      expandIcon={<ExpandMoreRounded sx={{color:"#00B1FD", fontSize:'300%'}}/>}
+                      expandIcon={<ExpandMoreRounded sx={{color:"#124D81", fontSize:'300%'}}/>}
                       aria-controls="panel3a-content"
                       id="panel3a-header"
                     
                     >
-                      <Typography variant='h5' component={"h2"} sx={{color:"#00B1FD"}}>Other Devices</Typography>
+                      <Typography variant='h5' component={"h2"} sx={{color:"#124D81"}}>Other Devices</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                     <Box
@@ -659,9 +666,8 @@ export const DeviceMonitor = (currentRoom: any) => {
                 )}
                 {!isAuthenticated && !isLoading && (
                   <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
-                    <img src={pmsLogo} alt="Phoenix" style={{
-                      maxWidth: '50%', // Set the maximum width to 100%
-                      height: 'auto', // Maintain the aspect ratio
+                    <img src={pmsLogo} alt="Phoenix" style={{maxWidth: '50%', // Set the maximum width to 100%
+height: 'auto', // Maintain the aspect ratio
                       marginLeft:'auto',
                       marginRight:'auto'
                     }}/>
