@@ -3,7 +3,6 @@ import { useState, useEffect, FC } from 'react';
 import { Box, Skeleton, Typography, Button, Paper, Dialog, DialogTitle, TextField, Select, MenuItem, DialogContent, CardContent, Card, InputLabel } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { UserCard } from '../components/UserCard';
-
 import { User } from '@auth0/auth0-react';
 import { useAuth0 } from '@auth0/auth0-react';
 import Snackbar from '@mui/material/Snackbar';
@@ -11,9 +10,10 @@ import MuiAlert, { AlertProps } from '@mui/material/Alert';
 
 interface AdminPageProps {
   userOrganization: string;
+  darkTheme:boolean
 }
 
-export const AdminPage: FC<AdminPageProps>= ({ userOrganization }) => {
+export const AdminPage: FC<AdminPageProps>= ({ userOrganization ,darkTheme }) => {
   const { isAuthenticated, loginWithRedirect } = useAuth0();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<User[]>([]);
@@ -166,6 +166,9 @@ console.log("in admin page",userOrganization);
 
   //   handleDialog2Close();
   // };
+  
+  
+  
   const handleAddUser = () => {
     // Extract username, password, role, and organizationId from state or form fields
     const { email, username, password, role, organization } = newUser;
@@ -276,11 +279,11 @@ console.log("in admin page",userOrganization);
           ) : (
             <Box display="flex" flexDirection="column" alignItems="center">
               <Box width={'100%'} marginBottom={'10%'} paddingTop={'2%'} textAlign={'center'}>
-                <Typography variant='h5' color={'white'}>Admin Settings</Typography>
+                <Typography variant='h5' color={darkTheme?'white':'#124D81'}>Admin Settings</Typography>
               </Box>
               <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center">
                 {userData.map((user: User, index: number) => (
-                 <UserCard key={index} user={user} onUserClick={handleUserClick} onDeleteUser={handleDeleteUser} updateUserInList={updateUserInList} user_id={''} />
+                 <UserCard key={index} user={user} onUserClick={handleUserClick} onDeleteUser={handleDeleteUser} updateUserInList={updateUserInList} user_id={''} darkTheme={darkTheme} />
 
 
                 ))}
@@ -309,7 +312,7 @@ console.log("in admin page",userOrganization);
                     >
                       <Box sx={{cursor:"pointer"}} width={'100%'} display="flex" flexDirection="row" justifyContent="center" marginTop={'5px'} onClick={() => setOpenDialog2(true)}>
                         <CardContent sx={{marginTop:'0px', textAlign: 'center'}} >
-                          <Typography sx={{ padding: '0px',marginTop:'0px' }}>Add new User</Typography>
+                          <Typography sx={{ padding: '0px',marginTop:'0px',color:darkTheme?'white':'#124D81' }}>Add new User</Typography>
                           <AddIcon sx={{ fontSize: 150, color: controlBorder1 }} />
                         </CardContent>
                       </Box>

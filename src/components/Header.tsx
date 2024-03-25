@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import {AppBar, Collapse, Divider,Drawer,FormControl,IconButton,InputLabel,List,ListItem,ListItemButton,ListItemText,Menu,MenuItem,Select,SelectChangeEvent, Stack,TextField, ToggleButton, ToggleButtonGroup, useMediaQuery, useTheme} from '@mui/material';
+import {AppBar, Collapse, Divider,Drawer,FormControl,IconButton,InputLabel,List,ListItem,ListItemButton,ListItemText,Menu,MenuItem,Select,SelectChangeEvent, Stack, ToggleButton, ToggleButtonGroup, useMediaQuery, useTheme} from '@mui/material';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -11,12 +11,17 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { Avatar, Typography } from '@material-ui/core';
 import MenuIcon from '@mui/icons-material/Menu';
 import PersonIcon from '@mui/icons-material/Person';
+import BedtimeIcon from '@mui/icons-material/Bedtime';
+
+
+
 export interface HeaderProps {
   currentRoom: string;
   roomChange: (roomId: string) => void;
   roomAltered: boolean;
   userOrganization: string;
- 
+  darkTheme: boolean; // Add darkTheme as a prop
+  toggleDarkTheme: () => void;
 }
 
 export const Header: FC<HeaderProps> = (props) => {
@@ -28,20 +33,12 @@ export const Header: FC<HeaderProps> = (props) => {
   const { user, isLoading, isAuthenticated, logout, getIdTokenClaims } = useAuth0();
   const[UserRole, setUserRole] = useState("");
   const[UserOrganization, setUserOrganization] = useState("");
-  
-  // useEffect(() => {
-  //   setUserOrganization(props.userOrganization); 
-  //   // Set UserOrganization from props
-  // }, [props.userOrganization]);
-  // console.log("hello from header",props.userOrganization)
-  // getIdTokenClaims().then(res => {console.log('result',res)}).catch(err => {console.log("FAIL FUCL:"+err)})
-  
-  // console.log(user)
   const handleAdminClick = () => {
     navigate('/Admin');
     setNotHome(false);
     setPrevRoom(room);
   };
+
   const [notHome, setNotHome] = useState(true);
   const [temproom, settemproom] = useState([
     {
@@ -62,8 +59,9 @@ export const Header: FC<HeaderProps> = (props) => {
       },
     },
   ]);
+
   const [room, setRoom] = useState('');
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const handleSetRoom = (event: SelectChangeEvent) => {
     setRoom(event.target.value);
     props.roomChange(
@@ -74,8 +72,8 @@ export const Header: FC<HeaderProps> = (props) => {
       ].resource.id
     );
   };
-
-  const handleSetRoom2 = (value: any) => {
+  
+ const handleSetRoom2 = (value: any) => {
     console.log(value)
     setRoom(value);
     props.roomChange(
@@ -86,8 +84,6 @@ export const Header: FC<HeaderProps> = (props) => {
         )
       ].resource.id
     );
-   
-
   }
   const [prevRoom, setPrevRoom] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -96,7 +92,6 @@ export const Header: FC<HeaderProps> = (props) => {
   };
   const state = Boolean(anchorEl);
   const [temp, settemp] = useState(false)
-  
   const handleDMSChange = () => {
     // Handle the state change when the switch is toggled
     setDarkMode(!darkMode);
@@ -109,9 +104,16 @@ export const Header: FC<HeaderProps> = (props) => {
      navigate('/device-monitor');
     }
   };
+  const { darkTheme, toggleDarkTheme } = props;
 
-useEffect(() => {
-  getIdTokenClaims()
+  // const toggleDarkTheme = () => {
+  //   setDarkTheme((prevTheme) => !prevTheme);
+  //   // Toggle dark mode by changing the background color of the html element
+  //   document.documentElement.style.backgroundColor = darkTheme ? '#F5F5F5' : '#2F3D4A';
+  // };
+
+    useEffect(() => {
+    getIdTokenClaims()
     .then((res) => {
       console.log('Role:', res);
       setUserRole(res?.role);
@@ -143,7 +145,7 @@ useEffect(() => {
     });
 }, [isAuthenticated,UserOrganization ]);
 
-useEffect(() => {
+    useEffect(() => {
   // Assuming userRole is set appropriately based on your authentication logic
   if (UserRole === 'Hospital Technician' && (location.pathname === '/patient-monitor'  )) {
     // Redirect to the appropriate page if the user tries to access an unauthorized page
@@ -161,26 +163,7 @@ useEffect(() => {
   }
 }, [isAuthenticated, UserRole, location.pathname, navigate]);
 
-
-  // useEffect(() => {n
-  //   if (isAuthenticated) {
-  //     //fetch(` https://pmsind.co.in:5000/Location`, {
-  //     fetch(` https://pmsind.co.in:5000/Location?organization=${UserOrganization}`, {
-  //       credentials: 'omit',
-  //       headers: {
-  //         Authorization: 'Basic ' + btoa('fhiruser:change-password'),
-  //       },
-  //     })
-  //       .then((response) => response.json())
-  //       .then((data) => {
-  //         if (data.entry) {
-  //           settemproom(data.entry);
-  //         }
-  //       });
-  //   }
-  // }, [props.roomAltered, isAuthenticated,UserOrganization]); // Dependencies include props.roomAltered and isAuthenticated
-
-  const handleBackButtonClick = () => {
+    const handleBackButtonClick = () => {
     setNotHome(true)
     if(darkMode){
       navigate('/device-monitor')
@@ -190,7 +173,7 @@ useEffect(() => {
     }
     setRoom(prevRoom || props.currentRoom); // Display the previous room name if available, else the current room
   };
-  const deviceModeValue = darkMode ? room : '';
+    const deviceModeValue = darkMode ? room : '';
 
 
   return (
@@ -206,23 +189,14 @@ useEffect(() => {
                   
                 </Box>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Button
-        size="small"
-        onClick={handleMenu}
-        variant="contained"
-        style={{
-          backgroundColor: 'white', // Set background color based on darkMode state
-          color: '#124D81', // Set text color based on darkMode state
-          borderRadius: '25px', // Set border radius
-           // Set padding
-          marginRight: '150px' // Add margin to separate from the search bar
-        }}
-        startIcon={<AccountCircle />}
-      >
-        <Typography variant="subtitle1" component="h2">
-          &nbsp; {user?.name} &nbsp;
-        </Typography>
-      </Button>
+            
+              <Button  style={{display: 'flex',alignItems: 'center',borderRadius: '25px',backgroundColor:darkTheme?'#3C4F6C': 'white',color: darkTheme?'white':'#124D81',padding: '5px',}} onClick={handleMenu}>
+   <AccountCircle />
+ 
+   <Typography variant="subtitle1" component="h2" style={{ whiteSpace: 'nowrap' }}>
+   &nbsp;{user?.name} &nbsp;
+  </Typography>
+  </Button>
                     <Menu
                       anchorEl={anchorEl}
                       open={state}
@@ -231,16 +205,16 @@ useEffect(() => {
                       }}
                       MenuListProps={{ disablePadding: true }}
                     >
-                       <Box width={'350px'} height={'200px'} sx={{ backgroundColor: '#F3F2F7',color:'#124D81' }}>
+                       <Box width={'350px'} height={'200px'} sx={{ backgroundColor: darkTheme?'': '#F3F2F7',color: darkTheme?'':'#124D81' }}>
                           <Stack direction={'row'} justifyContent={'space-between'}>
                             <Typography style={{ marginLeft: '5%', marginTop: '5%', marginBottom: '5%' }}>
                               Hospital Name
                             </Typography>
                             <Button  onClick={() => logout()} sx={{ height:'10%',backgroundColor: '#124D81', color: 'white', textTransform: 'capitalize' }}>
-  <Typography variant="subtitle2">Sign out</Typography>
-</Button>
+                            <Typography variant="subtitle2">Sign out</Typography>
+                                </Button>
 
-                          </Stack>
+                          </Stack>  
                           <Stack direction={'row'} width={'100%'}>
                             <Avatar style={{ marginLeft: '5%', marginTop: '2%', width: 100, height: 100 }}>
                               {(() => (
@@ -255,37 +229,13 @@ useEffect(() => {
                                 {user?.email}
                               </Typography>
                               <Typography variant="subtitle2" style={{ marginLeft: '10%', marginTop: '2%' }}>
-                                Designation
+                              {user?.role}
                               </Typography>
                             </Stack>
                           </Stack>
                         </Box>
                     </Menu>
-                   <Stack marginLeft={'150px'} sx={{backgroundColor:'#FFFFFF', borderRadius: '25px'}}> 
-                   <TextField
-        variant="outlined"
-        size="small"
-        
-        inputProps={{ style: { color: '#124D81' } }} // Set text color to blue
-        sx={{
-          backgroundcolor:'#FFFFFF',
-          '& .MuiOutlinedInput-root': {
-            borderRadius: '25px', // Set border radius
-            borderColor: '#F9F9F9', // Set border color
-            borderStyle: 'solid', // Set border style
-            borderWidth: '1px', // Set border width
-            '&:hover fieldset': {
-              borderColor: '#124D81' // Set border color on hover
-            },
-            '&.Mui-focused fieldset': {
-              borderColor: '#124D81' // Set border color when focused
-            }
-          }
-        }}
-      
-        placeholder="Search Baby Name/ID"
-        style={{ width: '250px' }} // Adjust width as needed
-      /></Stack>
+                  
                    
                 </div>
               </div>
@@ -297,97 +247,56 @@ useEffect(() => {
                       <>
                         {/* <CustomSwitch onChange={handleDMSChange} checked={darkMode} /> */}
                         <Divider orientation="vertical" flexItem sx={{ marginRight: '20px', marginLeft: '20px' }} />
-                        <FormControl variant="standard" sx={{ width: '200px' }}>
-                          <InputLabel id="demo-simple-select-standard-label">Room</InputLabel>
-                          <Select
-                            label="Room"
-                            onChange={handleSetRoom}
-                            value={deviceModeValue}
-                            MenuProps={{
-                              MenuListProps: { disablePadding: true },
-                              sx: {
-                                '&& .Mui-selected': {
-                                  backgroundColor: '#2BA0E0',
-                                },
-                              },
-                            }}
-                          >
-                            {temproom.map((room) => (
-                               <MenuItem
-                                  key={room.resource.id}
-                                  onClick={() => {
+                        <FormControl variant="standard" sx={{ width: '200px',backgroundColor: darkTheme ? '':'#F3F2F7' }}>
+                        <InputLabel id="demo-simple-select-standard-label" disabled sx={{  color: darkTheme? 'white':'#124D81 !important' }}>Room</InputLabel>
+                          <Select label="Room" onChange={handleSetRoom} value={deviceModeValue} MenuProps={{MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: 'black',color: '#FFFFFF',},},}}sx={{ color: '#124D81' }}>
+                            {temproom.map((room) => {
+                                 return (
+                               <MenuItem key={room.resource.id} onClick={() => {
                                     setNotHome(true);
                                     if (darkMode) {
-                                      // Check user role before navigating to patient-monitor
+                                     
                                       if (UserRole === undefined) {
                                         // Technician should not access patient-monitor
                                         // Redirect or show an error message as needed
                                         console.log("Hospital Technicians cannot access patient-monitor");
-                                      } else {
+                                      } 
+                                      else 
+                                      {
                                         navigate('/device-monitor');
                                       }
-                                    } else {
+                                    } 
+                                    else 
+                                    {
                                       navigate('/device-monitor');
                                     }
                                   }}
                                   value={String(room.resource.name)}
-                                  sx={{
-                                    justifyContent: 'center',
-                                    padding: '6%',
-                                    backgroundColor: '#131726',
-                                  }}
+                                  sx={{justifyContent: 'center',padding: '6%',backgroundColor: '#F3F2F7',color: '#124D81'}}
                                   // disabled={UserRole === 'Hospital Technician'}
                                 >
                                   {/* {room.resource.name.toString()} */} 
                                   {room.resource.name.toString()}
                                 </MenuItem>
-                                
-                            ))}
-                            <Divider sx={{border:'1px solid grey'}} ></Divider>
-              <MenuItem value="R&D"
-                sx={{
-                  width: '250px',padding: '6%', paddingLeft:'20px',backgroundColor: '#131726'}} onClick={() => {navigate('/rooms');setNotHome(false);setPrevRoom(room);}}>
-                Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }}/>
-              </MenuItem>
-              <MenuItem value="R&D" sx={{width: '250px',padding: '6%',paddingLeft: '20px',backgroundColor: '#131726',}}onClick={handleAdminClick}>
-      Admin Access <PersonIcon sx={{ marginLeft: 'auto' }} />
-    </MenuItem>
-    
+                                 );
+                              })}
+                            
+              <MenuItem value="R&D" sx={{width: '250px',padding: '6%', paddingLeft:'20px',backgroundColor: '#F3F2F7', color: '#124D81',borderTop:'1px solid black'}} onClick={() => {navigate('/rooms');setNotHome(false);setPrevRoom(room);}}>Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }}/></MenuItem>
+              <MenuItem value="R&D" sx={{width: '250px',padding: '6%',paddingLeft: '20px',backgroundColor: '#F3F2F7', color: '#124D81'}}onClick={handleAdminClick}>Admin Access <PersonIcon sx={{ marginLeft: 'auto' }} /></MenuItem>
                           </Select>
-                          
-                        </FormControl>
+                          </FormControl>
                       </>
                     )}
                     {notHome && UserRole === 'Hospital Clinician' && (
                       <>
-                        {/* Your content for Hospital Clinician */}
-                        <FormControl variant="standard" sx={{ width: '200px', backgroundColor: '#F3F2F7'}}>
-                          <InputLabel id="demo-simple-select-standard-label" disabled sx={{ color: '#124D81 !important' }}>
-                            Room
-                          </InputLabel>
-                          <Select
-                            label="Room"
-                            onChange={handleSetRoom}
-                            value={deviceModeValue}
-                            MenuProps={{
-                              MenuListProps: { disablePadding: true },
-                              sx: {
-                                '&& .Mui-selected': {
-                                  backgroundColor: '#124D81',
-                                  color: '#FFFFFF',
-                                },
-                              },
-                            }}
-                            sx={{ color: '#124D81' }}
-                          >
+                        <FormControl variant="standard"  sx={{ width: '200px', backgroundColor: darkTheme?'':'#F3F2F7'}}>
+                          <InputLabel id="demo-simple-select-standard-label" disabled sx={{ color: darkTheme? 'white':'#124D81 !important' }}>Room</InputLabel>
+                          <Select label="Room" onChange={handleSetRoom} value={deviceModeValue} MenuProps={{MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81',color: '#FFFFFF',},},}}sx={{ color: darkTheme?'white': '#124D81' }}>
                             {temproom.map((room) => {
                               
                       return (
-                        <MenuItem
-                          key={room.resource.id}
-                          onClick={() => {
-                            setNotHome(true)
-                            if(darkMode){
+                        <MenuItem key={room.resource.id} onClick={() => {setNotHome(true)
+                         if(darkMode){
                               navigate('/device-monitor')
                             }
                             else{
@@ -410,56 +319,28 @@ useEffect(() => {
                       );
                       
                     })}
-                    
-                    
-                            
-                          </Select>
+                    </Select>
                         </FormControl>
                         <Divider orientation="vertical" flexItem sx={{ marginLeft: '20px' }} />
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-  <Button
-    variant="text"
-    style={{
-      width: '150px', // Set a fixed width for the buttons
-      borderRadius: '25px',
-      backgroundColor: !darkMode ? '#124D81' : 'white',
-      color: !darkMode ? 'white' : '#124D81',
-      padding: '10px',
-      margin: '5px',
-    }}
-    onClick={handleDMSChange}
-  >
-    Baby Mode
-  </Button>
-  <Button
-    variant="text"
-    style={{
-      width: '150px', // Set a fixed width for the buttons
-      borderRadius: '25px',
-      backgroundColor: darkMode ? '#124D81' : 'white',
-      color: darkMode ? 'white' : '#124D81',
-      padding: '10px',
-      margin: '5px',
-    }}
-    onClick={handleDMSChange}
-  >
-    Device Mode
-  </Button>
+  <Button variant="text" style={{width: '150px',borderRadius: '25px',backgroundColor: !darkMode ? '#124D81' : 'white',color: !darkMode ? 'white' : '#124D81',padding: '10px',margin: '5px',}}onClick={handleDMSChange}> Baby Mode</Button>
+  <Button variant="text"style={{width: '150px', borderRadius: '25px',backgroundColor: darkMode ? '#124D81' : 'white',color: darkMode ? 'white' : '#124D81',padding: '10px',margin: '5px',}}onClick={handleDMSChange}>Device Mode</Button>
 </div>
-
-
-                        
-                        {/* Render a disabled component for Room and Device Settings */}
+{/* Render a disabled component for Room and Device Settings */}
                         
                       </>
                     )}
-                    {/* Common code for both roles */}
-                   
-                    
-                  </Stack>
-                </>
-              ) : (
-                <>
+                   <div style={{ marginLeft: '25px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                   {/* <Organization darkTheme={darkTheme} /> */}
+      <IconButton onClick={toggleDarkTheme}   sx={{backgroundColor:darkTheme ? '#124D81' : '#FFFFFF',height:'40px',width:'40px' }}>
+        <BedtimeIcon style={{ color: darkTheme ? '#FFFFFF' : '#124D81', fontSize: '1.4rem' }} />
+      </IconButton>
+                    </div>
+                    </Stack>
+                     </>
+                      ) : 
+                      (
+                      <>
                   <IconButton onClick={() => settemp(true)}>
                     <MenuIcon />
                   </IconButton>
@@ -474,23 +355,13 @@ useEffect(() => {
                         <Typography>Settings</Typography>
                       </Stack>
                       {notHome && UserRole === 'Hospital Clinician' && (
-  <Stack direction={'row'} width={'100%'} height={'5%'} justifyContent={'center'} marginBottom={'3%'} marginTop={'5%'}>
-    <ToggleButtonGroup
-      color="primary"
-      value={darkMode ? 'dark' : 'light'}
-      exclusive
-      onChange={handleDMSChange}
-      aria-label="Dark Mode Switch"
-    >
-      <ToggleButton value="light" sx={{ width: 'auto' }}>
-        Baby Mode
-      </ToggleButton>
-      <ToggleButton value="dark" sx={{ width: 'auto' }}>
-        Device Mode
-      </ToggleButton>
-    </ToggleButtonGroup>
-  </Stack>
-)}
+                      <Stack direction={'row'} width={'100%'} height={'5%'} justifyContent={'center'} marginBottom={'3%'} marginTop={'5%'}>
+                       <ToggleButtonGroup color="primary" value={darkMode ? 'dark' : 'light'} exclusive onChange={handleDMSChange} aria-label="Dark Mode Switch">
+                         <ToggleButton value="light" sx={{ width: 'auto' }}>Baby Mode</ToggleButton>
+                          <ToggleButton value="dark" sx={{ width: 'auto' }}> Device Mode</ToggleButton>
+                       </ToggleButtonGroup>
+                      </Stack>
+                      )}
 {/* mobile view */}
                       <List>
                         <ListItemButton onClick={() => setSmallList(!smallList)}>
@@ -525,38 +396,14 @@ useEffect(() => {
                             ))}
 
                             
-                            {notHome && UserRole === 'Hospital Technician' && (
-                              <><MenuItem
-                                  value="R&D"
-                                  sx={{
-                                    width: 'auto', padding: '6%', backgroundColor: '#131726', borderTop: '1px solid grey',
-                                  }}
-                                  onClick={() => {
-                                    navigate('/rooms');
-                                    setNotHome(false);
-                                    setPrevRoom(room);
-                                  } }
-                                >
-                                  Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }} />
-                                </MenuItem><MenuItem
-                                  value="R&D"
-                                  sx={{
-                                    width: '100%',
-                                    padding: '6%',
-                                    paddingLeft: '20px',
-                                    backgroundColor: '#131726',
-                                    textAlign:'space-between,'
-                                  }}
-                                  onClick={handleAdminClick}
-                                  
-                                >
-                                    Admin Access <PersonIcon sx={{ marginLeft: 'auto' }} />
-                                  </MenuItem></>
-                              
-                            )}
+                        {notHome && UserRole === 'Hospital Technician' && (<>
+                                  <MenuItem value="R&D" sx={{width: 'auto', padding: '6%', backgroundColor: '#131726', borderTop: '1px solid grey',}} onClick={() => {navigate('/rooms');setNotHome(false);setPrevRoom(room); } }>Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }} />
+                                  </MenuItem>
+                                  <MenuItem value="R&D" sx={{width: '100%',padding: '6%',paddingLeft: '20px',backgroundColor: '#131726',textAlign:'space-between,'}}onClick={handleAdminClick}>Admin Access <PersonIcon sx={{ marginLeft: 'auto' }} /></MenuItem></> )}
                           </List>
                           
-                        </Collapse>
+                        </Collapse> 
+                        
                       </List>
                       <Box width={'100%'} height={'200px'} marginTop={'auto'} sx={{ backgroundColor: '#131726' }}>
                         <Stack direction={'row'} justifyContent={'space-between'}>
@@ -586,14 +433,18 @@ useEffect(() => {
                           </Stack>
                         </Stack>
                       </Box>
+                      
                     </Stack>
+                    
                   </Drawer>
-                </>
+                      </>
+                
               )}
             </>
           )}
         </Toolbar>
       </AppBar>
     </Box>
+    
   );
 };

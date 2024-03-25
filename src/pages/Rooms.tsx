@@ -11,11 +11,13 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 export interface roomdata{
   roomModified: Function;
   userOrganization: string;
+  darkTheme:boolean;
 }
 
 export const Rooms:FC<roomdata> = (props) => {
     const {isAuthenticated, loginWithRedirect} = useAuth0();
     const theme = useTheme();
+    const { darkTheme } = props;
     const [temproom, settemproom] = useState([{
         "resource": {
             "name": String,
@@ -138,7 +140,7 @@ export const Rooms:FC<roomdata> = (props) => {
     const [vvtemp, setvvtemp] = useState(false)
     const roomBoxes = temproom.map((room) => {
         return(
-            <RoomCard deviceChangeToggle={vvtemp} deviceChange={() => { setvvtemp(!vvtemp); } } roomChange={() => { setRoomAddedRemoved(!roomAddedRemoved); } } roomName={String(room.resource.identifier[0].value)} roomId={String(room.resource.id)} userOrganization={props.userOrganization}></RoomCard>
+            <RoomCard deviceChangeToggle={vvtemp} deviceChange={() => { setvvtemp(!vvtemp); } } roomChange={() => { setRoomAddedRemoved(!roomAddedRemoved); } } roomName={String(room.resource.identifier[0].value)} roomId={String(room.resource.id)} userOrganization={props.userOrganization} darkTheme={props.darkTheme}></RoomCard>
         )
     })
   return (
@@ -147,7 +149,7 @@ export const Rooms:FC<roomdata> = (props) => {
       {isAuthenticated && (
         <div>
                 <Stack width={'100%'} direction={'row'} paddingTop={'2%'} justifyContent={'center'} textAlign={'center'}>
-              <Typography variant='h5' color={'white'}>Rooms & Device Settings</Typography>
+              <Typography variant='h5' color={darkTheme?'white':'#124D81'}>Rooms & Device Settings</Typography>
               {/* <Settings  sx={{marginLeft:'1%', fontSize:'200%', color:'white'}}/> */}
             </Stack>
             
@@ -182,7 +184,7 @@ export const Rooms:FC<roomdata> = (props) => {
                   }} >
                   <Stack width={"100%"} direction={"row"} sx={{justifyContent:"center", marginTop:"20px"}}>
                     <CardContent>
-                        <Typography sx={{paddingLeft:'45px'}}>Add new room</Typography>
+                        <Typography fontSize={'bold'} style={{color:darkTheme?'white': '#124D81',fontWeight: 'bold',paddingLeft:'45px'}}>Add new room</Typography>
                         <AddIcon sx={{ fontSize: 200, color:controlBorder }} />
                     </CardContent>
                   </Stack>

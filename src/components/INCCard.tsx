@@ -120,6 +120,7 @@ export interface DeviceDetails {
 
 }
 
+
 export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
 
     const [isOpen, setIsOpen] = useState(false);
@@ -304,7 +305,7 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
         <div style={{marginTop:'10%'}}><Typography variant='subtitle2' color={"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} >Heart Rate</Typography></div>
                                 {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                                 <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-                                  <Typography variant='h3' color={"#3C89C0"} >
+                                  <Typography variant='h4' color={"#3C89C0"} >
                                   {(() => {
                                                     let data = findData("Pulse Rate")
                                                     return (data.data)

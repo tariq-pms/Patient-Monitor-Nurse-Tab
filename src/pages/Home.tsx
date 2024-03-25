@@ -56,7 +56,7 @@ useEffect(() => {if(isAuthenticated){navigate('/device-monitor')}},[isAuthentica
                   marginRight:'auto'
                 }}/>
       
-                <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
+                <Typography variant='h3' color={'#2ba1e0'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
                 <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
                 <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
                 <Button variant='outlined'sx={{width:'200px', height:'50px', borderRadius:'100px'}} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>

@@ -1,6 +1,6 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {Tooltip, Accordion, AccordionDetails, AccordionSummary, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Stack, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import {Tooltip, Accordion, AccordionDetails, AccordionSummary, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Stack, ToggleButton, ToggleButtonGroup, Typography, MenuItem, Select } from "@mui/material";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FC } from "react";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -14,6 +14,8 @@ import { ExpandMoreRounded } from "@mui/icons-material";
 import { Table } from "./Table";
 import { MRT_ColumnDef } from "material-react-table";
 import { ExportToCsv } from "export-to-csv";
+import { DatePicker, LocalizationProvider } from "@mui/lab";
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
 
 
 export interface PatientDetails {
@@ -135,6 +137,7 @@ export interface PatientDetails {
           }[];
     }[];
     patient_name: string;
+    
   }
   type TemperatureData = {
     labels: any[];
@@ -218,7 +221,13 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
     const [newalarm, setNewAlarm] = useState<{ date: string; time: { val: string; alarm: string[]; priority: string[]; }; }[][]>([]);
     const [commeta, setcommeta] = useState<number[]>([])
     const [tableVisisble, setTableVisible] = useState(false)
-    
+
+    const [selectedTab, setSelectedTab] = useState('overview');
+    const handleTabChange = (_event: any, newTab: React.SetStateAction<string> | null) => {
+        if (newTab !== null) {
+            setSelectedTab(newTab);
+        }
+    };
     const csvOptions = {
         fieldSeparator: ',',
         quoteStrings: '"',
@@ -568,9 +577,6 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
         return date.toISOString();
     }
 
-
-
-
     useEffect(() => {
         let url: string[] = []
         let currentNewDate = new Date()
@@ -624,7 +630,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                                 let second: {}[] = []
                                 let third: {}[] = []
                                 dats[1].resource.component.map((data: { valueQuantity: { unit: { toString: () => string; }; }; code: { text: { toString: () => string; }; }; }, index: string | number) => {
-                                    if(data.valueQuantity.unit.toString() == "C" || data.valueQuantity.unit.toString()=="C°" || data.valueQuantity.unit.toString() == "C°" || data.code.text.toString()=="Set Heater" || data.code.text.toString()=="Heater Level"){
+                                    if(data.valueQuantity.unit.toString() == "C" || data.valueQuantity.unit.toString()=="°C" || data.valueQuantity.unit.toString() == "°C" || data.code.text.toString()=="Set Heater" || data.code.text.toString()=="Heater Level"){
                                         let unit = data.valueQuantity.unit.toString() as keyof typeof heaterYaxis;
                                         // zeroth.push({
                                         //     label: data.code.text.toString(),
@@ -963,7 +969,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
             )
         }
         else{
-            return ( <Typography variant="h4" sx={{fontWeight:'bold'}}>No Therapy Running</Typography>)
+            return ( <Typography variant="h4" color={'#124D81'} sx={{fontWeight:'bold'}}>No Therapy Running</Typography>)
         }
     }
     const handleExportData = () => {
@@ -1394,7 +1400,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                             {/* <Typography variant='h5' paddingLeft={'2%'}>Trends</Typography> */}
                             <Stack width={'100%'} direction={'row'} textAlign={'center'}  >
                                 
-                                <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'1%'}}>
+                                <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto',backgroundColor:'#124D81', marginRight:'1%'}}>
                                     <ToggleButton value={0} key="left" sx={{height:'30px', width:'50px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(0)}}>
                                     Day
                                     </ToggleButton>,
@@ -1405,7 +1411,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                                         2 Weeks
                                     </ToggleButton>
                                 </ToggleButtonGroup>
-                                <ToggleButtonGroup value={S_and_D} exclusive size="small" sx={{marginRight:'1%'}}>
+                                <ToggleButtonGroup value={S_and_D} exclusive size="small" sx={{marginRight:'1%',backgroundColor:'#124D81'}}>
                                     <ToggleButton value={0} key="left" sx={{height:'30px', width:'80px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {
                                         setS_and_D(0)
                                         let temp: any[] = []
@@ -1494,7 +1500,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                                             <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={
                                                 <Divider orientation='vertical' flexItem sx={{marginLeft:'1%',backgroundColor:'#505050', color:'#505050'}}/>
                                             }>
-                                                <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
+                                                <Stack height={'100%'} width={'95%'} sx={{backgroundColor:'#E4E4E4'}} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
                                                     {/* <MyChart height={'100%'} forwardedRef={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} plugins={temperatureLegendPlugin} /> */}
                                                     <Line ref={chartRef1} options={temperatureOption as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                                                     <div id="legend-container"></div>
@@ -1648,10 +1654,10 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
             return (newalarm[index][0]?.time?.alarm?.map((alarm, ind) => {
                 if(newalarm[index][0].time.priority[ind]=="High Priority"){
                     return (
-                        <Box width={'200px'} height={'110px'} sx={{border:'1px solid red', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px red`}} justifyContent={'center'} textAlign={'center'}>
-                            <Typography variant='subtitle1' paddingTop={'13%'}><b>{alarm}</b></Typography>
+                        <Box width={'200px'} height={'110px'} sx={{border:'1px solid red', backgroundColor:'#FFFFFF',borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px red`}} justifyContent={'center'} textAlign={'center'}>
+                            <Typography variant='subtitle1'  color={'#124D81'} paddingTop={'13%'}><b>{alarm}</b></Typography>
                             <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
-                                <Typography variant='subtitle2' >{(newalarm[index][0].date).toString()} - {(newalarm[index][0].time.val).toString()}</Typography>
+                                <Typography variant='subtitle2' color={'#124D81'} >{(newalarm[index][0].date).toString()} - {(newalarm[index][0].time.val).toString()}</Typography>
                             </div>
                             
                         </Box>
@@ -1659,10 +1665,10 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                 }
                 else{
                     return (
-                        <Box width={'200px'} height={'110px'} sx={{border:'1px solid yellow', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px yellow`}} justifyContent={'center'} textAlign={'center'}>
-                            <Typography variant='subtitle1' paddingTop={'13%'}><b>{alarm}</b></Typography>
+                        <Box width={'200px'} height={'110px'} sx={{border:'1px solid yellow',backgroundColor:'#FFFFFF', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px yellow`}} justifyContent={'center'} textAlign={'center'}>
+                            <Typography variant='subtitle1'  color={'#124D81'} paddingTop={'13%'}><b>{alarm}</b></Typography>
                             <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
-                                <Typography variant='subtitle2' >{(newalarm[index][0].date).toString()} - {(newalarm[index][0].time.val).toString()}</Typography>
+                                <Typography variant='subtitle2'  color={'#124D81'} >{(newalarm[index][0].date).toString()} - {(newalarm[index][0].time.val).toString()}</Typography>
                             </div>
                             
                         </Box>
@@ -1676,16 +1682,13 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
         }
         
     }
-
-
-
     const connectedDevices = () => {
         if(props.device?.length>0){
             return (props.device.map((device) => {
                 return (
                     <Box borderRadius={'10px'} justifyContent={'center'} textAlign={'center'} boxShadow={`0px 0px 10px 2px #00B1FD`} border={'1px solid #00B1FD'} height={'70px'}>
-                        <Typography paddingTop={'10px'} paddingLeft={'10px'} paddingRight={'10px'}>{device.identifier[1].value}</Typography>
-                        <Typography variant="caption" paddingTop={'5px'} paddingLeft={'10px'} paddingRight={'10px'}>{device.identifier[0].value}</Typography>
+                        <Typography paddingTop={'10px'} paddingLeft={'10px'} paddingRight={'10px'} color={'#124D81'}>{device.identifier[1].value}</Typography>
+                        <Typography variant="caption" paddingTop={'5px'} paddingLeft={'10px'} color={'#124D81'} paddingRight={'10px'}>{device.identifier[0].value}</Typography>
                     </Box>
                 )
             }))
@@ -1693,6 +1696,20 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
         return "No device currently connected"
         
     }
+    const [gestationalAge, setGestationalAge] = useState('');
+    const [gender, setGender] = useState('');
+
+  const handleChange = (event: { target: { value: React.SetStateAction<string>; }; }) => {
+    setGestationalAge(event.target.value);
+  };
+  const handleChange1 = (event: { target: { value: React.SetStateAction<string>; }; }) => {
+    setGender(event.target.value);
+  };
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  const handleDateChange = (date: Date | null) => {
+    setSelectedDate(date);
+  };
 
     return (
         <React.Fragment>
@@ -1708,49 +1725,281 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                 PaperProps={{sx:{minWidth:{
                     xs: '90%',
                     sm: '90%',
-                    md: '50%',
-                    lg: '50%',
+                    md: '70%',
+                    lg: '70%',
                 },maxWidth:{
                     xs: '90%',
                     sm: '90%',
-                    md: '50%',
-                    lg: '50%',
-                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)' }}}
+                    md: '70%',
+                    lg: '70%',
+                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundColor:'#FFFFFF'}}}
                 >
                     <DialogTitle
                         sx={{
-                            borderBottom:'1px solid white'
+                            borderBottom:'1px solid grey'
                         }}
                     >
                         {/* <IconButton sx={{marginLeft:'96%'}}><CloseRounded/></IconButton> */}
                         <Stack direction={'row'} width={'102%'} >
                             <Stack direction={'row'} width={'100%'} sx={{justifyContent:'space-between', marginLeft:'auto', marginRight:'auto'}}>
-                            <Typography variant="h6" fontWeight={'regular'} >
+                            <Typography variant="h6" color={'black'} fontWeight={'regular'} >
                                 {props.patient_name} 
                             
                             </Typography>
-                            <Typography variant="h6">
+                            <Typography color={'black'} variant="h6">
                                 {props.patient_id}
                             </Typography>
                             
                             </Stack>
-                            <IconButton sx={{width:'45px', marginTop:'-4px', marginLeft:'10px'}} onClick={() => {setvarq(!varq)}}><FontAwesomeIcon style={{padding:'0px', margin:'0px'}} icon={faXmark} /></IconButton>
+                            <IconButton sx={{width:'45px', marginTop:'-4px', marginLeft:'10px'}} onClick={() => {setvarq(!varq)}}><FontAwesomeIcon style={{padding:'0px', margin:'0px',color:'black'}} icon={faXmark} /></IconButton>
                         </Stack>
-
-                        
                     </DialogTitle>
                     <DialogContent dividers={true} sx={{justifyContent:'center', overflowY: 'scroll'}}>
-                        <Box justifyContent={'center'} textAlign={'center'} width={'100%'} marginTop={"20px"}>
-                        {realtimeDataDisplay()}
+                    <Stack>
+                    <ToggleButtonGroup
+                            value={selectedTab}
+                            exclusive
+                            onChange={handleTabChange}
+                            aria-label="selected tab"
+                            sx={{ width: '100%', marginBottom: '20px' }} // Full width and marginBottom
+                        >
+                            <ToggleButton value="overview" sx={{ width: '100%'}} style={{ backgroundColor: selectedTab === 'overview' ? '#124D81' : '#F3F2F7',color: selectedTab === 'overview' ? '#F3F2F7' : '#124D81'}}>Overview</ToggleButton>
+                            <ToggleButton value="trends" sx={{ width: '100%' }} style={{ backgroundColor: selectedTab === 'trends' ? '#124D81' : '#F3F2F7',color: selectedTab === 'trends' ? '#F3F2F7' : '#124D81' }}>Trends</ToggleButton>
+                            <ToggleButton value="alarms" sx={{ width: '100%' }} style={{ backgroundColor: selectedTab === 'alarms' ? '#124D81' : '#F3F2F7',color: selectedTab === 'alarms' ? '#F3F2F7' : '#124D81'  }}>Alarms</ToggleButton>
+                            <ToggleButton value="patientinfo" sx={{ width: '100%' }} style={{ backgroundColor: selectedTab === 'patientinfo' ? '#124D81' : '#F3F2F7',color: selectedTab === 'patientinfo' ? '#F3F2F7' : '#124D81'}} >Patient Info</ToggleButton>                        
+                        </ToggleButtonGroup>
+                    </Stack>
+                    {selectedTab === 'overview' && (
+                        <Box>
+                        <Box justifyContent={'center'} textAlign={'center'} color={'#124D81'} width={'100%'} marginTop={"20px"}>
+                            {realtimeDataDisplay()}
                         </Box>
-                        <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'white', color:'white'}}/>
-                        <Typography variant='h5' paddingLeft={'2%'}>Connected Devices</Typography>
+                        <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'#E4E4E4'}}/>
+                        <Typography variant='h5' color={'#124D81'} paddingLeft={'2%'}>Connected Devices</Typography>
                         <Box marginTop={'3%'} marginLeft={'3%'} display={'flex'} textAlign={'center'} justifyContent={'left'} flexWrap={'wrap'} width={'100%'} gap={'10px'}>
-                            {connectedDevices()}
+                        {connectedDevices()}
+                    </Box>
                         </Box>
+                          )}
+                        {selectedTab === 'patientinfo' && (
+                              <Stack direction="column" spacing={2}  justifyContent="center">
+                              {/* First Row */}
+                              <Stack width={'100%'} direction="row" spacing={3} justifyContent="center">
+                                 
+                              <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                              
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+             <Typography variant="subtitle1" color="#124D81" style={{ fontFamily: 'Helvetica' }}>
+                 Baby Name:
+             </Typography>
+             <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold', fontFamily: 'Helvetica', marginLeft: '5px' }}>
+             {props.patient_name} 
+             </Typography>
+         </Box>
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+             <Typography variant="subtitle1" color="#124D81">
+                 Birth Weight:
+             </Typography>
+             <Typography variant="subtitle1" color="#124D81" style={{fontWeight: 'bold', marginLeft: '5px' }}>
+                 730 g
+             </Typography>
+         </Box>
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+             <Typography variant="subtitle1" color="#124D81">
+                 Gender:
+             </Typography>
+             <Select
+      sx={{ backgroundColor: '#F3F2F7',color:'#124D81',paddingLeft:'20px' ,'& .MuiSelect-icon': {
+        color: '#124D81', // Change the color of the arrow dropdown to blue
+    },}}
+      value={gender}
+      
+      onChange={handleChange1}
+      variant="standard"
+      displayEmpty
+      
+      
+      style={{ marginLeft: '40px',width:'150px',alignItems:'center'}}
+    >
+        <MenuItem value="" disabled>
+                <em>Select Gender</em>
+            </MenuItem>
+      <MenuItem value="male">Male</MenuItem>
+      <MenuItem value="Femlae">Female</MenuItem>
+      
+      
+    </Select>
+         </Box>
+     </Box>
+     
+     <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+             <Typography variant="subtitle1" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+                Blood Group :
+             </Typography>
+             <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold', fontFamily: 'Helvetica', marginLeft: '5px' }}>
+                 {/* O +ve */}
+             </Typography>
+         </Box>
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+             <Typography variant="subtitle1" color="#124D81">
+                Mothers Name :
+             </Typography>
+             <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold',marginLeft: '5px' }}>
+                 {/* Sheela */}
+             </Typography>
+         </Box>
+        
+     </Box>
+        </Stack>
+        
+        <Box width={'100%'}>
+        <Box sx={{ position: 'relative', marginBottom: '20px' }}>
+             {/* Edit icon */}
+             
+             {/* Box content */}
+             <Typography variant="h6" color="#124D81" style={{ fontFamily: 'Helvetica', textAlign: 'left' }}>Admission Details</Typography>
+             <Divider sx={{ marginBottom: '20px', backgroundColor: '#E4E4E4', color: '#E4E4E4', height: '1px' }} />
+             <Stack width={'100%'} direction="row" minHeight={"100px"} spacing={3} justifyContent="center">
+          <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+      <Typography variant="subtitle1" color="#124D81" style={{ fontFamily: 'Helvetica' }}>
+        Date of Admission:
+      </Typography>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <DatePicker
+          value={selectedDate}
+          onChange={handleDateChange}
+          renderInput={(params: any) => (
+            <Typography variant="subtitle1" color="#124D81" {...params} />
+          )}
+          style={{ marginLeft: '5px' }}
+        />
+      </LocalizationProvider>
+    </Box>
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+             <Typography variant="subtitle1" color="#124D81">
+             Room No :
+             </Typography>
+             <Typography variant="subtitle1" color="#124D81" style={{fontWeight: 'bold', marginLeft: '5px' }}>
+                 01
+             </Typography>
+         </Box>
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+             <Typography variant="subtitle1" color="#124D81">
+             Reason of Admission :
+             </Typography>
+             <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold',marginLeft: '5px' }}>
+            </Typography>
+         </Box>
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+             <Typography variant="subtitle1" color="#124D81">
+             Reporting Nurse :
+             </Typography>
+             <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold',marginLeft: '5px' }}>
+            </Typography>
+         </Box></Box>
+     
+     <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+             <Typography variant="subtitle1" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+             Birth Date & Time : 
+             </Typography>
+             <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold', fontFamily: 'Helvetica', marginLeft: '5px' }}>
+           </Typography>
+         </Box>
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+  <Typography variant="subtitle1" color="#124D81" >
+    Gestational Age:
+  </Typography>
+  
+  
+    <Select sx={{ backgroundColor: '#F3F2F7',color:'#124D81',paddingLeft:'20px' ,'& .MuiSelect-icon': {color: '#124D81' },}}value={gestationalAge} placeholder="Select Here" onChange={handleChange} variant="standard" displayEmpty style={{ marginLeft: '50px',width:'150px',alignItems:'center'}}>
+      <MenuItem value="" disabled><em>Select Age</em></MenuItem>
+      <MenuItem value="25 weeks">25 weeks</MenuItem>
+      <MenuItem value="26 weeks">26 weeks</MenuItem>
+      <MenuItem value="27 weeks">27 weeks</MenuItem>         
+      <MenuItem value="28 weeks">28 weeks</MenuItem>
+      <MenuItem value="29 weeks">29 weeks</MenuItem>
+      <MenuItem value="30 weeks">30 weeks</MenuItem>
+      <MenuItem value="31 weeks">31 weeks</MenuItem>
+      <MenuItem value="32 weeks">32 weeks</MenuItem>
+      <MenuItem value="33 weeks">33 weeks</MenuItem>
+      <MenuItem value="34 weeks">34 weeks</MenuItem>
+      <MenuItem value="35 weeks">35 weeks</MenuItem>
+      <MenuItem value="36 weeks">36 weeks</MenuItem>
+   </Select>
+  
+</Box>
+
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+             <Typography variant="subtitle1" color="#124D81">Reporting Doctor :</Typography>
+             <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold',marginLeft: '5px' }}>user.name</Typography>
+         </Box>
+        
+        
+     </Box>
+        </Stack>
+         </Box>
+     </Box>
+        
+     <Divider sx={{ marginBottom: '20px', backgroundColor: '#E4E4E4', color: '#E4E4E4',height:'1px' }} />
+        <Stack width={'100%'} direction="row" spacing={3} justifyContent="center">
+        <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+             <Typography variant="h6" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+            Vital Signs
+             </Typography>
+           
+             
+         </Box>
+         <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'black'}}/>
+        
+     </Box>                     
+     
+     <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+             <Typography  variant="h6" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+            Anthropometry
+             </Typography>
+             
+         </Box>
+        
+     </Box>
+        </Stack>
+        <Divider sx={{ marginBottom: '20px', backgroundColor: '#E4E4E4', color: '#E4E4E4',height:'1px' }} />
+        <Stack width={'100%'} direction="row"  spacing={3} justifyContent="center">
+        <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+             <Typography variant="h6" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+            APGAR Details
+             </Typography>
+             
+             
+         </Box>
+         <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'black', color:'black'}}/>
+        
+     </Box>                     
+     
+     <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+             <Typography  variant="h6" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+            Skin Assessment
+             </Typography>
+             
+         </Box>
+        
+     </Box>
+        </Stack>
+      
+                          </Stack>
+                        
+                         )}
+                         {selectedTab === 'trends' && (
+                         <Box>
                         {props.observation_resource && props.observation_resource!=undefined && props.observation_resource[0].identifier[0].value.toString()!='PMS-SYRINGE' && (<>
-                            <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'white', color:'white'}}/>
-                            <Typography variant='h5' paddingLeft={'2%'}>Trends</Typography>
+                            <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'#E4E4E4'}}/>
+                            <Typography variant='h5' color={'#124D81'} paddingLeft={'2%'}>Trends</Typography>
                             {graphDataDisplay}
                         </>)}
                         
@@ -1758,24 +2007,27 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                         {/* <Box marginTop={'3%'} marginLeft={'3%'} display={'flex'} textAlign={'center'} justifyContent={'left'} flexWrap={'wrap'} width={'100%'} gap={'10px'}>
                             {connectedDevices()}
                         </Box> */}
-                       <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'white', color:'white'}}/>
-                       <Typography variant='h5' paddingLeft={'2%'}>Alarms</Typography>
+                        </Box>
+                         )}
+                       
+                       {selectedTab === 'alarms' && (
+                       <Box> <Typography variant='h5' color={'#124D81'} paddingLeft={'2%'}>Alarms</Typography>
                        {props.communication_resource?.map((comms, index) => {
                         console.log(comms)
                         if(comms.meta.versionId!="1"){
                             return (
-                                <Accordion elevation={0} defaultExpanded={true} sx={{ width:'100%',backgroundColor:"transparent", backgroundImage:'none', marginTop:'10px' , marginBottom:"10px", border:'1px solid grey', borderRadius:'15px', '&:before': {opacity: 0}}} >
+                                <Accordion elevation={0} defaultExpanded={true} sx={{ width:'100%',backgroundColor:"#F3F2F7", backgroundImage:'none', marginTop:'10px' , marginBottom:"10px", border:'1px solid grey', borderRadius:'15px', '&:before': {opacity: 0}}} >
                                     <AccordionSummary
-                                            expandIcon={<ExpandMoreRounded sx={{ fontSize:'200%'}}/>}
+                                            expandIcon={<ExpandMoreRounded sx={{color:'#124D81', fontSize:'200%'}}/>}
                                             aria-controls="panel1a-content"
                                             id="panel1a-header"
                                             
                                             >
-                                            <Typography variant='h5' component={"h2"} >{props.device && props.device[index] && props.device[index].identifier[1].value }
+                                            <Typography variant='h5' color={'#124D81'} component={"h2"} >{props.device && props.device[index] && props.device[index].identifier[1].value }
                                             {(props.device==undefined || (!props.device && !props.device[index])) && props.observation_resource[index].identifier[0].value}</Typography>
                                     </AccordionSummary>
                                     <AccordionDetails>
-                                    <Box width={'100%'} display={'flex'} textAlign={'center'} justifyContent={'center'} flexWrap={'wrap'}>
+                                    <Box width={'100%'}  display={'flex'} textAlign={'center'} justifyContent={'center'} flexWrap={'wrap'}>
                                         {alarmCard(index)}
                                     </Box>
                                     </AccordionDetails>
@@ -1784,15 +2036,16 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                         }
                         
                        })}
-                        <Button sx={{width:'20%', height:'50px', marginLeft:'40%', marginTop:'3%', marginBottom:'3%', borderRadius:'50px', color:'white', backgroundColor:'#111522', border:'0.5px solid grey', fontWeight:50, boxShadow: `0px 0px 10px 1px #6e6f88`, textTransform:'capitalize'}}  endIcon={tableVisisble ? <KeyboardArrowUpIcon sx={{ fontSize: 80 }} /> : <KeyboardArrowDownIcon sx={{ fontSize: 80 }}  />} onClick={() => {setTableVisible(!tableVisisble);}}> 
-                            <Box sx={{ fontWeight: 'regular', m: 1, fontSize:16, }}>Alarm Log</Box>
+                        <Button sx={{width:'20%', height:'50px', marginLeft:'40%', marginTop:'3%', marginBottom:'3%', borderRadius:'50px', color:'#111522', backgroundColor:'white', border:'0.5px solid grey', fontWeight:50, boxShadow: `0px 0px 10px 1px #6e6f88`, textTransform:'capitalize'}}  endIcon={tableVisisble ? <KeyboardArrowUpIcon sx={{ color:'black',fontSize: 80 }} /> : <KeyboardArrowDownIcon sx={{ color:'black',fontSize: 80 }}  />} onClick={() => {setTableVisible(!tableVisisble);}}> 
+                            <Box sx={{ fontWeight: 'regular', m: 1, fontSize:16, }} >Alarm Log</Box>
                         </Button>
                         <div  style={{marginLeft:'auto', width:'85%', marginRight:'auto'}} >
                             {tableVisisble && <Table infscrollfunc={infscrollfunc} rows={rows} columns={columns}/>}
-                        </div>
-                       <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'white', color:'white'}}/>
+                        </div> </Box>
+                          )}
+                       
                     </DialogContent>
-                </Dialog>
+           </Dialog>
         </React.Fragment>
     )
 }

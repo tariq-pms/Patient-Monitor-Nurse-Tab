@@ -15,6 +15,7 @@ export interface roomData {
     deviceChange: Function;
     deviceChangeToggle: Boolean;
     userOrganization:string;
+    darkTheme:boolean;
 }
 export const RoomCard: FC<roomData> = (props) => {
     const [snackSucc, setSnackSucc] = useState(false);
@@ -279,7 +280,8 @@ const [open, setOpen] = useState(false);
             <Dialog
                 open={miniDialog}
                 onClose={() => setMiniDialog(false)}
-                PaperProps={{style:{ minWidth:'500px', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', height:'20%', justifyContent:'center', textAlign:'center'}}}
+                PaperProps={{style:{ minWidth:'500px',
+                 backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', height:'20%', justifyContent:'center', textAlign:'center'}}}
             >
                 <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', padding:'5%'}}>
                 {`Remove device`}
@@ -304,9 +306,9 @@ const [open, setOpen] = useState(false);
             open={open}
             onClose={() => setOpen(false)}
             scroll='paper'
-            PaperProps={{style:{borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', minWidth:'400px', minHeight:'200px'}}} // borderRadius:'3%', boxShadow: `0px 0px 20px 10px #7B7B7B`, border:'1px solid #7B7B7B
+            PaperProps={{style:{borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage: props.darkTheme?'linear-gradient(to bottom, #111522, #111522, #111522)':'linear-gradient(to bottom,  #FFFFFF,  #FFFFFF,  #FFFFFF)', minWidth:'400px', minHeight:'200px'}}} // borderRadius:'3%', boxShadow: `0px 0px 20px 10px #7B7B7B`, border:'1px solid #7B7B7B
  >
-            <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', padding:'9%'}}>
+            <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', padding:'9%'}} color={props.darkTheme?'white':'#2F3D4A'}>
             {`Add device to ${props.roomName}`}
             
             </DialogTitle>
@@ -317,8 +319,8 @@ const [open, setOpen] = useState(false);
                      if(device?.resource?.owner?.reference === `Organization/${props.userOrganization}` && device?.resource?.location?.reference.split("/")[1] != props.roomId){
                         //changed if(device?.resource?.location?.reference.split("/")[1] != props.roomId){
                             return(
-                                    <Button onClick={() => {setMiniDialog(true); setSelectedDevice(index)}} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:'white', border:'0.1px solid #282828',margin:'5px'}}>
-                                        <Typography variant="subtitle1" component={"h2"}>
+                                    <Button onClick={() => {setMiniDialog(true); setSelectedDevice(index)}} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:props.darkTheme?'white':'#2F3D4A', border:'0.1px solid #282828',margin:'5px'}}>
+                                        <Typography variant="subtitle2" component={"h2"}>
                                          {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}
                                          {/* changed the identifier to display the device name and mac address */}
                                         </Typography>
@@ -370,7 +372,7 @@ const [open, setOpen] = useState(false);
               <Stack width={'100%'} direction={'row'} justifyContent={'center'} textAlign={'center'}>
               <CardContent sx={{marginTop:'0%', width:'100%', justifyContent:'center', textAlign:'center'}}>
                       <Stack marginTop={'0%'}>
-                      <IconButton sx={{width:'10%',marginLeft:'auto',marginRight:'3%'}} onClick={handleClick1}><SettingsIcon /></IconButton>
+                      <IconButton sx={{width:'10%',marginLeft:'auto',marginRight:'3%',color:props.darkTheme?'white':'#124D81'}}  onClick={handleClick1}><SettingsIcon /></IconButton>
                       <Menu id="demo-positioned-menu" aria-labelledby="demo-positioned-button" anchorEl={anchorEl} open={open1} onClose={handleClose1} anchorOrigin={{vertical: 'top', horizontal: 'right', }}  PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #3C4661, #3C4661, #3C4661)', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', textAlign:'center'}}} MenuListProps={{sx:{py:0}}} >
           <Stack divider={<Divider sx={{backgroundColor:'white'}} flexItem />}>
           <Button onClick={() => {setRenameRoom(true)}}  sx={{color:'white', padding:'5%'}}><Typography variant='caption' textTransform={'capitalize'}>Rename</Typography></Button>
@@ -378,22 +380,22 @@ const [open, setOpen] = useState(false);
           </Stack>
           
           </Menu>
-              <Typography sx={{userSelect:"none" ,marginTop:'5%'}}>{props.roomName}</Typography>
+              <Typography   style={{userSelect: 'none',color:props.darkTheme?'white': '#124D81',fontWeight: 'bold'}}>{props.roomName}</Typography>
                   </Stack>
               <Stack spacing={"10%"} marginTop={'10%'} width={'70%'} marginLeft={'auto'} marginRight={'auto'}>
-                  <Select sx={{fontSize:'10%', borderRadius:'25px'}} >
+                  <Select  sx={{fontSize:'10%', borderRadius:'25px',border:'2px solid #124D81',placeholder:'Devices in this organization'}} >
                       {deviceList.map((device) => {
                           if(device?.resource?.owner?.reference === `Organization/${props.userOrganization}` && device?.resource?.location?.reference.split("/")[1] === props.roomId){
                               return (
                                 //   <MenuItem>{device.resource.identifier[0].value.toString()}</MenuItem>
-                <MenuItem> {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}</MenuItem>
+                <MenuItem > {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}</MenuItem>
 
                               )
                           }
                       })}
                   </Select>
-                  <Button variant="outlined" sx={{borderRadius:'25px'}} onClick={()=> {setOpen(true)}}>Add/Move Devices</Button>
-                  <Button variant="outlined" sx={{borderRadius:'25px'}} color='warning' onClick={() => {setDeleteDevice(true)}}>Remove Device</Button>
+                  <Button variant="contained" sx={{borderRadius:'25px'}} onClick={()=> {setOpen(true)}}>Add/Move Devices</Button>
+                  <Button variant="contained" sx={{borderRadius:'25px'}} color='warning' onClick={() => {setDeleteDevice(true)}}>Remove Device</Button>
               </Stack>
               </CardContent>
               {addToRoom()}

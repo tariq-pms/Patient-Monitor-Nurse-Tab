@@ -121,8 +121,9 @@ export interface DeviceDetails {
             };
         }[];
   };
-
+  
 }
+
 
 export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
     const [isOpen, setIsOpen] = useState(false);
@@ -154,7 +155,6 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
     if (props.observation_resource?.component?.[1] && runNo>=2 && props.communication_resource?.extension?.[1]) {
         
         setNewData(true);
-        
         setRequiredForBorderColor(!requiredForBorderColor)
         // clearInterval(tick);
         
@@ -448,9 +448,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
         device_resource_id={props.device_resource_id}
         patient={props.patient}
         newData={newData}
-        />
-
-        
+        />   
       </Box>    
   )
 }

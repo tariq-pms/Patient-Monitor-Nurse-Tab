@@ -1,10 +1,17 @@
 import { Box, Card, Stack, Typography } from '@mui/material'
-import  { useEffect, useState } from 'react'
+import  { FC, useEffect, useState } from 'react'
 import { DummyPatientDetails } from './DummyPatientDetails'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell } from '@fortawesome/free-solid-svg-icons'; 
 
-export const DummyPatientCard = ():JSX.Element => {
+export interface DummyPatientDetails {
+    
+    darkTheme:boolean
+   
+  }
+
+
+    export const  DummyPatientCard: FC<DummyPatientDetails> = ({darkTheme}): JSX.Element => {
     const [isOpen, setIsOpen] = useState(false)
     
     const [alarmColor,] = useState("#202020");
@@ -109,7 +116,7 @@ export const DummyPatientCard = ():JSX.Element => {
 
         </Card> */}
         <Card
-          style={{ backgroundColor:'#FFFFFF', borderRadius: "18px", height:"300px", boxShadow: `0px 0px 10px #FFD0D0`,border: `6px solid ${isBlinking ? '#FC8A8A' : '#F9F9F9'}` }}
+          style={{ backgroundColor:darkTheme?'#34495F':'#FFFFFF', borderRadius: "18px", height:"300px", boxShadow: `0px 0px 10px #FFD0D0`,border: `6px solid ${isBlinking ? '#FC8A8A' : '#F9F9F9'}` }}
       > 
             <Stack width={'100%'} height={'100%'}>
                 
@@ -117,42 +124,42 @@ export const DummyPatientCard = ():JSX.Element => {
                 <Stack height={'90%'} width={'100%'} >
                 <Stack height={'50%'} width={'100%'}  direction={'row'}>
     <Box width={'50%'} >
-    <div style={{marginTop:'7%'}}><Typography variant='h6' color={"#124D81"} paddingLeft={'10%'} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}>Baby Temp</Typography>
+    <div style={{marginTop:'7%'}}><Typography variant='h6' color={darkTheme?'white':"#124D81"} paddingLeft={'10%'} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}>Baby Temp</Typography>
 
 </div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
                                
-                                <Typography variant='h1' color={"#124D81"} >
+                                <Typography variant='h1' color={darkTheme?'white':"#124D81"} >
                                     34.3
                                 </Typography>
-                                <Typography variant='subtitle1' color={"#124D81"}  >
+                                <Typography variant='subtitle1' color={darkTheme?'white':"#124D81"}  >
                                 ℃
                                 </Typography>
-                                <Typography variant='subtitle1' color={"#124D81"} paddingTop={'25%'} >
+                                <Typography variant='subtitle1' color={darkTheme?'white':"#124D81"} paddingTop={'25%'} >
                                    36
                                 </Typography>
                             </div>
     </Box>
     <Box width={'25%'} >
-    <div style={{marginTop:'15%'}}><Typography variant='subtitle1' color={"#4B7193"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} >Heater Temp</Typography></div>
+    <div style={{marginTop:'15%'}}><Typography variant='subtitle1' color={darkTheme?'white':"#4B7193"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} >Heater Temp</Typography></div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-                              <Typography variant='h2' color={"#4B7193"} >
+                              <Typography variant='h2' color={darkTheme?'white':"#4B7193"} >
                                     34.3
                                 </Typography>
-                                <Typography variant='subtitle1' color={"#4B7193"} paddingTop={'13%'} paddingLeft={'3%'}>
+                                <Typography variant='subtitle1' color={darkTheme?'white':"#4B7193"} paddingTop={'13%'} paddingLeft={'3%'}>
                                    %
                                 </Typography>
                             </div>
     </Box>
     
-    <Box width={'25%'} > <div style={{marginTop:'15%'}}><Typography variant='subtitle1' style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={"#124D81"}  paddingLeft={'20%'}>Alarm <FontAwesomeIcon icon={faBell } color='#124D81'/></Typography>
+    <Box width={'25%'} > <div style={{marginTop:'15%'}}><Typography variant='subtitle1' style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={darkTheme?'white':"#124D81"}  paddingLeft={'20%'}>Alarm <FontAwesomeIcon icon={faBell } color='#124D81'/></Typography>
     </div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
                                
-                            <Typography  variant='subtitle1' color={"#FF7354"} sx={{fontWeight:"bold"}} paddingTop={'10%'} >
+                            <Typography  variant='subtitle1' color={darkTheme?'white':"#FF7354"} sx={{fontWeight:"bold"}} paddingTop={'10%'} >
                                     Test Device
                                 </Typography> 
                                 
@@ -172,36 +179,36 @@ export const DummyPatientCard = ():JSX.Element => {
                                  BPM
                                </Typography>
                            </div></Box>
-    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle1' color={"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>Spo2</Typography></div>
+    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle1' color={darkTheme?'white':"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>Spo2</Typography></div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
                                
-                               <Typography variant='h4' color={"#3C89C0"} >
+                               <Typography variant='h4' color={darkTheme?'white':"#3C89C0"} >
                                  92
                                </Typography>
-                               <Typography variant='subtitle2' color={"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}>
+                               <Typography variant='subtitle2' color={darkTheme?'white':"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}>
                                  %
                                </Typography>
                            </div></Box>
-    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'  color={"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>RR</Typography></div>
+    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'  color={darkTheme?'white':"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>RR</Typography></div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
                                
-                               <Typography variant='h4' color={"#3C89C0"} >
+                               <Typography variant='h4' color={darkTheme?'white':"#3C89C0"} >
                                  44
                                </Typography>
-                               <Typography variant='subtitle2' color={"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}>
+                               <Typography variant='subtitle2' color={darkTheme?'white':"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}>
                                  BPM
                                </Typography>
                            </div></Box>
-    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'  color={"#38AAC3"}  style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  paddingLeft={'10%'}>Weight</Typography></div>
+    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'  color={darkTheme?'white':"#38AAC3"}  style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  paddingLeft={'10%'}>Weight</Typography></div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
                                
-                               <Typography variant='h4' color={"#38AAC3"} >
+                               <Typography variant='h4' color={darkTheme?'white':"#38AAC3"} >
                                    1.2
                                </Typography>
-                               <Typography variant='subtitle1' color={"#38AAC3"} paddingTop={'10%'} paddingLeft={'3%'}>
+                               <Typography variant='subtitle1' color={darkTheme?'white':"#38AAC3"} paddingTop={'10%'} paddingLeft={'3%'}>
                                  KG
                                </Typography>
                            </div></Box>
@@ -211,17 +218,17 @@ export const DummyPatientCard = ():JSX.Element => {
                 
                 <Stack direction={'row'} display={'flex'} width={'100%'} borderTop={'1px solid #E4E4E4'} height={'10%'} paddingTop={'1.5%'} justifyContent={'space-between'}>
                     <Box marginLeft={'10px'}>
-                        <Typography variant="subtitle2" style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={'#7E7E7E'}>
+                        <Typography variant="subtitle2" style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={darkTheme?'white':'#7E7E7E'}>
                             INC-100
                         </Typography>
                     </Box>
                     <Box marginLeft={'20px'}>
-                        <Typography variant="subtitle2"  style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={'#7E7E7E'}>
+                        <Typography variant="subtitle2"  style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={darkTheme?'white':'#7E7E7E'}>
                         Jessica Adams
                         </Typography>
                     </Box>
                     <Box marginRight={'20px'}>
-                        <Typography variant="subtitle2"   style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={'#7E7E7E'}>
+                        <Typography variant="subtitle2"   style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={darkTheme?'white':'#7E7E7E'}>
                            DOB
                         </Typography> 
                     </Box>                             
@@ -245,5 +252,4 @@ export const DummyPatientCard = ():JSX.Element => {
     </Box>
     )
 }
-
 

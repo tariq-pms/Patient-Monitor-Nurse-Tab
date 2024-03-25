@@ -14,6 +14,7 @@ import { ChartOptions, LegendItem, Plugin } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 import { Chart, CategoryScale } from 'chart.js';
+import { color } from 'chart.js/helpers';
 
 Chart.register(CategoryScale);
 
@@ -150,8 +151,8 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
     const [graphData, setGraphData] = useState(false)
     const [selectAlarm, setSelectAlarm] = useState(0)
     const [newalarm, setNewAlarm] = useState<Array<{ date: string; time: { val: string; alarm: string[]; priority: string[]; }; }>>([]);
-    const leftarrowcolor = selectAlarm==0 ? '#606060' : 'white'
-    const rightarrowcolor = selectAlarm==newalarm.length-1 ? '#606060' : 'white'
+    const leftarrowcolor = selectAlarm==0 ? '#606060' : '#124D81'
+    const rightarrowcolor = selectAlarm==newalarm.length-1 ? '#606060' : '#124D81'
     const [tableVisisble, setTableVisible] = useState(false)
     const [observation, setObservation] = useState(
         [
@@ -709,10 +710,10 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
     const alarmUI = newalarm[selectAlarm]?.time?.alarm.map((vals,index) => {
         if(newalarm[selectAlarm].time.priority[index]=="High Priority"){
             return (
-                <Box width={'200px'} height={'110px'} sx={{border:'1px solid red', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px red`}} justifyContent={'center'} textAlign={'center'}>
-                    <Typography variant='subtitle1' paddingTop={'13%'}><b>{vals}</b></Typography>
+                <Box width={'200px'}  height={'110px'} sx={{border:'1px solid red', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px red`,backgroundColor:'#F3F2F7'}} justifyContent={'center'} textAlign={'center'}>
+                    <Typography variant='subtitle1' color={'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
-                        <Typography variant='subtitle2' >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
+                        <Typography variant='subtitle2' color={'#124D81'} >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
                     </div>
                     
                 </Box>
@@ -720,20 +721,20 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         }
         if(newalarm[selectAlarm].time.priority[index]=="Medium Priority"){
             return (
-                <Box width={'200px'} height={'110px'} sx={{border:'1px solid #ffd700', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px #ffd700`}} justifyContent={'center'} textAlign={'center'}>
-                    <Typography variant='subtitle1' paddingTop={'13%'}><b>{vals}</b></Typography>
+                <Box width={'200px'} height={'110px'} sx={{border:'1px solid #ffd700', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px #ffd700`,backgroundColor:'#F3F2F7'}} justifyContent={'center'} textAlign={'center'}>
+                    <Typography variant='subtitle1'  color={'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
-                        <Typography variant='subtitle2' >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
+                        <Typography variant='subtitle2'  color={'#124D81'} >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
                     </div>
                 </Box>
             )
         }
         if(newalarm[selectAlarm].time.priority[index]=="Low Priority"){
             return (
-                <Box width={'200px'} height={'110px'} sx={{border:'1px solid cyan', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px cyan`}} justifyContent={'center'} textAlign={'center'}>
-                    <Typography variant='subtitle1' paddingTop={'13%'}><b>{vals}</b></Typography>
+                <Box width={'200px'} height={'110px'} sx={{border:'1px solid cyan', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px cyan`,backgroundColor:'#F3F2F7'}} justifyContent={'center'} textAlign={'center'}>
+                    <Typography variant='subtitle1'  color={'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
-                        <Typography variant='subtitle2' >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
+                        <Typography variant='subtitle2'  color={'#124D81'}>{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
                     </div>
                 </Box>
             )
@@ -1363,7 +1364,12 @@ items.forEach((item) => {
         return date.toISOString();
     }
 
-
+    const [selectedTab, setSelectedTab] = useState('overview');
+    const handleTabChange = (_event: any, newTab: React.SetStateAction<string> | null) => {
+        if (newTab !== null) {
+            setSelectedTab(newTab);
+        }
+    };
 
 
     useEffect(() => {
@@ -1681,10 +1687,10 @@ items.forEach((item) => {
     const graph = useMemo(() => {
         if(props.observation_resource?.identifier[0]?.value?.toString()=="PMS-CIC"){
             return (
-                <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={
+                <Stack width={'100%'} height={'100%'}  direction={'row'} justifyContent={'center'} divider={
                     <Divider orientation='vertical' flexItem sx={{marginLeft:'1%',backgroundColor:'#505050', color:'#505050'}}/>
                 }>
-                    <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
+                    <Stack height={'100%'} width={'95%'} sx={{backgroundColor:'#E4E4E4'}} spacing={'5%'} marginRight={'auto'}  marginLeft={'2%'} marginTop={'2%'}>
                         {/* <MyChart height={'100%'} forwardedRef={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} plugins={temperatureLegendPlugin} /> */}
                         <Line ref={chartRef1} options={temperatureOption as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                         <div id="legend-container"></div>
@@ -1721,7 +1727,7 @@ items.forEach((item) => {
                 <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={
                     <Divider orientation='vertical' flexItem sx={{marginLeft:'1%',backgroundColor:'#505050', color:'#505050'}}/>
                 }>
-                    <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
+                    <Stack height={'100%'} width={'95%'} spacing={'5%'} sx={{backgroundColor:'#E4E4E4'}}  marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
                         {/* <MyChart height={'100%'} forwardedRef={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} plugins={temperatureLegendPlugin} /> */}
                         <Line ref={chartRef1} options={temperatureOption as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                         <div id="legend-container"></div>
@@ -1759,7 +1765,7 @@ items.forEach((item) => {
                 <Stack width={'100%'} height={'100%'} direction={'row'} divider={
                     <Divider orientation='vertical' flexItem sx={{marginLeft:'1%'}}/>
                 }>
-                    <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
+                    <Stack height={'100%'} width={'95%'} spacing={'5%'} sx={{backgroundColor:'#E4E4E4'}}  marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
                         <Line ref={chartRef1} options={pressure1Option as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                         <div id="legend-container"></div>
                         <Divider />
@@ -1782,7 +1788,7 @@ items.forEach((item) => {
                 <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={
                     <Divider orientation='vertical' flexItem sx={{marginLeft:'1%',backgroundColor:'#505050', color:'#505050'}}/>
                 }>
-                    <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
+                    <Stack height={'100%'} width={'95%'} spacing={'5%'} sx={{backgroundColor:'#E4E4E4'}}  marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
                         {/* <MyChart height={'100%'} forwardedRef={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} plugins={temperatureLegendPlugin} /> */}
                         <Line ref={chartRef1} options={temperatureOption as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                         <div id="legend-container"></div>
@@ -1830,22 +1836,27 @@ items.forEach((item) => {
                     xs: '90%',
                     sm: '90%',
                     md: '70%',
-                    lg: '50%',
-                },borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)' }}}
+                    lg: '70%',
+                },maxWidth:{
+                    xs: '90%',
+                    sm: '90%',
+                    md: '70%',
+                    lg: '70%',
+                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundColor:'#FFFFFF'}}}
                 >
                 <DialogTitle
                     sx={{
-                        borderBottom:'1px solid white'
+                        borderBottom:'1px solid grey'
                     }}
                 >
                     {/* <IconButton sx={{marginLeft:'96%'}}><CloseRounded/></IconButton> */}
                     <Stack direction={'row'} width={'102%'} >
                         <Stack direction={'row'} width={'100%'} sx={{justifyContent:'space-between', marginLeft:'auto', marginRight:'auto'}}>
-                        <Typography variant="h6" fontWeight={'regular'} >
+                        <Typography variant="h6" color={'black'} fontWeight={'regular'} >
                         {props.patient?.extension[0]?.valueString} &nbsp; | &nbsp; {props.patient?.identifier[0]?.value}
                         
                         </Typography>
-                        <Typography variant="h6">
+                        <Typography variant="h6" color={'black'}>
                             {(() => {
                                 if(props.observation_resource){
                                     var q = "";
@@ -1872,7 +1883,7 @@ items.forEach((item) => {
                         </Typography>
                         
                         </Stack>
-                        <IconButton sx={{width:'45px', marginTop:'-4px', marginLeft:'10px'}} onClick={() => {setvarq(!varq)}}><FontAwesomeIcon style={{padding:'0px', margin:'0px'}} icon={faXmark} /></IconButton>
+                        <IconButton sx={{width:'45px', marginTop:'-4px',color:'black', marginLeft:'10px'}} onClick={() => {setvarq(!varq)}}><FontAwesomeIcon style={{padding:'0px', margin:'0px'}} icon={faXmark} /></IconButton>
                     </Stack>
 
                     
@@ -1881,39 +1892,34 @@ items.forEach((item) => {
                 {/* <Box width={'60px'} height={'30px'} borderRadius={'25px'} sx={{backgroundColor:'red', marginLeft:'auto', opacity:`${liveOpacity ? '1':'0'}`, textAlign:'center'}}>
                     <Typography>LIVE</Typography>
                 </Box> */}
+                <Stack>
+                    <ToggleButtonGroup
+                            value={selectedTab}
+                            exclusive
+                            onChange={handleTabChange}
+                            aria-label="selected tab"
+                            sx={{ width: '100%', marginBottom: '20px' }} // Full width and marginBottom
+                        >
+                            <ToggleButton value="overview" sx={{ width: '100%'}} style={{ backgroundColor: selectedTab === 'overview' ? '#124D81' : '#F3F2F7',color: selectedTab === 'overview' ? '#F3F2F7' : '#124D81'}}>Overview</ToggleButton>
+                            <ToggleButton value="trends" sx={{ width: '100%' }} style={{ backgroundColor: selectedTab === 'trends' ? '#124D81' : '#F3F2F7',color: selectedTab === 'trends' ? '#F3F2F7' : '#124D81' }}>Trends</ToggleButton>
+                            <ToggleButton value="alarms" sx={{ width: '100%' }} style={{ backgroundColor: selectedTab === 'alarms' ? '#124D81' : '#F3F2F7',color: selectedTab === 'alarms' ? '#F3F2F7' : '#124D81'  }}>Alarms</ToggleButton>
+                                                    
+                        </ToggleButtonGroup>
+                    </Stack>
+                    {selectedTab === 'overview' && (
+                    <>
                     <Stack
                     direction={'row'}
                     divider={<Divider orientation='vertical' flexItem/>}
-                    sx={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: {
-                    xs: "2rem",
-                    sm: "2rem",
-                    md: "4rem",
-                    lg: "4rem",
-                    xl: "4rem",
-                    },
-                    mt: {
-                    xs: 5,
-                    sm: 6,
-                    md: 7,
-                    lg: 8,
-                    },
-                    mb: {
-                    xs: 5,
-                    sm: 6,
-                    md: 7,
-                    lg: 8,
-                    },
-                    justifyContent: "center",
-                    }}
-                    >
+                    sx={{display: "flex",flexWrap: "wrap",gap: { xs: "2rem",sm: "2rem",md: "4rem",lg: "4rem",xl: "4rem"},
+                    mt: {xs: 5,sm: 6,md: 7,lg: 8,},
+                    mb: {xs: 5,sm: 6,md: 7,lg: 8,},
+                    justifyContent: "center",}}>
                     <Stack alignItems={'center'} spacing={'10px'}>
-                    <Typography variant="subtitle1" >
+                    <Typography variant="subtitle1" color={'#124D81'}  >
                         {props.newData && props.observation_resource?.component[0]?.code.text}
                     </Typography>
-                    <Typography variant="h4" sx={{fontWeight:'bold'}}>
+                    <Typography variant="h4" color={'#124D81'} sx={{fontWeight:'bold'}}>
                         {(() => {
                         if(props.newData){
                         return (props.observation_resource?.component[0]?.valueQuantity.unit=='1' || props.observation_resource?.component[0]?.valueQuantity.unit)
@@ -1927,8 +1933,8 @@ items.forEach((item) => {
                     {props.newData && props.observation_resource?.component.map((_obs: any,index: number) => {
                     if((props.observation_resource?.component[index]?.code.text!="SIQ" && props.observation_resource?.component[index]?.code.text!="PVI" && props.observation_resource?.component[index]?.code.text!="PI" && props.observation_resource?.component[index]?.code.text!="SPO2" && props.observation_resource?.component[index]?.code.text!="Pulse Rate") && index!=0){
                     return (
-                    <Stack alignItems={'center'} spacing={'10px'}>
-                    <Typography variant="subtitle1" >
+                    <Stack alignItems={'center'} spacing={'10px'} color={'#124D81'}>
+                    <Typography variant="subtitle1"  >
                         {props.observation_resource?.component[index]?.code.text}
                     </Typography>
                     {(() => {
@@ -1938,7 +1944,7 @@ items.forEach((item) => {
                             if(value>=60){
                                 return (
                                     <>
-                                        <Typography variant='h4'>
+                                        <Typography variant='h4' >
                                             {value/60+":"+value%60}&nbsp;
                                         </Typography>
                                         <Typography variant='h5'>
@@ -1978,6 +1984,7 @@ items.forEach((item) => {
                     }
                     })}
                     </Stack>
+
                     {props.newData && (
                         <Divider sx={{marginTop:'20px'}} />
                     )}
@@ -1985,38 +1992,19 @@ items.forEach((item) => {
                     {props.newData?
                     (
                     <>
-                        <Typography variant='h5' paddingLeft={'2%'} paddingTop={'3%'}>Pulse Oximeter</Typography>
+                        <Typography variant='h5'  color={'#124D81'} paddingLeft={'2%'} paddingTop={'3%'}>Pulse Oximeter</Typography>
                         <Stack
                             direction={'row'}
                             divider={
                                 <Divider orientation='vertical' flexItem/>
                                 }
-                            sx={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: {
-                            xs: "2rem",
-                            sm: "4rem",
-                            md: "4rem",
-                            lg: "4rem",
-                            xl: "4rem",
-                            },
-                            mt: {
-                            xs: 2,
-                            sm: 3,
-                            md: 3,
-                            lg: 3,
-                            },
-                            mb: {
-                            xs: 3,
-                            sm: 4,
-                            md: 5,
-                            lg: 6,
-                            },
+                            sx={{display: "flex",flexWrap: "wrap",color:'#124D81',
+                            gap: {xs: "2rem",sm: "4rem",md: "4rem",lg: "4rem",xl: "4rem",},
+                            mt: {xs: 2,sm: 3,md: 3,lg: 3,},
+                            mb: { xs: 3,sm: 4,md: 5,lg: 6,},
                             justifyContent: "center",
                             textAlign:'center',
-                            width:'100%'
-                            }}
+                            width:'100%'}}
                             >
                             {(() => {
                             var x = false
@@ -2067,13 +2055,19 @@ items.forEach((item) => {
                         </Stack>
                     </>
                     ):
+                    
                     <Box
                     sx={{
                     display: "flex",
                     flexWrap: "wrap",
+                    color:'#124D81',
                     justifyContent: "center"}}><Typography variant='h6' sx={{fontWeight:'bold', paddingTop:'1%', opacity:'0.5'}}>{props.newData && 'Oximeter Not connected'}{!props.newData && ''}</Typography>
                     </Box>}
-                <Divider sx={{marginTop:'20px', backgroundColor:'white', color:'white'}}/>
+                    </> )}
+
+                <Divider sx={{marginTop:'20px', backgroundColor:'grey', color:'grey'}}/>
+                {selectedTab === 'trends' && (
+                <>
                 {props.observation_resource?.identifier[0]?.value?.toString()!="PMS-SYRINGE" &&
                                 <div style={{marginTop:'25px'}}>
                                 {   
@@ -2086,7 +2080,7 @@ items.forEach((item) => {
                                         <Typography variant='h5' paddingLeft={'2%'}>Trends</Typography>
                                         <Stack width={'100%'} direction={'row'} textAlign={'center'}  >
                                             
-                                            <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'1%'}}>
+                                            <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto',backgroundColor:'#124D81', marginRight:'1%'}}>
                                                 <ToggleButton value={0} key="left" sx={{height:'30px', width:'50px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(0)}}>
                                                 Day
                                                 </ToggleButton>,
@@ -2097,7 +2091,7 @@ items.forEach((item) => {
                                                     2 Weeks
                                                 </ToggleButton>
                                             </ToggleButtonGroup>
-                                            <ToggleButtonGroup value={S_and_D} exclusive size="small" sx={{marginRight:'1%'}}>
+                                            <ToggleButtonGroup value={S_and_D} exclusive size="small" sx={{marginRight:'1%',backgroundColor:'#124D81'}}>
                                                 <ToggleButton value={0} key="left" sx={{height:'30px', width:'80px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {
                                                     setS_and_D(0)
                                                     let temp: any[] = []
@@ -2193,11 +2187,12 @@ items.forEach((item) => {
                                     <Divider sx={{marginTop:'40px', backgroundColor:'white', color:'white'}} />           
                                 </div>
                 }
-
-                
+                </>)}
+                {selectedTab === 'alarms' && (
+                <>
                 <Typography variant='h5' paddingLeft={'2%'} paddingTop={'3%'}>Alarms</Typography>
                 <Stack direction={'row'} width={'100%'} justifyContent={'space-between'} marginTop={'3%'}>
-                    <IconButton sx={{height:'50px', width:'50px', borderRadius:'100px', marginTop:'auto', marginBottom:'auto'}} onClick={() => {if(selectAlarm>0){setSelectAlarm(selectAlarm-1)}}}><FontAwesomeIcon fontSize={'30px'} icon={faChevronLeft} style={{color:`${leftarrowcolor}`}}/></IconButton>
+                    <IconButton sx={{height:'50px', width:'50px', borderRadius:'100px', marginTop:'auto', marginBottom:'auto',color:'blue'}} onClick={() => {if(selectAlarm>0){setSelectAlarm(selectAlarm-1)}}}><FontAwesomeIcon fontSize={'30px'} icon={faChevronLeft} style={{color:`${leftarrowcolor}`}}/></IconButton>
                     <Box width={'100%'} display={'flex'} textAlign={'center'} justifyContent={'center'} flexWrap={'wrap'}>
                     {alarmUI}
                         {/* <div style={{marginTop:'2.5%', display:'flex', width:'100%', height:'100%', justifyContent:'space-evenly'}}></div>  */}
@@ -2205,15 +2200,16 @@ items.forEach((item) => {
                     <IconButton sx={{height:'50px', width:'50px', borderRadius:'100px', marginTop:'auto', marginBottom:'auto'}} onClick={() => {if(selectAlarm<newalarm.length){setSelectAlarm(selectAlarm+1)}}}><FontAwesomeIcon fontSize={'30px'} icon={faChevronRight} style={{color:`${rightarrowcolor}`}} /></IconButton>  
                 </Stack>
                 {/* onClick={() => {setTableVisible(!tableVisisble)}} endIcon={tableVisisble ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />} */}
-                <Button sx={{width:'20%', height:'50px', marginLeft:'40%', marginTop:'3%', marginBottom:'3%', borderRadius:'50px', color:'white', backgroundColor:'#111522', border:'0.5px solid grey', fontWeight:50, boxShadow: `0px 0px 10px 1px #6e6f88`, textTransform:'capitalize'}}  endIcon={tableVisisble ? <KeyboardArrowUpIcon sx={{ fontSize: 80 }} /> : <KeyboardArrowDownIcon sx={{ fontSize: 80 }}  />} onClick={() => { handleClick();setTableVisible(!tableVisisble);}}> 
+                <Button sx={{width:'20%', height:'50px', marginLeft:'40%', marginTop:'3%', marginBottom:'3%', borderRadius:'50px', color:'#111522', backgroundColor:'white', border:'0.5px solid grey', fontWeight:50, boxShadow: `0px 0px 10px 1px #6e6f88`, textTransform:'capitalize'}}  endIcon={tableVisisble ? <KeyboardArrowUpIcon sx={{ fontSize: 80 }} /> : <KeyboardArrowDownIcon sx={{ fontSize: 80 }}  />} onClick={() => { handleClick();setTableVisible(!tableVisisble);}}> 
                 <Box sx={{ fontWeight: 'regular', m: 1, fontSize:16, }}>Alarm Log</Box>
                 </Button>
-                <div  style={{marginLeft:'auto', width:'85%', marginRight:'auto'}} >
-                {tableVisisble && <Table infscrollfunc={infscrollfunc} rows={rows} columns={columns}/>}
+                <div  style={{ width:'100%'}} >
+                {tableVisisble && <Table  infscrollfunc={infscrollfunc} rows={rows} columns={columns}/>}
                 {/* <div ref={scrollto} style={{width:'100px', height:'20px', backgroundColor:'red', marginTop:tableVisisble ? '300px'  : '0px'}}></div> */}
                 </div>
                 {/* <div style={{width:'10px', height:'10px', backgroundColor:'yellow'}} ref={scrollto}></div> */}
-
+                </>
+                 )}
                 </DialogContent>
             </Dialog>
         </React.Fragment>

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ExpandMoreRounded } from '@mui/icons-material'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material'
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Paper, Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material'
 import { ChartOptions, LegendItem,Plugin,} from 'chart.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Line } from 'react-chartjs-2';
@@ -62,6 +62,7 @@ export const DummyPatientDetails = (props: { isOpen: boolean;handleCloseDialog: 
         datasets: [
             {
               label: 'Set Skin Temperature',
+              
               data: [10, 15, 13, 18, 12, 20, 11],
               borderColor: 'rgba(75,192,192,1)',
               borderWidth: 2,
@@ -79,6 +80,7 @@ export const DummyPatientDetails = (props: { isOpen: boolean;handleCloseDialog: 
             },
             {
                 label: 'Heater Output',
+                
                 data: [89, 74, 64, 59, 41, 31, 22], 
                 borderColor: 'grey',
                 borderWidth: 2,
@@ -448,7 +450,7 @@ export const DummyPatientDetails = (props: { isOpen: boolean;handleCloseDialog: 
                 {/* <Typography variant='h5' paddingLeft={'2%'}>Trends</Typography> */}
                 <Stack width={'100%'} direction={'row'} textAlign={'center'}  >
                     
-                    <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'1%'}}>
+                    <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto',backgroundColor:'#124D81', marginRight:'1%'}}>
                         <ToggleButton value={0} key="left" sx={{height:'30px', width:'50px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(0)}}>
                         Day
                         </ToggleButton>,
@@ -459,7 +461,7 @@ export const DummyPatientDetails = (props: { isOpen: boolean;handleCloseDialog: 
                             2 Weeks
                         </ToggleButton>
                     </ToggleButtonGroup>
-                    <ToggleButtonGroup value={S_and_D} exclusive size="small" sx={{marginRight:'1%'}}>
+                    <ToggleButtonGroup value={S_and_D} exclusive size="small" sx={{backgroundColor:'#124D81',marginRight:'1%'}}>
                         <ToggleButton value={0} key="left" sx={{height:'30px', width:'80px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {
                             setS_and_D(0)
                             let temp: any[] = []
@@ -541,10 +543,10 @@ export const DummyPatientDetails = (props: { isOpen: boolean;handleCloseDialog: 
                 <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={
                     <Divider orientation='vertical' flexItem sx={{marginLeft:'1%',backgroundColor:'#505050', color:'#505050'}}/>
                 }>
-                    <Stack height={'100%'} width={'95%'} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
+                    <Stack height={'100%'} width={'95%'} sx={{backgroundColor:'#E4E4E4'}} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
                         {/* <MyChart height={'100%'} forwardedRef={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} plugins={temperatureLegendPlugin} /> */}
                         <Line ref={chartRef1} options={temperatureOption as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
-                        <div id="legend-container"></div>
+                        <div id="legend-container" ></div>
                         
                         
                             <Divider />

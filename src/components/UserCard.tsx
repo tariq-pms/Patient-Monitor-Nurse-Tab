@@ -14,12 +14,13 @@ export interface UserCardProps {
   onUserClick: (user: User) => void;
   onDeleteUser: (userId: string) => void;
   updateUserInList: (updatedUser: User) => void;
+  darkTheme:boolean
 }
 
-export const UserCard: React.FC<UserCardProps> = ({ user, onUserClick, onDeleteUser,updateUserInList }) => {
+export const UserCard: React.FC<UserCardProps> = ({ user, onUserClick, onDeleteUser,updateUserInList,darkTheme }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [open, setOpen] = useState(false);
-  const [controlOpacity, setControlOpacity] = useState('0.8');
+  // const [controlOpacity, setControlOpacity] = useState('0.8');
   const [controlBorder, setControlboarder] = useState('grey');
   const [, setDialogOpen] = useState(false);
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
@@ -152,17 +153,17 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onUserClick, onDeleteU
       marginRight={"20px"}
      
       sx={{
-        opacity: controlOpacity,
+        // opacity: controlOpacity,
         backgroundColor: 'transparent',
         borderRadius: '30px',
       }}
       onMouseLeave={() => {
         setControlboarder("grey");
-        setControlOpacity("0.8");
+        // setControlOpacity("0.8");
       }}
       onMouseEnter={() => {
         setControlboarder("#2BA0E0");
-        setControlOpacity("1");
+        // setControlOpacity("1");
       }}
     >
       <Paper elevation={5} sx={{ borderRadius: "25px", background: 'transparent' }}>
@@ -178,7 +179,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onUserClick, onDeleteU
         >
          <Stack width={"100%"} direction={"row"} sx={{ justifyContent: "center", marginTop: "3px" }}>
             <IconButton
-              sx={{ width: '10%', marginLeft: 'auto', marginRight: '3%' }}
+              sx={{ width: '10%', marginLeft: 'auto', marginRight: '3%',color:darkTheme?'white':'#124D81' }}
               onClick={handleMenuClick } 
             >
               <SettingsIcon />
@@ -205,9 +206,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onUserClick, onDeleteU
                 <Typography>Do you want to delete the user?</Typography>
               </DialogContent>
               <DialogActions style={{justifyContent:'space-between',padding:'5%'}}>
-                
-              
-                <Box onClick={() => handleDeleteUser()}><CustomOkButton text="Yes"></CustomOkButton></Box>
+              <Box onClick={() => handleDeleteUser()}><CustomOkButton text="Yes"></CustomOkButton></Box>
                 <Box onClick={() => handleCancelDelete()} ><CustomNoButton text="No"></CustomNoButton></Box>
               
               {/* <Button onClick={() => {setMiniDialog(false)}}>Cancel</Button> */}
@@ -247,19 +246,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onUserClick, onDeleteU
                 <MenuItem value="Hospital Technician">Hospital Technician</MenuItem>
                 <MenuItem value="Hospital Clinician">Hospital Clinician</MenuItem>
               </Select>
-              <Button
-                sx={{
-                  textAlign: 'center',
-                  margin: '20px 0',
-                  display: 'block',
-                  marginLeft: 'auto',
-                  marginRight: 'auto',
-                }}
-                variant="contained"
-                onClick={handleUpdateUser}
-              >
-                Update User
-              </Button>
+              <Button sx={{textAlign: 'center',margin: '20px 0',display: 'block',marginLeft: 'auto',marginRight: 'auto',}}variant="contained" onClick={handleUpdateUser}>Update User</Button>
             </DialogContent>
           </Dialog>
           </Stack>
@@ -268,27 +255,27 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onUserClick, onDeleteU
     <Typography>User Role: {user.app_metadata?.role || "No role assigned"}</Typography>
     <Typography>User Name: {user.name}</Typography> */}
        <Stack direction={'row'} alignItems="center" spacing={2} width={'100%'}>
-  <Avatar style={{ color: "white", width: 100, height: 100 }}>
+  <Avatar style={{ color: "white",backgroundColor:'#124D81', width: 100, height: 100 }}>
     {(() => (
       <Typography variant="h4">{String(user?.nickname)[0].toUpperCase()}</Typography>
     ))()}
   </Avatar>
 
   <Stack direction={'column'} alignItems={'left'} spacing={1}>
-    <Typography variant="h5" textAlign={'left'}>
+    <Typography variant="h5" textAlign={'left'} sx={{color:darkTheme?'white':'#124D81'}}>
       {user?.name}
     </Typography>
 
     <Stack direction={'row'} spacing={1}>
       <FontAwesomeIcon style={{ fontSize: 20, color: controlBorder }} icon={faEnvelope} />
-      <Typography variant="subtitle2">{user?.email}</Typography>
+      <Typography variant="subtitle2"sx={{color:darkTheme?'white':'#124D81'}}>{user?.email}</Typography>
     </Stack>
 
     <Stack direction={'row'} spacing={1}>
       <FontAwesomeIcon style={{ fontSize: 20, color: controlBorder }} icon={faUser} />
-      <Typography variant="subtitle2">{user.app_metadata?.role || "No role assigned"}</Typography>
+      <Typography variant="subtitle2" sx={{color:darkTheme?'white':'#124D81'}}>{user.app_metadata?.role || "No role assigned"}</Typography>
     </Stack>
-    <Stack direction={'row'} spacing={1}>
+    <Stack direction={'row'} spacing={1} sx={{color:darkTheme?'white':'#124D81'}}>
                 {user.email_verified ? (
                   <><VerifiedIcon style={{ color: controlBorder }} /><Typography>Verified</Typography></>
                 ) : (

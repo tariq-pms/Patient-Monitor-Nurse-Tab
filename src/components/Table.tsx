@@ -66,18 +66,7 @@ export const Table: FC<rowsandcolumns> = (props) => {
           },
 
         },
-        // typography: {
-
-        //   button: {
-
-        //     textTransform: 'none', //customize typography styles for all buttons in table by default
-
-        //     fontSize: '1.2rem',
-
-        //   },
-
-        // },
-
+       
         components: {
 
 

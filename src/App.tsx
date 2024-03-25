@@ -15,6 +15,9 @@ import { DeviceMonitor } from "./pages/DeviceMonitor";
 import {AdminPage} from "./pages/AdminPage";
 import { Organization } from "./pages/Organization";
 
+
+
+
 const theme = createTheme({
   typography: {
     allVariants:{
@@ -54,7 +57,13 @@ function App() {
         });
     }
   }, [isAuthenticated]);
-  
+  const [darkTheme, setDarkTheme] = useState(true);
+
+  const toggleDarkTheme = () => {
+    setDarkTheme((prevTheme) => !prevTheme);
+    // Toggle dark mode by changing the background color of the html element
+    document.documentElement.style.backgroundColor = darkTheme ? '#F5F5F5' : '#2F3D4A';
+  };
   
   function roomChange (roomId: any) {
     setCurrentRoom(roomId)
@@ -67,20 +76,22 @@ function App() {
   return (
     <div>
       <ThemeProvider theme={theme}>
-        <Backdrop
+        <Backdrop 
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
           open={isLoading}
         ><CircularProgress color="inherit" /></Backdrop>
-        <Header roomAltered={roomAltered} currentRoom={currentRoom} roomChange={roomChange} userOrganization={UserOrganization}  />
+        <Header darkTheme={darkTheme} toggleDarkTheme={toggleDarkTheme} roomAltered={roomAltered} currentRoom={currentRoom} roomChange={roomChange} userOrganization={UserOrganization}  />
         <Routes>
           <Route path="/" element={<Home  />}/>
           <Route path="/user" element={<UserInfo />} />
-          <Route path="/rooms" element={<Rooms roomModified={roomModified} userOrganization={UserOrganization} />} />
+          <Route path="/rooms" element={<Rooms roomModified={roomModified} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
           {/* <Route path="/devicedata" element={<DetailedDevice />} /> */}
-          <Route path="/patient-monitor" element={<PatientMonitor currentRoom={currentRoom} userOrganization={UserOrganization}/>} />
-          <Route path="/device-monitor" element={<DeviceMonitor currentRoom={currentRoom}/>} />
-          <Route path="/admin"  element={<AdminPage userOrganization={UserOrganization}  />} />
-          <Route path="/organization"  element={<Organization  />} />
+          <Route path="/patient-monitor" element={<PatientMonitor currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme}/>} />
+          <Route path="/device-monitor" element={<DeviceMonitor currentRoom={currentRoom} darkTheme={darkTheme}/>} />
+          <Route path="/admin"  element={<AdminPage userOrganization={UserOrganization} darkTheme={darkTheme} />} />
+          <Route path="/organization"  element={<Organization darkTheme={darkTheme}/>} />
+         
+          
         </Routes>
       </ThemeProvider>
     </div>

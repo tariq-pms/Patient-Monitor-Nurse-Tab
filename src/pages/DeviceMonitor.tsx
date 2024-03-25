@@ -25,7 +25,10 @@ import { DeviceCard } from '../components/DeviceCard';
 import { SyringeCard } from '../components/SyringeCard';
 import { DummyCard } from '../components/DummyCard';
 
-export const DeviceMonitor = (currentRoom: any) => {
+
+
+export const DeviceMonitor = (currentRoom: any,darkTheme:boolean ) => {
+  
   const [, setIsLoading] = useState(true);
   // Define separate loading states for each accordion
   const [isLoadingWarmers, setIsLoadingWarmers] = useState(true);

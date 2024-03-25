@@ -8,11 +8,14 @@ import { CustomNoButton } from '../components/CustomNoButton';
 import pmsLogo from '../assets/phx_logo.png';
 import AddIcon from '@mui/icons-material/Add';
 
-export const Organization: React.FC = () => {
+interface OrganizationProps {
+  darkTheme: boolean; // Define the darkTheme prop
+}
+
+export const Organization: React.FC <OrganizationProps> = ({ darkTheme }) => {
   const [organizations, setOrganizations] = useState<any[]>([]);
   const { isAuthenticated, loginWithRedirect } = useAuth0();
   const [openDialog, setOpenDialog] = useState(false);
-  
   const [snack, setSnack] = useState(false);
   const [controlOpacity1, setControlOpacity1] = useState('0.8');
   const [controlBorder, setControlboarder1] = useState('grey');
@@ -49,9 +52,9 @@ export const Organization: React.FC = () => {
   const handleClose = () => {
     setSnack(false);
   };
+  
   // const handleAddOrganization = () => {
   //   // Extract username, password, role, and organizationId from state or form fields
-  
   //   // Add your logic to make the API call for adding a new user
   //   fetch('http://pmsind.co.in:5000/Organization/', {
   //     method: 'POST',
@@ -60,18 +63,15 @@ export const Organization: React.FC = () => {
   //     },
   //     body: JSON.stringify({  }), // Include organizationId in the request
   //   })
-      
-
   //         .then((response) => {
   //           if (!response.ok) {
   //             throw new Error('Failed to fetch updated user data');
   //           }
   //           return response.json();
   //         })
-         
-  
-  
   // };
+
+
   const handleAddOrganization = () => {
     // Extract organizationName from state
     const data = {
@@ -117,14 +117,13 @@ export const Organization: React.FC = () => {
     });
     handleDialogClose()
   };
+  
   return (
     <div>
       {isAuthenticated && (
         <div>
           <Stack width={'100%'} direction={'row'} paddingTop={'2%'} justifyContent={'center'} textAlign={'center'}>
-            <Typography variant="h5" color={'white'}>
-              Organizations
-            </Typography>
+            <Typography variant="h5" color={ darkTheme ? 'white' : '#124D81'}>Organizations</Typography>
           </Stack>
 
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -164,7 +163,7 @@ export const Organization: React.FC = () => {
                         <CardContent sx={{marginTop:'0px', textAlign: 'center'}} >
                           
                           <AddIcon sx={{ fontSize: 200, color: controlBorder }} />
-                          <Typography sx={{ padding: '0px',marginTop:'0px' }}>Add Organization</Typography>
+                          <Typography sx={{ padding: '0px',color: darkTheme ?'white' :'#124D81',marginTop:'0px' }}>Add Organization</Typography>
                         </CardContent>
                       </Box>
                     </Card> 
