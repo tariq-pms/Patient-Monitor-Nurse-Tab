@@ -124,37 +124,37 @@ export interface DummyPatientDetails {
                 <Stack height={'90%'} width={'100%'} >
                 <Stack height={'50%'} width={'100%'}  direction={'row'}>
     <Box width={'50%'} >
-    <div style={{marginTop:'7%'}}><Typography variant='h6' color={darkTheme?'white':"#124D81"} paddingLeft={'10%'} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}>Baby Temp</Typography>
+    <div style={{marginTop:'7%'}}><Typography variant='h6' color={darkTheme?'#CEE6FF':"#124D81"} paddingLeft={'10%'} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}>Baby Temp</Typography>
 
 </div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
                                
-                                <Typography variant='h1' color={darkTheme?'white':"#124D81"} >
+                                <Typography variant='h1' color={darkTheme?'#CEE6FF':"#124D81"} >
                                     34.3
                                 </Typography>
-                                <Typography variant='subtitle1' color={darkTheme?'white':"#124D81"}  >
+                                <Typography variant='subtitle1' color={darkTheme?'#CEE6FF':"#124D81"}  >
                                 ℃
                                 </Typography>
-                                <Typography variant='subtitle1' color={darkTheme?'white':"#124D81"} paddingTop={'25%'} >
+                                <Typography variant='subtitle1' color={darkTheme?'#CEE6FF':"#124D81"} paddingTop={'25%'} >
                                    36
                                 </Typography>
                             </div>
     </Box>
     <Box width={'25%'} >
-    <div style={{marginTop:'15%'}}><Typography variant='subtitle1' color={darkTheme?'white':"#4B7193"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} >Heater Temp</Typography></div>
+    <div style={{marginTop:'15%'}}><Typography variant='subtitle1' color={darkTheme?'#A0CCFB':"#4B7193"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} >Heater Temp</Typography></div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-                              <Typography variant='h2' color={darkTheme?'white':"#4B7193"} >
+                              <Typography variant='h2' color={darkTheme?'#A0CCFB':"#4B7193"} >
                                     34.3
                                 </Typography>
-                                <Typography variant='subtitle1' color={darkTheme?'white':"#4B7193"} paddingTop={'13%'} paddingLeft={'3%'}>
+                                <Typography variant='subtitle1' color={darkTheme?'#A0CCFB':"#4B7193"} paddingTop={'13%'} paddingLeft={'3%'}>
                                    %
                                 </Typography>
                             </div>
     </Box>
     
-    <Box width={'25%'} > <div style={{marginTop:'15%'}}><Typography variant='subtitle1' style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={darkTheme?'white':"#124D81"}  paddingLeft={'20%'}>Alarm <FontAwesomeIcon icon={faBell } color='#124D81'/></Typography>
+    <Box width={'25%'} > <div style={{marginTop:'15%'}}><Typography variant='subtitle1' style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={darkTheme?'#A0CCFB':"#124D81"}  paddingLeft={'20%'}>Alarm <FontAwesomeIcon icon={faBell } color= {darkTheme?'#A0CCFB':'#124D81'}/></Typography>
     </div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
@@ -168,47 +168,46 @@ export interface DummyPatientDetails {
 
 
 <Stack height={'50%'} width={'100%'} marginTop={'5%'} direction={'row'}>
-    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle1' color={"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  paddingLeft={'10%'}>Heart Rate</Typography></div>
+    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle1' color={darkTheme?'#B6C8F8':"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  paddingLeft={'10%'}>Heart Rate</Typography></div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center',paddingLeft:'8%', justifyContent:'left'}}>
-                               
-                               <Typography variant='h4' color={"#3C89C0"} >
+                               <Typography variant='h4' color={darkTheme?'#B6C8F8':"#3C89C0"} >
                                  80
                                </Typography>
-                               <Typography variant='subtitle2' color={"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}>
+                               <Typography variant='subtitle2' color={darkTheme?'#B6C8F8':"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}>
                                  BPM
                                </Typography>
                            </div></Box>
-    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle1' color={darkTheme?'white':"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>Spo2</Typography></div>
+    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle1' color={darkTheme?'#B6C8F8':"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>Spo2</Typography></div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
                                
-                               <Typography variant='h4' color={darkTheme?'white':"#3C89C0"} >
+                               <Typography variant='h4' color={darkTheme?'#B6C8F8':"#3C89C0"} >
                                  92
                                </Typography>
-                               <Typography variant='subtitle2' color={darkTheme?'white':"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}>
+                               <Typography variant='subtitle2' color={darkTheme?'#B6C8F8':"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}>
                                  %
                                </Typography>
                            </div></Box>
-    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'  color={darkTheme?'white':"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>RR</Typography></div>
+    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'  color={darkTheme?'#B6C8F8':"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>RR</Typography></div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
                                
-                               <Typography variant='h4' color={darkTheme?'white':"#3C89C0"} >
+                               <Typography variant='h4' color={darkTheme?'#B6C8F8':"#3C89C0"} >
                                  44
                                </Typography>
-                               <Typography variant='subtitle2' color={darkTheme?'white':"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}>
+                               <Typography variant='subtitle2' color={darkTheme?'#B6C8F8':"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}>
                                  BPM
                                </Typography>
                            </div></Box>
-    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'  color={darkTheme?'white':"#38AAC3"}  style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  paddingLeft={'10%'}>Weight</Typography></div>
+    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'  color={darkTheme?'#A0CCFB':"#38AAC3"}  style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  paddingLeft={'10%'}>Weight</Typography></div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
                                
-                               <Typography variant='h4' color={darkTheme?'white':"#38AAC3"} >
+                               <Typography variant='h4' color={darkTheme?'#A0CCFB':"#38AAC3"} >
                                    1.2
                                </Typography>
-                               <Typography variant='subtitle1' color={darkTheme?'white':"#38AAC3"} paddingTop={'10%'} paddingLeft={'3%'}>
+                               <Typography variant='subtitle1' color={darkTheme?'#A0CCFB':"#38AAC3"} paddingTop={'10%'} paddingLeft={'3%'}>
                                  KG
                                </Typography>
                            </div></Box>

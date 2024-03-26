@@ -14,7 +14,7 @@ import { ChartOptions, LegendItem, Plugin } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 import { Chart, CategoryScale } from 'chart.js';
-import { color } from 'chart.js/helpers';
+
 
 Chart.register(CategoryScale);
 

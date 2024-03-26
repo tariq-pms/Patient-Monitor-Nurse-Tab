@@ -57,7 +57,7 @@ function App() {
         });
     }
   }, [isAuthenticated]);
-  const [darkTheme, setDarkTheme] = useState(true);
+  const [darkTheme, setDarkTheme] = useState(false);
 
   const toggleDarkTheme = () => {
     setDarkTheme((prevTheme) => !prevTheme);

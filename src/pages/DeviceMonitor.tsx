@@ -27,7 +27,7 @@ import { DummyCard } from '../components/DummyCard';
 
 
 
-export const DeviceMonitor = (currentRoom: any,darkTheme:boolean ) => {
+export const DeviceMonitor = (currentRoom: any ) => {
   
   const [, setIsLoading] = useState(true);
   // Define separate loading states for each accordion
