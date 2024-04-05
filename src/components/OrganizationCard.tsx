@@ -49,7 +49,7 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({
     console.log('Selected device in useEffect:', selectedDevice);
     const fetchData = async () => {
       try {
-        const response = await fetch('https://pmsind.co.in:5000/Device/?_count=100', {
+        const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Device/?_count=100`, {
          
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -79,7 +79,7 @@ const addButton = () => {
       },
     };
 
-    fetch(`https://pmsind.co.in:5000/Device/${deviceList[selectedDevice].resource.id}`, {
+    fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Device/${deviceList[selectedDevice].resource.id}`, {
       credentials: 'omit',
       method: 'PUT',
       body: JSON.stringify(data),
@@ -121,7 +121,7 @@ const removeButton = () => {
   if (selectedDevice !== null) {
     const data = { ...deviceList[selectedDevice].resource };
     delete data.owner;
-    fetch(`https://pmsind.co.in:5000/Device/${deviceList[selectedDevice].resource.id}`, {
+    fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Device/${deviceList[selectedDevice].resource.id}`, {
       credentials: 'omit',  
       method: 'PUT',
       body: JSON.stringify(data),

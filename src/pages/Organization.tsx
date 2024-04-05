@@ -29,7 +29,7 @@ export const Organization: React.FC <OrganizationProps> = ({ darkTheme }) => {
     // Fetch organizations and setOrganizations with the response data
     const fetchData = async () => {
         try {
-          const response = await fetch('https://pmsind.co.in:5000/Organization/', {
+          const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Organization/`, {
             
             headers: {
                 Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -79,7 +79,7 @@ export const Organization: React.FC <OrganizationProps> = ({ darkTheme }) => {
       "name": organizationName
     };
   
-    fetch('https://pmsind.co.in:5000/Organization/', {
+    fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Organization/`, {
       credentials: "omit",
       method: "POST",
       body: JSON.stringify(data),
@@ -93,7 +93,7 @@ export const Organization: React.FC <OrganizationProps> = ({ darkTheme }) => {
         throw new Error('Failed to add organization');
       }
       // Fetch the updated list of organizations
-      return fetch('https://pmsind.co.in:5000/Organization/', {
+      return fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Organization/`, {
         headers: {
           Authorization: 'Basic ' + btoa('fhiruser:change-password'),
         },
