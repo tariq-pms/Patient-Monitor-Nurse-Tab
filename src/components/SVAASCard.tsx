@@ -119,6 +119,7 @@ export interface DeviceDetails {
             };
         }[];
   };
+  darkTheme:boolean
 
 }
 
@@ -455,6 +456,7 @@ style={{ backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)'
         device_resource_id={props.device_resource_id}
         patient={props.patient}
         newData={newData}
+        darkTheme={props.darkTheme}
         />
       </Box>
   )

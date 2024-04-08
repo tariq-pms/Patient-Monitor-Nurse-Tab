@@ -121,7 +121,7 @@ export interface DeviceDetails {
             };
         }[];
   };
-  
+  darkTheme:boolean
 }
 
 
@@ -448,6 +448,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
         device_resource_id={props.device_resource_id}
         patient={props.patient}
         newData={newData}
+        darkTheme={props.darkTheme}
         />   
       </Box>    
   )

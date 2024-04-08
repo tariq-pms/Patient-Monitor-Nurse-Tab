@@ -118,6 +118,7 @@ export interface DeviceDetails {
             };
         }[];
   };
+  darkTheme:boolean
 }
 
 export const SyringeCard: FC<DeviceDetails> = (props): JSX.Element => {
@@ -514,7 +515,9 @@ export const SyringeCard: FC<DeviceDetails> = (props): JSX.Element => {
         device_id={props.device_id}
         device_resource_id={props.device_resource_id}
         patient={props.patient}
-        newData={newData}/>
+        newData={newData}
+        darkTheme={props.darkTheme}
+        />
       </Box>
     );
   };

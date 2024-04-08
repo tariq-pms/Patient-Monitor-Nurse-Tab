@@ -61,7 +61,7 @@ export const Header: FC<HeaderProps> = (props) => {
   ]);
 
   const [room, setRoom] = useState('');
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const handleSetRoom = (event: SelectChangeEvent) => {
     setRoom(event.target.value);
     props.roomChange(
@@ -249,7 +249,7 @@ export const Header: FC<HeaderProps> = (props) => {
                         <Divider orientation="vertical" flexItem sx={{ marginRight: '20px', marginLeft: '20px' }} />
                         <FormControl variant="standard" sx={{ width: '200px',backgroundColor: darkTheme ? '':'#F3F2F7' }}>
                         <InputLabel id="demo-simple-select-standard-label" disabled sx={{  color: darkTheme? 'white':'#124D81 !important' }}>Room</InputLabel>
-                          <Select label="Room" onChange={handleSetRoom} value={deviceModeValue} MenuProps={{MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: 'black',color: '#FFFFFF',},},}}sx={{ color: '#124D81' }}>
+                          <Select label="Room" onChange={handleSetRoom} value={deviceModeValue} MenuProps={{MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81',color: '#FFFFFF',},},}}sx={{ color: darkTheme?'white': '#124D81' }}>
                             {temproom.map((room) => {
                                  return (
                                <MenuItem key={room.resource.id} onClick={() => {

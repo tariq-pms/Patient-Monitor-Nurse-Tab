@@ -137,6 +137,7 @@ export interface PatientDetails {
           }[];
     }[];
     patient_name: string;
+    darkTheme:boolean;
     
   }
   type TemperatureData = {
@@ -221,6 +222,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
     const [newalarm, setNewAlarm] = useState<{ date: string; time: { val: string; alarm: string[]; priority: string[]; }; }[][]>([]);
     const [commeta, setcommeta] = useState<number[]>([])
     const [tableVisisble, setTableVisible] = useState(false)
+    const { darkTheme } = props;
 
     const [selectedTab, setSelectedTab] = useState('overview');
     const handleTabChange = (_event: any, newTab: React.SetStateAction<string> | null) => {
@@ -640,7 +642,6 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                                         //                 data2?.resource?.component[index]?.valueQuantity?.value.toString()
                                         //             )
                                         //         }
-                                                
                                         //     }),
                                         //     yAxisID: heaterYaxis[unit] || "y"
                                         // })
@@ -969,7 +970,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
             )
         }
         else{
-            return ( <Typography variant="h4" color={'#124D81'} sx={{fontWeight:'bold'}}>No Therapy Running</Typography>)
+            return ( <Typography variant="h4" color={darkTheme ? '#FFFFFF':'#124D81'} sx={{fontWeight:'bold'}}>No Therapy Running</Typography>)
         }
     }
     const handleExportData = () => {
@@ -1125,6 +1126,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                 
                 x: {
                     ticks: {
+                        color:darkTheme? 'white':'black',
                         autoSkip: true,
                         maxTicksLimit: 10
                     },
@@ -1143,12 +1145,15 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                 display: true,
                 position: 'left' as const,
                 grid: {
-                    color: '#303030',
+                    color: 'grey',
                     drawOnChartArea: true,
                   },
                 title: {
+                    color:darkTheme? 'white':'black',
                     display: true,
                     text: "Percentage (%)"
+                }, ticks: {
+                    color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
                 }
               },
               y1: {     // %
@@ -1157,11 +1162,15 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                 position: 'right' as const,
                 grid: {
                     color: '#303030',  
-                  drawOnChartArea: false,
+                    drawOnChartArea: false,
                 },
                 title: {
+                    color:darkTheme? 'white':'black',
                     display: true,
                     text: "Temperature (C°)"
+                },
+                ticks: {
+                    color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
                 }
               },
             },
@@ -1170,150 +1179,154 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
             animation: false,
             tension: 0.3,
             responsive: true,
-            // legend: {
-            //     position: 'bottom'
-            // },
             interaction: {
-              mode: 'index' as const,
-              intersect: false,
+                mode: 'index',
+                intersect: false,
             },
             stacked: false,
             plugins: {
-                decimation:{
+                decimation: {
                     enabled: true,
                     algorithm: 'min-max',
                 },
-              colors: {
-                forceOverride: true
-              },
-              legend: {
-                display: false
-              },
-              htmlLegend: {
-                // ID of the container to put the legend in
-                containerID: 'legend-container3',
-              },
-              zoom: {
-                // pan: {
-                //     enabled: true,
-                //     mode: 'x',
-                    
-                // },
+                colors: {
+                    forceOverride: true
+                },
+                legend: {
+                    display: false
+                },
+                htmlLegend: {
+                    containerID: 'legend-container3',
+                },
                 zoom: {
-                    // pinch: {
-                    //     enabled: true ,      // Enable pinch zooming
-                    //     modifierKey: 'ctrl'
-                    // },
-                    wheel: {
-                        enabled: true,       // Enable wheel zooming
-                        modifierKey: 'ctrl'
-                    },
-                    mode: 'x',
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                            modifierKey: 'ctrl'
+                        },
+                        mode: 'x',
+                    }
                 }
-            }
             },
             scales: {
                 x: {
                     ticks: {
+                        color:darkTheme? 'white':'black',
                         autoSkip: true,
-                        maxTicksLimit: 10
+                        maxTicksLimit: 10,
+                        
                     }
                 },
-              y: {     //g
-                type: 'linear' as const,
-                display: true,
-                position: 'left' as const,
-                grid: {
-                    color: '#303030',
-                    drawOnChartArea: true,
-                  },
-                title: {
+                y: {
+                    type: 'linear',
                     display: true,
-                    text: "Grams (g)"
-                }
+                    position: 'left',
+                    grid: {
+                        color: 'grey',
+                        drawOnChartArea: true,
+                    },
+                    title: {
+                        display: true,
+                        text: "Grams (g)",
+                        color:darkTheme? 'white':'black'
+                    },
+                    ticks: {
+                        color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
+                    }
                 },
             },
         };
+        
         const pulseoximeterOption = {
             animation: false,
             tension: 0.3,
             responsive: true,
-            // legend: {
-            //     position: 'bottom'
-            // },
+            legend: {
+                position: 'bottom'
+            },
             interaction: {
-              mode: 'index' as const,
-              intersect: false,
+                mode: 'index',
+                intersect: false,
             },
             stacked: false,
             plugins: {
-                decimation:{
+                decimation: {
                     enabled: true,
                     algorithm: 'min-max',
                 },
-              colors: {
-                forceOverride: true
-              },
-              legend: {
-                display: false
-              },
-              htmlLegend: {
-                // ID of the container to put the legend in
-                containerID: 'legend-container2',
-              },
-              zoom: {
-    
+                colors: {
+                    forceOverride: true
+                },
+                legend: {
+                    display: false
+                },
+                htmlLegend: {
+                    containerID: 'legend-container2',
+                },
                 zoom: {
-                    wheel: {
-                        enabled: true,       // Enable wheel zooming
-                        modifierKey: 'ctrl'
-                    },
-                    mode: 'x',
+                    zoom: {
+                        wheel: {
+                            color: 'red', // Set the wheel color to red
+                            enabled: true,
+                            modifierKey: 'ctrl'
+                        },
+                        mode: 'x',
+                    }
                 }
-            }
             },
             scales: {
                 x: {
                     ticks: {
+                        color:darkTheme? 'white':'black', // Set the ticks color to red
                         autoSkip: true,
                         maxTicksLimit: 10
                     }
                 },
-              y: {      // Celcius
-                type: 'linear' as const,
-                display: true,
-                position: 'left' as const,
-                title: {
+                y: {
+                    type: 'linear',
                     display: true,
-                    text: "Percentage (%)"
+                    color:darkTheme? 'white':'black', // Set the y-axis color to red
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: "Percentage (%)",
+                        color:darkTheme? 'white':'black' // Set the title color to red
+                    },
+                    grid: {
+                        color: 'grey', // Set the grid color to red
+                        drawOnChartArea: true,
+                    }, ticks: {
+                        color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
+                    }
                 },
-                grid: {
-                    color: '#303030',
-                    drawOnChartArea: true,
-                  },
-              },
-              y1: {     // %
-                type: 'linear' as const,
-                display: true,
-                position: 'right' as const,
-                grid: {
-                    drawOnChartArea: false,
-                  },
-                title: {
+                y1: {
+                    type: 'linear',
                     display: true,
-                    text: "Beats Per Minuite (BPM)"
-                }
-              },
+                    position: 'right',
+                    grid: {
+                        color: 'grey', // Set the grid color to red
+                        drawOnChartArea: false,
+                    },
+                    title: {
+                        display: true,
+                        text: "Beats Per Minute (BPM)",
+                        color:darkTheme? 'white':'black' // Set the title color to red
+                    },
+                    ticks: {
+                        color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
+                    }
+                },
             },
+          
         };
+        
         const temperatureLegendPlugin: Plugin = {
             id: 'htmlLegend',
             afterUpdate(chart, _args, options) {
                 const ul = getOrCreateLegendList(chart, options.containerID);
               // Remove old legend items
               while (ul.firstChild) {
-                ul.firstChild.remove();
-              }
+                ul.firstChild.remove();}
               ul.style.margin = '0px';
               ul.style.padding = '0px';
               ul.style.lineHeight = '300%';
@@ -1372,7 +1385,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                     // Text
                     const textContainer = document.createElement('p');
                     textContainer.style.fontSize = '12px'
-                    textContainer.style.color = 'white';
+                    textContainer.style.color = darkTheme? 'white' :'black'; //this change the color of the text color of legend container
                     textContainer.style.marginTop = '-12px';
                     textContainer.style.padding = '0px';
                     // textContainer.style.textDecoration = item.hidden ? 'line-through' : '';
@@ -1500,20 +1513,20 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                                             <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={
                                                 <Divider orientation='vertical' flexItem sx={{marginLeft:'1%',backgroundColor:'#505050', color:'#505050'}}/>
                                             }>
-                                                <Stack height={'100%'} width={'95%'} sx={{backgroundColor:'#E4E4E4'}} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
+                                                <Stack height={'100%'} width={'95%'} sx={{backgroundColor:'transparent'}} spacing={'5%'} marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
                                                     {/* <MyChart height={'100%'} forwardedRef={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} plugins={temperatureLegendPlugin} /> */}
-                                                    <Line ref={chartRef1} options={temperatureOption as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
+                                                    <Line ref={chartRef1}  options={temperatureOption as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                                                     <div id="legend-container"></div>
                                                     
                                                     {props.observation_resource[0]?.identifier[0]?.value?.toString()!="PMS-HCM" && (
                                                         <>
                                                         <Divider />
-                                                        <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions<'line'>} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                                        <Line ref={chartRef2}  options={pulseoximeterOption as ChartOptions<'line'>} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
                                                     <div id="legend-container2"></div>
                                                     <Divider />
                                                     {/* <MyChart height={'100%'} forwardedRef={chartRef3} options={weightOption as ChartOptions} data={weightData} plugins={temperatureLegendPlugin} />                                             */}
-                                                    <Line ref={chartRef3} options={weightOption as ChartOptions<'line'>} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
-                                                    <div id="legend-container3"></div></>
+                                                    <Line ref={chartRef3}  options={weightOption as ChartOptions<'line'>} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                                                    <div id="legend-container3"  ></div></>
                                                     ) }
                                                     {/* <MyChart height={'100%'} forwardedRef={chartRef2} options={pulseoximeterOption as ChartOptions} data={pulseoximeterData} plugins={temperatureLegendPlugin} /> */}
                                                     
@@ -1654,10 +1667,10 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
             return (newalarm[index][0]?.time?.alarm?.map((alarm, ind) => {
                 if(newalarm[index][0].time.priority[ind]=="High Priority"){
                     return (
-                        <Box width={'200px'} height={'110px'} sx={{border:'1px solid red', backgroundColor:'#FFFFFF',borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px red`}} justifyContent={'center'} textAlign={'center'}>
-                            <Typography variant='subtitle1'  color={'#124D81'} paddingTop={'13%'}><b>{alarm}</b></Typography>
+                        <Box width={'200px'} height={'110px'} sx={{border:'1px solid red', backgroundColor:darkTheme?'transparent':'#FFFFFF',borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px red`}} justifyContent={'center'} textAlign={'center'}>
+                            <Typography variant='subtitle1'  color={darkTheme?'white':'#124D81'} paddingTop={'13%'}><b>{alarm}</b></Typography>
                             <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
-                                <Typography variant='subtitle2' color={'#124D81'} >{(newalarm[index][0].date).toString()} - {(newalarm[index][0].time.val).toString()}</Typography>
+                                <Typography variant='subtitle2' color={darkTheme?'white':'#124D81'} >{(newalarm[index][0].date).toString()} - {(newalarm[index][0].time.val).toString()}</Typography>
                             </div>
                             
                         </Box>
@@ -1665,10 +1678,10 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                 }
                 else{
                     return (
-                        <Box width={'200px'} height={'110px'} sx={{border:'1px solid yellow',backgroundColor:'#FFFFFF', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px yellow`}} justifyContent={'center'} textAlign={'center'}>
-                            <Typography variant='subtitle1'  color={'#124D81'} paddingTop={'13%'}><b>{alarm}</b></Typography>
+                        <Box width={'200px'} height={'110px'} sx={{border:'1px solid yellow',backgroundColor:darkTheme?'transparent':'#FFFFFF', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px yellow`}} justifyContent={'center'} textAlign={'center'}>
+                            <Typography variant='subtitle1'  color={darkTheme?'white':'#124D81'} paddingTop={'13%'}><b>{alarm}</b></Typography>
                             <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
-                                <Typography variant='subtitle2'  color={'#124D81'} >{(newalarm[index][0].date).toString()} - {(newalarm[index][0].time.val).toString()}</Typography>
+                                <Typography variant='subtitle2'  color={darkTheme?'white':'#124D81'} >{(newalarm[index][0].date).toString()} - {(newalarm[index][0].time.val).toString()}</Typography>
                             </div>
                             
                         </Box>
@@ -1687,8 +1700,8 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
             return (props.device.map((device) => {
                 return (
                     <Box borderRadius={'10px'} justifyContent={'center'} textAlign={'center'} boxShadow={`0px 0px 10px 2px #00B1FD`} border={'1px solid #00B1FD'} height={'70px'}>
-                        <Typography paddingTop={'10px'} paddingLeft={'10px'} paddingRight={'10px'} color={'#124D81'}>{device.identifier[1].value}</Typography>
-                        <Typography variant="caption" paddingTop={'5px'} paddingLeft={'10px'} color={'#124D81'} paddingRight={'10px'}>{device.identifier[0].value}</Typography>
+                        <Typography paddingTop={'10px'} paddingLeft={'10px'} paddingRight={'10px'} color={darkTheme?'#FFFFFF':'#124D81'}>{device.identifier[1].value}</Typography>
+                        <Typography variant="caption" paddingTop={'5px'} paddingLeft={'10px'} color={darkTheme?'#FFFFFF':'#124D81'} paddingRight={'10px'}>{device.identifier[0].value}</Typography>
                     </Box>
                 )
             }))
@@ -1732,7 +1745,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                     sm: '90%',
                     md: '70%',
                     lg: '70%',
-                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundColor:'#FFFFFF'}}}
+                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundColor: darkTheme?'#2F3D4A':'#FFFFFF'}}}
                 >
                     <DialogTitle
                         sx={{
@@ -1742,16 +1755,16 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                         {/* <IconButton sx={{marginLeft:'96%'}}><CloseRounded/></IconButton> */}
                         <Stack direction={'row'} width={'102%'} >
                             <Stack direction={'row'} width={'100%'} sx={{justifyContent:'space-between', marginLeft:'auto', marginRight:'auto'}}>
-                            <Typography variant="h6" color={'black'} fontWeight={'regular'} >
+                            <Typography variant="h6" color={darkTheme ? '#FFFFFF':"#124D81"} fontWeight={'regular'} >
                                 {props.patient_name} 
                             
                             </Typography>
-                            <Typography color={'black'} variant="h6">
+                            <Typography color={darkTheme ? '#FFFFFF':"#124D81"} variant="h6">
                                 {props.patient_id}
                             </Typography>
                             
                             </Stack>
-                            <IconButton sx={{width:'45px', marginTop:'-4px', marginLeft:'10px'}} onClick={() => {setvarq(!varq)}}><FontAwesomeIcon style={{padding:'0px', margin:'0px',color:'black'}} icon={faXmark} /></IconButton>
+                            <IconButton sx={{width:'45px', marginTop:'-4px', marginLeft:'10px'}} onClick={() => {setvarq(!varq)}}><FontAwesomeIcon style={{padding:'0px', margin:'0px',color:darkTheme ? '#FFFFFF':"#124D81"}} icon={faXmark} /></IconButton>
                         </Stack>
                     </DialogTitle>
                     <DialogContent dividers={true} sx={{justifyContent:'center', overflowY: 'scroll'}}>
@@ -1771,11 +1784,11 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                     </Stack>
                     {selectedTab === 'overview' && (
                         <Box>
-                        <Box justifyContent={'center'} textAlign={'center'} color={'#124D81'} width={'100%'} marginTop={"20px"}>
+                        <Box justifyContent={'center'} textAlign={'center'} color={darkTheme?'#FFFFFF':'#124D81'} width={'100%'} marginTop={"20px"}>
                             {realtimeDataDisplay()}
                         </Box>
                         <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'#E4E4E4'}}/>
-                        <Typography variant='h5' color={'#124D81'} paddingLeft={'2%'}>Connected Devices</Typography>
+                        <Typography variant='h5' color={darkTheme?'#FFFFFF':'#124D81'} paddingLeft={'2%'}>Connected Devices</Typography>
                         <Box marginTop={'3%'} marginLeft={'3%'} display={'flex'} textAlign={'center'} justifyContent={'left'} flexWrap={'wrap'} width={'100%'} gap={'10px'}>
                         {connectedDevices()}
                     </Box>
@@ -1789,28 +1802,28 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                               <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                               
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-             <Typography variant="subtitle1" color="#124D81" style={{ fontFamily: 'Helvetica' }}>
+             <Typography variant="subtitle1" color= {darkTheme ? '#FFFFFF':"#124D81"} style={{ fontFamily: 'Helvetica' }}>
                  Baby Name:
              </Typography>
-             <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold', fontFamily: 'Helvetica', marginLeft: '5px' }}>
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{ fontWeight: 'bold', fontFamily: 'Helvetica', marginLeft: '5px' }}>
              {props.patient_name} 
              </Typography>
          </Box>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-             <Typography variant="subtitle1" color="#124D81">
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"}>
                  Birth Weight:
              </Typography>
-             <Typography variant="subtitle1" color="#124D81" style={{fontWeight: 'bold', marginLeft: '5px' }}>
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{fontWeight: 'bold', marginLeft: '5px' }}>
                  730 g
              </Typography>
          </Box>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-             <Typography variant="subtitle1" color="#124D81">
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"}>
                  Gender:
              </Typography>
              <Select
-      sx={{ backgroundColor: '#F3F2F7',color:'#124D81',paddingLeft:'20px' ,'& .MuiSelect-icon': {
-        color: '#124D81', // Change the color of the arrow dropdown to blue
+      sx={{ backgroundColor: '#F3F2F7',color:darkTheme?'#FFFFFF':'#124D81',paddingLeft:'20px' ,'& .MuiSelect-icon': {
+        color: darkTheme?'#FFFFFF':'#124D81', // Change the color of the arrow dropdown to blue
     },}}
       value={gender}
       
@@ -1834,18 +1847,18 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
      
      <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-             <Typography variant="subtitle1" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{  fontFamily: 'Helvetica' }}>
                 Blood Group :
              </Typography>
-             <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold', fontFamily: 'Helvetica', marginLeft: '5px' }}>
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{ fontWeight: 'bold', fontFamily: 'Helvetica', marginLeft: '5px' }}>
                  {/* O +ve */}
              </Typography>
          </Box>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-             <Typography variant="subtitle1" color="#124D81">
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"}>
                 Mothers Name :
              </Typography>
-             <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold',marginLeft: '5px' }}>
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{ fontWeight: 'bold',marginLeft: '5px' }}>
                  {/* Sheela */}
              </Typography>
          </Box>
@@ -1858,12 +1871,12 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
              {/* Edit icon */}
              
              {/* Box content */}
-             <Typography variant="h6" color="#124D81" style={{ fontFamily: 'Helvetica', textAlign: 'left' }}>Admission Details</Typography>
+             <Typography variant="h6" color={darkTheme ? '#FFFFFF':"#124D81"} style={{ fontFamily: 'Helvetica', textAlign: 'left' }}>Admission Details</Typography>
              <Divider sx={{ marginBottom: '20px', backgroundColor: '#E4E4E4', color: '#E4E4E4', height: '1px' }} />
              <Stack width={'100%'} direction="row" minHeight={"100px"} spacing={3} justifyContent="center">
           <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-      <Typography variant="subtitle1" color="#124D81" style={{ fontFamily: 'Helvetica' }}>
+      <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{ fontFamily: 'Helvetica' }}>
         Date of Admission:
       </Typography>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -1871,50 +1884,50 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
           value={selectedDate}
           onChange={handleDateChange}
           renderInput={(params: any) => (
-            <Typography variant="subtitle1" color="#124D81" {...params} />
+            <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} {...params} />
           )}
           style={{ marginLeft: '5px' }}
         />
       </LocalizationProvider>
     </Box>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-             <Typography variant="subtitle1" color="#124D81">
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"}>
              Room No :
              </Typography>
-             <Typography variant="subtitle1" color="#124D81" style={{fontWeight: 'bold', marginLeft: '5px' }}>
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{fontWeight: 'bold', marginLeft: '5px' }}>
                  01
              </Typography>
          </Box>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-             <Typography variant="subtitle1" color="#124D81">
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"}>
              Reason of Admission :
              </Typography>
-             <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold',marginLeft: '5px' }}>
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{ fontWeight: 'bold',marginLeft: '5px' }}>
             </Typography>
          </Box>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-             <Typography variant="subtitle1" color="#124D81">
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"}>
              Reporting Nurse :
              </Typography>
-             <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold',marginLeft: '5px' }}>
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{ fontWeight: 'bold',marginLeft: '5px' }}>
             </Typography>
          </Box></Box>
      
      <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-             <Typography variant="subtitle1" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{  fontFamily: 'Helvetica' }}>
              Birth Date & Time : 
              </Typography>
-             <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold', fontFamily: 'Helvetica', marginLeft: '5px' }}>
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{ fontWeight: 'bold', fontFamily: 'Helvetica', marginLeft: '5px' }}>
            </Typography>
          </Box>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-  <Typography variant="subtitle1" color="#124D81" >
+  <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} >
     Gestational Age:
   </Typography>
   
   
-    <Select sx={{ backgroundColor: '#F3F2F7',color:'#124D81',paddingLeft:'20px' ,'& .MuiSelect-icon': {color: '#124D81' },}}value={gestationalAge} placeholder="Select Here" onChange={handleChange} variant="standard" displayEmpty style={{ marginLeft: '50px',width:'150px',alignItems:'center'}}>
+    <Select sx={{ backgroundColor: '#F3F2F7',color:darkTheme?'#FFFFFF':'#124D81',paddingLeft:'20px' ,'& .MuiSelect-icon': {color: darkTheme?'#FFFFFF':'#124D81' },}}value={gestationalAge} placeholder="Select Here" onChange={handleChange} variant="standard" displayEmpty style={{ marginLeft: '50px',width:'150px',alignItems:'center'}}>
       <MenuItem value="" disabled><em>Select Age</em></MenuItem>
       <MenuItem value="25 weeks">25 weeks</MenuItem>
       <MenuItem value="26 weeks">26 weeks</MenuItem>
@@ -1933,8 +1946,8 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
 </Box>
 
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-             <Typography variant="subtitle1" color="#124D81">Reporting Doctor :</Typography>
-             <Typography variant="subtitle1" color="#124D81" style={{ fontWeight: 'bold',marginLeft: '5px' }}>user.name</Typography>
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"}>Reporting Doctor :</Typography>
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{ fontWeight: 'bold',marginLeft: '5px' }}>user.name</Typography>
          </Box>
         
         
@@ -1947,7 +1960,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
         <Stack width={'100%'} direction="row" spacing={3} justifyContent="center">
         <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-             <Typography variant="h6" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+             <Typography variant="h6" color={darkTheme ? '#FFFFFF':"#124D81"} style={{  fontFamily: 'Helvetica' }}>
             Vital Signs
              </Typography>
            
@@ -1959,7 +1972,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
      
      <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-             <Typography  variant="h6" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+             <Typography  variant="h6" color={darkTheme ? '#FFFFFF':"#124D81"} style={{  fontFamily: 'Helvetica' }}>
             Anthropometry
              </Typography>
              
@@ -1971,7 +1984,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
         <Stack width={'100%'} direction="row"  spacing={3} justifyContent="center">
         <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-             <Typography variant="h6" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+             <Typography variant="h6" color={darkTheme ? '#FFFFFF':"#124D81"} style={{  fontFamily: 'Helvetica' }}>
             APGAR Details
              </Typography>
              
@@ -1983,7 +1996,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
      
      <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-             <Typography  variant="h6" color="#124D81" style={{  fontFamily: 'Helvetica' }}>
+             <Typography  variant="h6" color={darkTheme ? '#FFFFFF':"#124D81"} style={{  fontFamily: 'Helvetica' }}>
             Skin Assessment
              </Typography>
              
@@ -1999,7 +2012,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                          <Box>
                         {props.observation_resource && props.observation_resource!=undefined && props.observation_resource[0].identifier[0].value.toString()!='PMS-SYRINGE' && (<>
                             <Divider sx={{marginTop:'40px', marginBottom:'20px', backgroundColor:'#E4E4E4'}}/>
-                            <Typography variant='h5' color={'#124D81'} paddingLeft={'2%'}>Trends</Typography>
+                            <Typography variant='h5' color={darkTheme?'#FFFFFF':'#124D81'} paddingLeft={'2%'}>Trends</Typography>
                             {graphDataDisplay}
                         </>)}
                         
@@ -2011,19 +2024,19 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                          )}
                        
                        {selectedTab === 'alarms' && (
-                       <Box> <Typography variant='h5' color={'#124D81'} paddingLeft={'2%'}>Alarms</Typography>
+                       <Box> <Typography variant='h5' color={darkTheme?'#FFFFFF':'#124D81'} paddingLeft={'2%'}>Alarms</Typography>
                        {props.communication_resource?.map((comms, index) => {
                         console.log(comms)
                         if(comms.meta.versionId!="1"){
                             return (
-                                <Accordion elevation={0} defaultExpanded={true} sx={{ width:'100%',backgroundColor:"#F3F2F7", backgroundImage:'none', marginTop:'10px' , marginBottom:"10px", border:'1px solid grey', borderRadius:'15px', '&:before': {opacity: 0}}} >
+                                <Accordion elevation={0} defaultExpanded={true} sx={{ width:'100%',backgroundColor:darkTheme?'transparent':"#F3F2F7", backgroundImage:'none', marginTop:'10px' , marginBottom:"10px", border:'1px solid grey', borderRadius:'15px', '&:before': {opacity: 0}}} >
                                     <AccordionSummary
-                                            expandIcon={<ExpandMoreRounded sx={{color:'#124D81', fontSize:'200%'}}/>}
+                                            expandIcon={<ExpandMoreRounded sx={{color:darkTheme?'#FFFFFF':'#124D81', fontSize:'200%'}}/>}
                                             aria-controls="panel1a-content"
                                             id="panel1a-header"
                                             
                                             >
-                                            <Typography variant='h5' color={'#124D81'} component={"h2"} >{props.device && props.device[index] && props.device[index].identifier[1].value }
+                                            <Typography variant='h5' color={darkTheme?'#FFFFFF':'#124D81'} component={"h2"} >{props.device && props.device[index] && props.device[index].identifier[1].value }
                                             {(props.device==undefined || (!props.device && !props.device[index])) && props.observation_resource[index].identifier[0].value}</Typography>
                                     </AccordionSummary>
                                     <AccordionDetails>

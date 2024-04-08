@@ -166,9 +166,7 @@ console.log("in admin page",userOrganization);
 
   //   handleDialog2Close();
   // };
-  
-  
-  
+ 
   const handleAddUser = () => {
     // Extract username, password, role, and organizationId from state or form fields
     const { email, username, password, role, organization } = newUser;

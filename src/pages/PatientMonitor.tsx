@@ -29,7 +29,7 @@ type Patient = {
   }[];
 };
   export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, currentRoom ,darkTheme}) => {
-  console.log(currentRoom);
+  console.log("in patient Monitor Page rooms",currentRoom);
   console.log("in patient Monitor Page",userOrganization);
 
   const [patientList, setPatientList] = useState<Patient[] | null>(null);
@@ -41,8 +41,6 @@ type Patient = {
   const [pageNumber, setPageNumber] = useState(1);
   const [searchQuery, setSearchQuery] = useState<string>(''); // State for search query
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]); // State for filtered patient list
-
- 
 
   useEffect(() => {
     filterPatients(searchQuery);
@@ -112,7 +110,6 @@ type Patient = {
   const handleFetchError = (error: any) => {
     console.error('Fetch error:', error);
   };
-
   const fetchDataForPatients = async (patients: any[]) => {
     const tempParentObs: { [key: string]: any[] } = {};
     const tempParentComm: { [key: string]: any[] } = {};
@@ -244,7 +241,6 @@ type Patient = {
     };
   }, []);
   
-
   useEffect(() => {
     if (patientList != null && patientList.length > 0) {
       fetchDataForPatients(patientList)
@@ -284,20 +280,6 @@ type Patient = {
     };
   }, [pageNumber]);
   
-  // const patientc = patientList?.map((patient) => {
-  //   return (
-  //     <PatientCard
-  //       patient_resource_id={String(patient.id)}
-  //       key={String(patient.id)}
-  //       patient_name={String(patient.extension[0].valueString)}
-  //       patient_id={String(patient.identifier[0].value)}
-  //       device={parentdevice[String(patient.id)]}
-  //       observation_resource={parentobs[String(patient.id)]}
-  //       communication_resource={parentcomm[String(patient.id)]}
-  //     />
-  //   );
-  // });
-
   const patientCards = filteredPatients.map(patient => {
     return (
     <PatientCard
@@ -421,9 +403,6 @@ type Patient = {
 <DummyPatientCard  darkTheme={darkTheme}/>
 <DummyPatientCard  darkTheme={darkTheme}/>
 
-                
-                
-
 </Box>
               </AccordionDetails>
             </Accordion>
@@ -456,8 +435,7 @@ type Patient = {
             </Accordion>
             <Accordion elevation={0} defaultExpanded={true} sx={{backgroundColor:"transparent", backgroundImage:'none' , marginBottom:"10px",borderBottom:darkTheme?'2px solid white':'2px solid #386893',borderTop: 'none','&:before': {opacity: 0,}}}>
               
-              <AccordionSummary
-                expandIcon={<ExpandMoreRounded sx={{color:darkTheme?'white':"#386893", fontSize:'300%'}}/>}
+              <AccordionSummary expandIcon={<ExpandMoreRounded sx={{color:darkTheme?'white':"#386893", fontSize:'300%'}}/>}
                 aria-controls="panel1a-content"
                 id="panel1a-header"
               >

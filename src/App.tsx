@@ -15,9 +15,6 @@ import { DeviceMonitor } from "./pages/DeviceMonitor";
 import {AdminPage} from "./pages/AdminPage";
 import { Organization } from "./pages/Organization";
 
-
-
-
 const theme = createTheme({
   typography: {
     allVariants:{
@@ -32,8 +29,7 @@ const theme = createTheme({
     },
     secondary:{
       main: "#00A0E3"
-    }
-  },
+    }},
   
 });
  

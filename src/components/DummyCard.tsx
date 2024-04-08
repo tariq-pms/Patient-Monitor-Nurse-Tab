@@ -1,12 +1,17 @@
 import { Box, Card, Stack, Typography } from '@mui/material'
-import  { useEffect, useState } from 'react'
+import  { FC, useEffect, useState } from 'react'
 import { DummyPatientDetails } from './DummyPatientDetails'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell } from '@fortawesome/free-solid-svg-icons'; 
 
-export const DummyCard = ():JSX.Element => {
+export interface DummyDeviceDetails {
+    darkTheme:boolean
+   }
+
+
+    export const  DummyCard: FC<DummyDeviceDetails> = ({darkTheme}): JSX.Element => {
+
     const [isOpen, setIsOpen] = useState(false)
-    
     const [alarmColor,] = useState("#202020");
     const [isBlinking, setIsBlinking] = useState(true);
     
@@ -106,10 +111,10 @@ export const DummyCard = ():JSX.Element => {
                 
                 
             </Stack>
-
-        </Card> */}
+ </Card> */}
+ 
         <Card
-          style={{ backgroundColor:'#FFFFFF', borderRadius: "18px", height:"300px", boxShadow: `0px 0px 10px #FFD0D0`,border: `6px solid ${isBlinking ? '#FC8A8A' : '#F9F9F9'}` }}
+          style={{ backgroundColor: darkTheme ? '#34495F':'#FFFFFF', borderRadius: "18px", height:"300px", boxShadow: `0px 0px 10px #FFD0D0`,border: `6px solid ${isBlinking ? '#FC8A8A' : '#F9F9F9'}` }}
       > 
             <Stack width={'100%'} height={'100%'}>
                 
@@ -147,7 +152,7 @@ export const DummyCard = ():JSX.Element => {
                             </div>
     </Box>
     
-    <Box width={'25%'} > <div style={{marginTop:'15%'}}><Typography variant='subtitle1' style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={"#124D81"}  paddingLeft={'20%'}>Alarm <FontAwesomeIcon icon={faBell } color='#124D81'/></Typography>
+    <Box width={'25%'} > <div style={{marginTop:'15%'}}><Typography variant='subtitle1' style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={darkTheme?'':"#124D81"}  paddingLeft={'20%'}>Alarm <FontAwesomeIcon icon={faBell } color='#124D81'/></Typography>
     </div>
                             {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                             <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
@@ -230,7 +235,7 @@ export const DummyCard = ():JSX.Element => {
 
         </Card>
         <DummyPatientDetails 
-          isOpen={isOpen}  handleCloseDialog={() => {setIsOpen(false)}}/>
+                isOpen={isOpen} handleCloseDialog={() => { setIsOpen(false); } } darkTheme={false}/>
         {/* <NewPatientDetails 
             isDialogOpened={isOpen}
             handleCloseDialog={() => { setIsOpen(false); } }

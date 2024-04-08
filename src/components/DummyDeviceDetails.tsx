@@ -765,7 +765,7 @@ const columns = useMemo<MRT_ColumnDef[]>(
                     </Typography>
                     
                     </Stack>
-                    <IconButton sx={{width:'45px', marginTop:'-4px', marginLeft:'10px'}} onClick={() => {setvarq(!varq)}}><FontAwesomeIcon style={{padding:'0px', margin:'0px'}} icon={faXmark} /></IconButton>
+                    <IconButton sx={{width:'45px', marginTop:'-4px', marginLeft:'10px'}} onClick={() => {setvarq(!varq)}}><FontAwesomeIcon style={{padding:'0px', margin:'0px', color:'black'}} icon={faXmark} /></IconButton>
                 </Stack>
 
                 

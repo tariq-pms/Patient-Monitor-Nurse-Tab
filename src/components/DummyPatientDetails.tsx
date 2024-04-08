@@ -18,7 +18,7 @@ import { Table } from "./Table";
 import ModeEditOutlineRoundedIcon from '@mui/icons-material/ModeEditOutlineRounded';
 
 Chart.register(CategoryScale);
-export const DummyPatientDetails = (props: { isOpen: boolean;handleCloseDialog: Function; }): JSX.Element => {
+export const DummyPatientDetails = (props: { isOpen: boolean;handleCloseDialog: Function;darkTheme:boolean}): JSX.Element => {
     type TemperatureData = {
         labels: any[];
         datasets: any[]; 
@@ -752,7 +752,7 @@ const columns = useMemo<MRT_ColumnDef[]>(
                     sm: '90%',
                     md: '70%',
                     lg: '70%',
-                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundColor:'#FFFFFF' }}}
+                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundColor:props.darkTheme?'#2F3D4A':'#FFFFFF' }}}
                 >
                     <DialogTitle
                         sx={{
@@ -771,7 +771,7 @@ const columns = useMemo<MRT_ColumnDef[]>(
                             </Typography>
                             
                             </Stack>
-                            <IconButton sx={{width:'45px', marginTop:'-4px', marginLeft:'10px'}} onClick={() => {setvarq(!varq)}}><FontAwesomeIcon style={{padding:'0px', margin:'0px'}} icon={faXmark} /></IconButton>
+                            <IconButton sx={{width:'45px', marginTop:'-4px', marginLeft:'10px'}} onClick={() => {setvarq(!varq)}}><FontAwesomeIcon style={{padding:'0px', margin:'0px',color:'black'}} icon={faXmark} /></IconButton>
                         </Stack>
 
                         

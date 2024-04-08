@@ -216,15 +216,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                                     setDisplayAlarm(String(val.extension[0].valueCodeableConcept.coding[i].display))
                                     setAlarmColor('yellow')
                                 }
-                            }
-                        }
-                        
-                    }
-                    
-                })
-                
-            }
-        }
+                            } } }})}}
 },[props])
         
     useEffect(() => {
@@ -458,7 +450,9 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                 patient_name={props.patient_name}
                 newData={newData}
                 key={props.patient_resource_id}
-                patient_resource_id={props.patient_resource_id} />
+                patient_resource_id={props.patient_resource_id} 
+                darkTheme={props.darkTheme} />
+                
         </Box>
     )
 }

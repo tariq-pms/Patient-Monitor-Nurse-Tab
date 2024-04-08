@@ -14,6 +14,7 @@ import { ChartOptions, LegendItem, Plugin } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 import { Chart, CategoryScale } from 'chart.js';
+// import { color } from 'chart.js/helpers';
 
 
 Chart.register(CategoryScale);
@@ -131,31 +132,26 @@ export interface DeviceDetails {
                       "code": string;
                       "display": string;
                   }[];
-              };
-          }[];
-    };
-  
-  }
+              };}[]; };
+            darkTheme:boolean
+            }
 type TemperatureData = {
 labels: any[];
 datasets: any[]; 
 };
-
-
-
 export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
     const [selectedLegends, setSelectedLegends] = useState<any>([])
     const chartRef1 = useRef<any | null>(null);
     const chartRef2 = useRef<any | null>(null);
     const chartRef3 = useRef<any | null>(null);
+    const { darkTheme } = props;
     const [graphData, setGraphData] = useState(false)
     const [selectAlarm, setSelectAlarm] = useState(0)
     const [newalarm, setNewAlarm] = useState<Array<{ date: string; time: { val: string; alarm: string[]; priority: string[]; }; }>>([]);
     const leftarrowcolor = selectAlarm==0 ? '#606060' : '#124D81'
     const rightarrowcolor = selectAlarm==newalarm.length-1 ? '#606060' : '#124D81'
     const [tableVisisble, setTableVisible] = useState(false)
-    const [observation, setObservation] = useState(
-        [
+    const [observation, setObservation] = useState( [
                {
                    "fullUrl": String,
                    "resource": {
@@ -230,7 +226,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                        "lastModified": String
                    }
                }
-           ]
+        ]
     )
     const [communication, setCommunication] = useState([{
         "resource":{
@@ -301,6 +297,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         "C": "y1",
         "C°": "y1"
     };
+    
     const pulseoximeterYaxis = {
         "%": "y",
         'BPM': "y1"
@@ -351,9 +348,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                     enabled: true,       // Enable wheel zooming
                     modifierKey: 'ctrl'
                 },
-                mode: 'x',
-                
-            }
+                mode: 'x', }
         }
         },
         scales: {
@@ -368,8 +363,12 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
             display: true,
             position: 'left' as const,
             title: {
+                color:darkTheme? 'white':'black',
                 display: true,
                 text: "Percentage (%)"
+            },
+            ticks: {
+                color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
             }
           },
           y1: {     // %
@@ -380,9 +379,15 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
               drawOnChartArea: false,
             },
             title: {
+
+                color:darkTheme? 'white':'black',
                 display: true,
                 text: "Liters Per Minuite (LPM)"
+            },
+            ticks: {
+                color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
             }
+
           },
         },
     };
@@ -442,8 +447,12 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
             display: true,
             position: 'left' as const,
             title: {
+                color:darkTheme? 'white':'black',
                 display: true,
                 text: "Centimeter of Water (CmH2O)"
+            },
+            ticks: {
+                color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
             }
           },
           y1: {     // %
@@ -454,8 +463,12 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
               drawOnChartArea: false,
             },
             title: {
+                color:darkTheme? 'white':'black',
                 display: true,
                 text: "Bar"
+            },
+            ticks: {
+                color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
             }
           },
         },
@@ -514,6 +527,8 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
             
             x: {
                 ticks: {
+               
+                    color:darkTheme? 'white':'black' ,
                     autoSkip: true,
                     maxTicksLimit: 10
                 },
@@ -525,7 +540,8 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                     drawOnChartArea: true,
                     drawTicks: true,
                     color: 'grey'
-                }
+                },
+                
             },
           y: {      // Celcius
             type: 'linear' as const,
@@ -536,8 +552,12 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                 drawOnChartArea: true,
               },
             title: {
+                color:darkTheme?'white':'black',
                 display: true,
                 text: "Percentage (%)"
+            },
+            ticks: {
+                color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
             }
           },
           y1: {     // %
@@ -549,10 +569,15 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
               drawOnChartArea: false,
             },
             title: {
+                color:darkTheme?'white':'black',
                 display: true,
                 text: "Temperature (C°)"
+            },
+            ticks: {
+                color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
             }
           },
+          
         },
     };
     const weightOption = {
@@ -604,6 +629,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         scales: {
             x: {
                 ticks: {
+                    color:darkTheme? 'white':'black',
                     autoSkip: true,
                     maxTicksLimit: 10
                 }
@@ -617,8 +643,12 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                 drawOnChartArea: true,
               },
             title: {
+                color:darkTheme? 'white':'black',
                 display: true,
                 text: "Grams (g)"
+            },
+            ticks: {
+                color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
             }
             },
         },
@@ -664,6 +694,7 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         scales: {
             x: {
                 ticks: {
+                    color:darkTheme? 'white':'black',
                     autoSkip: true,
                     maxTicksLimit: 10
                 }
@@ -673,13 +704,18 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
             display: true,
             position: 'left' as const,
             title: {
+                color:darkTheme? 'white':'black',
                 display: true,
                 text: "Percentage (%)"
+            },
+            ticks: {
+                color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
             },
             grid: {
                 color: '#303030',
                 drawOnChartArea: true,
               },
+              
           },
           y1: {     // %
             type: 'linear' as const,
@@ -689,8 +725,12 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
                 drawOnChartArea: false,
               },
             title: {
+                color:darkTheme? 'white':'black',
                 display: true,
                 text: "Beats Per Minuite (BPM)"
+            },
+            ticks: {
+                color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
             }
           },
         },
@@ -710,10 +750,10 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
     const alarmUI = newalarm[selectAlarm]?.time?.alarm.map((vals,index) => {
         if(newalarm[selectAlarm].time.priority[index]=="High Priority"){
             return (
-                <Box width={'200px'}  height={'110px'} sx={{border:'1px solid red', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px red`,backgroundColor:'#F3F2F7'}} justifyContent={'center'} textAlign={'center'}>
-                    <Typography variant='subtitle1' color={'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
+                <Box width={'200px'}  height={'110px'} sx={{border:'1px solid red', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px red`,backgroundColor:darkTheme?'#2F3D4A':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
+                    <Typography variant='subtitle1' color={darkTheme?'white':'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
-                        <Typography variant='subtitle2' color={'#124D81'} >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
+                        <Typography variant='subtitle2' color={darkTheme?'white':'#124D81'} >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
                     </div>
                     
                 </Box>
@@ -721,20 +761,20 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
         }
         if(newalarm[selectAlarm].time.priority[index]=="Medium Priority"){
             return (
-                <Box width={'200px'} height={'110px'} sx={{border:'1px solid #ffd700', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px #ffd700`,backgroundColor:'#F3F2F7'}} justifyContent={'center'} textAlign={'center'}>
-                    <Typography variant='subtitle1'  color={'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
+                <Box width={'200px'} height={'110px'} sx={{border:'1px solid #ffd700', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px #ffd700`,backgroundColor:darkTheme?'#2F3D4A':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
+                    <Typography variant='subtitle1'  color={darkTheme?'white':'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
-                        <Typography variant='subtitle2'  color={'#124D81'} >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
+                        <Typography variant='subtitle2'  color={darkTheme?'white':'#124D81'} >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
                     </div>
                 </Box>
             )
         }
         if(newalarm[selectAlarm].time.priority[index]=="Low Priority"){
             return (
-                <Box width={'200px'} height={'110px'} sx={{border:'1px solid cyan', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px cyan`,backgroundColor:'#F3F2F7'}} justifyContent={'center'} textAlign={'center'}>
-                    <Typography variant='subtitle1'  color={'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
+                <Box width={'200px'} height={'110px'} sx={{border:'1px solid cyan', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px cyan`,backgroundColor:darkTheme?'#2F3D4A':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
+                    <Typography variant='subtitle1'  color={darkTheme?'white':'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
-                        <Typography variant='subtitle2'  color={'#124D81'}>{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
+                        <Typography variant='subtitle2'  color={darkTheme?'white':'#124D81'}>{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
                     </div>
                 </Box>
             )
@@ -1029,7 +1069,7 @@ items.forEach((item) => {
                 // Text
                 const textContainer = document.createElement('p');
                 textContainer.style.fontSize = '12px'
-                textContainer.style.color = 'white';
+                textContainer.style.color = darkTheme? 'white' :'black';
                 textContainer.style.marginTop = '-12px';
                 textContainer.style.padding = '0px';
                 // textContainer.style.textDecoration = item.hidden ? 'line-through' : '';
@@ -1690,7 +1730,7 @@ items.forEach((item) => {
                 <Stack width={'100%'} height={'100%'}  direction={'row'} justifyContent={'center'} divider={
                     <Divider orientation='vertical' flexItem sx={{marginLeft:'1%',backgroundColor:'#505050', color:'#505050'}}/>
                 }>
-                    <Stack height={'100%'} width={'95%'} sx={{backgroundColor:'#E4E4E4'}} spacing={'5%'} marginRight={'auto'}  marginLeft={'2%'} marginTop={'2%'}>
+                    <Stack height={'100%'} width={'95%'} sx={{backgroundColor:'transparent'}} spacing={'5%'} marginRight={'auto'}  marginLeft={'2%'} marginTop={'2%'}>
                         {/* <MyChart height={'100%'} forwardedRef={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} plugins={temperatureLegendPlugin} /> */}
                         <Line ref={chartRef1} options={temperatureOption as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                         <div id="legend-container"></div>
@@ -1727,7 +1767,7 @@ items.forEach((item) => {
                 <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={
                     <Divider orientation='vertical' flexItem sx={{marginLeft:'1%',backgroundColor:'#505050', color:'#505050'}}/>
                 }>
-                    <Stack height={'100%'} width={'95%'} spacing={'5%'} sx={{backgroundColor:'#E4E4E4'}}  marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
+                    <Stack height={'100%'} width={'95%'} spacing={'5%'} sx={{backgroundColor:'transparent'}}  marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
                         {/* <MyChart height={'100%'} forwardedRef={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} plugins={temperatureLegendPlugin} /> */}
                         <Line ref={chartRef1} options={temperatureOption as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                         <div id="legend-container"></div>
@@ -1765,7 +1805,7 @@ items.forEach((item) => {
                 <Stack width={'100%'} height={'100%'} direction={'row'} divider={
                     <Divider orientation='vertical' flexItem sx={{marginLeft:'1%'}}/>
                 }>
-                    <Stack height={'100%'} width={'95%'} spacing={'5%'} sx={{backgroundColor:'#E4E4E4'}}  marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
+                    <Stack height={'100%'} width={'95%'} spacing={'5%'} sx={{backgroundColor:'transparent'}}  marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
                         <Line ref={chartRef1} options={pressure1Option as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                         <div id="legend-container"></div>
                         <Divider />
@@ -1788,7 +1828,7 @@ items.forEach((item) => {
                 <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={
                     <Divider orientation='vertical' flexItem sx={{marginLeft:'1%',backgroundColor:'#505050', color:'#505050'}}/>
                 }>
-                    <Stack height={'100%'} width={'95%'} spacing={'5%'} sx={{backgroundColor:'#E4E4E4'}}  marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
+                    <Stack height={'100%'} width={'95%'} spacing={'5%'} sx={{backgroundColor:'transparent'}}  marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
                         {/* <MyChart height={'100%'} forwardedRef={chartRef1} options={temperatureOption as ChartOptions} data={temperatureData} plugins={temperatureLegendPlugin} /> */}
                         <Line ref={chartRef1} options={temperatureOption as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
                         <div id="legend-container"></div>
@@ -1842,7 +1882,7 @@ items.forEach((item) => {
                     sm: '90%',
                     md: '70%',
                     lg: '70%',
-                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundColor:'#FFFFFF'}}}
+                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundColor: darkTheme?'#2F3D4A': '#FFFFFF'}}}
                 >
                 <DialogTitle
                     sx={{
@@ -1852,11 +1892,11 @@ items.forEach((item) => {
                     {/* <IconButton sx={{marginLeft:'96%'}}><CloseRounded/></IconButton> */}
                     <Stack direction={'row'} width={'102%'} >
                         <Stack direction={'row'} width={'100%'} sx={{justifyContent:'space-between', marginLeft:'auto', marginRight:'auto'}}>
-                        <Typography variant="h6" color={'black'} fontWeight={'regular'} >
+                        <Typography variant="h6" color={darkTheme?'#FFFFFF': '#2F3D4A'} fontWeight={'regular'} >
                         {props.patient?.extension[0]?.valueString} &nbsp; | &nbsp; {props.patient?.identifier[0]?.value}
                         
                         </Typography>
-                        <Typography variant="h6" color={'black'}>
+                        <Typography variant="h6" color={darkTheme?'#FFFFFF': '#2F3D4A'}>
                             {(() => {
                                 if(props.observation_resource){
                                     var q = "";
@@ -1883,7 +1923,7 @@ items.forEach((item) => {
                         </Typography>
                         
                         </Stack>
-                        <IconButton sx={{width:'45px', marginTop:'-4px',color:'black', marginLeft:'10px'}} onClick={() => {setvarq(!varq)}}><FontAwesomeIcon style={{padding:'0px', margin:'0px'}} icon={faXmark} /></IconButton>
+                        <IconButton sx={{width:'45px', marginTop:'-4px',color:darkTheme?'#FFFFFF': '#2F3D4A', marginLeft:'10px'}} onClick={() => {setvarq(!varq)}}><FontAwesomeIcon style={{padding:'0px', margin:'0px'}} icon={faXmark} /></IconButton>
                     </Stack>
 
                     
@@ -1916,10 +1956,10 @@ items.forEach((item) => {
                     mb: {xs: 5,sm: 6,md: 7,lg: 8,},
                     justifyContent: "center",}}>
                     <Stack alignItems={'center'} spacing={'10px'}>
-                    <Typography variant="subtitle1" color={'#124D81'}  >
+                    <Typography variant="subtitle1" color={darkTheme?'#FFFFFF':'#124D81'}  >
                         {props.newData && props.observation_resource?.component[0]?.code.text}
                     </Typography>
-                    <Typography variant="h4" color={'#124D81'} sx={{fontWeight:'bold'}}>
+                    <Typography variant="h4" color={darkTheme?'#FFFFFF':'#124D81'} sx={{fontWeight:'bold'}}>
                         {(() => {
                         if(props.newData){
                         return (props.observation_resource?.component[0]?.valueQuantity.unit=='1' || props.observation_resource?.component[0]?.valueQuantity.unit)
@@ -1933,7 +1973,7 @@ items.forEach((item) => {
                     {props.newData && props.observation_resource?.component.map((_obs: any,index: number) => {
                     if((props.observation_resource?.component[index]?.code.text!="SIQ" && props.observation_resource?.component[index]?.code.text!="PVI" && props.observation_resource?.component[index]?.code.text!="PI" && props.observation_resource?.component[index]?.code.text!="SPO2" && props.observation_resource?.component[index]?.code.text!="Pulse Rate") && index!=0){
                     return (
-                    <Stack alignItems={'center'} spacing={'10px'} color={'#124D81'}>
+                    <Stack alignItems={'center'} spacing={'10px'} color={darkTheme?'#FFFFFF':'#124D81'}>
                     <Typography variant="subtitle1"  >
                         {props.observation_resource?.component[index]?.code.text}
                     </Typography>
@@ -1992,13 +2032,13 @@ items.forEach((item) => {
                     {props.newData?
                     (
                     <>
-                        <Typography variant='h5'  color={'#124D81'} paddingLeft={'2%'} paddingTop={'3%'}>Pulse Oximeter</Typography>
+                        <Typography variant='h5'  color={darkTheme?'#FFFFFF':'#124D81'} paddingLeft={'2%'} paddingTop={'3%'}>Pulse Oximeter</Typography>
                         <Stack
                             direction={'row'}
                             divider={
                                 <Divider orientation='vertical' flexItem/>
                                 }
-                            sx={{display: "flex",flexWrap: "wrap",color:'#124D81',
+                            sx={{display: "flex",flexWrap: "wrap",color:darkTheme?'#FFFFFF':'#124D81',
                             gap: {xs: "2rem",sm: "4rem",md: "4rem",lg: "4rem",xl: "4rem",},
                             mt: {xs: 2,sm: 3,md: 3,lg: 3,},
                             mb: { xs: 3,sm: 4,md: 5,lg: 6,},
@@ -2060,7 +2100,7 @@ items.forEach((item) => {
                     sx={{
                     display: "flex",
                     flexWrap: "wrap",
-                    color:'#124D81',
+                    color:darkTheme?'#FFFFFF':'#124D81',
                     justifyContent: "center"}}><Typography variant='h6' sx={{fontWeight:'bold', paddingTop:'1%', opacity:'0.5'}}>{props.newData && 'Oximeter Not connected'}{!props.newData && ''}</Typography>
                     </Box>}
                     </> )}
@@ -2077,10 +2117,9 @@ items.forEach((item) => {
                                                 Export
                                         </Button> */}
                                         <Stack width={'100%'} direction={{ xs: 'row', sm: 'row', md:'row', lg:'column' }} marginBottom={{ xs: '30px', sm: '30px', md:'20px', lg:'20px' }}>
-                                        <Typography variant='h5' paddingLeft={'2%'}>Trends</Typography>
-                                        <Stack width={'100%'} direction={'row'} textAlign={'center'}  >
-                                            
-                                            <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto',backgroundColor:'#124D81', marginRight:'1%'}}>
+                                        <Typography variant='h5' paddingLeft={'2%'} color={darkTheme?'#FFFFFF':'#124D81'}>Trends</Typography>
+                                        <Stack width={'100%'} direction={'row'}  textAlign={'center'}  >
+                                           <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'1%',backgroundColor:'grey', }}>
                                                 <ToggleButton value={0} key="left" sx={{height:'30px', width:'50px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(0)}}>
                                                 Day
                                                 </ToggleButton>,
@@ -2091,7 +2130,7 @@ items.forEach((item) => {
                                                     2 Weeks
                                                 </ToggleButton>
                                             </ToggleButtonGroup>
-                                            <ToggleButtonGroup value={S_and_D} exclusive size="small" sx={{marginRight:'1%',backgroundColor:'#124D81'}}>
+                                            <ToggleButtonGroup value={S_and_D} exclusive size="small" sx={{marginRight:'1%',backgroundColor:'grey', '& .MuiToggleButton-root': {color:'white'},'& .Mui-selected': {backgroundColor: '#124D81',},}}>
                                                 <ToggleButton value={0} key="left" sx={{height:'30px', width:'80px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {
                                                     setS_and_D(0)
                                                     let temp: any[] = []
@@ -2190,10 +2229,10 @@ items.forEach((item) => {
                 </>)}
                 {selectedTab === 'alarms' && (
                 <>
-                <Typography variant='h5' paddingLeft={'2%'} paddingTop={'3%'}>Alarms</Typography>
+                <Typography variant='h5' paddingLeft={'2%'} color={darkTheme?'#FFFFFF':'#124D81'} paddingTop={'3%'}>Alarms</Typography>
                 <Stack direction={'row'} width={'100%'} justifyContent={'space-between'} marginTop={'3%'}>
                     <IconButton sx={{height:'50px', width:'50px', borderRadius:'100px', marginTop:'auto', marginBottom:'auto',color:'blue'}} onClick={() => {if(selectAlarm>0){setSelectAlarm(selectAlarm-1)}}}><FontAwesomeIcon fontSize={'30px'} icon={faChevronLeft} style={{color:`${leftarrowcolor}`}}/></IconButton>
-                    <Box width={'100%'} display={'flex'} textAlign={'center'} justifyContent={'center'} flexWrap={'wrap'}>
+                    <Box width={'100%'} display={'flex'} textAlign={'center'} justifyContent={'center'} flexWrap={'wrap'} >
                     {alarmUI}
                         {/* <div style={{marginTop:'2.5%', display:'flex', width:'100%', height:'100%', justifyContent:'space-evenly'}}></div>  */}
                     </Box>
