@@ -99,7 +99,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onUserClick, onDeleteU
     const userId = decodeURIComponent(user.user_id);
   
     // Make an API call to update the user information
-    fetch(`https://pmsind.co.in:5000/rename/${userId}`, {
+    fetch(`${import.meta.env.VITE_AUTH0API_URL as string}/rename/${userId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

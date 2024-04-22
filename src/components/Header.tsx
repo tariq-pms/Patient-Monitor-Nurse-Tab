@@ -123,7 +123,7 @@ export const Header: FC<HeaderProps> = (props) => {
         // Fetch location data for the specified organization
         
         //fetch(` https://pmsind.co.in:5000/Location`, {
-        fetch(` https://pmsind.co.in:5000/Location?organization=${UserOrganization}`, {
+        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?organization=${UserOrganization}`, {
           credentials: 'omit',
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),

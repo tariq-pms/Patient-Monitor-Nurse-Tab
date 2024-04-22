@@ -64,7 +64,7 @@ const [open, setOpen] = useState(false);
     useEffect(() => {setDeviceChanged(!deviceChanged)},[props.deviceChangeToggle])
     const [renameRoom, setRenameRoom] = useState(false)
     useEffect(() => {
-        fetch(` https://pmsind.co.in:5000/Device?_count=20`, {
+        fetch(` ${import.meta.env.VITE_FHIRAPI_URL as string}/Device?_count=20`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -97,7 +97,7 @@ const [open, setOpen] = useState(false);
             "status": "suspended",
             "name": x
         }
-        fetch(` https://pmsind.co.in:5000/Location/${props.roomId}`, {
+        fetch(` ${import.meta.env.VITE_FHIRAPI_URL as string}/Location/${props.roomId}`, {
             //fetch(` https://pmsind.co.in:5000/Location?organization=${props.userOrganization}/${props.roomId}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "PUT",
@@ -149,7 +149,7 @@ const [open, setOpen] = useState(false);
             ...deviceList[Number(index)].resource,
             location: vvtemp
         }
-        fetch(` https://pmsind.co.in:5000/Device/${deviceList[Number(index)].resource.id}`, {
+        fetch(` ${import.meta.env.VITE_FHIRAPI_URL as string}/Device/${deviceList[Number(index)].resource.id}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "PUT",
             body: JSON.stringify(data),
@@ -175,7 +175,7 @@ const [open, setOpen] = useState(false);
         const { location, ...data } = device;
       
         // Define the URL and request options
-        const apiUrl = ` https://pmsind.co.in:5000/Device/${device.id}`;
+        const apiUrl = ` ${import.meta.env.VITE_FHIRAPI_URL as string}/Device/${device.id}`;
         const requestOptions: RequestInit = {
           credentials: "omit",
           method: "PUT",
@@ -202,8 +202,8 @@ const [open, setOpen] = useState(false);
     const [deleteRoom, setDeleteRoom] = useState(false)
     const removeRoomButton = () => {
         console.log("Called")
-        fetch(` https://pmsind.co.in:5000/Location/${props.roomId}`, {
-            //fetch(` https://pmsind.co.in:5000/Location?organization=${props.userOrganization}/${props.roomId}`, {
+        fetch(` ${import.meta.env.VITE_FHIRAPI_URL as string}/Location/${props.roomId}`, {
+            //fetch(` ${import.meta.env.VITE_FHIRAPI_URL as string}/Location?organization=${props.userOrganization}/${props.roomId}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "DELETE",
             headers: {

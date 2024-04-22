@@ -51,7 +51,7 @@ type Patient = {
 
   const fetchObservations = (patient: { id: any }) => {
     return fetch(
-      ` https://pmsind.co.in:5000/Observation?patient=${patient.id}`,
+      `${import.meta.env.VITE_FHIRAPI_URL as string}/Observation?patient=${patient.id}`,
       {
         credentials: 'omit',
         headers: {
@@ -71,7 +71,7 @@ type Patient = {
 
   const fetchCommunication = (patient: { id: any }) => {
     return fetch(
-      ` https://pmsind.co.in:5000/Communication?patient=${patient.id}`,
+      `${import.meta.env.VITE_FHIRAPI_URL as string}/Communication?patient=${patient.id}`,
       {
         credentials: 'omit',
         headers: {
@@ -91,7 +91,7 @@ type Patient = {
 
   const fetchDevice = (patient: { id: any }) => {
     return fetch(
-      ` https://pmsind.co.in:5000/Device?patient=${patient.id}`,
+      `${import.meta.env.VITE_FHIRAPI_URL as string}/Device?patient=${patient.id}`,
       {
         credentials: 'omit',
         headers: {
@@ -151,7 +151,7 @@ type Patient = {
 
   useEffect(() => {
   
-    fetch(`https://pmsind.co.in:5000/Patient?organization=${userOrganization}`, {
+    fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient?organization=${userOrganization}`, {
       credentials: 'omit',
       headers: {
         Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -174,7 +174,7 @@ type Patient = {
         console.error(error);
       });
   
-    const socket = new WebSocket('wss://pmsind.co.in:5000/notification');
+    const socket = new WebSocket(`${import.meta.env.VITE_FHIRSOCKET_URL as string}/notification`);
   
     socket.onopen = () => {
       console.log('Socket open successful');
@@ -183,7 +183,7 @@ type Patient = {
     socket.onmessage = (data) => {
       var received_data = JSON.parse(data.data);
       if (received_data.location.split('/')[0] === 'Observation') {
-        fetch(` https://pmsind.co.in:5000/${received_data.location}`, {
+        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/${received_data.location}`, {
           credentials: 'omit',
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -207,7 +207,7 @@ type Patient = {
             });
           });
       } else if (received_data.location.split('/')[0] === 'Communication') {
-        fetch(` https://pmsind.co.in:5000/${JSON.parse(data.data).location}`, {
+        fetch(` ${import.meta.env.VITE_FHIRAPI_URL as string}/${JSON.parse(data.data).location}`, {
           credentials: 'omit',
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),

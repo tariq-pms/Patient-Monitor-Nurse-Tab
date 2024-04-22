@@ -105,7 +105,7 @@ export const DeviceMonitor = (currentRoom: any ) => {
     });
     useEffect(() => {
         setIsLoading(true)
-        const socket = new WebSocket("wss://pmsind.co.in:5000/notification");
+        const socket = new WebSocket(`${import.meta.env.VITE_FHIRSOCKET_URL as string}/notification`);
         socket.onopen = () => {
             console.log("Socket open successful");
         };
@@ -113,7 +113,7 @@ export const DeviceMonitor = (currentRoom: any ) => {
             var recieved_data = JSON.parse(data.data)
             if (recieved_data.location.split("/")[0] == "Observation"){
 
-                fetch(` https://pmsind.co.in:5000/${recieved_data.location}`, {
+                fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/${recieved_data.location}`, {
                 credentials: "omit",
                 headers: {
                 Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -130,7 +130,7 @@ export const DeviceMonitor = (currentRoom: any ) => {
             // }
             }
             else if (recieved_data.location.split("/")[0] == "Communication"){
-                fetch(` https://pmsind.co.in:5000/${JSON.parse(data.data).location}`, {
+                fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/${JSON.parse(data.data).location}`, {
                 credentials: "omit",
                 headers: {
                 Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -166,7 +166,7 @@ export const DeviceMonitor = (currentRoom: any ) => {
         setIsLoading(true)
         
         // console.log(url)
-        fetch(` https://pmsind.co.in:5000/Device?location=${currentRoom.currentRoom}`, {
+        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Device?location=${currentRoom.currentRoom}`, {
         credentials: "omit",
         headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -186,7 +186,7 @@ export const DeviceMonitor = (currentRoom: any ) => {
         // var correct = true;
         if(device.resource.patient){
         
-        fetch(` https://pmsind.co.in:5000/Patient/${device.resource.patient.reference.split("/")[1]}`,{
+        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient/${device.resource.patient.reference.split("/")[1]}`,{
             credentials: "omit",
             headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -197,7 +197,7 @@ export const DeviceMonitor = (currentRoom: any ) => {
             var temp = String(device.resource.id);
             setPatient((prevPatient) => ({...prevPatient, [temp]: data}))
         })
-        fetch(` https://pmsind.co.in:5000/Observation?patient=${device.resource.patient.reference.split("/")[1]}&_count=1&_sort=-_lastUpdated`, {
+        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Observation?patient=${device.resource.patient.reference.split("/")[1]}&_count=1&_sort=-_lastUpdated`, {
         credentials: "omit",
         headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -205,7 +205,7 @@ export const DeviceMonitor = (currentRoom: any ) => {
         })
         .then((response) => response.json())
         .then((data) => {
-            if(!data.entry){console.log(` https://pmsind.co.in:5000/Observation?patient=${device.resource.patient.reference.split("/")[1]}&_count=1&_sort=-_lastUpdated`)}
+            if(!data.entry){console.log(`${import.meta.env.VITE_FHIRAPI_URL as string}/Observation?patient=${device.resource.patient.reference.split("/")[1]}&_count=1&_sort=-_lastUpdated`)}
             else{
             var temp = String(device.resource.id);
           
@@ -213,7 +213,7 @@ export const DeviceMonitor = (currentRoom: any ) => {
             setParentObs((prevParentobs) => ({...prevParentobs, [temp]: data.entry[0]["resource"]}))
             }})
         
-        fetch(` https://pmsind.co.in:5000/Communication?sender=${device.resource.id}&_count=1&_sort=-_lastUpdated`, {
+        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Communication?sender=${device.resource.id}&_count=1&_sort=-_lastUpdated`, {
         credentials: "omit",
         headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -221,7 +221,7 @@ export const DeviceMonitor = (currentRoom: any ) => {
         })
         .then((response) => response.json())
         .then((data) => {
-            if(!data.entry){console.log(` https://pmsind.co.in:5000/Communication?sender=${device.resource.id}&_count=1&_sort=-_lastUpdated`)}
+            if(!data.entry){console.log(`${import.meta.env.VITE_FHIRAPI_URL as string}/Communication?sender=${device.resource.id}&_count=1&_sort=-_lastUpdated`)}
             else{
             var temp = String(device.resource.id);
             
