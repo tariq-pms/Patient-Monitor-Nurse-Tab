@@ -232,7 +232,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
         xs: "350px",
         sm: "500px",
         md: "500px",
-        lg: "500px"
+        lg: "470px"
       }} sx={{ borderRadius:'25px', cursor:'pointer'}}  //border: alarmColor!='transparent' ? `6px solid ${alarmColor}`: "", opacity:controlOpacity, boxShadow: '0px 0px 5px 5px white'
         onClick={() => {setIsOpen(true)}}
       >

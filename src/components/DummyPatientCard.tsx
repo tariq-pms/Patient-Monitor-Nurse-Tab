@@ -2,7 +2,11 @@ import { Box, Card, Stack, Typography } from '@mui/material'
 import  { FC, useEffect, useState } from 'react'
 import { DummyPatientDetails } from './DummyPatientDetails'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell } from '@fortawesome/free-solid-svg-icons'; 
+import { faBell, faDroplet  } from '@fortawesome/free-solid-svg-icons'; 
+import { Line } from 'react-chartjs-2';
+
+
+
 
 export interface DummyPatientDetails {
     
@@ -10,188 +14,183 @@ export interface DummyPatientDetails {
    
   }
 
+  interface ChartData {
+    labels: number[];
+    datasets: {
+        label: string;
+        data: number[];
+        fill: boolean;
+        borderColor: string;
+        tension: number;
+    }[];
+}
+ export const  DummyPatientCard: FC<DummyPatientDetails> = ({darkTheme}): JSX.Element => {
+  const [isOpen, setIsOpen] = useState(false)
+  const [alarmColor,] = useState("#202020");
+  const [isBlinking, setIsBlinking] = useState(true);
+  const [data, setData] = useState<ChartData>({
+      labels: [],
+      datasets: [
+          {
+              label: 'Random Values',
+              data: Array.from({ length: 32 }, () => 0), // Initialize with 32 zeros
+              fill: false,
+              borderColor: '#43D7E5', // Adjust color as needed
+              tension: 0.1,
+          },
+      ],
+  });
 
-    export const  DummyPatientCard: FC<DummyPatientDetails> = ({darkTheme}): JSX.Element => {
-    const [isOpen, setIsOpen] = useState(false)
-    
-    const [alarmColor,] = useState("#202020");
-    const [isBlinking, setIsBlinking] = useState(true);
-    
-    useEffect(() => {
-        let intervalId: number | undefined;
-    
-        intervalId = setInterval(() => {
-          setIsBlinking((prevIsBlinking) => !prevIsBlinking);
-        }, 300);
-    
-        return () => {
-          clearInterval(intervalId);
-        };
-      }, [alarmColor]);
-    return (
-    <Box  width={{
-        xs: "350px",
-        sm: "500px",
-        md: "500px",
-        lg: "500px"
-        }} sx={{borderRadius:'18px'}}
-        onClick={() => {setIsOpen(true)}}>
-        {/* <Card
-          style={{ backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)', borderRadius: "25px", height:"300px", boxShadow: `0px 0px 30px 5px ${isBlinking ? 'red': '#202020'}`, border:'1px solid #606060'}}
-      > 
-            <Stack width={'100%'} height={'100%'}>
-                <Stack direction={'row'} display={'flex'} width={'100%'} height={'10%'} paddingTop={'3%'} justifyContent={'space-between'}>
-                    <Box marginLeft={'20px'}>
-                        <Typography variant="subtitle2" sx={{fontWeight:"bold"}} color={'#CBCFE5'}>
-                            INNC-100
-                        </Typography>
-                    </Box>
-                    <Box marginRight={'20px'}>
-                        <Typography variant="subtitle2"  color={'#CBCFE5'}>
-                            Jessica Adams
-                        </Typography> 
-                    </Box>                             
-                </Stack>
-                
-                <Stack height={'90%'} width={'100%'} direction={'row'}>
-                    <Stack height={'100%'} width={'67%'} borderTop={'1px solid grey'} borderRight={'1px solid grey'}>
-                        <Stack height={'50%'} width={'100%'} borderBottom={'1px solid grey'}>
-                            <Typography variant='caption' color={"#A8C5D4"}  paddingTop={'5%'} paddingLeft={'35%'} >
-                                Devices Connected  
-                            </Typography>
-                            <Box gap={'3px'} width={'95%'} justifyContent={'center'} textAlign={'center'} height={'50%'} marginLeft={'auto'} marginRight={'auto'} marginBottom={'auto'} marginTop={'auto'} display={'flex'} flexWrap={'wrap'}>
-                            <Box boxShadow={`0px 0px 10px 2px #00B1FD`} border={'1px solid #00B1FD'} textAlign={'center'} borderRadius={'10px'} minWidth={'70px'} maxWidth={'70px'} overflow="hidden" textOverflow="ellipsis" >
-                                <Typography variant='caption' color={"#A8C5D4"}>
-                                Comprehensive Infant Care Centre
-                                </Typography>
-                            </Box>
-                            </Box>
-                            
-                        </Stack>
-                        <Stack height={'50%'} width={'100%'} direction={'row'}>
-                            <Box height={'100%'} width={'50%'} borderRight={'1px solid grey'} justifyContent={'center'} textAlign={'center'}>
-                                <Box width={'100%'} height={'15%'}></Box>
-                                <Typography variant='caption' color={"#A8C5D4"} >
-                                    Alarm  
-                                </Typography>
-                                <Typography  variant='subtitle1' color={`red`} paddingTop={'10%'} >
-                                    Test Patient
-                                </Typography>
-                            </Box>
-                            <Box height={'100%'} width={'50%'}></Box>
-                        </Stack>
-                    </Stack>
-                    <Stack height={'100%'} width={'33%'} borderTop={'1px solid grey'} justifyContent={'center'} textAlign={'center'}>
-                        <Stack height={'25%'} width={'100%'} borderBottom={'1px solid grey'} justifyContent={'space-between'} direction={'row'}>
-                            <Typography variant='caption' color={"#A8C5D4"} paddingLeft={'10px'} paddingTop={'23px'}>SpO2 (%)</Typography>
-                            <Typography variant='h6' color={"#5db673"} paddingRight={'10px'} paddingTop={'17px'}>
-                            95
-                            </Typography>
-                            
-                        </Stack>
-                        <Stack height={'25%'} width={'100%'} borderBottom={'1px solid grey'} justifyContent={'space-between'} direction={'row'}>
-                            <Typography variant='caption' color={"#A8C5D4"} paddingLeft={'10px'} paddingTop={'23px'}>PR (BPM)</Typography>
-                            <Typography variant='h6' color={"#5db673"} paddingRight={'10px'} paddingTop={'17px'}>
-                            120
-                            </Typography>
-                        </Stack>
-                        <Stack height={'25%'} width={'100%'} borderBottom={'1px solid grey'} justifyContent={'space-between'} direction={'row'}>
-                            <Typography variant='caption' color={"#A8C5D4"} paddingLeft={'10px'} paddingTop={'23px'}>PI (%)</Typography>
-                            <Typography variant='h6' color={"#5db673"} paddingRight={'10px'} paddingTop={'17px'}>
-                            90
-                            </Typography>
-                        </Stack>
-                        <Stack height={'25%'} width={'100%'} borderBottom={'1px solid grey'} justifyContent={'space-between'} direction={'row'}>
-                            <Typography variant='caption' color={"#A8C5D4"} paddingLeft={'10px'} paddingTop={'23px'}>SIQ</Typography>
-                            <Typography variant='h6' color={"#5db673"} paddingRight={'10px'} paddingTop={'17px'}>
-                            90
-                            </Typography>
-                        </Stack>
-                    </Stack>
-                </Stack>
-                
-                
-                
-            </Stack>
+  useEffect(() => {
+      const interval = setInterval(() => {
+          const newData = {
+              labels: Array.from({ length: 32 }, (_, i) => i + 1), // Generate labels 1 to 32
+              datasets: [
+                  {
+                      ...data.datasets[0],
+                      data: [...data.datasets[0].data.slice(1), Math.random() * 100], // Add new random value, remove oldest value
+                  },
+              ],
+          };
+          setData(newData);
+      }, 1000);
 
-        </Card> */}
-        <Card style={{ backgroundColor:darkTheme?'#34495F':'#FFFFFF', borderRadius: "18px", height:"300px", boxShadow: `0px 0px 10px #FFD0D0`,border: `6px solid ${isBlinking ? '#FC8A8A' : '#F9F9F9'}` }}> 
-            <Stack width={'100%'} height={'100%'}>
-               <Stack height={'90%'} width={'100%'} >
-                <Stack height={'50%'} width={'100%'}  direction={'row'}>
-    <Box width={'50%'} >
-    <div style={{marginTop:'7%'}}><Typography variant='h6' color={darkTheme?'#CEE6FF':"#124D81"} paddingLeft={'10%'} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}>Baby Temp</Typography>
+      return () => clearInterval(interval);
+  }, [data]); // Update only when data changes
 
-</div>
-         <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-          <Typography variant='h1' color={darkTheme?'#CEE6FF':"#124D81"} >34.3</Typography>
-           <Typography variant='subtitle1' color={darkTheme?'#CEE6FF':"#124D81"}  >℃</Typography>
-        <Typography variant='subtitle1' color={darkTheme?'#CEE6FF':"#124D81"} paddingTop={'25%'} > 36</Typography>
-                            </div>
-    </Box>
-    <Box width={'25%'} >
-    <div style={{marginTop:'15%'}}><Typography variant='subtitle1' color={darkTheme?'#A0CCFB':"#4B7193"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} >Heater Temp</Typography></div>
-                            {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
-                            <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-                              <Typography variant='h2' color={darkTheme?'#A0CCFB':"#4B7193"} >34.3</Typography>
-                                <Typography variant='subtitle1' color={darkTheme?'#A0CCFB':"#4B7193"} paddingTop={'13%'} paddingLeft={'3%'}> %</Typography>
-                            </div>
-    </Box>
-    
-    <Box width={'25%'} > <div style={{marginTop:'15%'}}><Typography variant='subtitle1' style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={darkTheme?'#A0CCFB':"#124D81"}  paddingLeft={'20%'}>Alarm <FontAwesomeIcon icon={faBell } color= {darkTheme?'#A0CCFB':'#124D81'}/></Typography>
-    </div>
-                     <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-                    <Typography  variant='subtitle1' color={darkTheme?'white':"#FF7354"} sx={{fontWeight:"bold"}} paddingTop={'10%'} > Test Device </Typography> 
-                           </div></Box>
+  const options = {
+      scales: {
+          x: {
+              display: false, // Hide x-axis
+          },
+          y: {
+              display: false, // Hide y-axis
+          },
+      },
+      plugins: {
+          legend: {
+              display: false, // Hide legend
+          },
+      },
+      responsive: true,
+      maintainAspectRatio: false,
+  };
+
+
+  useEffect(() => {
+      let intervalId: number | undefined;
+  
+      intervalId = setInterval(() => {
+        setIsBlinking((prevIsBlinking) => !prevIsBlinking);
+      }, 300);
+  
+      return () => {
+        clearInterval(intervalId);
+      };
+    }, [alarmColor]);
+  return (
+      <Box  width={{
+          xs: "90%", // Full width on extra small screens (mobile)
+          sm: "48%", // Full width on small screens (tablet)
+          md: "33.33%", // 75% width on medium screens (laptop)
+          lg: "24.7%", // 60% width on large screens (TV)
+          }}
+          
+          sx={{borderRadius:'18px'}}
+      onClick={() => {setIsOpen(true)}}>
+      
+
+      <Card 
+        style={{ backgroundColor: darkTheme ? '#1C1C1E':'#FFFFFF', borderRadius: "10px", height:"260px",border:  `4px solid ${isBlinking ?'#F60D4C' :'#1C1C1E'}` }}
+    > 
+          <Stack width={'100%'} height={'100%'}>
+         
+              <Stack direction={'row'} display={'flex'} borderBottom={'0.8px solid #444446'} width={'100%'} sx={{backgroundColor:`${isBlinking ?'#F60D4C' :'#1C1C1E'}`}} height={'10%'} justifyContent={'space-between'}>
+              <Box>
+                      <Typography variant="subtitle2"  style={{ fontFamily: 'Helvetica',paddingLeft:'8px'}} color={darkTheme?"#FFFFFF":'#9B9B9B'}>121-23  B/O Jessica Adams</Typography>
+                     
+                  </Box>
+                  <Box marginRight={'10px'} >
+                      
+                      <Typography  variant='subtitle2' color={ darkTheme?"#FFFFFF":'#9B9B9B'} >
+                      <FontAwesomeIcon icon={faBell } color= {darkTheme?"#FFFFFF":'#9B9B9B'}/> Test Device
+                                  </Typography> 
+                      </Box>
+                                              
+              </Stack>
+              
+              <Stack height={'80%'} width={'100%'}  >
+              <Stack height={'60%'} width={'100%'} direction={'row'}>
+        
+  <Box width={'100%'} sx={{padding:'10px'}} >
+  
+  <Line data={data} options={options} />
+  </Box>
+  
+ 
 </Stack>
 
 
-<Stack height={'50%'} width={'100%'} marginTop={'5%'} direction={'row'}>
-    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle1' color={darkTheme?'#B6C8F8':"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  paddingLeft={'10%'}>Heart Rate</Typography></div>
-                            {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
-                            <div style={{display:'flex', textAlign:'center',paddingLeft:'8%', justifyContent:'left'}}>
-                               <Typography variant='h4' color={darkTheme?'#B6C8F8':"#3C89C0"} > 80</Typography>
-                               <Typography variant='subtitle2' color={darkTheme?'#B6C8F8':"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}> BPM</Typography>
-                           </div></Box>
-    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle1' color={darkTheme?'#B6C8F8':"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>Spo2</Typography></div>
-                            {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
-                            <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
-                               
-                               <Typography variant='h4' color={darkTheme?'#B6C8F8':"#3C89C0"} > 92</Typography>
-                               <Typography variant='subtitle2' color={darkTheme?'#B6C8F8':"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}>  %</Typography>
-                           </div></Box>
-    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'  color={darkTheme?'#B6C8F8':"#3C89C0"} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>RR</Typography></div>
-                            {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
-                            <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
-                              <Typography variant='h4' color={darkTheme?'#B6C8F8':"#3C89C0"} > 44</Typography>
-                               <Typography variant='subtitle2' color={darkTheme?'#B6C8F8':"#3C89C0"} paddingTop={'15%'} paddingLeft={'3%'}> BPM</Typography>
-                           </div></Box>
-    <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'  color={darkTheme?'#A0CCFB':"#38AAC3"}  style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  paddingLeft={'10%'}>Weight</Typography></div>
-                            {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
-                            <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
-                           <Typography variant='h4' color={darkTheme?'#A0CCFB':"#38AAC3"} > 1.2</Typography>
-                            <Typography variant='subtitle1' color={darkTheme?'#A0CCFB':"#38AAC3"} paddingTop={'10%'} paddingLeft={'3%'}> KG</Typography>
-                           </div></Box>
-</Stack>
-                </Stack>
-               <Stack direction={'row'} display={'flex'} width={'100%'} borderTop={'1px solid #E4E4E4'} height={'10%'} paddingTop={'1.5%'} justifyContent={'space-between'}>
-                    <Box marginLeft={'10px'}>
-                        <Typography variant="subtitle2" style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={darkTheme?'white':'#7E7E7E'}>INC-100 </Typography>
-                    </Box>
-                    <Box marginLeft={'20px'}>
-                        <Typography variant="subtitle2"  style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={darkTheme?'white':'#7E7E7E'}>Jessica Adams</Typography>
-                    </Box>
-                    <Box marginRight={'20px'}>
-                        <Typography variant="subtitle2"   style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={darkTheme?'white':'#7E7E7E'}>DOB</Typography> 
-                    </Box>                             
-                </Stack>
-            </Stack>
+<Stack height={'40%'} width={'100%'}  direction={'row'}>
+<Box width={'28%'} sx={{textAlign:'left',paddingLeft:'10px'}}  ><div ><Typography variant='subtitle1' color={"#F60D4C"} style={{ fontFamily: 'Helvetica'}} >B.Temp <span style={{fontSize:'12px'}}>℃</span></Typography></div>
+                          {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
+                          <div style={{display:'flex', justifyContent:'left'}}>
+                             
+                             <Typography variant='h3' color={"#F60D4C"} >34.3</Typography>
+                            
+                         </div></Box>
+  <Box width={'22%'}  sx={{textAlign:'left',paddingLeft:'10px'}}><div ><Typography variant='subtitle1' color={"#FFC017"} style={{ fontFamily: 'Helvetica'}} >RR <span style={{fontSize:'13px'}}>B/min</span></Typography></div>
+                          {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
+                          <div style={{display:'flex', textAlign:'left', justifyContent:'left'}}>
+                             
+                             <Typography variant='h3' color={"#FFC017"} >
+                               42
+                             </Typography>
+                             
+                         </div></Box>
+  <Box width={'28%'} sx={{textAlign:'left',paddingLeft:'10px'}}  ><div><Typography variant='subtitle1' color={"#94FF37"} style={{ fontFamily: 'Helvetica'}} >PR <span style={{fontSize:'13px'}}>B/Min</span></Typography></div>
+                          {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
+                          <div style={{display:'flex', textAlign:'left', justifyContent:'left'}}>
+                             
+                             <Typography variant='h3' color={"#94FF37"} >
+                               170
+                             </Typography>
+                           
+                         </div></Box>
+  <Box width={'22%'} sx={{textAlign:'left'}}  ><div ><Typography variant='subtitle1'  color={"#0BB1FA"} style={{ fontFamily: 'Helvetica'}} >Spo2 <span style={{fontSize:'13px'}}>%</span></Typography></div>
+                          {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
+                          <div style={{display:'flex', textAlign:'left', justifyContent:'left'}}>
+                             
+                             <Typography variant='h3' color={"#0BB1FA"} >
+                               90
+                             </Typography>
+                             
+                         </div></Box>
 
-        </Card>
-        <DummyPatientDetails 
-          isOpen={isOpen}  handleCloseDialog={() => {setIsOpen(false)}} darkTheme={darkTheme} />
-       
-    </Box>
-    )
+</Stack>
+              </Stack>
+              
+              
+              <Stack direction={'row'} display={'flex'}   width={'100%'} borderTop={'0.8px solid #444446'} height={'10%'} justifyContent={'space-between'}>
+                  <Box marginLeft={'10px'}>
+                      <Typography variant="subtitle2" style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={'#7E7E7E'}>
+                          28 week
+                      </Typography>
+                  </Box>
+                  
+                  <Box marginRight={'10px'}>
+                      <Typography variant="subtitle2"   style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} color={'#7E7E7E'}>
+                      <FontAwesomeIcon icon={faDroplet} /> IV Pump
+                      </Typography> 
+                  </Box>                             
+              </Stack>
+          </Stack>
+
+      </Card>
+      <DummyPatientDetails 
+              isOpen={isOpen} handleCloseDialog={() => { setIsOpen(false); } } darkTheme={darkTheme}/>
+
+  </Box>
+  )
 }
 

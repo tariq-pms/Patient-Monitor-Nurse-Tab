@@ -341,7 +341,10 @@ useEffect(() => {
     }}
     })
     const incubator = devices.entry?.map((device) => {
-      if(String(device.resource.identifier[1]?.value)=="Intensive Neonatal Care Center"){
+      if (
+        String(device.resource.identifier[1]?.value) === "Intensive Neonatal Care Center" ||
+        String(device.resource.identifier[1]?.value) === "PMS-SYRINGE"
+    ){
       var correct = false
       // var temp = String(device.resource.id)
       if(device.resource.patient && parentcomm[String(device.resource.id)] && parentobs[String(device.resource.id)]){
@@ -449,7 +452,7 @@ useEffect(() => {
     })
     const syringe = devices.entry?.map((device) => {
       if 
-        (String(device.resource.identifier[1]?.value) === "PMS-SYRINGE" )
+        (String(device.resource.identifier[1]?.value) === "PMS-SYRINGE" || String(device.resource.identifier[1]?.value) === "Intensive Neonatal Care Center" )
          
       {
         var correct = false;
@@ -529,12 +532,11 @@ useEffect(() => {
     })
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-          <Box
-                sx={{display: "flex",flexWrap: "wrap",gap: '2rem',mt: {xs: 5,sm: 6,md: 7,lg: 8,},
+          <Box sx={{display: "flex",flexWrap: "wrap",gap: '2rem',mt: {xs: 5,sm: 6,md: 7,lg: 8,},
                   mb: {xs: 3,sm: 4,md: 5,lg: 6,
                   },
                   justifyContent: "center",
-                  width:"95%",
+                  width:'100%'
                 }}
               >
                 {isAuthenticated && (
@@ -548,7 +550,16 @@ useEffect(() => {
                     <Box
                         sx={{
                           // backgroundColor:'red',
-                          display: "flex",flexWrap: "wrap", gap: '2rem', justifyContent: "left", width:"100%", marginBottom:'2%' }}>
+                          display: "flex",flexWrap: "wrap", gap: '0.3rem', justifyContent: "left", width:"100%", marginBottom:'2%' }}>
+                    <DummyCard  darkTheme={darkTheme}/>
+                    <DummyCard  darkTheme={darkTheme}/>
+                    <DummyCard  darkTheme={darkTheme}/>
+                    <DummyCard  darkTheme={darkTheme}/>
+                    <DummyCard  darkTheme={darkTheme}/>
+                    <DummyCard  darkTheme={darkTheme}/>
+                    <DummyCard  darkTheme={darkTheme}/>
+                    <DummyCard  darkTheme={darkTheme}/>
+                    <DummyCard  darkTheme={darkTheme}/>
                     <DummyCard  darkTheme={darkTheme}/>
                     <DummyCard  darkTheme={darkTheme}/>
                     <DummyCard  darkTheme={darkTheme}/>
@@ -650,10 +661,7 @@ useEffect(() => {
                 )}
                 {!isAuthenticated && !isLoading && (
                   <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
-                    <img src={pmsLogo} alt="Phoenix" style={{maxWidth: '50%',height: 'auto', 
-                      marginLeft:'auto',
-                      marginRight:'auto'
-                    }}/>
+                    <img src={pmsLogo} alt="Phoenix" style={{maxWidth: '50%',height: 'auto', marginLeft:'auto', marginRight:'auto'}}/>
                     <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
                     <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
                     <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>

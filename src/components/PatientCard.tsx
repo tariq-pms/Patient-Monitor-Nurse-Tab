@@ -3,7 +3,7 @@ import { Box, Card, Stack, Typography } from "@mui/material";
 import { isArray } from "chart.js/helpers";
 import { FC, useEffect, useState } from "react";
 import { NewPatientDetails } from "./NewPatientDetails";
-import { faBell } from "@fortawesome/free-solid-svg-icons";
+import { faBell, faDroplet } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 
@@ -133,8 +133,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
     const [obsResource, setObsResource] = useState<any[]>([])
     const [isOpen, setIsOpen] = useState(false);
     const [isBlinking, setIsBlinking] = useState(false);
-    const [alarmColor, setAlarmColor] = useState("#F9F9F9")
-    
+    const [alarmColor, setAlarmColor] = useState("")
     const [obsmeta, setobsmeta] = useState<any[]>([])
     const [commeta, setcommeta] = useState<any[]>([])
     
@@ -240,14 +239,14 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
     useEffect(() => {
     let timer: number | undefined;
     if(newData){
-        timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},15000)
+        timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},2000)
     }
 
     return () => {
         
         clearInterval(timer); 
     };
-    }, [requiredForTimer])
+    }, [requiredForTimer,newData])
 
     function finddata(x: string){
         var hasvalue = false
@@ -277,167 +276,270 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
     
     return (
         <Box  width={{
-            xs: "350px",
-            sm: "500px",
-            md: "500px",
-            lg: "500px"
-          }} sx={{borderRadius:borderRadiusForRerender?'25px':'25.5px'}}
+            xs: "90%",
+            sm: "48%", 
+            md: "33.33%", 
+            lg: "24.7%", 
+         }}  sx={{borderRadius:'18px'}}
           onClick={() => {setIsOpen(true)}}>
             <Card
-          style={{ backgroundColor:props.darkTheme?'#34495F':'#FFFFFF', borderRadius: "18px", height:"300px", boxShadow: `0px 0px 10px #FFD0D0`,border: `6px solid ${isBlinking ? alarmColor : props.darkTheme?'#3C4F6C':'white'}` }}
+          style={{ backgroundColor:props.darkTheme?'#1C1C1E':'#FFFFFF', borderRadius: "10px", height:"260px", border: `6px solid ${isBlinking ? alarmColor : props.darkTheme?'#1C1C1E':'#FFFFFF'}` }}
       > 
                 <Stack width={'100%'} height={'100%'}>
-                    <Stack direction={'row'} display={'flex'} width={'100%'} height={'10%'} borderBottom={'1px solid grey'} paddingTop={'3%'} justifyContent={'space-between'}>
-                        <Box marginLeft={'20px'}>
-                            <Typography variant="subtitle2" style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  color={props.darkTheme?'white':'#7E7E7E'}>
-                                {props.patient_id}
+                    <Stack direction={'row'} display={'flex'} width={'100%'} height={'10%'} borderBottom={'0.8px solid #444446'} sx={{backgroundColor:`${isBlinking ? alarmColor : props.darkTheme?'#1C1C1E':'#FFFFFF'}`}} justifyContent={'space-between'}>
+                        <Box >
+                            <Typography variant="subtitle2" style={{ fontFamily: 'Helvetica',paddingLeft:'8px'}}  color={'#7E7E7E'}>
+                            B/O:{props.patient_name}
                             </Typography>
                         </Box>
                         <Box marginRight={'20px'}>
-                            <Typography variant="subtitle2" style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}   color={props.darkTheme?'white':'#7E7E7E'}>
-                                {props.patient_name}
+                            <Typography variant="subtitle2" style={{ fontFamily: 'Helvetica'}}   color={'#7E7E7E'}>
+                                {/* {props.patient_name} */}
+                                <FontAwesomeIcon icon={faBell } color= {'#9B9B9B'}/> {displayAlarm}
                             </Typography> 
                         </Box>                             
                     </Stack>
                     {newData ? (
                   
-                    <Stack height={'90%'} width={'100%'} >
-                    <Stack height={'50%'} width={'100%'}  direction={'row'}>
-              <Box width={'50%'} >
-              <div style={{marginTop:'7%'}}><Typography variant='h6' color={props.darkTheme?'white':'#124D81'} paddingLeft={'10%'} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}>Baby Temp</Typography>
-              
-              </div>
-                                {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
-                                <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-                                   
-                                    <Typography variant='h1' color={props.darkTheme?'white':'#124D81'} >
-                                    {(() => {
-                                                      let data = finddata("Measured Skin Temp 1")
-                                                      return (data!.data)
-                                              })()}
-                                    </Typography>
-                                    <Typography variant='subtitle1'  color={props.darkTheme?'white':'#124D81'}  >
-                                    ℃
-                                    </Typography>
-                                    <Typography variant='subtitle1'color={props.darkTheme?'white':'#124D81'} paddingTop={'25%'} >
-                                    {(() => {
-                                                      let data = finddata("Set Skin Temp")
-                                                      return (data!.data)
-                                              })()}
-                                    </Typography>
-                                </div>
-              </Box>
-              <Box width={'25%'} >
-              <div style={{marginTop:'15%'}}><Typography variant='subtitle1'  color={props.darkTheme?'white':'#4B7193'} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} >Heater Temp</Typography></div>
-                                {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
-                                <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-                                  <Typography variant='h2' color={props.darkTheme?'white':'#4B7193'} >
-                                  {(() => {
-                                                      let data = finddata("Heater Level")
-                                                      return (data!.data)
-                                              })()}
-                                    </Typography>
-                                    <Typography variant='subtitle1' color={props.darkTheme?'white':'#4B7193'} paddingTop={'13%'} paddingLeft={'3%'}>
-                                       %
-                                    </Typography>
-                                </div>
-              </Box>
-              
-              <Box width={'25%'} > <div style={{marginTop:'15%'}}><Typography variant='subtitle1' style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  color={props.darkTheme?'white':'#124D81'}  paddingLeft={'20%'}>Alarm <FontAwesomeIcon icon={faBell }  color={props.darkTheme?'white':'#124D81'}/></Typography>
-              </div>
-                                {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
-                                <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
-                                   
-                                <Typography  variant='subtitle1' color={`${alarmColor}`} paddingTop={'10%'} >
-                                                      {displayAlarm}
-                                                  </Typography>
-                                    
-                                </div>
+                    <><Stack height={'80%'} width={'100%'}>
+                            <Stack height={'60%'} width={'100%'}  direction={'row'}>
+                                {/* <Box width={'50%'} >
+    <div style={{marginTop:'7%'}}><Typography variant='h6' color={props.darkTheme?'white':'#124D81'} paddingLeft={'10%'} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}>Baby Temp</Typography>
+    
+    </div>
+                     
+                      <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
+                         
+                          <Typography variant='h1' color={props.darkTheme?'white':'#124D81'} >
+                          {(() => {
+                                            let data = finddata("Measured Skin Temp 1")
+                                            return (data!.data)
+                                    })()}
+                          </Typography>
+                          <Typography variant='subtitle1'  color={props.darkTheme?'white':'#124D81'}  >
+                          ℃
+                          </Typography>
+                          <Typography variant='subtitle1'color={props.darkTheme?'white':'#124D81'} paddingTop={'25%'} >
+                          {(() => {
+                                            let data = finddata("Set Skin Temp")
+                                            return (data!.data)
+                                    })()}
+                          </Typography>
+                      </div>
+    </Box> */}
+                                <Box width={'100%'} sx={{ padding: '10px' }}>
+
+                                    {/* <Line data={data} options={options} /> */}
                                 </Box>
-              </Stack>
-              
-              
-              <Stack height={'50%'} width={'100%'} marginTop={'5%'} direction={'row'}>
-              <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle1' color={props.darkTheme?'white':'#3C89C0'}  style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  paddingLeft={'10%'}>Heart Rate</Typography></div>
-                                {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
-                                <div style={{display:'flex', textAlign:'center',paddingLeft:'8%', justifyContent:'left'}}>
-                                   
-                                   <Typography variant='h4' color={props.darkTheme?'white':'#3C89C0'}  >
-                                   {(() => {
-                                                      let data = finddata("Pulse Rate")
-                                                      return (data!.data)
-                                              })()}
-                                   </Typography>
-                                   <Typography variant='subtitle2'  color={props.darkTheme?'white':'#3C89C0'}  paddingTop={'15%'} paddingLeft={'3%'}>
-                                     BPM
-                                   </Typography>
-                               </div></Box>
-              <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle1'  color={props.darkTheme?'white':'#3C89C0'} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>Spo2</Typography></div>
-                                {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
-                                <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
-                                   
-                                   <Typography variant='h4'  color={props.darkTheme?'white':'#3C89C0'}   >
-                                   {(() => {
-                                                      let data = finddata("SpO2")
-                                                      return (data!.data)
-                                              })()}
-                                   </Typography>
-                                   <Typography variant='subtitle2'  color={props.darkTheme?'white':'#3C89C0'}  paddingTop={'15%'} paddingLeft={'3%'}>
-                                     %
-                                   </Typography>
-                               </div></Box>
-              <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'   color={props.darkTheme?'white':'#3C89C0'}  style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>PI</Typography></div>
-                                {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
-                                <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
-                                   
-                                   <Typography variant='h4'  color={props.darkTheme?'white':'#3C89C0'} >
-                                   {(() => {
-                                                      let data = finddata("PI")
-                                                      return (data!.data)
-                                              })()}
-                                   </Typography>
-                                   <Typography variant='subtitle2'  color={props.darkTheme?'white':'#3C89C0'}  paddingTop={'15%'} paddingLeft={'3%'}>
-                                     BPM
-                                   </Typography>
-                               </div></Box>
-              <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'  color={props.darkTheme?'white':'#38AAC3'}    style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  paddingLeft={'10%'}>Weight</Typography></div>
-                                {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
-                                <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
-                                   
-                                   <Typography variant='h4'color={props.darkTheme?'white':'#38AAC3'} >
-                                   {(() => {
-                                                      let data = finddata("Weight")
-                                                      return (data!.data)
-                                              })()}
-                                   </Typography>
-                                   <Typography variant='subtitle1'color={props.darkTheme?'white':'#38AAC3'} paddingTop={'10%'} paddingLeft={'3%'}>
-                                     KG
-                                   </Typography>
-                               </div></Box>
-              </Stack>
-                    </Stack>
-                    ):(
-                        <Stack height={'100%'} width={'100%'} borderTop={'1px solid grey'} >
-                            <Stack height={'50%'} width={'100%'} borderBottom={'1px solid grey'} justifyContent={'center'} textAlign={'center'}>
-                                <Typography variant='caption' color={props.darkTheme?'white':'#124D81'}  paddingTop={'5%'}  >
-                                    Devices Connected  
-                                </Typography>
-                                <Box gap={'3px'} width={'95%'} height={'50%'} marginLeft={'auto'} marginRight={'auto'} marginBottom={'auto'} marginTop={'auto'} display={'flex'} flexWrap={'wrap'}>
-                                    {getDevices()}
+                                {/* <Box width={'25%'} >
+    <div style={{marginTop:'15%'}}><Typography variant='subtitle1'  color={props.darkTheme?'white':'#4B7193'} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} >Heater Temp</Typography></div>
+                     
+                      <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
+                        <Typography variant='h2' color={props.darkTheme?'white':'#4B7193'} >
+                        {(() => {
+                                            let data = finddata("Heater Level")
+                                            return (data!.data)
+                                    })()}
+                          </Typography>
+                          <Typography variant='subtitle1' color={props.darkTheme?'white':'#4B7193'} paddingTop={'13%'} paddingLeft={'3%'}>
+                             %
+                          </Typography>
+                      </div>
+    </Box> */}
+
+                                {/* <Box width={'25%'} > <div style={{marginTop:'15%'}}><Typography variant='subtitle1' style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  color={props.darkTheme?'white':'#124D81'}  paddingLeft={'20%'}>Alarm <FontAwesomeIcon icon={faBell }  color={props.darkTheme?'white':'#124D81'}/></Typography>
+    </div>
+                     
+                      <div style={{display:'flex', textAlign:'center', justifyContent:'center'}}>
+                         
+                      <Typography  variant='subtitle1' color={`${alarmColor}`} paddingTop={'10%'} >
+                                            {displayAlarm}
+                                        </Typography>
+                          
+                      </div>
+                      </Box> */}
+                            </Stack>
+
+
+                            <Stack height={'40%'} width={'100%'} direction={'row'}>
+                                <Box width={'28%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={"#F60D4C"} style={{ fontFamily: 'Helvetica' }}>B.Temp <span style={{ fontSize: '12px' }}>℃</span></Typography></div>
+                                    {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
+                                    <div style={{ display: 'flex', justifyContent: 'left' }}>
+
+                                        <Typography variant='h3' color={"#F60D4C"}>{(() => {
+                                            let data = finddata("Measured Skin Temp 1");
+                                            return (data!.data);
+                                        })()}</Typography>
+
+                                    </div></Box>
+                                {/* <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle1' color={props.darkTheme?'white':'#3C89C0'}  style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  paddingLeft={'10%'}>Heart Rate</Typography></div>
+                     
+                      <div style={{display:'flex', textAlign:'center',paddingLeft:'8%', justifyContent:'left'}}>
+                         
+                         <Typography variant='h4' color={props.darkTheme?'white':'#3C89C0'}  >
+                         {(() => {
+                                            let data = finddata("Pulse Rate")
+                                            return (data!.data)
+                                    })()}
+                         </Typography>
+                         <Typography variant='subtitle2'  color={props.darkTheme?'white':'#3C89C0'}  paddingTop={'15%'} paddingLeft={'3%'}>
+                           BPM
+                         </Typography>
+                     </div></Box> */}
+                                {/* <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle1'  color={props.darkTheme?'white':'#3C89C0'} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>Spo2</Typography></div>
+                     
+                      <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
+                         
+                         <Typography variant='h4'  color={props.darkTheme?'white':'#3C89C0'}   >
+                         {(() => {
+                                            let data = finddata("SpO2")
+                                            return (data!.data)
+                                    })()}
+                         </Typography>
+                         <Typography variant='subtitle2'  color={props.darkTheme?'white':'#3C89C0'}  paddingTop={'15%'} paddingLeft={'3%'}>
+                           %
+                         </Typography>
+                     </div></Box> */}
+                                <Box width={'22%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={"#FFC017"} style={{ fontFamily: 'Helvetica' }}>PR <span style={{ fontSize: '13px' }}>B/min</span></Typography></div>
+                                    {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
+                                    <div style={{ display: 'flex', textAlign: 'left', justifyContent: 'left' }}>
+
+                                        <Typography variant='h3' color={"#FFC017"}>
+                                            {(() => {
+                                                let data = finddata("Pulse Rate");
+                                                return (data!.data);
+                                            })()}
+                                        </Typography>
+
+                                    </div></Box>
+                                {/* <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'   color={props.darkTheme?'white':'#3C89C0'}  style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} paddingLeft={'10%'}>PI</Typography></div>
+                    
+                      <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
+                         
+                         <Typography variant='h4'  color={props.darkTheme?'white':'#3C89C0'} >
+                         {(() => {
+                                            let data = finddata("PI")
+                                            return (data!.data)
+                                    })()}
+                         </Typography>
+                         <Typography variant='subtitle2'  color={props.darkTheme?'white':'#3C89C0'}  paddingTop={'15%'} paddingLeft={'3%'}>
+                           BPM
+                         </Typography>
+                     </div></Box> */}
+                                <Box width={'28%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={"#94FF37"} style={{ fontFamily: 'Helvetica' }}>PI <span style={{ fontSize: '13px' }}>B/Min</span></Typography></div>
+                                    {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
+                                    <div style={{ display: 'flex', textAlign: 'left', justifyContent: 'left' }}>
+
+                                        <Typography variant='h3' color={"#94FF37"}>
+                                            {(() => {
+                                                let data = finddata("PI");
+                                                return (data!.data);
+                                            })()}
+                                        </Typography>
+
+                                    </div></Box>
+                                {/* <Box width={'25%'} ><div style={{marginTop:'7%'}}><Typography variant='subtitle2'  color={props.darkTheme?'white':'#38AAC3'}    style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}  paddingLeft={'10%'}>Weight</Typography></div>
+                     
+                      <div style={{display:'flex', textAlign:'center', paddingLeft:'6%', justifyContent:'left'}}>
+                         
+                         <Typography variant='h4'color={props.darkTheme?'white':'#38AAC3'} >
+                         {(() => {
+                                            let data = finddata("Weight")
+                                            return (data!.data)
+                                    })()}
+                         </Typography>
+                         <Typography variant='subtitle1'color={props.darkTheme?'white':'#38AAC3'} paddingTop={'10%'} paddingLeft={'3%'}>
+                           KG
+                         </Typography>
+                     </div></Box> */}
+                                <Box width={'22%'} sx={{ textAlign: 'left' }}><div><Typography variant='subtitle1' color={"#0BB1FA"} style={{ fontFamily: 'Helvetica' }}>Spo2 <span style={{ fontSize: '13px' }}>%</span></Typography></div>
+                                    {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
+                                    <div style={{ display: 'flex', textAlign: 'left', justifyContent: 'left' }}>
+
+                                        <Typography variant='h3' color={"#0BB1FA"}>
+                                            {(() => {
+                                                let data = finddata("SpO2");
+                                                return (data!.data);
+                                            })()}
+                                        </Typography>
+
+                                    </div></Box>
+                            </Stack>
+                        </Stack><Stack direction={'row'} display={'flex'} width={'100%'} borderTop={'0.8px solid #444446'} height={'10%'} justifyContent={'space-between'}>
+                                <Box marginLeft={'10px'}>
+                                    <Typography variant="subtitle2" style={{ fontWeight: 'bold', fontFamily: 'Helvetica' }} color={'#7E7E7E'}>
+                                        28 week
+                                    </Typography>
                                 </Box>
-                                
-                            </Stack>
-                            <Stack height={'50%'} width={'100%'} direction={'row'} textAlign={'center'} justifyContent={'center'}>
-                                <Typography variant='caption' color={props.darkTheme?'white':'#124D81'}    paddingTop={'9%'} >
-                                    No Therapy Running
-                                </Typography>
-                            </Stack>
-                            
-                        </Stack>
+
+                                <Box marginRight={'10px'}>
+                                    <Typography variant="subtitle2" style={{ fontWeight: 'bold', fontFamily: 'Helvetica' }} color={'#7E7E7E'}>
+                                        <FontAwesomeIcon icon={faDroplet} /> IV Pump
+                                    </Typography>
+                                </Box>
+                            </Stack></>
+                    ):
+                    
+                    
+                    (
+                        <><Stack height={'100%'} width={'100%'}>
+                                <Stack height={'60%'} width={'100%'} borderBottom={'0.8px solid #444446'} justifyContent={'center'} textAlign={'center'}>
+                                    <Typography variant='caption' color={props.darkTheme ? 'white' : '#124D81'} paddingTop={'5%'}>
+                                        Devices Connected
+                                    </Typography>
+                                    <Box gap={'3px'} width={'95%'} height={'50%'} marginLeft={'auto'} marginRight={'auto'} marginBottom={'auto'} marginTop={'auto'} display={'flex'} flexWrap={'wrap'}>
+                                        {getDevices()}
+                                    </Box>
+
+                                </Stack>
+                                <Stack height={'40%'} width={'100%'} direction={'row'} textAlign={'center'} justifyContent={'center'}>
+                                <Box width={'28%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={"#7E7E7E"} style={{ fontFamily: 'Helvetica' }}>B.Temp <span style={{ fontSize: '12px' }}>℃</span></Typography></div>
+                                    {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
+                                    <div style={{ display: 'flex', justifyContent: 'left' }}>
+
+                                        <Typography variant='h3' color={"#7E7E7E"}>--</Typography>
+
+                                    </div></Box>
+                                    <Box width={'22%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={"#7E7E7E"} style={{ fontFamily: 'Helvetica' }}>PR <span style={{ fontSize: '13px' }}>B/min</span></Typography></div>
+                                    {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
+                                    <div style={{ display: 'flex', textAlign: 'left', justifyContent: 'left' }}>
+
+                                        <Typography variant='h3' color={"#7E7E7E"}>
+                                           --
+                                        </Typography>
+
+                                    </div></Box>
+                                    <Box width={'28%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={"#7E7E7E"} style={{ fontFamily: 'Helvetica' }}>PI <span style={{ fontSize: '13px' }}>B/Min</span></Typography></div>
+                                    {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
+                                    <div style={{ display: 'flex', textAlign: 'left', justifyContent: 'left' }}>
+
+                                        <Typography variant='h3' color={"#7E7E7E"}>
+                                            --
+                                        </Typography>
+
+                                    </div></Box>
+                                    <Box width={'22%'} sx={{ textAlign: 'left' }}><div><Typography variant='subtitle1' color={"#7E7E7E"} style={{ fontFamily: 'Helvetica' }}>Spo2 <span style={{ fontSize: '13px' }}>%</span></Typography></div>
+                                    {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
+                                    <div style={{ display: 'flex', textAlign: 'left', justifyContent: 'left' }}>
+
+                                        <Typography variant='h3' color={"#7E7E7E"}>
+                                            --
+                                        </Typography>
+
+                                    </div></Box>
+                                </Stack>
+                            </Stack><Stack direction={'row'} display={'flex'} width={'100%'} borderTop={'0.8px solid #444446'} height={'10%'} justifyContent={'center'}>
+                                    <Box>
+                                        <Typography variant="subtitle2" style={{ fontWeight: 'bold', fontFamily: 'Helvetica' }} color={'#7E7E7E'}>
+                                        No Therapy Running
+                                        </Typography>
+                                    </Box>
+
+
+                                </Stack></>
                     )}
                     
-                    
-                </Stack>
+                    </Stack>
 
             </Card>
             <NewPatientDetails 
@@ -452,8 +554,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                 key={props.patient_resource_id}
                 patient_resource_id={props.patient_resource_id} 
                 darkTheme={props.darkTheme} />
-                
-        </Box>
+       </Box>
     )
 }
 

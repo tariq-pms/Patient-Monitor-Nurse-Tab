@@ -1745,14 +1745,14 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                     sm: '90%',
                     md: '70%',
                     lg: '70%',
-                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundColor: darkTheme?'#2F3D4A':'#FFFFFF'}}}
+                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundColor: darkTheme?'#000000':'#FFFFFF'}}}
                 >
                     <DialogTitle
                         sx={{
                             borderBottom:'1px solid grey'
                         }}
                     >
-                        {/* <IconButton sx={{marginLeft:'96%'}}><CloseRounded/></IconButton> */}
+                        {/* <IconButton sx={{marginLeft:'96%'}}><CloseRounded/></IconButton> */}    
                         <Stack direction={'row'} width={'102%'} >
                             <Stack direction={'row'} width={'100%'} sx={{justifyContent:'space-between', marginLeft:'auto', marginRight:'auto'}}>
                             <Typography variant="h6" color={darkTheme ? '#FFFFFF':"#124D81"} fontWeight={'regular'} >
@@ -1947,7 +1947,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
 
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
              <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"}>Reporting Doctor :</Typography>
-             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{ fontWeight: 'bold',marginLeft: '5px' }}>user.name</Typography>
+             <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{ fontWeight: 'bold',marginLeft: '5px' }}>{}</Typography>
          </Box>
         
         

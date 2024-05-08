@@ -195,7 +195,7 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
 
 
     return (
-        <Box width={{ xs: "350px", sm: "500px", md: "500px", lg: "500px" }}sx={{ borderRadius: '25px', cursor: 'pointer' }}
+        <Box width={{ xs: "350px", sm: "500px", md: "500px", lg: "470px" }}sx={{ borderRadius: '25px', cursor: 'pointer' }}
       onClick={() => { setIsOpen(true) }}
     >
             <ButtonBase sx={{width:'100%', borderRadius:'25px'}}>
