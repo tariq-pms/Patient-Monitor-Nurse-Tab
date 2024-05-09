@@ -165,7 +165,7 @@ export const DeviceMonitor: React.FC<DeviceMonitorProps> = ({ currentRoom, darkT
     }, [])
     useEffect(() => {
     setIsLoading(true);
-    const socket = new WebSocket("wss://pmsind.co.in:5000/notification");
+    const socket = new WebSocket(`${import.meta.env.VITE_FHIRSOCKET_URL as string}/notification`);
 
     socket.onopen = () => {
         console.log("Socket open successful 2nd");
@@ -185,7 +185,7 @@ export const DeviceMonitor: React.FC<DeviceMonitorProps> = ({ currentRoom, darkT
         console.log("Resource ID:", resourceId);
 
         if (resourceType === "Observation") {
-            fetch(`https://pmsind.co.in:5000/${receivedData.location}`, {
+            fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/${receivedData.location}`, {
                 credentials: "omit",
                 headers: {
                     Authorization: "Basic " + btoa("fhiruser:change-password"),
@@ -200,7 +200,7 @@ export const DeviceMonitor: React.FC<DeviceMonitorProps> = ({ currentRoom, darkT
                     console.log("Updated parentobs:", parentobs);
                 });
         } else if (resourceType === "Communication") {
-            fetch(`https://pmsind.co.in:5000/${receivedData.location}`, {
+            fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/${receivedData.location}`, {
                 credentials: "omit",
                 headers: {
                     Authorization: "Basic " + btoa("fhiruser:change-password"),
@@ -229,7 +229,7 @@ export const DeviceMonitor: React.FC<DeviceMonitorProps> = ({ currentRoom, darkT
 useEffect(() => {
   if (currentRoom !== "") {
       setIsLoading(true);
-      fetch(`https://pmsind.co.in:5000/Device?location=${currentRoom}`, {
+      fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Device?location=${currentRoom}`, {
           credentials: "omit",
           headers: {
               Authorization: "Basic " + btoa("fhiruser:change-password"),

@@ -148,7 +148,7 @@ const fetchDevice = (patient: { id: any }) => {
   const triggerRef = useRef<HTMLDivElement | null>(null);
  
   useEffect(() => {
-    fetch(`https://pmsind.co.in:5000/Patient?_count=50&organization=${userOrganization}`, {
+    fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient?_count=50&organization=${userOrganization}`, {
       credentials: 'omit',
       headers: {
         Authorization: 'Basic ' + btoa('fhiruser:change-password'),

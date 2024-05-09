@@ -181,7 +181,7 @@ const [open, setOpen] = useState(false);
                 "reference": `Organization/${props.userOrganization}`
             }
         }
-        fetch(` ${import.meta.env.VITE_FHIRAPI_URL as string}/Location/${props.roomId}`, {
+        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location/${props.roomId}`, {
             //fetch(` https://pmsind.co.in:5000/Location?organization=${props.userOrganization}/${props.roomId}`, {
             credentials: "omit", // send cookies and HTTP authentication information
             method: "PUT",
@@ -331,7 +331,7 @@ const addButton = (index: any) => {
     console.log("checking patient id in room card:", patientId);
 
     // Fetch patient data first to get the existing extensions
-    fetch(`https://pmsind.co.in:5000/Patient/${patientId}`, {
+    fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient/${patientId}`, {
         credentials: "omit",
         headers: {
             Authorization: "Basic " + btoa("fhiruser:change-password"),
@@ -355,7 +355,7 @@ const addButton = (index: any) => {
             });
         }
 
-        const apiUrl = `https://pmsind.co.in:5000/Patient/${patientId}`;
+        const apiUrl = `${import.meta.env.VITE_FHIRAPI_URL as string}/Patient/${patientId}`;
         const requestOptions: RequestInit = {
             credentials: "omit",
             method: "PUT",
@@ -377,7 +377,7 @@ const addButton = (index: any) => {
                     location: vvtemp
                 };
 
-                return fetch(`https://pmsind.co.in:5000/Device/${device.id}`, {
+                return fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Device/${device.id}`, {
                     credentials: "omit",
                     method: "PUT",
                     body: JSON.stringify(data),
