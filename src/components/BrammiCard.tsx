@@ -121,6 +121,7 @@ export interface DeviceDetails {
             };
         }[];
   };
+  darkTheme:boolean
 
 }
 
@@ -389,6 +390,7 @@ const [controlOpacity, setControlOpacity] = useState("0.8")
         device_resource_id={props.device_resource_id}
         patient={props.patient}
         newData={newData}
+        darkTheme={props.darkTheme}
         />
       </Box>
   )

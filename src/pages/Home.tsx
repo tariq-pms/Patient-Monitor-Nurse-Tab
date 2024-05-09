@@ -20,7 +20,7 @@ export const Home = (_currentRoom: any) => {
   const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();
   const navigate = useNavigate();
 
-useEffect(() => {if(isAuthenticated){navigate('/device-monitor')}},[isAuthenticated])
+useEffect(() => {if(isAuthenticated){navigate('/patient-monitor')}},[isAuthenticated])
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
@@ -46,15 +46,9 @@ useEffect(() => {if(isAuthenticated){navigate('/device-monitor')}},[isAuthentica
               width:"95%",
             }}
           >
-            
-            {!isAuthenticated && !isLoading && (
+         {!isAuthenticated && !isLoading && (
               <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
-                <img src={pmsLogo} alt="Phoenix" style={{
-                  maxWidth: '50%', // Set the maximum width to 100%
-                  height: 'auto', // Maintain the aspect ratio
-                  marginLeft:'auto',
-                  marginRight:'auto'
-                }}/>
+                <img src={pmsLogo} alt="Phoenix" style={{maxWidth: '50%', height: 'auto',marginLeft:'auto',marginRight:'auto'}}/>
       
                 <Typography variant='h3' color={'#2ba1e0'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
                 <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>

@@ -117,7 +117,7 @@ export interface DeviceDetails {
             };
         }[];
   };
-
+  darkTheme:boolean
 }
 
 
@@ -195,16 +195,12 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
 
 
     return (
-        <Box
-      width={{ xs: "350px", sm: "500px", md: "500px", lg: "500px" }}
-      sx={{ borderRadius: '25px', cursor: 'pointer' }}
+        <Box width={{ xs: "350px", sm: "500px", md: "500px", lg: "470px" }}sx={{ borderRadius: '25px', cursor: 'pointer' }}
       onClick={() => { setIsOpen(true) }}
     >
             <ButtonBase sx={{width:'100%', borderRadius:'25px'}}>
             <Card
-                style={{width:'100%', backgroundColor:'#FFFFFF', borderRadius: "25px", height:"300px", opacity: newData ? 1 : 0.7, border: `5px solid ${isBlinking ? alarmColor : '#E4E4E4'}`,
-    
-            }}
+                style={{width:'100%', backgroundColor:props.darkTheme?'#34495F':'#FFFFFF', borderRadius: "25px", height:"300px", opacity: newData ? 1 : 0.7, border: `5px solid ${isBlinking ? alarmColor : '#E4E4E4'}`,}}
               >
                 {newData ? (<>
                     <Stack width={'100%'} height={'100%'}>
@@ -247,12 +243,8 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
                                   {(() => {
                                             let data = findData("Measure Air temp")
                                             return (data.data)
-                                        })()}
-                                    </Typography>
-                                    <Typography variant='subtitle1' color={"#4B7193"} paddingTop={'13%'} paddingLeft={'3%'}>
-                                    {(() => {
-                                            if(props.observation_resource?.component[0].valueQuantity.unit=="BABY"){
-                                                let data = findData("Set Air temp")
+                                        })()}</Typography>
+<Typography variant='subtitle1' color={"#4B7193"} paddingTop={'13%'} paddingLeft={'3%'}>{(() => {if(props.observation_resource?.component[0].valueQuantity.unit=="BABY"){let data = findData("Set Air temp")
                                                 return (data.data)
                                             }
                                             else{return ""}
@@ -288,16 +280,7 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
                                         )()}
                                     </Typography>
                                 </Box>
-                                {/* <Box display={'flex'} justifyContent={'space-between'} width={"100%"} height={"33.33%"} sx={{ borderTop:'2px solid grey'}}>
-                                    <Typography variant='caption' color={"#A8C5D4"} paddingLeft={'5%'}  paddingTop={'5%'}>Wt (g)</Typography>
-                                    <Typography variant='h6' color={"#5db673"} paddingTop={'3%'} paddingRight={'5%'}>
-                                        {(() => {
-                                                let data = findData("Measure Weigh")
-                                                return (data.data)
-                                            }
-                                        )()}
-                                    </Typography>
-                                </Box> */}
+                                
                             </Box>
                         </Stack>
                         <Stack width={"100%"} height={'45%'} direction={'row'} marginTop={'10px'}>
@@ -386,7 +369,8 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
                                 <Box paddingRight={'2%'} width={'100%'} height={'65%'} sx={{backgroundColor:'transparent'}}>
                                     
                                         <Typography variant="subtitle2"  color={'#7E7E7E'}>
-                                            {props?.device_id}
+                                            {/* {props?.device_id} */}
+                                            {props.patient?.extension[0]?.valueString}
                                         </Typography>
                                     
                                 </Box>
@@ -396,9 +380,9 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
                 </>):(<>
                 <Box width={'100%'} height={'100%'} sx={{backgroundColor:'transparent'}} display={'flex'} textAlign={"center"} justifyContent={"center"}>
                 <Stack width={'100%'} height={'100%'} justifyContent={"center"} textAlign={"center"}>
-                        <FontAwesomeIcon icon={faPowerOff} style={{fontSize: 70, color:'#124D81', marginLeft:'auto', marginRight:'auto', fontWeight:'lighter', paddingBottom:'3%'}} />
-                        <Typography variant='subtitle1' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'#124D81'}}>{props?.device_id}</Typography>
-                        <Typography variant='subtitle1' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:'#124D81'}}>Not Active/Connected</Typography>
+                        <FontAwesomeIcon icon={faPowerOff} style={{fontSize: 70, color:props.darkTheme?'#FFFFFF':'#124D81', marginLeft:'auto', marginRight:'auto', fontWeight:'lighter', paddingBottom:'3%'}} />
+                        <Typography variant='subtitle1' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:props.darkTheme?'#FFFFFF':'#124D81'}}>{props?.device_id}</Typography>
+                        <Typography variant='subtitle1' sx={{marginLeft:'auto', marginRight:'auto', marginBottom:'auto', color:props.darkTheme?'#FFFFFF':'#124D81'}}>Not Active/Connected</Typography>
                 </Stack>
                 </Box>
                 </>)}
@@ -413,9 +397,10 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
             device_resource_id={props.device_resource_id}
             patient={props.patient}
             newData={newData}
+            darkTheme={props.darkTheme}
             />
     
-            {/* </Link> */}
+          
             
           </Box>
       )
