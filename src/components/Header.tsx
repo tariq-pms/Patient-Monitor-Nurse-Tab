@@ -250,13 +250,13 @@ export const Header: FC<HeaderProps> = (props) => {
               </div>
               {notHome && UserRole === 'Hospital Clinician' && (
               <div style={{marginLeft:'auto',marginRight:'auto'}}>
-        <Stack sx={{backgroundColor: darkTheme?'' :'#FFFFFF', borderRadius: '25px'}}> 
+        <Stack sx={{backgroundColor: darkTheme?'#F60D4C' :'#FFFFFF', borderRadius: '25px'}}> 
         <TextField
   variant="outlined"
   size="small"
-  inputProps={{ style: { color: darkTheme ? 'white' : '#124D81' } }}
-  sx={{
-    backgroundColor: '#FFFFFF',
+  inputProps={{ style: { color: darkTheme ? 'black' : '#124D81' } }}
+  sx={{borderRadius:'25px',
+    backgroundColor: darkTheme?'grey' :'#FFFFFF',
     '& .MuiOutlinedInput-root': {
       borderRadius: '25px',
       borderColor: '#F9F9F9',
@@ -287,7 +287,7 @@ export const Header: FC<HeaderProps> = (props) => {
                 <>
                   {/* Your content for larger screens */}
                   <Stack direction={'row'} justifyContent={'center'} textAlign={'center'} >
-                    {notHome && UserRole === 'Hospital Technician' && (
+                    {notHome && UserRole === 'Hospital Technician'  && (
                       <>
                         {/* <CustomSwitch onChange={handleDMSChange} checked={darkMode} /> */}
                         <Divider orientation="vertical" flexItem sx={{ marginRight: '20px', marginLeft: '20px' }} />
@@ -332,11 +332,10 @@ export const Header: FC<HeaderProps> = (props) => {
                     {notHome && UserRole === 'Hospital Clinician' && (
                       <>
                         <FormControl variant="standard"  sx={{ width: '150px', backgroundColor: darkTheme?'':'#F3F2F7',borderRadius: '25px',border: '2px solid #BFDEFF'}}>
-                          {/* <InputLabel disabled sx={{ color: darkTheme? 'white':'#124D81 !important' }}>Room</InputLabel> */}
+                          
                           <Select label="Room" onChange={handleSetRoom} style={{ height: '40px' }} value={room} disableUnderline MenuProps={{ MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81', color: '#FFFFFF' } },}} sx={{ color: darkTheme ? '#BFDEFF' : '#124D81',}}
 >
-  {/* Menu items */}
-               
+                 
             {temproom.map((room) => {
                               
                       return (
@@ -357,7 +356,7 @@ export const Header: FC<HeaderProps> = (props) => {
                           }}
                         
                         >
-                          {/* {room.resource.name.toString()} */}
+                          
                           {room.resource.name.toString()} 
                         </MenuItem>
                         
@@ -369,11 +368,7 @@ export const Header: FC<HeaderProps> = (props) => {
                     </Select>
                         </FormControl>
                         <Divider orientation="vertical" flexItem sx={{ marginLeft: '20px' }} />
-                        {/* <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-  <Button variant="text" style={{width: '125px',borderTopLeftRadius: '25px',borderBottomLeftRadius: '25px',backgroundColor: !darkMode ? '#124D81' : '#BFDEFF',color: !darkMode ? 'white' : '#124D81',padding: '10px'}}onClick={handleDMSChange}> Baby Mode</Button>
-  <Button variant="text"style={{width: '125px', borderTopRightRadius: '25px',borderBottomRightRadius: '25px',backgroundColor: darkMode ? '#124D81' : '#BFDEFF',color: darkMode ? 'white' : '#124D81',padding: '10px'}}onClick={handleDMSChange}>Device Mode</Button>
-</div> */}
-{/* Render a disabled component for Room and Device Settings */}
+                        
                         
                       </>
                     )}

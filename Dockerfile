@@ -1,5 +1,5 @@
 # Dockerfile
-FROM node:18 as build
+FROM node:latest as build
 
 WORKDIR /app
 

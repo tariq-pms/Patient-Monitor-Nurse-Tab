@@ -5,6 +5,7 @@ import { FC, useEffect, useState } from "react";
 import { NewPatientDetails } from "./NewPatientDetails";
 import { faBell, faDroplet } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import PlethChart from "./PlethChart";
 
 
 export interface PatientDetails {
@@ -330,6 +331,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                                 <Box width={'100%'} sx={{ padding: '10px' }}>
 
                                     {/* <Line data={data} options={options} /> */}
+                                    <PlethChart patientId={props.patient_id} />
                                 </Box>
                                 {/* <Box width={'25%'} >
     <div style={{marginTop:'15%'}}><Typography variant='subtitle1'  color={props.darkTheme?'white':'#4B7193'} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} >Heater Temp</Typography></div>

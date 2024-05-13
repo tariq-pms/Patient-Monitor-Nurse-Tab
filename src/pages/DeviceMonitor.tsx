@@ -452,7 +452,7 @@ useEffect(() => {
     })
     const syringe = devices.entry?.map((device) => {
       if 
-        (String(device.resource.identifier[1]?.value) === "PMS-SYRINGE" || String(device.resource.identifier[1]?.value) === "Intensive Neonatal Care Center" )
+        (String(device.resource.identifier[1]?.value) === "PMS-SYRINGE" )
          
       {
         var correct = false;

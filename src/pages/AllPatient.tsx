@@ -26,6 +26,15 @@ type Patient = {
     value: string;
   }[];
 };
+
+interface DataEntity {
+  id: string;
+  [key: string]: any;
+}
+
+interface State {
+  [patientId: string]: DataEntity[];
+}
   export const AllPatient: React.FC<PatientMonitorProps> = ({ userOrganization, currentRoom ,darkTheme}) => {
   console.log("in patient Monitor Page rooms",currentRoom);
   console.log("in patient Monitor Page",userOrganization);
@@ -43,6 +52,32 @@ type Patient = {
   useEffect(() => {
     filterPatients(searchQuery);
   }, [searchQuery, patientList]);
+
+  async function fetchWithRetry(url: string, options: RequestInit, retries: number = 3, initialDelay: number = 50): Promise<any> {
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        if (retries > 0) {
+          const delay = initialDelay + ((3 - retries) * 50);
+          console.log(`Retry in ${delay}ms...`, { url, retries });
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return fetchWithRetry(url, options, retries - 1, delay);
+        }
+        throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
+      }
+      return response.json();
+    } catch (error) {
+      if (retries > 0) {
+        const delay = initialDelay + ((3 - retries) * 50);
+        console.log(`Retry in ${delay}ms...`, { url, retries });
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return fetchWithRetry(url, options, retries - 1, delay);
+      }
+      console.error('Fetch error:', error);
+      throw error;
+    }
+  }
+  
 
 
   const fetchObservations = (patient: { id: any }) => {
@@ -175,58 +210,94 @@ type Patient = {
       console.log('Socket open successful');
     };
   
-    socket.onmessage = (data) => {
-      var received_data = JSON.parse(data.data);
-      if (received_data.location.split('/')[0] === 'Observation') {
-        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/${received_data.location}`, {
-          credentials: 'omit',
-          headers: {
-            Authorization: 'Basic ' + btoa('fhiruser:change-password'),
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            let tempPatient = String(data.subject?.reference?.split('/')[1]);
-            var obsID = String(data.id);
-            setParentObs((prevtt) => {
-              const tempVar = { ...prevtt };
-              if (tempVar[tempPatient]) {
-                for (var i = 0; i < tempVar[tempPatient].length; i++) {
-                  if (tempVar[tempPatient][i]['id'] === obsID) {
-                    tempVar[tempPatient][i] = data;
-                    break;
-                  }
-                }
+    // socket.onmessage = (data) => {
+    //   var received_data = JSON.parse(data.data);
+    //   if (received_data.location.split('/')[0] === 'Observation') {
+    //     fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/${received_data.location}`, {
+    //       credentials: 'omit',
+    //       headers: {
+    //         Authorization: 'Basic ' + btoa('fhiruser:change-password'),
+    //       },
+    //     })
+    //       .then((response) => response.json())
+    //       .then((data) => {
+    //         let tempPatient = String(data.subject?.reference?.split('/')[1]);
+    //         var obsID = String(data.id);
+    //         setParentObs((prevtt) => {
+    //           const tempVar = { ...prevtt };
+    //           if (tempVar[tempPatient]) {
+    //             for (var i = 0; i < tempVar[tempPatient].length; i++) {
+    //               if (tempVar[tempPatient][i]['id'] === obsID) {
+    //                 tempVar[tempPatient][i] = data;
+    //                 break;
+    //               }
+    //             }
+    //           }
+    //           return tempVar;
+    //         });
+    //       });
+    //   } else if (received_data.location.split('/')[0] === 'Communication') {
+    //     fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/${JSON.parse(data.data).location}`, {
+    //       credentials: 'omit',
+    //       headers: {
+    //         Authorization: 'Basic ' + btoa('fhiruser:change-password'),
+    //       },
+    //     })
+    //       .then((response) => response.json())
+    //       .then((data) => {
+    //         var tempPatient = String(data.subject?.reference?.split('/')[1]);
+    //         var comID = String(data.id);
+    //         setParentComm((prevtt) => {
+    //           const tempVar = { ...prevtt };
+    //           if (tempVar[tempPatient]) {
+    //             for (var i = 0; i < tempVar[tempPatient].length; i++) {
+    //               if (tempVar[tempPatient][i]['id'] === comID) {
+    //                 tempVar[tempPatient][i] = data;
+    //                 break;
+    //               }
+    //             }
+    //           }
+    //           return tempVar;
+    //         });
+    //       });
+    //   }
+    // };
+    socket.onmessage = async (event) => {
+      const receivedData = JSON.parse(event.data);
+      const resourceType = receivedData.location.split('/')[0];
+      const resourceUrl = `${import.meta.env.VITE_FHIRAPI_URL as string}/${receivedData.location}`;
+
+      const fetchOptions: RequestInit = {
+        credentials: 'omit',
+        headers: {
+          Authorization: `Basic ${btoa('fhiruser:change-password')}`,
+        },
+      };
+
+      if (resourceType === 'Observation' || resourceType === 'Communication') {
+        try {
+          const data = await fetchWithRetry(resourceUrl, fetchOptions);
+          const tempPatient = data.subject?.reference?.split('/')[1];
+          const entityId = data.id;
+
+          const updateStateFunction = resourceType === 'Observation' ? setParentObs : setParentComm;
+
+          updateStateFunction((prevState: State) => {
+            const newState = { ...prevState };
+            if (newState[tempPatient]) {
+              const entityIndex = newState[tempPatient].findIndex(entity => entity.id === entityId);
+              if (entityIndex !== -1) {
+                newState[tempPatient][entityIndex] = data;
               }
-              return tempVar;
-            });
+            }
+            return newState;
           });
-      } else if (received_data.location.split('/')[0] === 'Communication') {
-        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/${JSON.parse(data.data).location}`, {
-          credentials: 'omit',
-          headers: {
-            Authorization: 'Basic ' + btoa('fhiruser:change-password'),
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            var tempPatient = String(data.subject?.reference?.split('/')[1]);
-            var comID = String(data.id);
-            setParentComm((prevtt) => {
-              const tempVar = { ...prevtt };
-              if (tempVar[tempPatient]) {
-                for (var i = 0; i < tempVar[tempPatient].length; i++) {
-                  if (tempVar[tempPatient][i]['id'] === comID) {
-                    tempVar[tempPatient][i] = data;
-                    break;
-                  }
-                }
-              }
-              return tempVar;
-            });
-          });
+        } catch (error) {
+          console.error(`Failed to fetch and update ${resourceType}:`, error);
+        }
       }
     };
+
   
     socket.onerror = () => {
       console.log(`Error in socket connection`);
