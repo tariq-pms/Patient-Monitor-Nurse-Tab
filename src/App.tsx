@@ -15,6 +15,9 @@ import { DeviceMonitor } from "./pages/DeviceMonitor";
 import {AdminPage} from "./pages/AdminPage";
 import { Organization } from "./pages/Organization";
 import { AllPatient } from "./pages/AllPatient";
+// import { PlethTest } from "./pages/PlethTest";
+// import  PlethTest2   from "./pages/PlethTest2";
+
 
 const theme = createTheme({
   typography: {
@@ -88,6 +91,8 @@ function App() {
           <Route path="/device-monitor" element={<DeviceMonitor currentRoom={currentRoom} darkTheme={darkTheme}/>} />
           <Route path="/admin"  element={<AdminPage userOrganization={UserOrganization} darkTheme={darkTheme} />} />
           <Route path="/organization"  element={<Organization darkTheme={darkTheme}/>} />
+          {/* <Route path="/plethtest2"  element={<PlethTest2/>} /> */}
+
          
           
         </Routes>
