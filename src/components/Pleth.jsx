@@ -11,7 +11,7 @@ const Pleth = ({patientId}) => {
     const gapSize = 10; // Gap size
 
     useEffect(() => {
-        const ws = new WebSocket(`${import.meta.env.VITE_PLETHSOCKET_URL}/?patientId=${patientId}`);
+        const ws = new WebSocket(`${import.meta.env.VITE_PLETHSOCKET_URL}?patientId=${patientId}`);
         console.log("Pleth Cnnected", patientId)
         ws.onmessage = (event) => {
             const messageData = JSON.parse(event.data);
