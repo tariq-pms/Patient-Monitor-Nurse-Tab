@@ -328,7 +328,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                           </Typography>
                       </div>
     </Box> */}
-                                <Box width={'100%'} sx={{ padding: '10px' }}>
+                                <Box width={'100%'} >
 
                                     {/* <Line data={data} options={options} /> */}
                                     {/* <PlethChart patientId={props.patient_id} /> */}

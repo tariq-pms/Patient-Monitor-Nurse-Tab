@@ -4,7 +4,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { PatientCard } from '../components/PatientCard';
-import { DummyPatientCard } from '../components/DummyPatientCard';
+// import { DummyPatientCard } from '../components/DummyPatientCard';
 
 type PatientMonitorProps = {
   userOrganization: string;
@@ -404,10 +404,10 @@ const fetchDevice = (patient: { id: any }) => {
                         sx={{
                           // backgroundColor:'red',
                           display: "flex",flexWrap: "wrap", gap: '0.3rem', justifyContent: "center", width:"100%", marginBottom:'2%' }}>
+                  {/* <DummyPatientCard darkTheme={darkTheme}/>
                   <DummyPatientCard darkTheme={darkTheme}/>
                   <DummyPatientCard darkTheme={darkTheme}/>
-                  <DummyPatientCard darkTheme={darkTheme}/>
-                  <DummyPatientCard darkTheme={darkTheme}/> 
+                  <DummyPatientCard darkTheme={darkTheme}/>  */}
                   {patientCards}
                   {/* <DummyPatientCard darkTheme={darkTheme}/>
                   <DummyPatientCard darkTheme={darkTheme}/>

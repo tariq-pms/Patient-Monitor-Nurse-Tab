@@ -16,8 +16,9 @@ const Pleth = ({patientId}) => {
         ws.onmessage = (event) => {
             const messageData = JSON.parse(event.data);
             const newPoints = messageData?.data?.[0]?.data;
-            console.log(newPoints)
-            if (Array.isArray(newPoints) && newPoints.length <= 100) {
+            const processedPoints = newPoints.map(point => point * -1);
+            console.log(processedPoints)
+            if (Array.isArray(newPoints) && newPoints.length <= 500) {
                 setDataPoints((prevData) => {
                     let updatedData = [...prevData];
                     // Clear old gap data by overwriting it with zero or handling it as needed
@@ -25,16 +26,16 @@ const Pleth = ({patientId}) => {
                         updatedData[(currentIndex + i) % 300] = 0;
                     }
                     // Insert new data points
-                    newPoints.forEach((point, i) => {
+                    processedPoints.forEach((point, i) => {
                         updatedData[(currentIndex + gapSize + i) % 300] = point;
                     });
                     // Set new gap
                     for (let i = 0; i < gapSize; i++) {
-                        updatedData[(currentIndex + gapSize + newPoints.length + i) % 300] = null;
+                        updatedData[(currentIndex + gapSize + processedPoints.length + i) % 300] = null;
                     }
                     return updatedData;
                 });
-                setCurrentIndex((prevIndex) => (prevIndex + gapSize + newPoints.length) % 300);
+                setCurrentIndex((prevIndex) => (prevIndex + gapSize + processedPoints.length) % 300);
             }
         };
         return () => ws.close();
@@ -50,7 +51,7 @@ const Pleth = ({patientId}) => {
         svg.append("path")
             .attr("class", "plot")
             .attr("fill", "none")
-            .attr("stroke", "steelblue")
+            .attr("stroke", "#62ECFF")
             .attr("stroke-width", 2);
 
         // Prepare a vertical line for the gap start indicator
@@ -69,7 +70,7 @@ const Pleth = ({patientId}) => {
 
         const xScale = d3.scaleLinear().domain([0, 299]).range([0, innerWidth]);
         const yScale = d3.scaleLinear()
-            .domain([Math.min(-65535, ...dataPoints.filter(Number.isFinite)), Math.max(65535, ...dataPoints.filter(Number.isFinite))])
+            .domain([Math.min(-100, ...dataPoints.filter(Number.isFinite)), Math.max(100, ...dataPoints.filter(Number.isFinite))])
             .range([height, 0]);
 
         const line = d3.line()
