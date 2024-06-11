@@ -5,11 +5,13 @@ import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { PatientCard } from '../components/PatientCard';
 // import { DummyPatientCard } from '../components/DummyPatientCard';
+import { NewPatientDetails } from "../components/NewPatientDetails";
 
 type PatientMonitorProps = {
   userOrganization: string;
   currentRoom: any;
   darkTheme: boolean; 
+  selectedIcon: string;
 };
 
 type Patient = {
@@ -44,10 +46,10 @@ interface State {
   [patientId: string]: DataEntity[];
 }
 
-  export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, currentRoom ,darkTheme}) => {
+  export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, currentRoom ,darkTheme,selectedIcon}) => {
   
-  console.log("in patient Monitor Page rooms",currentRoom);
-  console.log("in patient Monitor Page",userOrganization);
+  //console.log("in patient Monitor Page rooms",currentRoom);
+  //console.log("in patient Monitor Page",userOrganization);
 
   const [patientList, setPatientList] = useState<Patient[] | null>(null);
   const [parentdevice, setParentDevice] = useState<{ [key: string]: any }>({});
@@ -57,7 +59,8 @@ interface State {
   const [isLoading, setIsLoading] = useState(true);
   const [pageNumber, setPageNumber] = useState(1);
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]); // State for filtered patient list
-
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   async function fetchWithRetry(url: string, options: RequestInit, retries: number = 3, initialDelay: number = 50): Promise<any> {
     try {
       const response = await fetch(url, options);
@@ -183,7 +186,7 @@ const fetchDevice = (patient: { id: any }) => {
   const triggerRef = useRef<HTMLDivElement | null>(null);
  
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient?_count=50&organization=${userOrganization}`, {
+    fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient?_count=100`, {
       credentials: 'omit',
       headers: {
         Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -340,7 +343,7 @@ const fetchDevice = (patient: { id: any }) => {
         });
     }
   }, [patientList]);
-  console.log("patient list here",patientList);
+  // console.log("patient list here",patientList);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -364,6 +367,11 @@ const fetchDevice = (patient: { id: any }) => {
       }
     };
   }, [pageNumber]);
+
+  const handlePatientCardClick = (patient: Patient) => {
+    setSelectedPatient(patient);
+    console.log("handlepatientclick",patient);
+  };
   
   const patientCards = filteredPatients.map(patient => {
     return (
@@ -376,7 +384,9 @@ const fetchDevice = (patient: { id: any }) => {
       observation_resource={parentobs[String(patient.id)]}
       communication_resource={parentcomm[String(patient.id)]}
       darkTheme={darkTheme}
-    />
+      selectedIcon={selectedIcon}
+      onClick={() => handlePatientCardClick(patient)}
+          />
   )});
   
 
@@ -384,58 +394,104 @@ const fetchDevice = (patient: { id: any }) => {
   useEffect(() => {
     console.log(parentdevice);
   }, [parentdevice]);
-
+  const containerStyles = selectedIcon === 'vertical' ? {
+    display: 'flex',
+    justifyContent: 'left',
+    alignItems: 'left',
+     
+  } : {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    
+  };
   return (
-    <div>
-      
-<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-      <Box sx={{display: "flex",marginTop:'0px',paddingTop:'0px',flexWrap: "wrap",gap: '2rem',mt: {xs: 5,sm: 6,md: 4,lg: 3,},
-                  mb: {xs: 3,sm: 4,md: 4,lg: 3,
-                  },
-                  justifyContent: "center",
-                  width:'100%'
-                }}
-              >
-          {isAuthenticated && (
-            <Box sx={{width:"100%"}}>
+    <div  style={containerStyles}  >
+    {selectedIcon === 'vertical' ? (
+ <div style={{ display: 'flex', height: '100vh', alignItems: 'stretch' }}>
+        
+      <Box sx={{ display: 'flex',marginTop: '0px', paddingTop: '0px', flexWrap: 'wrap', gap: '2rem', mt: { xs: 5, sm: 6, md: 4, lg: 3 }, mb: { xs: 3, sm: 4, md: 4, lg: 3 }, justifyContent: 'center', minWidth: '40%' ,maxWidth:'40%',height: '100%',}}>
+      {isAuthenticated && (
+        <Box sx={{ width: "100%" }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: '0.3rem', justifyContent: "center", width: "100%", marginBottom: '2%',maxHeight: '800px', overflowY: 'auto'  }}>
            
-            
-              <Box
-                        sx={{
-                          // backgroundColor:'red',
-                          display: "flex",flexWrap: "wrap", gap: '0.3rem', justifyContent: "center", width:"100%", marginBottom:'2%' }}>
-                  {/* <DummyPatientCard darkTheme={darkTheme}/>
-                  <DummyPatientCard darkTheme={darkTheme}/>
-                  <DummyPatientCard darkTheme={darkTheme}/>
-                  <DummyPatientCard darkTheme={darkTheme}/>  */}
-                  {patientCards}
-                  {/* <DummyPatientCard darkTheme={darkTheme}/>
-                  <DummyPatientCard darkTheme={darkTheme}/>
-                  <DummyPatientCard darkTheme={darkTheme}/>
-                  <DummyPatientCard darkTheme={darkTheme}/> */}
-             
-</Box>
-          
-          
-         </Box>
-          )}
-          {!isAuthenticated && !isLoading && (
-            <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
-              <img src={pmsLogo} alt="Phoenix" style={{maxWidth: '50%',height: 'auto', marginLeft:'auto',marginRight:'auto' }}/>
-              <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
-              <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
-              <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
-              <Button variant='outlined'sx={{width:'200px', height:'50px', borderRadius:'100px'}} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>
-              <Button variant='contained' sx={{width:'200px', height:'50px', borderRadius:'100px'}} onClick={() => loginWithRedirect()}>Sign In</Button>
-              
-              </Stack>
-            </Stack>
-          )}
+            {patientCards}
+         
+          </Box>
+        </Box>
+      )}
+      {!isAuthenticated && !isLoading && (
+        <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
+          <img src={pmsLogo} alt="Phoenix" style={{ maxWidth: '50%', height: 'auto', marginLeft: 'auto', marginRight: 'auto' }} />
+          <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
+          <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
+          <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
+            <Button variant='outlined' sx={{ width: '200px', height: '50px', borderRadius: '100px' }} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>
+            <Button variant='contained' sx={{ width: '200px', height: '50px', borderRadius: '100px' }} onClick={() => loginWithRedirect()}>Sign In</Button>
+          </Stack>
+        </Stack>
+      )}
     </Box>
-     </div>
-   
+      <Box sx={{ display: 'flex', marginTop: '0px', padding: '20px', gap: '2rem', mt: { xs: 5, sm: 6, md: 4, lg: 3 }, mb: { xs: 3, sm: 4, md: 4, lg: 3 }, justifyContent: 'center', width: '60%' ,height: '100%',}}>
+      
+      { selectedPatient && (
+        
+          <NewPatientDetails
+            isDialogOpened={isOpen}
+            handleCloseDialog={() => { setIsOpen(false); } }
+            patient_id={String(selectedPatient.identifier[0].value)}
+            patient_name={String(selectedPatient.extension[0].valueString)}
+            key={selectedPatient.id}
+            patient_resource_id={String(selectedPatient.id)} 
+            darkTheme={darkTheme} 
+            selectedIcon={selectedIcon}
+            observation_resource={parentobs[selectedPatient.id] || []}
+            communication_resource={parentcomm[selectedPatient.id] || []}
+            device={parentdevice[selectedPatient.id] || []}
+            />
 
-    </div>
+       
+      )}</Box>
+      </div>
+) : (
+  // Render only the first box component when selected icon is not 'vertical'
+  <Box sx={{display: "flex",marginTop:'0px',paddingTop:'0px',flexWrap: "wrap",gap: '2rem',mt: {xs: 5,sm: 6,md: 4,lg: 3,},
+                    mb: {xs: 3,sm: 4,md: 4,lg: 3,
+                    },
+                    justifyContent: "center",
+                    width:'100%'
+                  }}
+                >
+            {isAuthenticated && (
+              <Box sx={{width:"100%"}}>
+             
+              
+                <Box
+                          sx={{
+                            // backgroundColor:'red',
+                            display: "flex",flexWrap: "wrap", gap: '0.3rem', justifyContent: "left", width:"100%", marginBottom:'2%' }}>
+                   
+                    {patientCards}
+                    
+  </Box>
+            
+            
+           </Box>
+            )}
+            {!isAuthenticated && !isLoading && (
+              <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
+                <img src={pmsLogo} alt="Phoenix" style={{maxWidth: '50%',height: 'auto', marginLeft:'auto',marginRight:'auto' }}/>
+                <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
+                <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
+                <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
+                <Button variant='outlined'sx={{width:'200px', height:'50px', borderRadius:'100px'}} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>
+                <Button variant='contained' sx={{width:'200px', height:'50px', borderRadius:'100px'}} onClick={() => loginWithRedirect()}>Sign In</Button>
+                </Stack>
+              </Stack>
+            )}
+      </Box>
+)}
+       </div>
     
     
   )

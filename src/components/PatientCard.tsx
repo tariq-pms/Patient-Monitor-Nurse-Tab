@@ -1,4 +1,3 @@
-
 import { Box, Card, Stack, Typography } from "@mui/material";
 import { isArray } from "chart.js/helpers";
 import { FC, useEffect, useState } from "react";
@@ -9,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Pleth from "./Pleth"
 
 export interface PatientDetails {
+    onClick: () => void;
     key: string;
     patient_id: string;
     device: {
@@ -124,13 +124,14 @@ export interface PatientDetails {
           }[];
     }[];
     patient_name: string;
-    darkTheme:boolean
+    darkTheme:boolean;
+    selectedIcon:string;
    
   }
 
 
 export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
-    console.log('PatientCard props:', props);
+    //console.log('PatientCard props:', props);
     const [obsResource, setObsResource] = useState<any[]>([])
     const [isOpen, setIsOpen] = useState(false);
     const [isBlinking, setIsBlinking] = useState(false);
@@ -145,6 +146,19 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
     
     const [displayAlarm, setDisplayAlarm] = useState("")
     // const [dontRunFirstTime, setDontRunFirstTime] = useState(0)
+    const getCardWidth = () => {
+        switch (props.selectedIcon) {
+          case 'view':
+            return '24.7%';
+          case 'apps':
+            return '33.1%';
+        case 'vertical':
+                return '80%';  
+            
+          default:
+            return '24.7%';
+        }
+      };
     const getDevices = () => {
         
         if(props.device?.length>0){
@@ -240,7 +254,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
     useEffect(() => {
     let timer: number | undefined;
     if(newData){
-        timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},2000)
+        timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},10000)
     }
 
     return () => {
@@ -273,16 +287,19 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
         }
         
     }
-
+    
+    const getOnClickHandler = () => {
+        if (props.selectedIcon === 'vertical'){
+            return props.onClick;
+        }
+        else{
+            return () => {setIsOpen(true)};
+        }
+    };
     
     return (
-        <Box  width={{
-            xs: "90%",
-            sm: "48%", 
-            md: "33.33%", 
-            lg: "24.7%", 
-         }}  sx={{borderRadius:'18px'}}
-          onClick={() => {setIsOpen(true)}}>
+        <Box width={getCardWidth()}  sx={{borderRadius:'18px'}}
+          onClick={getOnClickHandler()}>
             <Card
           style={{ backgroundColor:props.darkTheme?'#1C1C1E':'#FFFFFF', borderRadius: "10px", height:"260px", border: `6px solid ${isBlinking ? alarmColor : props.darkTheme?'#1C1C1E':'#FFFFFF'}` }}
       > 
@@ -303,7 +320,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                     {newData ? (
                   
                     <><Stack height={'80%'} width={'100%'}>
-                            <Stack height={'60%'} width={'100%'}  direction={'row'}>
+                            <Stack height={'60%'} width={'100%'} sx={{alignItems:'center'}} >
                                 {/* <Box width={'50%'} >
     <div style={{marginTop:'7%'}}><Typography variant='h6' color={props.darkTheme?'white':'#124D81'} paddingLeft={'10%'} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}}>Baby Temp</Typography>
     
@@ -327,13 +344,15 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                                     })()}
                           </Typography>
                       </div>
+
     </Box> */}
-                                <Box width={'100%'} >
+      <Pleth patientId={props.patient_resource_id}/>
+                                {/* <Box width={'50%'}  sx={{justifyContent:'center',backgroundColor:'red'}}> */}
 
                                     {/* <Line data={data} options={options} /> */}
                                     {/* <PlethChart patientId={props.patient_id} /> */}
-                                    <Pleth patientId={props.patient_resource_id}/>
-                                </Box>
+                                    {/* <Pleth patientId={props.patient_resource_id}/>
+                                </Box> */}
                                 {/* <Box width={'25%'} >
     <div style={{marginTop:'15%'}}><Typography variant='subtitle1'  color={props.darkTheme?'white':'#4B7193'} style={{fontWeight: 'bold', fontFamily: 'Helvetica'}} >Heater Temp</Typography></div>
                      
@@ -365,11 +384,11 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
 
 
                             <Stack height={'40%'} width={'100%'} direction={'row'}>
-                                <Box width={'28%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={"#F60D4C"} style={{ fontFamily: 'Helvetica' }}>B.Temp <span style={{ fontSize: '12px' }}>℃</span></Typography></div>
+                                <Box width={'28%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={"#FF6939"} style={{ fontFamily: 'Helvetica' ,fontWeight:'bold'}}>B.Temp <span style={{ fontSize: '14px' }}>℃</span></Typography></div>
                                     {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                                     <div style={{ display: 'flex', justifyContent: 'left' }}>
 
-                                        <Typography variant='h3' color={"#F60D4C"}>{(() => {
+                                        <Typography variant='h3' color={"#FF6939"}>{(() => {
                                             let data = finddata("Measured Skin Temp 1");
                                             return (data!.data);
                                         })()}</Typography>
@@ -403,7 +422,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                            %
                          </Typography>
                      </div></Box> */}
-                                <Box width={'22%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={"#FFC017"} style={{ fontFamily: 'Helvetica' }}>PR <span style={{ fontSize: '13px' }}>B/min</span></Typography></div>
+                                <Box width={'22%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={"#F3AF00"} style={{ fontFamily: 'Helvetica',fontWeight:'bold' }}>PR <span style={{ fontSize: '14px' }}>B/min</span></Typography></div>
                                     {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                                     <div style={{ display: 'flex', textAlign: 'left', justifyContent: 'left' }}>
 
@@ -429,7 +448,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                            BPM
                          </Typography>
                      </div></Box> */}
-                                <Box width={'28%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={"#94FF37"} style={{ fontFamily: 'Helvetica' }}>PI <span style={{ fontSize: '13px' }}>B/Min</span></Typography></div>
+                                <Box width={'28%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={"#94FF37"} style={{ fontFamily: 'Helvetica',fontWeight:'bold' }}>PI <span style={{ fontSize: '14px' }}>%</span></Typography></div>
                                     {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                                     <div style={{ display: 'flex', textAlign: 'left', justifyContent: 'left' }}>
 
@@ -455,11 +474,11 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                            KG
                          </Typography>
                      </div></Box> */}
-                                <Box width={'22%'} sx={{ textAlign: 'left' }}><div><Typography variant='subtitle1' color={"#0BB1FA"} style={{ fontFamily: 'Helvetica' }}>Spo2 <span style={{ fontSize: '13px' }}>%</span></Typography></div>
+                                <Box width={'22%'} sx={{ textAlign: 'left' }}><div><Typography variant='subtitle1' color={"#0BBAD3"} style={{ fontFamily: 'Helvetica',fontWeight:'bold' }}>Spo2 <span style={{ fontSize: '14px' }}>%</span></Typography></div>
                                     {/* <Typography variant='subtitle2' color={"#A8C5D4"} marginTop={'10px'} paddingTop={'4%'}>Heater Temp %</Typography> */}
                                     <div style={{ display: 'flex', textAlign: 'left', justifyContent: 'left' }}>
 
-                                        <Typography variant='h3' color={"#0BB1FA"}>
+                                        <Typography variant='h3' color={"#0BBAD3"}>
                                             {(() => {
                                                 let data = finddata("SpO2");
                                                 return (data!.data);
@@ -553,7 +572,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                 device={props.device}
                 patient_id={props.patient_id}
                 patient_name={props.patient_name}
-                newData={newData}
+                selectedIcon={props.selectedIcon}
                 key={props.patient_resource_id}
                 patient_resource_id={props.patient_resource_id} 
                 darkTheme={props.darkTheme} />

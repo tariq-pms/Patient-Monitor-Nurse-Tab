@@ -413,7 +413,29 @@ const addButton = (index: any) => {
     });
 };
 
-
+// const addButton = (index: any) => {
+//     let data = {}
+//     //let vvtemp = {"reference": `Location?organization=${props.userOrganization}/${props.roomId}`}
+//     let vvtemp = {"reference": `Location/${props.roomId}`}
+//     data = {
+//         ...deviceList[Number(index)].resource,
+//         location: vvtemp
+//     }
+//     fetch(` https://pmsind.co.in:5000/Device/${deviceList[Number(index)].resource.id}`, {
+//         credentials: "omit", // send cookies and HTTP authentication information
+//         method: "PUT",
+//         body: JSON.stringify(data),
+//         headers: {
+//             "Content-Type": "application/json",
+//             Authorization: "Basic " + btoa("fhiruser:change-password"), // set HTTP basic auth header
+//         },
+//     })
+//     .then((response) => {
+//         setSnack(true)
+//         if(response.status==200){setSnackSucc(true);setDeviceChanged(!deviceChanged);props.deviceChange()}
+//         else{setSnackSucc(false)}
+//     })
+// }
 
     const removeButton = (index: number) => {
         // Get the device object from the list

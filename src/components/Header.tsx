@@ -1,19 +1,22 @@
 import React, { FC, useEffect, useState } from 'react';
-import {AppBar, Collapse, Divider,Drawer,FormControl,IconButton,InputAdornment,List,ListItem,ListItemButton,ListItemText,Menu,MenuItem,Select,SelectChangeEvent, Stack, TextField, useMediaQuery, useTheme} from '@mui/material';
+import {AppBar, Collapse, Divider,Drawer,FormControl,IconButton,Switch,InputAdornment,List,ListItem,ListItemButton,ListItemText,Menu,MenuItem,Select,SelectChangeEvent, Stack, TextField, useMediaQuery, useTheme} from '@mui/material';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import SettingsIcon from '@mui/icons-material/Settings';
 import Button from '@mui/material/Button';
-import { AccountCircle, ExpandLess, ExpandMore } from '@mui/icons-material';
+import {  ExpandLess, ExpandMore } from '@mui/icons-material';
 import { useNavigate,useLocation } from 'react-router-dom';
 import pmsLogo from '../assets/image 135.png';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Avatar, Typography } from '@material-ui/core';
 import MenuIcon from '@mui/icons-material/Menu';
 import PersonIcon from '@mui/icons-material/Person';
-import BedtimeIcon from '@mui/icons-material/Bedtime';
-import SearchIcon from '@mui/icons-material/Search';
 
+import SearchIcon from '@mui/icons-material/Search';
+import DehazeIcon from '@mui/icons-material/Dehaze';
+import ViewCompactIcon from '@mui/icons-material/ViewCompact';
+import AppsIcon from '@mui/icons-material/Apps';
+import VerticalSplitIcon from '@mui/icons-material/VerticalSplit';
 
 
 export interface HeaderProps {
@@ -21,9 +24,13 @@ export interface HeaderProps {
   roomChange: (roomId: string) => void;
   roomAltered: boolean;
   userOrganization: string;
-  darkTheme: boolean; // Add darkTheme as a prop
+  darkTheme: boolean;
   toggleDarkTheme: () => void;
+  setSearchQuery: (query: string) => void;
+  selectedIcon: string; 
+  setSelectedIcon: (icon: string) => void; 
 }
+
 
 export const Header: FC<HeaderProps> = (props) => {
   const [smallList, setSmallList] = useState(false);
@@ -38,9 +45,11 @@ export const Header: FC<HeaderProps> = (props) => {
     navigate('/Admin');
     setNotHome(false);
     setPrevRoom(room);
-  };
-
+  };  
   
+  const handleIconClick = (icon: string) => {
+    props.setSelectedIcon(icon); // This should work correctly now
+  };
   
   const [notHome, setNotHome] = useState(true);
   const [temproom, settemproom] = useState([
@@ -63,7 +72,7 @@ export const Header: FC<HeaderProps> = (props) => {
     },
   ]);
 
-  const [room, setRoom] = useState('R&1');
+  const [room, setRoom] = useState('');
   // const [darkMode, setDarkMode] = useState("");
   const handleSetRoom = (event: SelectChangeEvent) => {
     setRoom(event.target.value);
@@ -104,28 +113,12 @@ export const Header: FC<HeaderProps> = (props) => {
   };
   const state = Boolean(anchorEl);
   const [temp, settemp] = useState(false)
-  // const handleDMSChange = () => {
-  //   // Handle the state change when the switch is toggled
-  //   setDarkMode(!darkMode);
+   // Assuming 'view' is the default selected icon
+
   
-  //   // If darkMode is true, navigate to the '/' (home) route
-  //   // If darkMode is false, navigate to the '/rooms' route
-  //   if (darkMode) {
-  //     navigate('/patient-monitor');
-  //   } else {
-  //    navigate('/device-monitor');
-  //   }
-  // };
+  
   const { darkTheme, toggleDarkTheme } = props;
-  // const [searchQuery, setSearchQuery] = useState('');
-
-
-  // const toggleDarkTheme = () => {
-  //   setDarkTheme((prevTheme) => !prevTheme);
-  //   // Toggle dark mode by changing the background color of the html element
-  //   document.documentElement.style.backgroundColor = darkTheme ? '#F5F5F5' : '#2F3D4A';
-  // };
-
+  
     useEffect(() => {
     getIdTokenClaims()
     .then((res) => {
@@ -188,7 +181,7 @@ export const Header: FC<HeaderProps> = (props) => {
     setRoom(prevRoom || props.currentRoom); // Display the previous room name if available, else the current room
   };
    
-
+  
   // function setSearchQuery(value: string): void {
   //   throw new Error('Function not implemented.');
   // }
@@ -202,92 +195,60 @@ export const Header: FC<HeaderProps> = (props) => {
             <>
               <div style={{ display: 'flex', marginRight: 'auto' }}>
                 <Box onClick={handleBackButtonClick} sx={{ cursor: 'pointer' }}>
-                  <img src={pmsLogo} alt="Phoenix" style={{ maxWidth: '90%',marginTop:'10px', height: 'auto' }} />
+                  <img src={pmsLogo} alt="Phoenix" style={{ maxWidth: '90%', height: 'auto' }} />
                   
                 </Box>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
- 
-   {/* <Typography variant="subtitle1" component="h2" style={{ whiteSpace: 'nowrap' }}>
-   &nbsp;{user?.name} &nbsp;
-  </Typography> */}
-             
-              <IconButton onClick={handleMenu}   sx={{backgroundColor:darkTheme ? '#124D81' : '#FFFFFF',height:'40px',width:'40px' }}>
-        <AccountCircle style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} />
-      </IconButton>
-                    <Menu anchorEl={anchorEl} open={state} onClose={() => {setAnchorEl(null);}} MenuListProps={{ disablePadding: true }}>
-                       <Box width={'350px'} height={'200px'} sx={{ backgroundColor: darkTheme?'': '#F3F2F7',color: darkTheme?'':'#124D81' }}>
-                          <Stack direction={'row'} justifyContent={'space-between'}>
-                            <Typography style={{ marginLeft: '5%', marginTop: '5%', marginBottom: '5%' }}>
-                              Hospital Name
-                            </Typography>
-                            <Button  onClick={() => logout()} sx={{ height:'10%',backgroundColor: '#124D81', color: 'white', textTransform: 'capitalize' }}>
-                            <Typography variant="subtitle2">Sign out</Typography>
-                                </Button>
-
-                          </Stack>  
-                          <Stack direction={'row'} width={'100%'}>
-                             <Avatar style={{ marginLeft: '5%', marginTop: '2%', width: 100, height: 100 }}>
-                              {(() => (
-                                <Typography variant="h3">{String(user?.nickname)[0].toUpperCase()}</Typography>
-                              ))()}
-                            </Avatar>
-                            <Stack>
-                              <Typography variant="h5" style={{ marginLeft: '10%', marginTop: '2%' }}>
-                                {user?.nickname}
-                              </Typography>
-                              <Typography variant="subtitle1" style={{ marginLeft: '10%', marginTop: '2%' }}>
-                                {user?.email}
-                              </Typography>
-                              <Typography variant="subtitle2" style={{ marginLeft: '10%', marginTop: '2%' }}>
-                              {user?.role}
-                              </Typography>
-                            </Stack>
-                          </Stack>
-                        </Box>
-                    </Menu>
-                </div>
+                <div >
+                   {/* <Organization darkTheme={darkTheme} /> */}
+                   <Typography style={{color:darkTheme?'white':'#124D81'}} > {currentTime.toLocaleTimeString()} | {currentTime.toLocaleDateString()}</Typography>
+                    </div>
               
               </div>
               {notHome && UserRole === 'Hospital Clinician' && (
-              <div style={{marginLeft:'auto',marginRight:'auto'}}>
-        <Stack sx={{backgroundColor: darkTheme?'#F60D4C' :'#FFFFFF', borderRadius: '25px'}}> 
-        <TextField
-  variant="outlined"
-  size="small"
-  inputProps={{ style: { color: darkTheme ? 'black' : '#124D81' } }}
-  sx={{borderRadius:'25px',
-    backgroundColor: darkTheme?'grey' :'#FFFFFF',
-    '& .MuiOutlinedInput-root': {
-      borderRadius: '25px',
-      borderColor: '#F9F9F9',
-      borderStyle: 'solid',
-      borderWidth: '1px',
-      '&:hover fieldset': {
-        borderColor: '#124D81',
-      },
-      '&.Mui-focused fieldset': {
-        borderColor: '#124D81',
-      },
-    },
-  }}
-  placeholder="Search Baby Name/ID"
-  style={{ width: '300px' }}
-   
-  InputProps={{
-    endAdornment: (
-      <InputAdornment position="start">
-        <SearchIcon style={{ color: darkTheme ? 'white' : 'black' }} />
-      </InputAdornment>
-    ),
-  }}
-/></Stack>
+              <div style={{marginRight:'auto'}}>
+       
+<Stack sx={{backgroundColor: darkTheme?'' :'#FFFFFF', borderRadius: '25px'}}> 
+                   <TextField
+        variant="outlined"
+        size="small"
+        
+        inputProps={{ style: { color: darkTheme?'white' :'#124D81'  } }} // Set text color to blue
+        sx={{
+          backgroundcolor: '#FFFFFF',
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '25px', // Set border radius
+            borderColor: '#F9F9F9', // Set border color
+            borderStyle: 'solid', // Set border style
+            borderWidth: '1px', // Set border width
+            '&:hover fieldset': {
+              borderColor: '#124D81' // Set border color on hover
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#124D81' // Set border color when focused
+            }
+          }
+        }}
+      
+        placeholder="Search Baby Name/ID"
+        style={{ width: '300px' }} 
+        onChange={(e) => props.setSearchQuery(e.target.value)}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <SearchIcon style={{ color: darkTheme?'white':'black' }} />
+              
+            </InputAdornment>
+          ),
+        }}
+      /></Stack>
       </div> 
+     
                )}
               {screenSize ? (
                 <>
                   {/* Your content for larger screens */}
                   <Stack direction={'row'} justifyContent={'center'} textAlign={'center'} >
-                    {notHome && UserRole === 'Hospital Technician'  && (
+                    {notHome && UserRole === 'Hospital Technician' && (
                       <>
                         {/* <CustomSwitch onChange={handleDMSChange} checked={darkMode} /> */}
                         <Divider orientation="vertical" flexItem sx={{ marginRight: '20px', marginLeft: '20px' }} />
@@ -298,20 +259,7 @@ export const Header: FC<HeaderProps> = (props) => {
                                  return (
                                <MenuItem key={room.resource.id} onClick={() => {
                                     setNotHome(true);
-                                    //   if (UserRole === undefined) {
-                                    //     // Technician should not access patient-monitor
-                                    //     // Redirect or show an error message as needed
-                                    //     console.log("Hospital Technicians cannot access patient-monitor");
-                                    //   } 
-                                    //   else 
-                                    //   {
-                                    //     navigate('/device-monitor');
-                                    //   }
-                                   
                                     
-                                    // {
-                                    //   navigate('/device-monitor');
-                                    // }
                                   }}
                                   value={String(room.resource.name)}
                                   sx={{justifyContent: 'center',padding: '6%',backgroundColor: '#F3F2F7',color: '#124D81'}}
@@ -332,10 +280,11 @@ export const Header: FC<HeaderProps> = (props) => {
                     {notHome && UserRole === 'Hospital Clinician' && (
                       <>
                         <FormControl variant="standard"  sx={{ width: '150px', backgroundColor: darkTheme?'':'#F3F2F7',borderRadius: '25px',border: '2px solid #BFDEFF'}}>
-                          
+                          {/* <InputLabel disabled sx={{ color: darkTheme? 'white':'#124D81 !important' }}>Room</InputLabel> */}
                           <Select label="Room" onChange={handleSetRoom} style={{ height: '40px' }} value={room} disableUnderline MenuProps={{ MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81', color: '#FFFFFF' } },}} sx={{ color: darkTheme ? '#BFDEFF' : '#124D81',}}
 >
-                 
+  {/* Menu items */}
+               
             {temproom.map((room) => {
                               
                       return (
@@ -356,7 +305,7 @@ export const Header: FC<HeaderProps> = (props) => {
                           }}
                         
                         >
-                          
+                          {/* {room.resource.name.toString()} */}
                           {room.resource.name.toString()} 
                         </MenuItem>
                         
@@ -368,20 +317,101 @@ export const Header: FC<HeaderProps> = (props) => {
                     </Select>
                         </FormControl>
                         <Divider orientation="vertical" flexItem sx={{ marginLeft: '20px' }} />
-                        
+                  
                         
                       </>
                     )}
-                   <div style={{ marginLeft: '25px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                   {/* <Organization darkTheme={darkTheme} /> */}
+                   {/* <div style={{ marginLeft: '25px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                   
       <IconButton onClick={toggleDarkTheme}   sx={{backgroundColor:darkTheme ? '#124D81' : '#FFFFFF',height:'40px',width:'40px' }}>
         <BedtimeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.4rem' }} />
       </IconButton>
-                    </div>
-                    <div style={{ marginLeft: '25px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                   {/* <Organization darkTheme={darkTheme} /> */}
-                   <Typography style={{color:darkTheme?'white':'#124D81'}} > {currentTime.toLocaleTimeString()} | {currentTime.toLocaleDateString()}</Typography>
-                    </div>
+                    </div> */}
+                   
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+             
+              <IconButton   onClick={handleMenu}   sx={{height:'40px',width:'40px' }}>
+        
+        {/* <AccountCircle style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} /> */}
+        < DehazeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} />
+        
+      </IconButton>
+      <Menu
+      anchorEl={anchorEl}
+      open={state}
+      onClose={() => { setAnchorEl(null); }}
+      MenuListProps={{ disablePadding: true }}
+    >
+      <Box width={'270px'} sx={{ backgroundColor: darkTheme ? '#000000' : '#F3F2F7', color: darkTheme ? '' : '#124D81',border:'3px solid  grey' }}>
+      <Stack direction={'row'} width={'100%'} padding={'5px'}>
+          <Avatar style={{ marginTop: '5%', width: 70, height: 70 }}>
+            <Typography variant="h3">{String(user?.nickname)[0].toUpperCase()}</Typography>
+          </Avatar>
+          <Stack>
+            <Typography variant="h6" style={{ marginLeft: '10%', marginTop: '2%' }}>
+              {user?.nickname}
+            </Typography>
+            <Typography variant="caption" style={{ marginLeft: '10%', marginTop: '1%' }}>
+              {user?.email}
+            </Typography>
+            <Typography variant="subtitle2" style={{ marginLeft: '10%', marginTop: '2%' }}>
+              {user?.role}
+            </Typography>
+          </Stack>
+          
+        </Stack>
+
+        <Stack direction="row" justifyContent="flex-end" padding="5px">
+          <Button
+            onClick={() => logout()}
+            sx={{ backgroundColor: '#124D81', color: 'white', textTransform: 'capitalize' }}
+          >
+            <Typography variant="caption">Sign out</Typography>
+          </Button>
+        </Stack>
+
+        <Divider sx={{ border: '0.3px solid grey' }} />
+        <Stack alignItems="flex-start" sx={{ marginTop: '5px', marginLeft: '5px' }}>
+          <Typography variant="body1">View</Typography>
+        </Stack>
+        <Stack direction="row" width="100%" justifyContent="space-evenly" sx={{ marginY: '5px' }}>
+        
+          <IconButton onClick={() => handleIconClick('view')} sx={{ height: '40px', width: '40px' }}>
+            <ViewCompactIcon style={{ color: props.selectedIcon === 'view' ?(darkTheme ? '#124D81' : '#62ECFF'):(!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }}  />
+          </IconButton>
+          <IconButton onClick={() => handleIconClick('apps')} sx={{ height: '40px', width: '40px'  }}>
+            <AppsIcon style={{ color: props.selectedIcon === 'apps' ?(darkTheme ? '#124D81' : '#62ECFF'):(!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }} />
+          </IconButton>
+          <IconButton onClick={() => handleIconClick('vertical')} sx={{ height: '40px', width: '40px' }}>
+            <VerticalSplitIcon style={{ color: props.selectedIcon === 'vertical' ?(darkTheme ? '#124D81' : '#62ECFF'):(!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }} />
+          </IconButton>
+         
+        </Stack>
+        <Divider sx={{ border: '0.3px solid grey' }} />
+        <Stack direction="row" width="100%" justifyContent="space-between" alignItems="center" sx={{ padding: '5px' }}>
+          <Typography variant="subtitle2">Dark mode</Typography>
+          <Switch
+            onChange={toggleDarkTheme}
+            checked={darkTheme}
+            sx={{
+              '& .MuiSwitch-switchBase.Mui-checked': {
+                color: '#FFFFFF',
+                '&:hover': {
+                  backgroundColor: 'rgba(18, 77, 129, 0.08)',
+                },
+              },
+              '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                backgroundColor: '#00AEEE',
+              },
+              '& .MuiSwitch-track': {
+                backgroundColor: 'grey',
+              },
+            }}
+          />
+        </Stack>
+      </Box>
+    </Menu>
+                </div>
                     </Stack>
                      </>
                       ) : 
@@ -402,10 +432,7 @@ export const Header: FC<HeaderProps> = (props) => {
                       </Stack>
                       {notHome && UserRole === 'Hospital Clinician' && (
                       <Stack direction={'row'} width={'100%'} height={'5%'} justifyContent={'center'} marginBottom={'3%'} marginTop={'5%'}>
-                       {/* <ToggleButtonGroup color="primary" value={darkMode ? 'dark' : 'light'} exclusive onChange={handleDMSChange} aria-label="Dark Mode Switch">
-                         <ToggleButton value="light" sx={{ width: 'auto' }}>Baby Mode</ToggleButton>
-                          <ToggleButton value="dark" sx={{ width: 'auto' }}> Device Mode</ToggleButton>
-                       </ToggleButtonGroup> */}
+                      
                       </Stack>
                       )}
 {/* mobile view */}
@@ -479,9 +506,7 @@ export const Header: FC<HeaderProps> = (props) => {
                           </Stack>
                         </Stack>
                       </Box>
-                      
                     </Stack>
-                    
                   </Drawer>
                       </>
                 

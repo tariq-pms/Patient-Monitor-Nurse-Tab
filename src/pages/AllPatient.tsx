@@ -4,11 +4,14 @@ import { useAuth0 } from '@auth0/auth0-react';
 import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { PatientCard } from '../components/PatientCard';
+import { NewPatientDetails } from "../components/NewPatientDetails";
 
 type PatientMonitorProps = {
   userOrganization: string;
   currentRoom: any;
-  darkTheme: boolean; // Adjust the type according to your requirements
+  darkTheme: boolean;
+  searchQuery: string;
+  selectedIcon: string;  // Adjust the type according to your requirements
 };
 type Patient = {
   resourceType: string;
@@ -35,7 +38,7 @@ interface DataEntity {
 interface State {
   [patientId: string]: DataEntity[];
 }
-  export const AllPatient: React.FC<PatientMonitorProps> = ({ userOrganization, currentRoom ,darkTheme}) => {
+export const AllPatient: React.FC< PatientMonitorProps> = ({ userOrganization, currentRoom ,darkTheme,searchQuery,selectedIcon}) => {
   console.log("in patient Monitor Page rooms",currentRoom);
   console.log("in patient Monitor Page",userOrganization);
 
@@ -46,8 +49,12 @@ interface State {
   const { isAuthenticated, loginWithRedirect } = useAuth0();
   const [isLoading, setIsLoading] = useState(true);
   const [pageNumber, setPageNumber] = useState(1);
-  const [searchQuery] = useState<string>(''); // State for search query
+  const [isOpen, setIsOpen] = useState(false);
+  //const [isDialogOpened, setIsDialogOpened] = useState(false);
+  //const [isOpen, setIsOpen] = useState(false);
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]); // State for filtered patient list
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  
 
   useEffect(() => {
     filterPatients(searchQuery);
@@ -348,10 +355,15 @@ interface State {
       }
     };
   }, [pageNumber]);
+
+  const handlePatientCardClick = (patient: Patient) => {
+    setSelectedPatient(patient);
+    console.log("handlepatientclick",patient);
+  };
   
   const patientCards = filteredPatients.map(patient => {
     return (
-    <PatientCard
+      <PatientCard
       patient_resource_id={String(patient.id)}
       key={String(patient.id)}
       patient_name={String(patient.extension[0].valueString)}
@@ -360,6 +372,8 @@ interface State {
       observation_resource={parentobs[String(patient.id)]}
       communication_resource={parentcomm[String(patient.id)]}
       darkTheme={darkTheme}
+      selectedIcon={selectedIcon}
+      onClick={() => handlePatientCardClick(patient)} 
     />
   )});
   
@@ -382,12 +396,69 @@ interface State {
     console.log(parentdevice);
   }, [parentdevice]);
 
-  return (
+  const containerStyles = selectedIcon === 'vertical' ? {
+    display: 'flex',
+    justifyContent: 'left',
+    alignItems: 'left',
+     
+  } : {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
     
-      
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-      
-          <Box sx={{display: "flex",marginTop:'0px',paddingTop:'0px',flexWrap: "wrap",gap: '2rem',mt: {xs: 5,sm: 6,md: 4,lg: 3,},
+  };
+
+  return (  
+    <div  style={containerStyles}  >
+      {selectedIcon === 'vertical' ? (
+   <div style={{ display: 'flex', height: '100vh', alignItems: 'stretch' }}>
+          
+        <Box sx={{ display: 'flex',marginTop: '0px', paddingTop: '0px', flexWrap: 'wrap', gap: '2rem', mt: { xs: 5, sm: 6, md: 4, lg: 3 }, mb: { xs: 3, sm: 4, md: 4, lg: 3 }, justifyContent: 'center', minWidth: '40%' ,maxWidth:'40%',height: '100%',}}>
+        {isAuthenticated && (
+          <Box sx={{ width: "100%" }}>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: '0.3rem', justifyContent: "center", width: "100%", marginBottom: '2%',maxHeight: '800px', overflowY: 'auto'  }}>
+             
+              {patientCards}
+           
+            </Box>
+          </Box>
+        )}
+        {!isAuthenticated && !isLoading && (
+          <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
+            <img src={pmsLogo} alt="Phoenix" style={{ maxWidth: '50%', height: 'auto', marginLeft: 'auto', marginRight: 'auto' }} />
+            <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
+            <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
+            <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
+              <Button variant='outlined' sx={{ width: '200px', height: '50px', borderRadius: '100px' }} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>
+              <Button variant='contained' sx={{ width: '200px', height: '50px', borderRadius: '100px' }} onClick={() => loginWithRedirect()}>Sign In</Button>
+            </Stack>
+          </Stack>
+        )}
+      </Box>
+        <Box sx={{ display: 'flex', marginTop: '0px', padding: '20px', gap: '2rem', mt: { xs: 5, sm: 6, md: 4, lg: 3 }, mb: { xs: 3, sm: 4, md: 4, lg: 3 }, justifyContent: 'center', width: '60%' ,height: '100%',}}>
+        
+        { selectedPatient && (
+          
+            <NewPatientDetails
+              isDialogOpened={isOpen}
+              handleCloseDialog={() => { setIsOpen(false); } }
+              patient_id={String(selectedPatient.identifier[0].value)}
+              patient_name={String(selectedPatient.extension[0].valueString)}
+              key={selectedPatient.id}
+              patient_resource_id={String(selectedPatient.id)} 
+              darkTheme={darkTheme} 
+              selectedIcon={selectedIcon}
+              observation_resource={parentobs[selectedPatient.id] || []}
+              communication_resource={parentcomm[selectedPatient.id] || []}
+              device={parentdevice[selectedPatient.id] || []}
+              />
+
+         
+        )}</Box>
+        </div>
+  ) : (
+    // Render only the first box component when selected icon is not 'vertical'
+    <Box sx={{display: "flex",marginTop:'0px',paddingTop:'0px',flexWrap: "wrap",gap: '2rem',mt: {xs: 5,sm: 6,md: 4,lg: 3,},
                       mb: {xs: 3,sm: 4,md: 4,lg: 3,
                       },
                       justifyContent: "center",
@@ -418,11 +489,11 @@ interface State {
                   <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
                   <Button variant='outlined'sx={{width:'200px', height:'50px', borderRadius:'100px'}} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>
                   <Button variant='contained' sx={{width:'200px', height:'50px', borderRadius:'100px'}} onClick={() => loginWithRedirect()}>Sign In</Button>
-                  
                   </Stack>
                 </Stack>
               )}
         </Box>
+  )}
          </div>
        
     

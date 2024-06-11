@@ -342,8 +342,7 @@ useEffect(() => {
     })
     const incubator = devices.entry?.map((device) => {
       if (
-        String(device.resource.identifier[1]?.value) === "Intensive Neonatal Care Center" ||
-        String(device.resource.identifier[1]?.value) === "PMS-SYRINGE"
+        String(device.resource.identifier[1]?.value) === "Intensive Neonatal Care Center" 
     ){
       var correct = false
       // var temp = String(device.resource.id)
@@ -379,8 +378,8 @@ useEffect(() => {
       }}
       })
     const cpap = devices.entry?.map((device) => {
-    console.log("device",String(device.resource.id))
-    if(String(device.resource.identifier[1]?.value)=="SVAAS"){
+    console.log("SVAAS device",String(device.resource.id))
+    if(String(device.resource.identifier[1]?.value)=="PMS-SVAAS"){
    
   var correct = false
     // var temp = String(device.resource.id)
@@ -495,7 +494,7 @@ useEffect(() => {
     const otherdevices = devices.entry?.map((device) => {
     if(String(device.resource.identifier[1]?.value)!="Intensive Neonatal Care Center" &&
         String(device.resource.identifier[1]?.value)!="Comprehensive Infant Care Centre" &&
-        String(device.resource.identifier[1]?.value)!="SVAAS" && 
+        String(device.resource.identifier[1]?.value)!="PMS-SVAAS" && 
         String(device.resource.identifier[1]?.value)!="Heating Cooling Machine" &&
         String(device.resource.identifier[1]?.value)!="PMS-SYRINGE"){
 
@@ -551,6 +550,7 @@ useEffect(() => {
                         sx={{
                           // backgroundColor:'red',
                           display: "flex",flexWrap: "wrap", gap: '0.3rem', justifyContent: "left", width:"100%", marginBottom:'2%' }}>
+                    {/* <DummyCard  darkTheme={darkTheme}/>
                     <DummyCard  darkTheme={darkTheme}/>
                     <DummyCard  darkTheme={darkTheme}/>
                     <DummyCard  darkTheme={darkTheme}/>
@@ -561,8 +561,7 @@ useEffect(() => {
                     <DummyCard  darkTheme={darkTheme}/>
                     <DummyCard  darkTheme={darkTheme}/>
                     <DummyCard  darkTheme={darkTheme}/>
-                    <DummyCard  darkTheme={darkTheme}/>
-                    <DummyCard  darkTheme={darkTheme}/>
+                    <DummyCard  darkTheme={darkTheme}/> */}
  
                          {isLoadingWarmers ? (
                     // Display loading skeleton while loading

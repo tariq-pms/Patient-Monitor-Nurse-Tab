@@ -158,7 +158,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
         setRequiredForBorderColor(!requiredForBorderColor)
         // clearInterval(tick);
         
-        // console.log(props.observation_resource.identifier[0].value);
+        console.log("patient name:", props.observation_resource.identifier[0].value);
         for (var i=0; i< props?.communication_resource?.extension?.[1].valueCodeableConcept?.coding?.length; i++){
         console.log(props.communication_resource?.extension[1]?.valueCodeableConcept?.coding[i]?.code)
         if(props.communication_resource?.extension[1]?.valueCodeableConcept?.coding[i]?.code=='High Priority'){
