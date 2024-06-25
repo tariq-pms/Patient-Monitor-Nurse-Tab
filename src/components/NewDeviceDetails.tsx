@@ -133,7 +133,8 @@ export interface DeviceDetails {
                       "display": string;
                   }[];
               };}[]; };
-            darkTheme:boolean
+            darkTheme:boolean;
+            selectedIcon:string
             }
 type TemperatureData = {
 labels: any[];
@@ -580,6 +581,9 @@ export const NewDeviceDetails: FC<DeviceDetails> = (props): JSX.Element => {
           
         },
     };
+    useEffect(() => {
+        console.log('Patient props:', props.patient);
+      }, [props.patient]);
     const weightOption = {
         animation: false,
         tension: 0.3,
@@ -1863,6 +1867,408 @@ items.forEach((item) => {
     },[rendergraph])
     return (
         <React.Fragment>
+           {props.selectedIcon === 'vertical' ? 
+           (  
+            <Box
+            sx={{
+              height: '100%', // Set the height of the NewPatientDetails container to 100% of its parent
+              overflowY: 'scroll', // Add a vertical scrollbar if content exceeds height
+              minWidth: { xs: '90%', sm: '90%', md: '90%', lg: '100%' },
+              maxWidth: { xs: '90%', sm: '90%', md: '90%', lg: '100%' },
+              borderRadius: '25px',
+              border : '0.4px solid #505050',
+              backgroundColor: darkTheme ? '#000000' : '#FFFFFF',
+            }}
+          >
+                
+                  <Stack direction={'row'} sx={{ justifyContent: 'space-between',padding:'10px', marginLeft: 'auto', marginRight: 'auto' }}>
+                    <Stack direction={'row'} >
+                    <Typography variant="h6" color={darkTheme?'#FFFFFF': '#2F3D4A'} fontWeight={'regular'} >
+                    {props.patient?.extension[1]?.valueString} &nbsp; | &nbsp; {props.patient?.identifier[0]?.value}
+                    
+                        </Typography>
+                        <Typography variant="h6" color={darkTheme?'#FFFFFF': '#2F3D4A'}>
+                            {(() => {
+                                if(props.observation_resource){
+                                    var q = "";
+                                    if(props.observation_resource.identifier[0].value.toString()=="PMS-CIC"){
+                                        q = "CIC | "
+                                    }
+                                    else if(props.observation_resource.identifier[0].value.toString()=="PMS-INC"){
+                                        q = "INC | "
+                                    }
+                                    else if(props.observation_resource.identifier[0].value.toString()=="PMS-HCM"){
+                                        q = "Brammi | "
+                                    }
+                                    else if(props.observation_resource.identifier[0].value.toString()=="PMS-SYRINGE"){
+                                        q = "Syringe | "
+                                    }
+                                    else if(props.observation_resource.identifier[0].value.toString()=="PMS-SVAAS"){
+                                        q = "SVAAS | "
+                                    }
+                                    
+                                    return (q+props.device_id)
+                                }
+                            })()}
+                        {/* {props.device_id} */}
+                        </Typography>
+                        
+                    </Stack>
+                    <IconButton  onClick={() => { setvarq(!varq)}}><FontAwesomeIcon style={{ paddingRight: '15px', margin: '0px', color: darkTheme ? '#FFFFFF' : '#124D81' }} icon={faXmark} /></IconButton>
+                  </Stack>
+                  <Divider sx={{  marginBottom: '10px', backgroundColor: '#E4E4E4' }} />
+                  <Stack
+            sx={{
+              alignItems: 'center', // Center the children horizontally
+              justifyContent: 'center', // Center the children vertically (if needed)
+              width: '100%', // Ensure the Stack takes up full width of its parent
+            }}
+          >
+            <ToggleButtonGroup
+              value={selectedTab}
+              exclusive
+              onChange={handleTabChange}
+              aria-label="selected tab"
+              sx={{ width: '95%' }} // Full width and marginBottom
+            >
+              <ToggleButton
+                value="overview"
+                sx={{ width: '100%' }}
+                style={{
+                  backgroundColor: darkTheme ? (selectedTab === 'overview' ? '#CACACA' : '#1C1C1E') : (selectedTab === 'overview' ? '#1C1C1E' : '#CACACA'),
+                  color: darkTheme ? (selectedTab === 'overview' ? '#000000' : '#D9D9D9') :(selectedTab === 'overview' ? '#D9D9D9' : '#000000') 
+                }}
+              >
+                  
+                Overview
+              </ToggleButton> 
+              <ToggleButton
+                value="trends"
+                sx={{ width: '100%' }}
+                style={{
+                  backgroundColor: darkTheme ? (selectedTab === 'trends' ? '#CACACA' : '#1C1C1E') :(selectedTab === 'trends' ? '#1C1C1E' : '#CACACA') ,
+                  color: darkTheme ?  (selectedTab === 'trends' ? '#000000' : '#D9D9D9')  : (selectedTab === 'trends' ? '#D9D9D9' : '#000000')
+                }}
+              >
+                Trends
+              </ToggleButton>
+              <ToggleButton
+                value="alarms"
+                sx={{ width: '100%' }}
+                style={{
+                  backgroundColor: darkTheme ? (selectedTab === 'alarms' ? '#CACACA' : '#1C1C1E')  : (selectedTab === 'alarms' ? '#1C1C1E' : '#CACACA') ,
+                  color: darkTheme ? (selectedTab === 'alarms' ? '#000000' : '#D9D9D9') : (selectedTab === 'alarms' ? '#D9D9D9' : '#000000') 
+                }}
+              >
+                Alarms
+              </ToggleButton>
+             
+            </ToggleButtonGroup>
+          </Stack>
+          
+                    {selectedTab === 'overview' && (
+                    <>
+                    <Stack
+                    direction={'row'}
+                    divider={<Divider orientation='vertical' flexItem/>}
+                    sx={{display: "flex",flexWrap: "wrap",gap: { xs: "2rem",sm: "2rem",md: "4rem",lg: "4rem",xl: "4rem"},
+                    mt: {xs: 5,sm: 6,md: 7,lg: 8,},
+                    mb: {xs: 5,sm: 6,md: 7,lg: 8,},
+                    justifyContent: "center",}}>
+                    <Stack alignItems={'center'} spacing={'10px'}>
+                    <Typography variant="subtitle1" color={darkTheme?'#FFFFFF':'#124D81'}  >
+                        {props.newData && props.observation_resource?.component[0]?.code.text}
+                    </Typography>
+                    <Typography variant="h4" color={darkTheme?'#FFFFFF':'#124D81'} sx={{fontWeight:'bold'}}>
+                        {(() => {
+                        if(props.newData){
+                        return (props.observation_resource?.component[0]?.valueQuantity.unit=='1' || props.observation_resource?.component[0]?.valueQuantity.unit)
+                        }
+                        else{
+                        return "Device Not Active"
+                        }
+                        })()}
+                    </Typography>
+                    </Stack>
+                    {props.newData && props.observation_resource?.component.map((_obs: any,index: number) => {
+                    if((props.observation_resource?.component[index]?.code.text!="SIQ" && props.observation_resource?.component[index]?.code.text!="PVI" && props.observation_resource?.component[index]?.code.text!="PI" && props.observation_resource?.component[index]?.code.text!="SPO2" && props.observation_resource?.component[index]?.code.text!="Pulse Rate") && index!=0){
+                    return (
+                    <Stack alignItems={'center'} spacing={'10px'} color={darkTheme?'#FFFFFF':'#124D81'}>
+                    <Typography variant="subtitle1"  >
+                        {props.observation_resource?.component[index]?.code.text}
+                    </Typography>
+                    {(() => {
+                        if(props.observation_resource?.component[index]?.valueQuantity?.unit=="Min"){
+                            var value = Math.round((props.observation_resource?.component[index]?.valueQuantity?.value + Number.EPSILON) * 100) / 100
+
+                            if(value>=60){
+                                return (
+                                    <>
+                                        <Typography variant='h4' >
+                                            {value/60+":"+value%60}&nbsp;
+                                        </Typography>
+                                        <Typography variant='h5'>
+                                            {"Hr"}
+                                        </Typography>
+                                    </>
+                                )
+                            }
+                            else{
+                                return (
+                                    <>
+                                        <Typography variant='h4'>
+                                            {value}&nbsp;
+                                        </Typography>
+                                        <Typography variant='h5'>
+                                            {"Min"}
+                                        </Typography>
+                                    </>
+                                )
+                            }
+                        }
+                        else{
+                            return(
+                                <>
+                                    <Typography variant='h4'>
+                                        {Math.round((props.observation_resource?.component[index]?.valueQuantity?.value + Number.EPSILON) * 100) / 100}&nbsp;
+                                    </Typography>
+                                    <Typography variant='h5'>
+                                        {props.observation_resource?.component[index]?.valueQuantity?.unit}
+                                    </Typography>
+                                </>
+                            )
+                        }
+                    })()}
+                    </Stack>
+                    )
+                    }
+                    })}
+                    </Stack>
+
+                    {props.newData && (
+                        <Divider sx={{marginTop:'20px'}} />
+                    )}
+                    
+                    {props.newData?
+                    (
+                    <>
+                        <Typography variant='h5'  color={darkTheme?'#FFFFFF':'#124D81'} paddingLeft={'2%'} paddingTop={'3%'}>Pulse Oximeter</Typography>
+                        <Stack
+                            direction={'row'}
+                            divider={
+                                <Divider orientation='vertical' flexItem/>
+                                }
+                            sx={{display: "flex",flexWrap: "wrap",color:darkTheme?'#FFFFFF':'#124D81',
+                            gap: {xs: "2rem",sm: "4rem",md: "4rem",lg: "4rem",xl: "4rem",},
+                            mt: {xs: 2,sm: 3,md: 3,lg: 3,},
+                            mb: { xs: 3,sm: 4,md: 5,lg: 6,},
+                            justifyContent: "center",
+                            textAlign:'center',
+                            width:'100%'}}
+                            >
+                            {(() => {
+                            var x = false
+                            var items =  ( props.newData && props.observation_resource?.component.map((_obs: any, index: number) => {
+                                    if(props.observation_resource?.component[index]?.code.text=="SIQ"|| props.observation_resource?.component[index]?.code.text=="PVI" || props.observation_resource?.component[index]?.code.text=="PI"|| props.observation_resource?.component[index]?.code.text=="SPO2" || props.observation_resource?.component[index]?.code.text=="Pulse Rate"){
+                                        x = true
+                                        var temp = false
+                                        if(props.observation_resource?.component[index]?.code.text=="SIQ"){
+                                            temp = true
+                                        }
+                                        return (
+                                            <Stack alignItems={'center'} spacing={'10px'} justifyContent={'center'}>
+                                            <Typography variant="subtitle1" >
+                                                {props.newData && props.observation_resource?.component[index]?.code.text}
+                                            </Typography>
+                                            {temp && <Box width={'130px'} height={'45px'} sx={{backgroundColor:'white', borderRadius:'10px'}}>
+                                            <Box width={String(props.observation_resource?.component[index]?.valueQuantity?.value)+'%'} height={'100%'} sx={{backgroundColor:'blue', borderRadius:'10px'}}></Box>
+                                            </Box>}
+                                            {!temp && 
+                                            <Typography variant="h3">
+                                                {/* {props.newData && props.observation_resource?.component[index]?.valueQuantity?.value}{props.observation_resource?.component[index]?.valueQuantity?.unit} */}
+                                                <div style={{ display: 'flex',marginLeft:'auto', marginRight:'auto', paddingRight:'10px' }}>
+                                                <Typography variant='h4'>
+                                                    {Math.round((props.observation_resource?.component[index]?.valueQuantity?.value + Number.EPSILON) * 100) / 100}&nbsp;
+                                                </Typography>
+                                                <Typography variant='h5'>
+                                                    {props.observation_resource?.component[index]?.valueQuantity?.unit}
+                                                </Typography>
+                                                </div>
+                                            </Typography>
+                                            }
+                                            </Stack>
+                                        )
+                                    }
+                                    
+        
+                                }))
+                                
+                                if (x){
+                                    return items
+                                }
+                                else{
+                                    return (<Typography variant='h6' sx={{fontWeight:'bold', paddingTop:'1%', opacity:'0.5'}}>{props.newData && 'Oximeter Not connected'}{!props.newData && ''}</Typography>)
+                                }
+    })()}
+                            {}
+                            
+                        </Stack>
+                    </>
+                    ):
+                    
+                    <Box
+                    sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    color:darkTheme?'#FFFFFF':'#124D81',
+                    justifyContent: "center"}}><Typography variant='h6' sx={{fontWeight:'bold', paddingTop:'1%', opacity:'0.5'}}>{props.newData && 'Oximeter Not connected'}{!props.newData && ''}</Typography>
+                    </Box>}
+                    </> )}
+                    {selectedTab === 'trends' && (
+                <>
+                {props.observation_resource?.identifier[0]?.value?.toString()!="PMS-SYRINGE" &&
+                                <div style={{marginTop:'25px'}}>
+                                {   
+                                        graphData && (<>
+                                        <Stack direction={'row'} width={"100%"} justifyContent={'space-between'}>
+                                        {/* <Button color="primary" startIcon={<FileDownloadIcon />} variant="contained" sx={{width:'100px', marginLeft:'2%'}}>
+                                                Export
+                                        </Button> */}
+                                        <Stack width={'100%'} direction={{ xs: 'row', sm: 'row', md:'row', lg:'column' }} marginBottom={{ xs: '30px', sm: '30px', md:'20px', lg:'20px' }}>
+                                        <Typography variant='h5' paddingLeft={'2%'} color={darkTheme?'#FFFFFF':'#124D81'}>Trends</Typography>
+                                        <Stack width={'100%'} direction={'row'}  textAlign={'center'}  >
+                                           <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'1%',backgroundColor:'grey', }}>
+                                                <ToggleButton value={0} key="left" sx={{height:'30px', width:'50px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(0)}}>
+                                                Day
+                                                </ToggleButton>,
+                                                <ToggleButton value={1} key="center" sx={{height:'30px', width:'55px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(1)}}>
+                                                    1 Week
+                                                </ToggleButton>,
+                                                <ToggleButton value={2} key="right" sx={{height:'30px', width:'58px', borderTopRightRadius:'20px',borderBottomRightRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(2)}}>
+                                                    2 Weeks
+                                                </ToggleButton>
+                                            </ToggleButtonGroup>
+                                            <ToggleButtonGroup value={S_and_D} exclusive size="small" sx={{marginRight:'1%',backgroundColor:'grey', '& .MuiToggleButton-root': {color:'white'},'& .Mui-selected': {backgroundColor: '#124D81',},}}>
+                                                <ToggleButton value={0} key="left" sx={{height:'30px', width:'80px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {
+                                                    setS_and_D(0)
+                                                    let temp: any[] = []
+                                                    chartRef1.current.data.datasets.forEach((dataset: { label: any; }, datasetIndex: any) => {
+                                                        temp.push(dataset.label)    
+                                                        chartRef1.current.setDatasetVisibility(datasetIndex, true);
+                                                        });
+                                                    chartRef1.current.update();
+                                                    chartRef2.current.data.datasets.forEach((dataset: { label: any; }, datasetIndex: any) => {
+                                                        temp.push(dataset.label)
+                                                        chartRef2.current.setDatasetVisibility(datasetIndex, true);
+                                                        });
+                                                    chartRef2.current.update();
+                                                    chartRef3.current.data.datasets.forEach((dataset: { label: any; }, datasetIndex: any) => {
+                                                        temp.push(dataset.label)
+                                                        chartRef3.current.setDatasetVisibility(datasetIndex, true);
+                                                        });
+                                                    chartRef3.current.update();
+                                                    setSelectedLegends(temp.filter(val => val!=""))
+                                                }}>
+                                                    Select all
+                                                </ToggleButton>
+                                                <ToggleButton value={1} key="right" sx={{height:'30px', width:'80px', borderTopRightRadius:'20px',borderBottomRightRadius:'20px', fontSize:'10px', textTransform:'capitalize'}}  onClick={() => {
+                                                    setS_and_D(1)
+                                                    chartRef1.current.data.datasets.forEach((_dataset: any, datasetIndex: any) => {
+                                                        chartRef1.current.setDatasetVisibility(datasetIndex, false);
+                                                        });
+                                                    chartRef1.current.update();
+                                                    chartRef2.current.data.datasets.forEach((_dataset: any, datasetIndex: any) => {
+                                                        chartRef2.current.setDatasetVisibility(datasetIndex, false);
+                                                        });
+                                                    chartRef2.current.update();
+                                                    chartRef3.current.data.datasets.forEach((_dataset: any, datasetIndex: any) => {
+                                                        chartRef3.current.setDatasetVisibility(datasetIndex, false);
+                                                        });
+                                                    chartRef3.current.update();
+                                                    setSelectedLegends([])
+                                                }}>
+                                                    Deselect all
+                                                </ToggleButton>
+                                            </ToggleButtonGroup>
+                                            <Button color="primary" startIcon={<FileDownloadIcon />} variant="contained" sx={{  borderRadius:'25px', width:'100px', height:'30px', textTransform:'capitalize', fontSize:'10px', color:'white'}} onClick={() => {
+                                                setDownloadConfirmation(true)
+                                            }}>
+                                                Download
+                                            </Button>
+                                        </Stack>
+                                        </Stack>
+                                        <Dialog
+                                            open={downloadConfirmation}
+                                            onClose={() => {setDownloadConfirmation(false)}}
+                                            scroll='paper'
+                                            PaperProps={{style:{borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', minWidth:'400px', minHeight:'200px'}}} // borderRadius:'3%', boxShadow: `0px 0px 20px 10px #7B7B7B`, border:'1px solid #7B7B7B
+                                        >
+                                            <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', padding:'9%'}}>
+                                                {`Confirm Download data of the following parameters` }
+                                            </DialogTitle>
+                                            <DialogContent sx={{textAlign:"center", marginBottom:'auto', paddingBottom:'9%'}}>
+                                                <Stack marginLeft={'auto'} marginRight={'auto'} width={'70%'} spacing={'5px'} justifyContent={'center'} textAlign={'center'}>
+                                                    {selectedLegends.map((vals: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined) => {
+                                                        return (
+                                                            <Box  border={'0.3px solid grey'}>{vals}</Box>
+                                                        )
+                                                    })}
+                                                </Stack>
+                                            </DialogContent>
+                                            <DialogActions sx={{paddingBottom:'5%'}}>
+                                                <Stack direction={'row'} width={'100%'} justifyContent={'space-around'}>    
+                                                <Box sx={{minWidth:'90px', minHeight:'45px'}} onClick={() => {setDownloadConfirmation(false)}}><CustomNoButton text="Cancel"></CustomNoButton></Box>
+                                                
+                                                <Box sx={{minWidth:'90px', minHeight:'45px'}} onClick={handleExportData}><CustomOkButton text="Confirm"></CustomOkButton></Box>
+                                                </Stack>
+                                                
+                                            </DialogActions>
+                                        </Dialog>
+                                        
+                
+                                        </Stack>
+                                        
+                                        {/* <div style={{justifyContent:'center'}}>
+                                            
+                                        </div> */}
+                                            {graph}
+                                        
+                                        
+                                            {/* <Button >Select all</Button> */}
+                                            
+                                        </>)
+                                    }
+                                    {
+                                        !graphData && (<div></div>)
+                                    } 
+                                    <Divider sx={{marginTop:'40px', backgroundColor:'white', color:'white'}} />           
+                                </div>
+                }
+                    </>)}
+                 {selectedTab === 'alarms' && (
+                <>
+                <Typography variant='h5' paddingLeft={'2%'} color={darkTheme?'#FFFFFF':'#124D81'} paddingTop={'3%'}>Alarms</Typography>
+                <Stack direction={'row'} width={'100%'} justifyContent={'space-between'} marginTop={'3%'}>
+                    <IconButton sx={{height:'50px', width:'50px', borderRadius:'100px', marginTop:'auto', marginBottom:'auto',color:'blue'}} onClick={() => {if(selectAlarm>0){setSelectAlarm(selectAlarm-1)}}}><FontAwesomeIcon fontSize={'30px'} icon={faChevronLeft} style={{color:`${leftarrowcolor}`}}/></IconButton>
+                    <Box width={'100%'} display={'flex'} textAlign={'center'} justifyContent={'center'} flexWrap={'wrap'} >
+                    {alarmUI}
+                        {/* <div style={{marginTop:'2.5%', display:'flex', width:'100%', height:'100%', justifyContent:'space-evenly'}}></div>  */}
+                    </Box>
+                    <IconButton sx={{height:'50px', width:'50px', borderRadius:'100px', marginTop:'auto', marginBottom:'auto'}} onClick={() => {if(selectAlarm<newalarm.length){setSelectAlarm(selectAlarm+1)}}}><FontAwesomeIcon fontSize={'30px'} icon={faChevronRight} style={{color:`${rightarrowcolor}`}} /></IconButton>  
+                </Stack>
+                {/* onClick={() => {setTableVisible(!tableVisisble)}} endIcon={tableVisisble ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />} */}
+                <Button sx={{width:'20%', height:'50px', marginLeft:'40%', marginTop:'3%', marginBottom:'3%', borderRadius:'50px', color:'#111522', backgroundColor:'white', border:'0.5px solid grey', fontWeight:50, boxShadow: `0px 0px 10px 1px #6e6f88`, textTransform:'capitalize'}}  endIcon={tableVisisble ? <KeyboardArrowUpIcon sx={{ fontSize: 80 }} /> : <KeyboardArrowDownIcon sx={{ fontSize: 80 }}  />} onClick={() => { handleClick();setTableVisible(!tableVisisble);}}> 
+                <Box sx={{ fontWeight: 'regular', m: 1, fontSize:16, }}>Alarm Log</Box>
+                </Button>
+                <div  style={{ width:'100%'}} >
+                {tableVisisble && <Table  infscrollfunc={infscrollfunc} rows={rows} columns={columns}/>}
+                {/* <div ref={scrollto} style={{width:'100px', height:'20px', backgroundColor:'red', marginTop:tableVisisble ? '300px'  : '0px'}}></div> */}
+                </div>
+                {/* <div style={{width:'10px', height:'10px', backgroundColor:'yellow'}} ref={scrollto}></div> */}
+                </>
+                 )}
+              </Box>
+) : (    
             <Dialog
                 open={props.isDialogOpened}
                 sx={{
@@ -1882,7 +2288,7 @@ items.forEach((item) => {
                     sm: '90%',
                     md: '70%',
                     lg: '70%',
-                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundColor: darkTheme?'#2F3D4A': '#FFFFFF'}}}
+                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundColor: darkTheme?'#000000': '#FFFFFF'}}}
                 >
                 <DialogTitle
                     sx={{
@@ -1940,9 +2346,18 @@ items.forEach((item) => {
                             aria-label="selected tab"
                             sx={{ width: '100%', marginBottom: '20px' }} // Full width and marginBottom
                         >
-                            <ToggleButton value="overview" sx={{ width: '100%'}} style={{ backgroundColor: selectedTab === 'overview' ? '#124D81' : '#F3F2F7',color: selectedTab === 'overview' ? '#F3F2F7' : '#124D81'}}>Overview</ToggleButton>
-                            <ToggleButton value="trends" sx={{ width: '100%' }} style={{ backgroundColor: selectedTab === 'trends' ? '#124D81' : '#F3F2F7',color: selectedTab === 'trends' ? '#F3F2F7' : '#124D81' }}>Trends</ToggleButton>
-                            <ToggleButton value="alarms" sx={{ width: '100%' }} style={{ backgroundColor: selectedTab === 'alarms' ? '#124D81' : '#F3F2F7',color: selectedTab === 'alarms' ? '#F3F2F7' : '#124D81'  }}>Alarms</ToggleButton>
+                            <ToggleButton value="overview" sx={{ width: '100%'}} style={{
+                  backgroundColor: darkTheme ? (selectedTab === 'overview' ? '#CACACA' : '#1C1C1E') : (selectedTab === 'overview' ? '#1C1C1E' : '#CACACA'),
+                  color: darkTheme ? (selectedTab === 'overview' ? '#000000' : '#D9D9D9') :(selectedTab === 'overview' ? '#D9D9D9' : '#000000') 
+                }}>Overview</ToggleButton>
+                            <ToggleButton value="trends" sx={{ width: '100%' }}  style={{
+                  backgroundColor: darkTheme ? (selectedTab === 'trends' ? '#CACACA' : '#1C1C1E') :(selectedTab === 'trends' ? '#1C1C1E' : '#CACACA') ,
+                  color: darkTheme ?  (selectedTab === 'trends' ? '#000000' : '#D9D9D9')  : (selectedTab === 'trends' ? '#D9D9D9' : '#000000')
+                }}>Trends</ToggleButton>
+                            <ToggleButton value="alarms" sx={{ width: '100%' }} style={{
+                  backgroundColor: darkTheme ? (selectedTab === 'alarms' ? '#CACACA' : '#1C1C1E')  : (selectedTab === 'alarms' ? '#1C1C1E' : '#CACACA') ,
+                  color: darkTheme ? (selectedTab === 'alarms' ? '#000000' : '#D9D9D9') : (selectedTab === 'alarms' ? '#D9D9D9' : '#000000') 
+                }}>Alarms</ToggleButton>
                                                     
                         </ToggleButtonGroup>
                     </Stack>
@@ -2251,6 +2666,7 @@ items.forEach((item) => {
                  )}
                 </DialogContent>
             </Dialog>
+        )}
         </React.Fragment>
     )
 }

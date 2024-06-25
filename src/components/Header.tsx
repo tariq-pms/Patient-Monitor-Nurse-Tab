@@ -11,7 +11,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { Avatar, Typography } from '@material-ui/core';
 import MenuIcon from '@mui/icons-material/Menu';
 import PersonIcon from '@mui/icons-material/Person';
-
+import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import SearchIcon from '@mui/icons-material/Search';
 import DehazeIcon from '@mui/icons-material/Dehaze';
 import ViewCompactIcon from '@mui/icons-material/ViewCompact';
@@ -153,27 +153,20 @@ export const Header: FC<HeaderProps> = (props) => {
 }, [isAuthenticated,UserOrganization ]);
 
     useEffect(() => {
-  // Assuming userRole is set appropriately based on your authentication logic
-  if (UserRole === 'Hospital Technician' && (location.pathname === '/patient-monitor'  )) {
-    // Redirect to the appropriate page if the user tries to access an unauthorized page
-    navigate('/device-monitor');
-  }
-
+ 
   if (UserRole === 'Hospital Clinician' && (location.pathname === '/rooms' || location.pathname === '/Admin' || location.pathname === '/device-monitor'  )) {
-    // Redirect to the appropriate page if the user tries to access an unauthorized page
-    navigate('/patient-monitor'); // You might want to redirect to another page or show an error
+   navigate('/patient-monitor');
   }
 
   if (UserRole === 'Phoenix' && location.pathname !== '/organization') {
-    // Redirect to the Phoenix page if the user is authenticated with the role "Phoenix"
-    navigate('/organization');
+  navigate('/organization');
   }
 }, [isAuthenticated, UserRole, location.pathname, navigate]);
 
     const handleBackButtonClick = () => {
     setNotHome(true)
     if(UserRole === 'Hospital Technician' ){
-      navigate('/device-monitor')
+      navigate('/central-monitor')
     }
     else{
       navigate('/patient-monitor')
@@ -181,11 +174,7 @@ export const Header: FC<HeaderProps> = (props) => {
     setRoom(prevRoom || props.currentRoom); // Display the previous room name if available, else the current room
   };
    
-  
-  // function setSearchQuery(value: string): void {
-  //   throw new Error('Function not implemented.');
-  // }
-
+ 
   return (
     
     <Box sx={{ flexGrow: 1 }}>
@@ -272,7 +261,7 @@ export const Header: FC<HeaderProps> = (props) => {
                               })}
                             
               <MenuItem value="R&D" sx={{width: '250px',padding: '6%', paddingLeft:'20px',backgroundColor: '#F3F2F7', color: '#124D81',borderTop:'1px solid black'}} onClick={() => {navigate('/rooms');setNotHome(false);setPrevRoom(room);}}>Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }}/></MenuItem>
-              <MenuItem value="R&D" sx={{width: '250px',padding: '6%',paddingLeft: '20px',backgroundColor: '#F3F2F7', color: '#124D81'}}onClick={handleAdminClick}>Admin Access <PersonIcon sx={{ marginLeft: 'auto' }} /></MenuItem>
+              {/* <MenuItem value="R&D" sx={{width: '250px',padding: '6%',paddingLeft: '20px',backgroundColor: '#F3F2F7', color: '#124D81'}}onClick={handleAdminClick}>Admin Access <PersonIcon sx={{ marginLeft: 'auto' }} /></MenuItem> */}
                           </Select>
                           </FormControl>
                       </>
@@ -321,32 +310,24 @@ export const Header: FC<HeaderProps> = (props) => {
                         
                       </>
                     )}
-                   {/* <div style={{ marginLeft: '25px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                   
-      <IconButton onClick={toggleDarkTheme}   sx={{backgroundColor:darkTheme ? '#124D81' : '#FFFFFF',height:'40px',width:'40px' }}>
-        <BedtimeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.4rem' }} />
-      </IconButton>
-                    </div> */}
-                   
+  
                     <div style={{ display: 'flex', alignItems: 'center' }}>
              
               <IconButton   onClick={handleMenu}   sx={{height:'40px',width:'40px' }}>
-        
-        {/* <AccountCircle style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} /> */}
         < DehazeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} />
         
       </IconButton>
       <Menu
       anchorEl={anchorEl}
       open={state}
+    
       onClose={() => { setAnchorEl(null); }}
       MenuListProps={{ disablePadding: true }}
     >
       <Box width={'270px'} sx={{ backgroundColor: darkTheme ? '#000000' : '#F3F2F7', color: darkTheme ? '' : '#124D81',border:'3px solid  grey' }}>
-      <Stack direction={'row'} width={'100%'} padding={'5px'}>
-          <Avatar style={{ marginTop: '5%', width: 70, height: 70 }}>
-            <Typography variant="h3">{String(user?.nickname)[0].toUpperCase()}</Typography>
-          </Avatar>
+      {/* <Stack direction={'row'} width={'100%'} padding={'5px'}>
+        <Box alignContent={'center'} >
+          <AccountCircleRoundedIcon/></Box>
           <Stack>
             <Typography variant="h6" style={{ marginLeft: '10%', marginTop: '2%' }}>
               {user?.nickname}
@@ -359,7 +340,23 @@ export const Header: FC<HeaderProps> = (props) => {
             </Typography>
           </Stack>
           
-        </Stack>
+        </Stack> */}
+        <Stack direction={'row'} width={'100%'} padding={'5px'} alignItems="center">
+  <Box alignContent={'center'} sx={{ marginRight: '10px' }}>
+    <AccountCircleRoundedIcon style={{ fontSize: '80px', color: darkTheme ? 'white' : '#124D81' }} />
+  </Box>
+  <Stack justifyContent="center">
+    <Typography variant="h6" style={{ color: darkTheme ? 'white' : '#124D81' }}>
+    {user?.nickname}
+    </Typography>
+    <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
+    {user?.email}
+    </Typography>
+    <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
+    {user?.role}
+    </Typography>
+  </Stack>
+</Stack>
 
         <Stack direction="row" justifyContent="flex-end" padding="5px">
           <Button
@@ -372,7 +369,7 @@ export const Header: FC<HeaderProps> = (props) => {
 
         <Divider sx={{ border: '0.3px solid grey' }} />
         <Stack alignItems="flex-start" sx={{ marginTop: '5px', marginLeft: '5px' }}>
-          <Typography variant="body1">View</Typography>
+          <Typography variant="subtitle1">View</Typography>
         </Stack>
         <Stack direction="row" width="100%" justifyContent="space-evenly" sx={{ marginY: '5px' }}>
         
@@ -387,9 +384,9 @@ export const Header: FC<HeaderProps> = (props) => {
           </IconButton>
          
         </Stack>
-        <Divider sx={{ border: '0.3px solid grey' }} />
+        {/* <Divider sx={{ border: '0.3px solid grey' }} /> */}
         <Stack direction="row" width="100%" justifyContent="space-between" alignItems="center" sx={{ padding: '5px' }}>
-          <Typography variant="subtitle2">Dark mode</Typography>
+          <Typography variant="subtitle1">Dark Mode</Typography>
           <Switch
             onChange={toggleDarkTheme}
             checked={darkTheme}
@@ -435,7 +432,7 @@ export const Header: FC<HeaderProps> = (props) => {
                       
                       </Stack>
                       )}
-{/* mobile view */}
+
                       <List>
                         <ListItemButton onClick={() => setSmallList(!smallList)}>
                           <ListItemText>
@@ -472,7 +469,8 @@ export const Header: FC<HeaderProps> = (props) => {
                         {notHome && UserRole === 'Hospital Technician' && (<>
                                   <MenuItem value="R&D" sx={{width: 'auto', padding: '6%', backgroundColor: '#131726', borderTop: '1px solid grey',}} onClick={() => {navigate('/rooms');setNotHome(false);setPrevRoom(room); } }>Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }} />
                                   </MenuItem>
-                                  <MenuItem value="R&D" sx={{width: '100%',padding: '6%',paddingLeft: '20px',backgroundColor: '#131726',textAlign:'space-between,'}}onClick={handleAdminClick}>Admin Access <PersonIcon sx={{ marginLeft: 'auto' }} /></MenuItem></> )}
+                                  {/* <MenuItem value="R&D" sx={{width: '100%',padding: '6%',paddingLeft: '20px',backgroundColor: '#131726',textAlign:'space-between,'}}onClick={handleAdminClick}>Admin Access <PersonIcon sx={{ marginLeft: 'auto' }} /></MenuItem> */}
+                                  </> )}
                           </List>
                           
                         </Collapse> 

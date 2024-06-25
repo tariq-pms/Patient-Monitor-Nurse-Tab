@@ -336,6 +336,7 @@ useEffect(() => {
             observation_resource={parentobs[String(device.resource.id)]}
             communication_resource={parentcomm[String(device.resource.id)]}
             darkTheme={darkTheme}
+            
         />
         )
     }}

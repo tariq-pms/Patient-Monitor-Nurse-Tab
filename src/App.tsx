@@ -15,7 +15,8 @@ import { DeviceMonitor } from "./pages/DeviceMonitor";
 import {AdminPage} from "./pages/AdminPage";
 import { Organization } from "./pages/Organization";
 import { AllPatient } from "./pages/AllPatient";
- 
+import{ CentralMonitor } from "./pages/CentralMonitor";
+
 const theme = createTheme({
   typography: {
     allVariants:{
@@ -45,6 +46,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [darkTheme, setDarkTheme] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState<string>("");
+ 
   useEffect(() => {
     if (isAuthenticated) {
       getIdTokenClaims()
@@ -90,6 +92,7 @@ function App() {
           <Route path="/device-monitor" element={<DeviceMonitor currentRoom={currentRoom} darkTheme={darkTheme}/>} />
           <Route path="/admin"  element={<AdminPage userOrganization={UserOrganization} darkTheme={darkTheme} />} />
           <Route path="/organization"  element={<Organization darkTheme={darkTheme}/>} />
+          <Route path="/central-monitor"  element={<CentralMonitor currentRoom={currentRoom} darkTheme={darkTheme} selectedIcon={selectedIcon} />} />
          
          
         </Routes>

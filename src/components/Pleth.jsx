@@ -390,7 +390,7 @@ const Pleth = ({ patientId }) => {
     const [dataPoints, setDataPoints] = useState(Array(600).fill(0)); // Initialize with zeros
     const [currentIndex, setCurrentIndex] = useState(0); // Initial index for inserting new data
     const width = 400;
-    const height = 110;
+    const height = 90;
     const margin = { top: 0, right: 0, bottom: 0, left: 0 };
 
     useEffect(() => {
@@ -429,8 +429,9 @@ const Pleth = ({ patientId }) => {
     useEffect(() => {
         const svg = d3
             .select(svgRef.current)
-            .attr("width", width)
-            .attr("height", height)
+            // .attr("width", width)
+            // .attr("height", height)
+            .attr("viewBox", `0 0 ${width} ${height}`)
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
 

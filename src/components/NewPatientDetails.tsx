@@ -1747,14 +1747,14 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
     return (
         <React.Fragment>
     {props.selectedIcon === 'vertical' ? (   
-        <Box
-  sx={{
+       <Box
+    sx={{
     height: '100%', // Set the height of the NewPatientDetails container to 100% of its parent
     overflowY: 'scroll', // Add a vertical scrollbar if content exceeds height
     minWidth: { xs: '90%', sm: '90%', md: '90%', lg: '100%' },
     maxWidth: { xs: '90%', sm: '90%', md: '90%', lg: '100%' },
     borderRadius: '25px',
-    border: '0.4px solid #505050',
+    border : '0.4px solid #505050',
     backgroundColor: darkTheme ? '#000000' : '#FFFFFF',
   }}
 >
@@ -1812,16 +1812,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
     >
       Alarms
     </ToggleButton>
-    <ToggleButton
-      value="patientinfo"
-      sx={{ width: '100%' }}
-      style={{
-        backgroundColor: darkTheme ? (selectedTab === 'patientinfo' ? '#CACACA' : '#1C1C1E')  : (selectedTab === 'patientinfo' ? '#1C1C1E' : '#CACACA') ,
-        color: darkTheme ? (selectedTab === 'patientinfo' ? '#000000' : '#D9D9D9') : (selectedTab === 'patientinfo' ? '#D9D9D9' : '#000000')
-      }}
-    >
-      Patient Info
-    </ToggleButton>
+    
   </ToggleButtonGroup>
 </Stack>
 
