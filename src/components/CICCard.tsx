@@ -5,7 +5,8 @@ import { FC, useEffect, useState } from 'react'
 // import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {  faBell, faPowerOff, } from '@fortawesome/free-solid-svg-icons'
-import { NewDeviceDetails } from './NewDeviceDetails';
+// import { NewDeviceDetails } from './NewDeviceDetails';
+import { NewDeviceDetails2 } from './NewDeviceDetails2';
 import Pleth from "./Pleth"
 
 export interface DeviceDetails {
@@ -67,6 +68,7 @@ onClick: () => void;
     "subject": {
         "reference": string;
     };
+    "effectiveDateTime":string;
     "device": {
         "reference": string;
     };
@@ -543,7 +545,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
           )}
             </Card>
             {props.selectedIcon !== 'vertical' && (
-        <NewDeviceDetails 
+        <NewDeviceDetails2 
               isDialogOpened={isOpen}
               handleCloseDialog={() => { console.log("MY BOI"); setIsOpen(false); } }
               observation_resource={props.observation_resource}
