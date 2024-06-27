@@ -56,6 +56,7 @@ export const CentralMonitorEDA: React.FC<CentralMonitorEDAProps> = ({ currentRoo
             patient: deviceData[device.deviceId]?.patient || null,
             observation_resource: deviceData[device.deviceId]?.observation ,
             communication_resource: deviceData[device.deviceId]?.communication ,
+            pleth_resource: deviceData[device.deviceId]?.pleth ,
             darkTheme,
             selectedIcon,
             onClick: () => handleDeviceCardClick(device),

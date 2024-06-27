@@ -7,7 +7,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {  faBell, faPowerOff, } from '@fortawesome/free-solid-svg-icons'
 // import { NewDeviceDetails } from './NewDeviceDetails';
 import { NewDeviceDetails2 } from './NewDeviceDetails2';
-import Pleth from "./Pleth"
+// import Pleth from "./Pleth"
+import PlethEDA from './PlethEDA';
 
 export interface DeviceDetails {
 onClick: () => void;
@@ -124,6 +125,12 @@ onClick: () => void;
                 }[];
             };
         }[];
+  };
+  pleth_resource: {
+    "device_id": string;
+    "patient_id": string;
+    "timestamp": string;
+    "data": number[];
   };
   darkTheme:boolean;
   selectedIcon:string;
@@ -280,7 +287,7 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
                             <Stack height={'60%'} width={'100%'}  direction={'row'}>
                                
                                 <Box width={'100%'} sx={{ padding: '10px' }}>
-                                <Pleth patientId={props.patient?.id}/>
+                                <PlethEDA patientId={props.patient?.id} pleth_resource={props.pleth_resource}/>
                                 </Box>
                             
                             </Stack>

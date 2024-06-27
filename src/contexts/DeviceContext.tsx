@@ -4,6 +4,7 @@ interface DeviceData {
     [key: string]: {
         communication?: any;
         observation?: any;
+        pleth?: any;
         patient?: any;
     };
 }
