@@ -323,14 +323,9 @@ const addButton = (index: any) => {
     const device = deviceList[Number(index)].resource;
     const patientReference = device.patient.reference;
 
-    // Ensure patientReference is a string before using split
     const patientReferenceString = patientReference as unknown as string;
-
-    // Extract patient ID from the patient reference
     const patientId = patientReferenceString.split("/")[1];
-    console.log("checking patient id in room card:", patientId);
 
-    // Fetch patient data first to get the existing extensions
     fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient/${patientId}`, {
         credentials: "omit",
         headers: {
@@ -339,16 +334,13 @@ const addButton = (index: any) => {
     })
     .then((response) => response.json())
     .then((patientData) => {
-        // Check if a location extension already exists
         const existingLocationIndex = patientData.extension.findIndex(
             (ext: { url: string }) => ext.url === 'http://hl7.org/fhir/StructureDefinition/patient-location'
         );
 
         if (existingLocationIndex !== -1) {
-            // Update the existing location extension
             patientData.extension[existingLocationIndex].valueReference.reference = `Location/${props.roomId}`;
         } else {
-            // Add a new location extension to the extensions array
             patientData.extension.push({
                 url: 'http://hl7.org/fhir/StructureDefinition/patient-location',
                 valueReference: { reference: `Location/${props.roomId}` }
@@ -366,11 +358,9 @@ const addButton = (index: any) => {
             },
         };
 
-        // Send request to update patient data with new extensions
         fetch(apiUrl, requestOptions)
         .then(response => {
             if (response.status === 200) {
-                // Update the device's location
                 let vvtemp = { "reference": `Location/${props.roomId}` };
                 data = {
                     ...device,
@@ -396,6 +386,16 @@ const addButton = (index: any) => {
                 setSnackSucc(true);
                 setDeviceChanged(!deviceChanged);
                 props.deviceChange();
+                console.log("internal add: ", device.id);
+
+                // Send POST request to notify server of the added device
+                fetch('http://sujiv-vostro-3401.local:9996/addDevice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ deviceId: device.id }),
+                });
             } else {
                 throw new Error("Failed to update device location");
             }
@@ -412,6 +412,143 @@ const addButton = (index: any) => {
         setSnackSucc(false);
     });
 };
+
+const removeButton = (index: number) => {
+    const device = deviceList[Number(index)].resource;
+    const { location, ...data } = device;
+
+    const apiUrl = `${import.meta.env.VITE_FHIRAPI_URL as string}/Device/${device.id}`;
+    const requestOptions: RequestInit = {
+        credentials: "omit",
+        method: "PUT",
+        body: JSON.stringify(data),
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+        },
+    };
+
+    fetch(apiUrl, requestOptions)
+    .then((response) => {
+        setSnack(true);
+        if (response.status === 200) {
+            setSnackSucc(true);
+            setDeviceChanged(!deviceChanged);
+            console.log("internal remove:", device.id);
+            // Send POST request to notify server of the removed device
+            fetch('http://sujiv-vostro-3401.local:9996/removeDevice', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ deviceId: device.id }),
+            });
+        } else {
+            setSnackSucc(false);
+        }
+    })
+    .catch(error => {
+        console.error("Error updating device:", error);
+        setSnack(true);
+        setSnackSucc(false);
+    });
+};
+
+
+// const addButton = (index: any) => {
+//     let data = {};
+//     const device = deviceList[Number(index)].resource;
+//     const patientReference = device.patient.reference;
+
+//     // Ensure patientReference is a string before using split
+//     const patientReferenceString = patientReference as unknown as string;
+
+//     // Extract patient ID from the patient reference
+//     const patientId = patientReferenceString.split("/")[1];
+//     console.log("checking patient id in room card:", patientId);
+
+//     // Fetch patient data first to get the existing extensions
+//     fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient/${patientId}`, {
+//         credentials: "omit",
+//         headers: {
+//             Authorization: "Basic " + btoa("fhiruser:change-password"),
+//         },
+//     })
+//     .then((response) => response.json())
+//     .then((patientData) => {
+//         // Check if a location extension already exists
+//         const existingLocationIndex = patientData.extension.findIndex(
+//             (ext: { url: string }) => ext.url === 'http://hl7.org/fhir/StructureDefinition/patient-location'
+//         );
+
+//         if (existingLocationIndex !== -1) {
+//             // Update the existing location extension
+//             patientData.extension[existingLocationIndex].valueReference.reference = `Location/${props.roomId}`;
+//         } else {
+//             // Add a new location extension to the extensions array
+//             patientData.extension.push({
+//                 url: 'http://hl7.org/fhir/StructureDefinition/patient-location',
+//                 valueReference: { reference: `Location/${props.roomId}` }
+//             });
+//         }
+
+//         const apiUrl = `${import.meta.env.VITE_FHIRAPI_URL as string}/Patient/${patientId}`;
+//         const requestOptions: RequestInit = {
+//             credentials: "omit",
+//             method: "PUT",
+//             body: JSON.stringify(patientData),
+//             headers: {
+//                 "Content-Type": "application/json",
+//                 Authorization: "Basic " + btoa("fhiruser:change-password"),
+//             },
+//         };
+
+//         // Send request to update patient data with new extensions
+//         fetch(apiUrl, requestOptions)
+//         .then(response => {
+//             if (response.status === 200) {
+//                 // Update the device's location
+//                 let vvtemp = { "reference": `Location/${props.roomId}` };
+//                 data = {
+//                     ...device,
+//                     location: vvtemp
+//                 };
+
+//                 return fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Device/${device.id}`, {
+//                     credentials: "omit",
+//                     method: "PUT",
+//                     body: JSON.stringify(data),
+//                     headers: {
+//                         "Content-Type": "application/json",
+//                         Authorization: "Basic " + btoa("fhiruser:change-password"),
+//                     },
+//                 });
+//             } else {
+//                 throw new Error("Failed to update patient data");
+//             }
+//         })
+//         .then(deviceResponse => {
+//             if (deviceResponse.status === 200) {
+//                 setSnack(true);
+//                 setSnackSucc(true);
+//                 setDeviceChanged(!deviceChanged);
+//                 props.deviceChange();
+//             } else {
+//                 throw new Error("Failed to update device location");
+//             }
+//         })
+//         .catch(error => {
+//             console.error("Error updating locations:", error);
+//             setSnack(true);
+//             setSnackSucc(false);
+//         });
+//     })
+//     .catch(error => {
+//         console.error("Error fetching patient data:", error);
+//         setSnack(true);
+//         setSnackSucc(false);
+//     });
+// };
 
 // const addButton = (index: any) => {
 //     let data = {}
@@ -437,37 +574,37 @@ const addButton = (index: any) => {
 //     })
 // }
 
-    const removeButton = (index: number) => {
-        // Get the device object from the list
-        const device = deviceList[Number(index)].resource;
+    // const removeButton = (index: number) => {
+    //     // Get the device object from the list
+    //     const device = deviceList[Number(index)].resource;
       
-        // Create a new object without the 'location' property
-        const { location, ...data } = device;
+    //     // Create a new object without the 'location' property
+    //     const { location, ...data } = device;
       
-        // Define the URL and request options
-        const apiUrl = ` ${import.meta.env.VITE_FHIRAPI_URL as string}/Device/${device.id}`;
-        const requestOptions: RequestInit = {
-          credentials: "omit",
-          method: "PUT",
-          body: JSON.stringify(data),
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Basic " + btoa("fhiruser:change-password"),
-          },
-        };
+    //     // Define the URL and request options
+    //     const apiUrl = ` ${import.meta.env.VITE_FHIRAPI_URL as string}/Device/${device.id}`;
+    //     const requestOptions: RequestInit = {
+    //       credentials: "omit",
+    //       method: "PUT",
+    //       body: JSON.stringify(data),
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         Authorization: "Basic " + btoa("fhiruser:change-password"),
+    //       },
+    //     };
       
-        // Send the PUT request
-        fetch(apiUrl, requestOptions)
-          .then((response) => {
-            setSnack(true);
-            if (response.status === 200) {
-              setSnackSucc(true);
-              setDeviceChanged(!deviceChanged);
-            } else {
-              setSnackSucc(false);
-            }
-          });
-      };
+    //     // Send the PUT request
+    //     fetch(apiUrl, requestOptions)
+    //       .then((response) => {
+    //         setSnack(true);
+    //         if (response.status === 200) {
+    //           setSnackSucc(true);
+    //           setDeviceChanged(!deviceChanged);
+    //         } else {
+    //           setSnackSucc(false);
+    //         }
+    //       });
+    //   };
     const [deleteDevice, setDeleteDevice] = useState(false)
     const [deleteRoom, setDeleteRoom] = useState(false)
     const removeRoomButton = () => {
