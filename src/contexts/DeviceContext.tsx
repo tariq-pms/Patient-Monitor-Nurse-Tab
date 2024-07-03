@@ -32,15 +32,52 @@ interface DeviceProviderProps {
 export const DeviceProvider: React.FC<DeviceProviderProps> = ({ children }) => {
     const [devices, setDevices] = useState<any[]>([]);
     const [deviceData, setDeviceData] = useState<DeviceData>({});
+    const [previousPatientIds, setPreviousPatientIds] = useState<{ [key: string]: string }>({});
 
     const updateDeviceData = (deviceId: string, dataType: string, data: any) => {
-        setDeviceData((prevData) => ({
-            ...prevData,
-            [deviceId]: {
-                ...prevData[deviceId],
-                [dataType]: data,
+        if (dataType === 'patient') {
+            setDeviceData((prevData) => ({
+                ...prevData,
+                [deviceId]: {
+                    ...prevData[deviceId],
+                    [dataType]: data,
+                },
+            }));
+        }
+        else{
+            setDeviceData((prevData) => ({
+                ...prevData,
+                [deviceId]: {
+                    ...prevData[deviceId],
+                    [dataType]: data.data,
+                },
+            }));
+        }
+        
+        console.log("DC: ",deviceId, dataType, data);
+        if (dataType === 'observation' && data.patient && previousPatientIds[deviceId] !== data.patient) {
+            setPreviousPatientIds((prevIds) => ({
+                ...prevIds,
+                [deviceId]: data.patient,
+            }));
+            fetchPatientData(deviceId, data.patient);
+        }
+    };
+
+    const fetchPatientData = (deviceId: string, patientId: string) => {
+        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient/${patientId}`, {
+            credentials: "omit",
+            headers: {
+                Authorization: "Basic " + btoa("fhiruser:change-password"),
             },
-        }));
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateDeviceData(deviceId, 'patient', data);
+        })
+        .catch(error => {
+            console.error('Error fetching patient data:', error);
+        });
     };
 
     useEffect(() => {
@@ -58,15 +95,15 @@ export const DeviceProvider: React.FC<DeviceProviderProps> = ({ children }) => {
         };
 
         socket.onmessage = (event) => {
-            const { type, device } = JSON.parse(event.data);
-
-            if (type === 'add') {
-                setDevices(prevDevices => [...prevDevices, device]);
-            } else if (type === 'remove') {
-                setDevices(prevDevices => prevDevices.filter(d => d.deviceId !== device.deviceId));
+            const message = JSON.parse(event.data);
+            if (message.type === 'add') {
+                setDevices(prevDevices => [...prevDevices, message.device]);
+                fetchPatientData(message.device.deviceId, message.device.patientId);
+            } else if (message.type === 'remove') {
+                setDevices(prevDevices => prevDevices.filter(d => d.deviceId !== message.device.deviceId));
             } else {
-                const { topic, data } = JSON.parse(event.data);
-                updateDeviceData(data.device_id, topic, data.data);
+                const { topic, data } = message;
+                updateDeviceData(data.device_id, topic, data);
             }
         };
 
@@ -82,19 +119,7 @@ export const DeviceProvider: React.FC<DeviceProviderProps> = ({ children }) => {
     useEffect(() => {
         devices.forEach(device => {
             if (device.patientId) {
-                fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient/${device.patientId}`, {
-                    credentials: "omit",
-                    headers: {
-                        Authorization: "Basic " + btoa("fhiruser:change-password"),
-                    },
-                })
-                .then(response => response.json())
-                .then(data => {
-                    updateDeviceData(device.deviceId, 'patient', data);
-                })
-                .catch(error => {
-                    console.error('Error fetching patient data:', error);
-                });
+                fetchPatientData(device.deviceId, device.patientId);
             } else {
                 console.warn('Device with missing patientId:', device);
             }

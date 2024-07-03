@@ -46,7 +46,7 @@ const PlethEDA = ({ patientId, pleth_resource }) => {
 
             if (Array.isArray(newPoints) && newPoints.length <= 500) {
                 const processedPoints = newPoints.map((point) => point * -1);
-                console.log(processedPoints);
+                // console.log(processedPoints);
 
                 const updatedData = [...dataPoints];
                 const newCurrentIndex =
