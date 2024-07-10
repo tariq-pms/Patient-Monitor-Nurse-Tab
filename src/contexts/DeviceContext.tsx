@@ -81,7 +81,7 @@ export const DeviceProvider: React.FC<DeviceProviderProps> = ({ children }) => {
     };
 
     useEffect(() => {
-        const socket = new WebSocket('ws://sujiv-vostro-3401.local:9995/');
+        const socket = new WebSocket(`${import.meta.env.VITE_STREAMSOCKET_URL as string}`);
 
         socket.onopen = () => {
             console.log('WebSocket connection established');

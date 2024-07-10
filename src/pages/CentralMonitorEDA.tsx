@@ -23,7 +23,7 @@ export const CentralMonitorEDA: React.FC<CentralMonitorEDAProps> = ({ currentRoo
     useEffect(() => {
         if (currentRoom !== "") {
             setIsLoading(true);
-            fetch(`http://sujiv-vostro-3401.local:9996/devices?room=${currentRoom}`, {
+            fetch(`${import.meta.env.VITE_DEVICEDATA_URL as string}/devices?room=${currentRoom}`, {
                 // credentials: "omit",
                 // headers: {
                 //     Authorization: "Basic " + btoa("fhiruser:change-password"),

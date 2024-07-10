@@ -386,10 +386,10 @@ const addButton = (index: any) => {
                 setSnackSucc(true);
                 setDeviceChanged(!deviceChanged);
                 props.deviceChange();
-                console.log("internal add: ", device.id);
+                console.log("Internal add: ", device.id);
 
                 // Send POST request to notify server of the added device
-                fetch('http://sujiv-vostro-3401.local:9996/addDevice', {
+                fetch(`${import.meta.env.VITE_DEVICEDATA_URL as string}/addDevice`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -434,9 +434,9 @@ const removeButton = (index: number) => {
         if (response.status === 200) {
             setSnackSucc(true);
             setDeviceChanged(!deviceChanged);
-            console.log("internal remove:", device.id);
+            console.log("Internal remove: ", device.id);
             // Send POST request to notify server of the removed device
-            fetch('http://sujiv-vostro-3401.local:9996/removeDevice', {
+            fetch(`${import.meta.env.VITE_DEVICEDATA_URL as string}/removeDevice`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
