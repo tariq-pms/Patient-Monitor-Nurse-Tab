@@ -156,7 +156,7 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
             setAlarm(props.communication_resource.extension[0].valueCodeableConcept.coding[i].display)
             break
         }else{
-            setAlarmColor('yellow')
+            setAlarmColor('#F3AF00')
             setAlarm(props.communication_resource.extension[0].valueCodeableConcept.coding[i].display)
         }
     }

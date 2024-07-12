@@ -32,8 +32,7 @@ export const Table: FC<rowsandcolumns> = (props) => {
     useKeysAsHeaders: false,
     headers: props.columns.map((c) => c.header),
   };
-  
-  const csvExporter = new ExportToCsv(csvOptions);
+ const csvExporter = new ExportToCsv(csvOptions);
   const handleExportData = () => {
     csvExporter.generateCsv(props.rows);
   };
@@ -61,7 +60,7 @@ export const Table: FC<rowsandcolumns> = (props) => {
 
                 ? 'rgb(254,255,244)' //random light yellow color for the background in light mode
 
-                : '#111522', //pure black table in dark mode for fun
+                : '#00000', //pure black table in dark mode for fun
 
           },
 
@@ -214,7 +213,7 @@ export const Table: FC<rowsandcolumns> = (props) => {
 
             muiTableHeadCellProps={{    // For the Header
               sx:{
-                backgroundImage:'linear-gradient(to bottom, #34405D, #151E2F, #34405D)'      
+                backgroundImage:'linear-gradient(to bottom, #000000, #000000, #000000)'      
               }
             }}
 
@@ -247,9 +246,7 @@ export const Table: FC<rowsandcolumns> = (props) => {
               sx:{
               }
             }}
-            
-
-            muiBottomToolbarProps={{
+             muiBottomToolbarProps={{
               sx:{        
                 // visibility:'hidden',          //Responsible for parent of footer
                 // backgroundColor:'yellow',

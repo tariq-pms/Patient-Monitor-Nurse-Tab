@@ -1,4 +1,4 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button,  Box, Stack, Typography, Divider, IconButton, ToggleButtonGroup, ToggleButton, Tooltip } from '@mui/material'
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button,  Box, Stack, Typography, Divider, IconButton, ToggleButtonGroup, ToggleButton, Tooltip, CircularProgress } from '@mui/material'
 import React, { FC, useEffect, useMemo, useRef, useState } from 'react'
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -296,6 +296,7 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
     const [timeFrame, setTimeFrame] = useState(-1)
     const [times, setTimes] = useState<Array<any>>([])
     const [dataset, setDataSet] = useState([[{}]])
+    const [loading, setLoading] = useState(false);
     const heaterYaxis = {
         "%": "y",
         "C": "y1",
@@ -543,7 +544,7 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
                     display: true,
                     drawOnChartArea: true,
                     drawTicks: true,
-                    color: 'grey'
+                    color:darkTheme? 'grey':'black'
                 },
                 
             },
@@ -552,7 +553,7 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
             display: true,
             position: 'left' as const,
             grid: {
-                color: '#303030',
+                color: darkTheme? 'grey':'black',
                 drawOnChartArea: true,
               },
             title: {
@@ -569,7 +570,7 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
             display: true,
             position: 'right' as const,
             grid: {
-                color: '#303030',  
+                color: darkTheme? 'grey':'black',  
               drawOnChartArea: false,
             },
             title: {
@@ -587,7 +588,7 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
     useEffect(() => {
         console.log('Patient props:', props.patient);
       }, [props.patient]);
-    const weightOption = {
+      const weightOption = {
         animation: false,
         tension: 0.3,
         responsive: true,
@@ -636,17 +637,26 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
         scales: {
             x: {
                 ticks: {
-                    color:darkTheme? 'white':'black',
+               
+                    color:darkTheme? 'white':'black' ,
                     autoSkip: true,
                     maxTicksLimit: 10
-                }
+                },
+             
+                grid: {
+                    display: true,
+                    drawOnChartArea: true,
+                    drawTicks: true,
+                    color:darkTheme? 'grey':'black'
+                },
+                
             },
           y: {     //g
             type: 'linear' as const,
             display: true,
             position: 'left' as const,
             grid: {
-                color: '#303030',
+                color: darkTheme? 'grey':'black',
                 drawOnChartArea: true,
               },
             title: {
@@ -701,34 +711,45 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
         scales: {
             x: {
                 ticks: {
-                    color:darkTheme? 'white':'black',
+               
+                    color:darkTheme? 'white':'black' ,
                     autoSkip: true,
                     maxTicksLimit: 10
-                }
+                },
+                border: {
+                    display: true
+                },
+                grid: {
+                    display: true,
+                    drawOnChartArea: true,
+                    drawTicks: true,
+                    color:darkTheme? 'grey':'black'
+                },
+                
             },
-          y: {      // Celcius
-            type: 'linear' as const,
-            display: true,
-            position: 'left' as const,
-            title: {
-                color:darkTheme? 'white':'black',
+            y: {      // Celcius
+                type: 'linear' as const,
                 display: true,
-                text: "Percentage (%)"
-            },
-            ticks: {
-                color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
-            },
-            grid: {
-                color: '#303030',
-                drawOnChartArea: true,
+                position: 'left' as const,
+                grid: {
+                    color: darkTheme? 'grey':'black',
+                    drawOnChartArea: true,
+                  },
+                title: {
+                    color:darkTheme?'white':'black',
+                    display: true,
+                    text: "Percentage (%)"
+                },
+                ticks: {
+                    color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
+                }
               },
-              
-          },
           y1: {     // %
             type: 'linear' as const,
             display: true,
             position: 'right' as const,
             grid: {
+                color: darkTheme? 'white':'black',  
                 drawOnChartArea: false,
               },
             title: {
@@ -1303,59 +1324,103 @@ items.forEach((item) => {
         setRows(x)
         setNewAlarm(y)
     },[communication])
+    // useEffect(() => {
+    //     if(props.communication_resource?.id!=null){
+    //         var x: { date: string; time: string; alarm: string[][]; }[] = []
+    //         var y: { date: string; time: { val: string; alarm: string[]; priority: string[]; }; }[] = []
+    //         if(props.communication_resource.extension){
+    //             console.log(props.communication_resource.sent)
+    //             const lastUpdatedDate = new Date(props.communication_resource.sent);
+    //             // y.push({                                                                                 // This is for live updation of the new alarm ui
+    //             //     date: (lastUpdatedDate.toLocaleDateString()),
+    //             //     time: {
+    //             //         val: (lastUpdatedDate.toLocaleTimeString()),
+    //             //         alarm: data.extension[0].valueCodeableConcept.coding.map((val: { display: any; }) => {return val.display}),
+    //             //         priority: data.extension[1].valueCodeableConcept.coding.map((val: { display: any; }) => {return val.display})
+    //             //     }
+    //             //     })
+    //             y.push({
+    //                 date: (lastUpdatedDate.toLocaleDateString()),
+    //                 time: {
+    //                     val: (lastUpdatedDate.toLocaleTimeString()),
+    //                     alarm:  props.communication_resource.extension[0].valueCodeableConcept.coding.map((val) => {return val.display?.toString() || ''}),
+    //                     priority:  props.communication_resource.extension[1].valueCodeableConcept.coding.map((val) => {return val.display?.toString() || ''})
+    //                 }
+    //             })
+    //             var xx: string[][] = []
+    //             props.communication_resource.extension[0].valueCodeableConcept.coding.map((val, index) => 
+    //             {  
+    //                 xx.push([val.display.toString(), props.communication_resource.extension[1].valueCodeableConcept.coding[index].display.toString()])
+
+
+                
+    //             }
+    //             )
+
+
+    //             x.push({
+    //                 date: (lastUpdatedDate.toLocaleDateString()),
+    //                 time: (lastUpdatedDate.toLocaleTimeString()),
+    //                 alarm: xx,
+    //             })
+    //             // console.log(y)
+    //             // console.log(newalarm)
+    //             // setNewAlarm((rows) => [y, ...rows])
+
+    //             x.map((val) => {
+    //                 setRows((rows) => [val,...rows])
+    //             })
+    //             y.map((val) => {
+    //                 setNewAlarm((rows) => [val,...rows])
+    //             })
+                
+    //         }
+    //     }
+    // },[props.communication_resource])
     useEffect(() => {
-        if(props.communication_resource?.id!=null){
+        if (props.communication_resource?.id != null) {
             var x: { date: string; time: string; alarm: string[][]; }[] = []
             var y: { date: string; time: { val: string; alarm: string[]; priority: string[]; }; }[] = []
-            if(props.communication_resource.extension){
+            if (props.communication_resource.extension) {
                 console.log(props.communication_resource.sent)
                 const lastUpdatedDate = new Date(props.communication_resource.sent);
-                // y.push({                                                                                 // This is for live updation of the new alarm ui
-                //     date: (lastUpdatedDate.toLocaleDateString()),
-                //     time: {
-                //         val: (lastUpdatedDate.toLocaleTimeString()),
-                //         alarm: data.extension[0].valueCodeableConcept.coding.map((val: { display: any; }) => {return val.display}),
-                //         priority: data.extension[1].valueCodeableConcept.coding.map((val: { display: any; }) => {return val.display})
-                //     }
-                //     })
-                y.push({
-                    date: (lastUpdatedDate.toLocaleDateString()),
-                    time: {
-                        val: (lastUpdatedDate.toLocaleTimeString()),
-                        alarm:  props.communication_resource.extension[0].valueCodeableConcept.coding.map((val) => {return val.display.toString()}),
-                        priority:  props.communication_resource.extension[1].valueCodeableConcept.coding.map((val) => {return val.display.toString()})
-                    }
-                })
-                var xx: string[][] = []
-                props.communication_resource.extension[0].valueCodeableConcept.coding.map((val, index) => 
-                {  
-                    xx.push([val.display.toString(), props.communication_resource.extension[1].valueCodeableConcept.coding[index].display.toString()])
-
-
-                
+    
+                const extensions = props.communication_resource.extension;
+                if (extensions[0]?.valueCodeableConcept?.coding && extensions[1]?.valueCodeableConcept?.coding) {
+                    y.push({
+                        date: (lastUpdatedDate.toLocaleDateString()),
+                        time: {
+                            val: (lastUpdatedDate.toLocaleTimeString()),
+                            alarm: extensions[0].valueCodeableConcept.coding.map((val) => val.display?.toString() || ''),
+                            priority: extensions[1].valueCodeableConcept.coding.map((val) => val.display?.toString() || '')
+                        }
+                    })
+    
+                    var xx: string[][] = []
+                    extensions[0].valueCodeableConcept.coding.map((val, index) => {
+                        xx.push([
+                            val.display?.toString() || '',
+                            extensions[1].valueCodeableConcept.coding[index]?.display?.toString() || ''
+                        ])
+                    })
+    
+                    x.push({
+                        date: (lastUpdatedDate.toLocaleDateString()),
+                        time: (lastUpdatedDate.toLocaleTimeString()),
+                        alarm: xx,
+                    })
+    
+                    x.map((val) => {
+                        setRows((rows) => [val, ...rows])
+                    })
+                    y.map((val) => {
+                        setNewAlarm((rows) => [val, ...rows])
+                    })
                 }
-                )
-
-
-                x.push({
-                    date: (lastUpdatedDate.toLocaleDateString()),
-                    time: (lastUpdatedDate.toLocaleTimeString()),
-                    alarm: xx,
-                })
-                // console.log(y)
-                // console.log(newalarm)
-                // setNewAlarm((rows) => [y, ...rows])
-
-                x.map((val) => {
-                    setRows((rows) => [val,...rows])
-                })
-                y.map((val) => {
-                    setNewAlarm((rows) => [val,...rows])
-                })
-                
             }
         }
-    },[props.communication_resource])
+    }, [props.communication_resource])
+    
 
     function getDataForGraph(page: number, when: string) {
 
@@ -1427,10 +1492,12 @@ items.forEach((item) => {
         let currentmonth = (Number(currentNewDate.getMonth())+1).toString().padStart(2,'0')
         let currentyear = currentNewDate.getFullYear()
         let currentDate = currentyear+"-"+currentmonth+"-"+currentdate
+        console.log('current date', currentDate)
         if(timeFrame!=-1){
+            setLoading(true);
             if(timeFrame==0){
                 let prevdate = ""
-                url.push(`${import.meta.env.VITE_FHIRAPI_URL as string}/Observation/${props.observation_resource?.id}/_history?_since=${currentDate}T00:00:00Z&_count=10000`)
+                url.push(`${import.meta.env.VITE_FHIRAPI_URL as string}/Observation/${props.observation_resource?.id}/_history?_since=${currentDate}T00:00:00Z&_count=1440`)
                 Promise.all(
                     url.map((query) => {
                         return fetch(query, {
@@ -1444,11 +1511,8 @@ items.forEach((item) => {
                         .then((data) => {
         
                             if(data.total===0){return null}
-                            if(((data.entry[0].resource.effectiveDateTime).toString())==prevdate){return null}
-                            
-                            prevdate = (data.entry[0].resource.effectiveDateTime).toString()
-        
-                            
+                            if(((data.entry[0].resource.meta.lastUpdated).toString())==prevdate){return null}
+                            prevdate = (data.entry[0].resource.meta.lastUpdated).toString()
                             return (data.entry.map((val: any)=>(val)))
                             
                         })
@@ -1458,50 +1522,22 @@ items.forEach((item) => {
                 .then((results) => {
                     const dats = results.filter((entry) => entry!==null)
                     .reduce((accumulator, currentvalue) => accumulator.concat(currentvalue),[])
-                    console.log(dats)
-                    setObservation(dats.reverse())
+                    console.log(dats);
+                    setObservation(dats.reverse());
+                    setLoading(false);
                 })
             }
             else{
                 
                 getDataForGraph(1,currentDate+"T00:00:00Z").then((result: any) => {
-                    setObservation(result.reverse())
+                    setObservation(result.reverse());
+                    setLoading(false); 
                 })
     
-                // console.log(x)
-                // for (let incrementDate = 0; incrementDate < 7 ; incrementDate++) {
-                //     let weekNewDate = new Date(currentNewDate.setDate(currentNewDate.getDate() - incrementDate));
-                //     let weekdate = weekNewDate.getUTCDate().toString().padStart(2,'0')
-                //     let weekmonth = (Number(weekNewDate.getMonth())+1).toString().padStart(2,'0')
-                //     let weekyear = weekNewDate.getUTCFullYear()
-                //     let weekDate = weekyear+"-"+weekmonth+"-"+weekdate
-                //     // url.push(`http://pmscloud.in:9444/fhir-server/api/v4/Observation/${observation_resource?.id}/_history?_count=1&_since=${weekDate}T00:00:00Z`)
-                //     for (let index2 = 0; index2 < 24; index2++) {
-                //         url.push(`http://pmscloud.in:9444/fhir-server/api/v4/Observation/${props.observation_resource?.id}/_history?_count=1&_since=${weekDate}T${index2.toString().padStart(2,'0')}:00:00Z`)
-                //     }
-                    
-                                    
-                // }
-                // url.push(`http://pmscloud.in:9444/fhir-server/api/v4/Observation/${props.observation_resource?.id}/_history?_count=1`)
-                // fetch(`http://pmscloud.in:9444/fhir-server/api/v4/Observation/${props.observation_resource?.id}/_history?_count=1`,{
-                //     credentials:'omit',
-                //     method:'GET',
-                //     headers: {
-                //         Authorization: "Basic "+ btoa("fhiruser:change-password")
-                //     }
-                // }).then((response) => response.json())
-                // .then((data) => {
-                //     pr
-                // })
+               
             }
         }
-        
-
-        // let temparr: any[] = []
-        
-
-        
-        //   })
+    
     },[timeFrame])
     useEffect(() => {
         console.log(observation)
@@ -1734,6 +1770,15 @@ items.forEach((item) => {
     useEffect(() => {props.handleCloseDialog()},[varq])
     const graph = useMemo(() => {
         console.log("New device details props: ",props);
+        if (loading) {
+            return (
+                <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={<Divider orientation='vertical' flexItem sx={{ marginLeft: '1%', backgroundColor: '#505050', color: '#505050' }} />}><CircularProgress/></Stack>
+
+            );
+           
+            
+           
+        }
         if(props.observation_resource?.identifier[0]?.value?.toString()=="PMS-CIC"){
             return (
                 <Stack width={'100%'} height={'100%'}  direction={'row'} justifyContent={'center'} divider={
@@ -1869,23 +1914,37 @@ items.forEach((item) => {
             )
         }
         return <div></div>
-    },[rendergraph])
+    },[rendergraph,loading])
     return (
         <React.Fragment>
            {props.selectedIcon === 'vertical' ? 
            (  
-            <Box
-            sx={{
-              height: '100%', // Set the height of the NewPatientDetails container to 100% of its parent
-              overflowY: 'scroll', // Add a vertical scrollbar if content exceeds height
-              minWidth: { xs: '90%', sm: '90%', md: '90%', lg: '100%' },
-              maxWidth: { xs: '90%', sm: '90%', md: '90%', lg: '100%' },
-              borderRadius: '25px',
-              border : '0.4px solid #505050',
-              backgroundColor: darkTheme ? '#000000' : '#FFFFFF',
-            }}
-          >
-                
+            <Box   sx={{
+                height: '100%', // Set the height of the NewPatientDetails container to 100% of its parent
+                overflowY: 'scroll', // Add a vertical scrollbar if content exceeds height
+                minWidth: { xs: '90%', sm: '90%', md: '90%', lg: '100%' },
+                maxWidth: { xs: '90%', sm: '90%', md: '90%', lg: '100%' },
+                borderRadius: '20px',
+                border : '0.4px solid #505050',
+                backgroundColor: darkTheme ? '#000000' : '#FFFFFF','&::-webkit-scrollbar': {
+        width: '10px',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        backgroundColor: darkTheme ? '#888' : '#ccc',
+        borderRadius: '10px',
+        border: '2px solid transparent',
+        backgroundClip: 'content-box',
+      },
+      '&::-webkit-scrollbar-thumb:hover': {
+        backgroundColor: darkTheme ? '#555' : '#aaa',
+      },
+      '&::-webkit-scrollbar-track': {
+        backgroundColor: darkTheme ? '#333' : '#f1f1f1',
+        borderRadius: '10px',
+      },
+              }}
+            >
+                 <Box>
                   <Stack direction={'row'} sx={{ justifyContent: 'space-between',padding:'10px', marginLeft: 'auto', marginRight: 'auto' }}>
                     <Stack direction={'row'} >
                     <Typography variant="h6" color={darkTheme?'#FFFFFF': '#2F3D4A'} fontWeight={'regular'} >
@@ -1979,7 +2038,7 @@ items.forEach((item) => {
                     sx={{display: "flex",flexWrap: "wrap",gap: { xs: "2rem",sm: "2rem",md: "4rem",lg: "4rem",xl: "4rem"},
                     mt: {xs: 5,sm: 6,md: 7,lg: 8,},
                     mb: {xs: 5,sm: 6,md: 7,lg: 8,},
-                    justifyContent: "center",}}>
+                    justifyContent: "center",padding:'5px'}}>
                     <Stack alignItems={'center'} spacing={'10px'}>
                     <Typography variant="subtitle1" color={darkTheme?'#FFFFFF':'#124D81'}  >
                         {props.newData && props.observation_resource?.component[0]?.code.text}
@@ -2132,7 +2191,7 @@ items.forEach((item) => {
                     {selectedTab === 'trends' && (
                 <>
                 {props.observation_resource?.identifier[0]?.value?.toString()!="PMS-SYRINGE" &&
-                                <div style={{marginTop:'25px'}}>
+                                <div style={{padding:'25px'}}>
                                 {   
                                         graphData && (<>
                                         <Stack direction={'row'} width={"100%"} justifyContent={'space-between'}>
@@ -2140,21 +2199,53 @@ items.forEach((item) => {
                                                 Export
                                         </Button> */}
                                         <Stack width={'100%'} direction={{ xs: 'row', sm: 'row', md:'row', lg:'column' }} marginBottom={{ xs: '30px', sm: '30px', md:'20px', lg:'20px' }}>
-                                        <Typography variant='h5' paddingLeft={'2%'} color={darkTheme?'#FFFFFF':'#124D81'}>Trends</Typography>
-                                        <Stack width={'100%'} direction={'row'}  textAlign={'center'}  >
-                                           <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'1%',backgroundColor:'grey', }}>
-                                                <ToggleButton value={0} key="left" sx={{height:'30px', width:'50px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(0)}}>
-                                                Day
+
+                                        <Stack width={'100%'} direction={'row-reverse'}  textAlign={'start'}  >
+                                        <IconButton  sx={{height:'30px', width:'40px', color:darkTheme?'#000000':'white', borderRadius:'5px',backgroundColor:darkTheme?'#CACACA':'#1C1C1E'}} onClick={() => {setDownloadConfirmation(true)}}><FileDownloadIcon  /></IconButton>
+                                        <ToggleButtonGroup
+    value={timeFrame}
+    exclusive
+    size="small"
+    sx={{
+        marginLeft: 'auto',
+        marginRight: '1%',
+        backgroundColor: `${darkTheme ? '#1C1C1E' : '#CACACA'} !important`,
+        '& .MuiToggleButton-root': { color: darkTheme ? 'white' : 'black' },
+        '& .Mui-selected': {
+            backgroundColor: `${darkTheme ? '#CACACA' : '#000000'} !important`,
+           
+            color: darkTheme ? '#000000' : '#FFFFFF',
+        },
+    }}
+>
+                                                <ToggleButton value={0} key="left" sx={{height:'30px', width:'50px',  fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(0)}}>
+                                                24 Hr
                                                 </ToggleButton>,
                                                 <ToggleButton value={1} key="center" sx={{height:'30px', width:'55px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(1)}}>
                                                     1 Week
                                                 </ToggleButton>,
-                                                <ToggleButton value={2} key="right" sx={{height:'30px', width:'58px', borderTopRightRadius:'20px',borderBottomRightRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(2)}}>
+                                                <ToggleButton value={2} key="right" sx={{height:'30px', width:'58px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(2)}}>
                                                     2 Weeks
                                                 </ToggleButton>
+                                                
                                             </ToggleButtonGroup>
-                                            <ToggleButtonGroup value={S_and_D} exclusive size="small" sx={{marginRight:'1%',backgroundColor:'grey', '& .MuiToggleButton-root': {color:'white'},'& .Mui-selected': {backgroundColor: '#124D81',},}}>
-                                                <ToggleButton value={0} key="left" sx={{height:'30px', width:'80px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {
+                                            
+                                            <ToggleButtonGroup
+    value={S_and_D}
+    exclusive
+    size="small"
+    sx={{
+        marginRight: '1%',
+        backgroundColor: `${darkTheme ? '#1C1C1E' : '#CACACA'} !important`,
+        
+        '& .MuiToggleButton-root': { color:`${darkTheme ? 'white' : 'black'} !important`},
+        '& .Mui-selected': {
+            backgroundColor: `${darkTheme ? '#CACACA' : 'black'} !important`,
+            color: `${darkTheme ? '#000000' : '#FFFFFF'} !important`,
+        },
+    }}
+>
+                                                <ToggleButton value={0} key="left" sx={{height:'30px', width:'80px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {
                                                     setS_and_D(0)
                                                     let temp: any[] = []
                                                     chartRef1.current.data.datasets.forEach((dataset: { label: any; }, datasetIndex: any) => {
@@ -2176,7 +2267,7 @@ items.forEach((item) => {
                                                 }}>
                                                     Select all
                                                 </ToggleButton>
-                                                <ToggleButton value={1} key="right" sx={{height:'30px', width:'80px', borderTopRightRadius:'20px',borderBottomRightRadius:'20px', fontSize:'10px', textTransform:'capitalize'}}  onClick={() => {
+                                                <ToggleButton value={1} key="right" sx={{height:'30px', width:'80px',  fontSize:'10px', textTransform:'capitalize'}}  onClick={() => {
                                                     setS_and_D(1)
                                                     chartRef1.current.data.datasets.forEach((_dataset: any, datasetIndex: any) => {
                                                         chartRef1.current.setDatasetVisibility(datasetIndex, false);
@@ -2195,21 +2286,21 @@ items.forEach((item) => {
                                                     Deselect all
                                                 </ToggleButton>
                                             </ToggleButtonGroup>
-                                            <Button color="primary" startIcon={<FileDownloadIcon />} variant="contained" sx={{  borderRadius:'25px', width:'100px', height:'30px', textTransform:'capitalize', fontSize:'10px', color:'white'}} onClick={() => {
+                                            {/* <Button color="primary"  variant="contained" sx={{  width:'10px', height:'30px', textTransform:'capitalize', color:'white'}} onClick={() => {
                                                 setDownloadConfirmation(true)
                                             }}>
-                                                Download
-                                            </Button>
-                                        </Stack>
-                                        </Stack>
+                                              <FileDownloadIcon />
+                                            </Button> */}
+                                             
+                                        </Stack></Stack>
                                         <Dialog
                                             open={downloadConfirmation}
                                             onClose={() => {setDownloadConfirmation(false)}}
                                             scroll='paper'
-                                            PaperProps={{style:{borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', minWidth:'400px', minHeight:'200px'}}} // borderRadius:'3%', boxShadow: `0px 0px 20px 10px #7B7B7B`, border:'1px solid #7B7B7B
+                                            PaperProps={{style:{borderRadius:'25px', border:'0.4px solid #505050', backgroundColor:'#000000', minWidth:'400px', minHeight:'200px'}}} // borderRadius:'3%', boxShadow: `0px 0px 20px 10px #7B7B7B`, border:'1px solid #7B7B7B
                                         >
                                             <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', padding:'9%'}}>
-                                                {`Confirm Download data of the following parameters` }
+                                                {`Download data of the following parameters` }
                                             </DialogTitle>
                                             <DialogContent sx={{textAlign:"center", marginBottom:'auto', paddingBottom:'9%'}}>
                                                 <Stack marginLeft={'auto'} marginRight={'auto'} width={'70%'} spacing={'5px'} justifyContent={'center'} textAlign={'center'}>
@@ -2224,14 +2315,11 @@ items.forEach((item) => {
                                                 <Stack direction={'row'} width={'100%'} justifyContent={'space-around'}>    
                                                 <Box sx={{minWidth:'90px', minHeight:'45px'}} onClick={() => {setDownloadConfirmation(false)}}><CustomNoButton text="Cancel"></CustomNoButton></Box>
                                                 
-                                                <Box sx={{minWidth:'90px', minHeight:'45px'}} onClick={handleExportData}><CustomOkButton text="Confirm"></CustomOkButton></Box>
+                                                <Box sx={{minWidth:'90px', minHeight:'45px'}} onClick={handleExportData}><CustomOkButton text="Download"></CustomOkButton></Box>
                                                 </Stack>
                                                 
                                             </DialogActions>
-                                        </Dialog>
-                                        
-                
-                                        </Stack>
+                                        </Dialog></Stack>
                                         
                                         {/* <div style={{justifyContent:'center'}}>
                                             
@@ -2272,7 +2360,7 @@ items.forEach((item) => {
                 {/* <div style={{width:'10px', height:'10px', backgroundColor:'yellow'}} ref={scrollto}></div> */}
                 </>
                  )}
-              </Box>
+              </Box></Box>
 ) : (    
             <Dialog
                 open={props.isDialogOpened}
@@ -2339,7 +2427,22 @@ items.forEach((item) => {
 
                     
                 </DialogTitle>
-                <DialogContent dividers={true} sx={{justifyContent:'center', overflowY: 'scroll'}}>
+                <DialogContent dividers={true} sx={{justifyContent:'center', overflowY: 'scroll', '&::-webkit-scrollbar': {
+      width: '10px',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: darkTheme ? '#888' : '#ccc',
+      borderRadius: '10px',
+      border: '2px solid transparent',
+      backgroundClip: 'content-box',
+    },
+    '&::-webkit-scrollbar-thumb:hover': {
+      backgroundColor: darkTheme ? '#555' : '#aaa',
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: darkTheme ? '#333' : '#f1f1f1',
+      borderRadius: '10px',
+    },}}>
                 {/* <Box width={'60px'} height={'30px'} borderRadius={'25px'} sx={{backgroundColor:'red', marginLeft:'auto', opacity:`${liveOpacity ? '1':'0'}`, textAlign:'center'}}>
                     <Typography>LIVE</Typography>
                 </Box> */}
@@ -2524,8 +2627,7 @@ items.forEach((item) => {
                     justifyContent: "center"}}><Typography variant='h6' sx={{fontWeight:'bold', paddingTop:'1%', opacity:'0.5'}}>{props.newData && 'Oximeter Not connected'}{!props.newData && ''}</Typography>
                     </Box>}
                     </> )}
-
-                <Divider sx={{marginTop:'20px', backgroundColor:'grey', color:'grey'}}/>
+ 
                 {selectedTab === 'trends' && (
                 <>
                 {props.observation_resource?.identifier[0]?.value?.toString()!="PMS-SYRINGE" &&
@@ -2537,21 +2639,53 @@ items.forEach((item) => {
                                                 Export
                                         </Button> */}
                                         <Stack width={'100%'} direction={{ xs: 'row', sm: 'row', md:'row', lg:'column' }} marginBottom={{ xs: '30px', sm: '30px', md:'20px', lg:'20px' }}>
-                                        <Typography variant='h5' paddingLeft={'2%'} color={darkTheme?'#FFFFFF':'#124D81'}>Trends</Typography>
-                                        <Stack width={'100%'} direction={'row'}  textAlign={'center'}  >
-                                           <ToggleButtonGroup value={timeFrame} exclusive size="small" sx={{marginLeft:'auto', marginRight:'1%',backgroundColor:'grey', }}>
-                                                <ToggleButton value={0} key="left" sx={{height:'30px', width:'50px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(0)}}>
-                                                Day
+
+                                        <Stack width={'100%'} direction={'row-reverse'}  textAlign={'start'}  >
+                                        <IconButton  sx={{height:'30px', width:'40px', color:darkTheme?'#000000':'white', borderRadius:'5px',backgroundColor:darkTheme?'#CACACA':'#1C1C1E'}} onClick={() => {setDownloadConfirmation(true)}}><FileDownloadIcon  /></IconButton>
+                                        <ToggleButtonGroup
+    value={timeFrame}
+    exclusive
+    size="small"
+    sx={{
+        marginLeft: 'auto',
+        marginRight: '1%',
+        backgroundColor: `${darkTheme ? '#1C1C1E' : '#CACACA'} !important`,
+        '& .MuiToggleButton-root': { color: darkTheme ? 'white' : 'black' },
+        '& .Mui-selected': {
+            backgroundColor: `${darkTheme ? '#CACACA' : '#000000'} !important`,
+           
+            color: darkTheme ? '#000000' : '#FFFFFF',
+        },
+    }}
+>
+                                                <ToggleButton value={0} key="left" sx={{height:'30px', width:'50px',  fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(0)}}>
+                                                24 Hr
                                                 </ToggleButton>,
                                                 <ToggleButton value={1} key="center" sx={{height:'30px', width:'55px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(1)}}>
                                                     1 Week
                                                 </ToggleButton>,
-                                                <ToggleButton value={2} key="right" sx={{height:'30px', width:'58px', borderTopRightRadius:'20px',borderBottomRightRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(2)}}>
+                                                <ToggleButton value={2} key="right" sx={{height:'30px', width:'58px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {setTimeFrame(2)}}>
                                                     2 Weeks
                                                 </ToggleButton>
+                                                
                                             </ToggleButtonGroup>
-                                            <ToggleButtonGroup value={S_and_D} exclusive size="small" sx={{marginRight:'1%',backgroundColor:'grey', '& .MuiToggleButton-root': {color:'white'},'& .Mui-selected': {backgroundColor: '#124D81',},}}>
-                                                <ToggleButton value={0} key="left" sx={{height:'30px', width:'80px', borderTopLeftRadius:'20px',borderBottomLeftRadius:'20px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {
+                                            
+                                            <ToggleButtonGroup
+    value={S_and_D}
+    exclusive
+    size="small"
+    sx={{
+        marginRight: '1%',
+        backgroundColor: `${darkTheme ? '#1C1C1E' : '#CACACA'} !important`,
+        
+        '& .MuiToggleButton-root': { color:`${darkTheme ? 'white' : 'black'} !important`},
+        '& .Mui-selected': {
+            backgroundColor: `${darkTheme ? '#CACACA' : 'black'} !important`,
+            color: `${darkTheme ? '#000000' : '#FFFFFF'} !important`,
+        },
+    }}
+>
+                                                <ToggleButton value={0} key="left" sx={{height:'30px', width:'80px', fontSize:'10px', textTransform:'capitalize'}} onClick={() => {
                                                     setS_and_D(0)
                                                     let temp: any[] = []
                                                     chartRef1.current.data.datasets.forEach((dataset: { label: any; }, datasetIndex: any) => {
@@ -2573,7 +2707,7 @@ items.forEach((item) => {
                                                 }}>
                                                     Select all
                                                 </ToggleButton>
-                                                <ToggleButton value={1} key="right" sx={{height:'30px', width:'80px', borderTopRightRadius:'20px',borderBottomRightRadius:'20px', fontSize:'10px', textTransform:'capitalize'}}  onClick={() => {
+                                                <ToggleButton value={1} key="right" sx={{height:'30px', width:'80px',  fontSize:'10px', textTransform:'capitalize'}}  onClick={() => {
                                                     setS_and_D(1)
                                                     chartRef1.current.data.datasets.forEach((_dataset: any, datasetIndex: any) => {
                                                         chartRef1.current.setDatasetVisibility(datasetIndex, false);
@@ -2592,21 +2726,21 @@ items.forEach((item) => {
                                                     Deselect all
                                                 </ToggleButton>
                                             </ToggleButtonGroup>
-                                            <Button color="primary" startIcon={<FileDownloadIcon />} variant="contained" sx={{  borderRadius:'25px', width:'100px', height:'30px', textTransform:'capitalize', fontSize:'10px', color:'white'}} onClick={() => {
+                                            {/* <Button color="primary"  variant="contained" sx={{  width:'10px', height:'30px', textTransform:'capitalize', color:'white'}} onClick={() => {
                                                 setDownloadConfirmation(true)
                                             }}>
-                                                Download
-                                            </Button>
-                                        </Stack>
-                                        </Stack>
+                                              <FileDownloadIcon />
+                                            </Button> */}
+                                             
+                                        </Stack></Stack>
                                         <Dialog
                                             open={downloadConfirmation}
                                             onClose={() => {setDownloadConfirmation(false)}}
                                             scroll='paper'
-                                            PaperProps={{style:{borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', minWidth:'400px', minHeight:'200px'}}} // borderRadius:'3%', boxShadow: `0px 0px 20px 10px #7B7B7B`, border:'1px solid #7B7B7B
+                                            PaperProps={{style:{borderRadius:'25px', border:'0.4px solid #505050', backgroundColor:'#000000', minWidth:'400px', minHeight:'200px'}}} // borderRadius:'3%', boxShadow: `0px 0px 20px 10px #7B7B7B`, border:'1px solid #7B7B7B
                                         >
                                             <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', padding:'9%'}}>
-                                                {`Confirm Download data of the following parameters` }
+                                                {`Download data of the following parameters` }
                                             </DialogTitle>
                                             <DialogContent sx={{textAlign:"center", marginBottom:'auto', paddingBottom:'9%'}}>
                                                 <Stack marginLeft={'auto'} marginRight={'auto'} width={'70%'} spacing={'5px'} justifyContent={'center'} textAlign={'center'}>
@@ -2621,13 +2755,11 @@ items.forEach((item) => {
                                                 <Stack direction={'row'} width={'100%'} justifyContent={'space-around'}>    
                                                 <Box sx={{minWidth:'90px', minHeight:'45px'}} onClick={() => {setDownloadConfirmation(false)}}><CustomNoButton text="Cancel"></CustomNoButton></Box>
                                                 
-                                                <Box sx={{minWidth:'90px', minHeight:'45px'}} onClick={handleExportData}><CustomOkButton text="Confirm"></CustomOkButton></Box>
+                                                <Box sx={{minWidth:'90px', minHeight:'45px'}} onClick={handleExportData}><CustomOkButton text="Download"></CustomOkButton></Box>
                                                 </Stack>
                                                 
                                             </DialogActions>
                                         </Dialog>
-                                        
-                
                                         </Stack>
                                         
                                         {/* <div style={{justifyContent:'center'}}>
@@ -2643,13 +2775,13 @@ items.forEach((item) => {
                                     {
                                         !graphData && (<div></div>)
                                     } 
-                                    <Divider sx={{marginTop:'40px', backgroundColor:'white', color:'white'}} />           
+                                   
                                 </div>
                 }
                 </>)}
                 {selectedTab === 'alarms' && (
                 <>
-                <Typography variant='h5' paddingLeft={'2%'} color={darkTheme?'#FFFFFF':'#124D81'} paddingTop={'3%'}>Alarms</Typography>
+               
                 <Stack direction={'row'} width={'100%'} justifyContent={'space-between'} marginTop={'3%'}>
                     <IconButton sx={{height:'50px', width:'50px', borderRadius:'100px', marginTop:'auto', marginBottom:'auto',color:'blue'}} onClick={() => {if(selectAlarm>0){setSelectAlarm(selectAlarm-1)}}}><FontAwesomeIcon fontSize={'30px'} icon={faChevronLeft} style={{color:`${leftarrowcolor}`}}/></IconButton>
                     <Box width={'100%'} display={'flex'} textAlign={'center'} justifyContent={'center'} flexWrap={'wrap'} >
@@ -2675,4 +2807,3 @@ items.forEach((item) => {
         </React.Fragment>
     )
 }
-

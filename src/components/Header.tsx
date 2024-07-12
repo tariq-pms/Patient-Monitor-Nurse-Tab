@@ -10,7 +10,6 @@ import pmsLogo from '../assets/image 135.png';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Avatar, Typography } from '@material-ui/core';
 import MenuIcon from '@mui/icons-material/Menu';
-import PersonIcon from '@mui/icons-material/Person';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import SearchIcon from '@mui/icons-material/Search';
 import DehazeIcon from '@mui/icons-material/Dehaze';
@@ -38,15 +37,10 @@ export const Header: FC<HeaderProps> = (props) => {
   const location = useLocation();
   const theme = useTheme();
   const screenSize = useMediaQuery(theme.breakpoints.up('md'));
-  const { user, isLoading, isAuthenticated, logout, getIdTokenClaims } = useAuth0();
+  const {user, isLoading, isAuthenticated, logout, getIdTokenClaims} = useAuth0();
   const[UserRole, setUserRole] = useState("");
   const[UserOrganization, setUserOrganization] = useState("");
-  const handleAdminClick = () => {
-    navigate('/Admin');
-    setNotHome(false);
-    setPrevRoom(room);
-  };  
-  
+ 
   const handleIconClick = (icon: string) => {
     props.setSelectedIcon(icon); // This should work correctly now
   };
@@ -72,9 +66,8 @@ export const Header: FC<HeaderProps> = (props) => {
     },
   ]);
 
-  const [room, setRoom] = useState('');
-  // const [darkMode, setDarkMode] = useState("");
-  const handleSetRoom = (event: SelectChangeEvent) => {
+  const [room, setRoom] = useState(temproom.length > 0 ? String(temproom[0].resource.name) : '');
+ const handleSetRoom = (event: SelectChangeEvent) => {
     setRoom(event.target.value);
     props.roomChange(
       temproom[
@@ -85,8 +78,7 @@ export const Header: FC<HeaderProps> = (props) => {
     );
   };
   const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
+ useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -106,20 +98,16 @@ export const Header: FC<HeaderProps> = (props) => {
       ].resource.id
     );
   }
-  const [prevRoom, setPrevRoom] = useState('');
+ const [prevRoom, setPrevRoom] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const state = Boolean(anchorEl);
   const [temp, settemp] = useState(false)
-   // Assuming 'view' is the default selected icon
+ const { darkTheme, toggleDarkTheme } = props;
 
-  
-  
-  const { darkTheme, toggleDarkTheme } = props;
-  
-    useEffect(() => {
+ useEffect(() => {
     getIdTokenClaims()
     .then((res) => {
       console.log('Role:', res);
@@ -127,10 +115,7 @@ export const Header: FC<HeaderProps> = (props) => {
       setUserOrganization(res?.organization);
        console.log("organization is here",UserOrganization )
        if (isAuthenticated) {
-        // Fetch location data for the specified organization
-        
-        //fetch(` https://pmsind.co.in:5000/Location`, {
-        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?organization=${UserOrganization}`, {
+       fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?organization=${UserOrganization}`, {
           credentials: 'omit',
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -152,8 +137,7 @@ export const Header: FC<HeaderProps> = (props) => {
     });
 }, [isAuthenticated,UserOrganization ]);
 
-    useEffect(() => {
- 
+ useEffect(() => {
   if (UserRole === 'Hospital Clinician' && (location.pathname === '/rooms' || location.pathname === '/Admin' || location.pathname === '/device-monitor'  )) {
    navigate('/patient-monitor');
   }
@@ -171,13 +155,12 @@ export const Header: FC<HeaderProps> = (props) => {
     else{
       navigate('/patient-monitor')
     }
-    setRoom(prevRoom || props.currentRoom); // Display the previous room name if available, else the current room
+    setRoom(prevRoom || props.currentRoom); 
   };
    
  
   return (
-    
-    <Box sx={{ flexGrow: 1 }}>
+   <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" style={{ background: 'transparent', boxShadow: 'none' }} sx={{ boxShadow: '0px 5px 5px 0px yellow' }}>
         <Toolbar>
           {!isLoading && isAuthenticated && (
@@ -235,35 +218,37 @@ export const Header: FC<HeaderProps> = (props) => {
                )}
               {screenSize ? (
                 <>
-                  {/* Your content for larger screens */}
-                  <Stack direction={'row'} justifyContent={'center'} textAlign={'center'} >
+                <Stack direction={'row'} justifyContent={'center'} textAlign={'center'} >
                     {notHome && UserRole === 'Hospital Technician' && (
                       <>
-                        {/* <CustomSwitch onChange={handleDMSChange} checked={darkMode} /> */}
-                        <Divider orientation="vertical" flexItem sx={{ marginRight: '20px', marginLeft: '20px' }} />
-                        <FormControl variant="standard" sx={{ width: '200px',backgroundColor: darkTheme ? '':'#F3F2F7' }}>
-                        {/* <InputLabel id="demo-simple-select-standard-label" disabled sx={{  color: darkTheme? 'white':'#124D81 !important' }}>Room</InputLabel> */}
-                          <Select label="Room" onChange={handleSetRoom} value={room}  MenuProps={{MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81',color: '#FFFFFF',},},}}sx={{ color: darkTheme?'white': '#124D81' }}>
+                       
+                       <FormControl
+  variant="standard"
+  sx={{
+    width: '160px',
+    borderRadius: '16px',
+    height:'35px',
+    backgroundColor: darkTheme ? '#1C1C1E' : '#FFFFFF',
+    '& .MuiInput-underline:before': { // Remove underline before focus
+      borderBottom: 'none',
+    },
+    
+    '& .MuiInput-underline:hover:not(.Mui-disabled):before': { // Remove underline on hover
+      borderBottom: 'none',
+    },
+  }}
+>
+                        <Select label="Room" onChange={handleSetRoom} value={room}  MenuProps={{MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81',color: '#FFFFFF',},},}}sx={{ color: darkTheme?'white': 'grey' }}>
                             {temproom.map((room) => {
                                  return (
-                               <MenuItem key={room.resource.id} onClick={() => {
-                                    setNotHome(true);
-                                    
-                                  }}
-                                  value={String(room.resource.name)}
-                                  sx={{justifyContent: 'center',padding: '6%',backgroundColor: '#F3F2F7',color: '#124D81'}}
-                                  // disabled={UserRole === 'Hospital Technician'}
-                                >
-                                  {/* {room.resource.name.toString()} */} 
-                                  {room.resource.name.toString()}
+                               <MenuItem key={room.resource.id} onClick={() => {setNotHome(true);}} value={String(room.resource.name)} sx={{justifyContent: 'center',padding: '6%',backgroundColor: '#F3F2F7',color: '#124D81'}}>
+                                {room.resource.name.toString()}
                                 </MenuItem>
                                  );
                               })}
                             
               <MenuItem value="R&D" sx={{width: '250px',padding: '6%', paddingLeft:'20px',backgroundColor: '#F3F2F7', color: '#124D81',borderTop:'1px solid black'}} onClick={() => {navigate('/rooms');setNotHome(false);setPrevRoom(room);}}>Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }}/></MenuItem>
-              {/* <MenuItem value="R&D" sx={{width: '250px',padding: '6%',paddingLeft: '20px',backgroundColor: '#F3F2F7', color: '#124D81'}}onClick={handleAdminClick}>Admin Access <PersonIcon sx={{ marginLeft: 'auto' }} /></MenuItem> */}
-                          </Select>
-                          </FormControl>
+            </Select> </FormControl>
                       </>
                     )}
                     {notHome && UserRole === 'Hospital Clinician' && (
@@ -305,12 +290,12 @@ export const Header: FC<HeaderProps> = (props) => {
             
                     </Select>
                         </FormControl>
-                        <Divider orientation="vertical" flexItem sx={{ marginLeft: '20px' }} />
+                       
                   
                         
                       </>
                     )}
-  
+  <Divider orientation="vertical" flexItem sx={{ marginRight: '20px',backgroundColor: darkTheme ? '#1C1C1E' : '#D6D6D6', marginLeft: '20px' }} />
                     <div style={{ display: 'flex', alignItems: 'center' }}>
              
               <IconButton   onClick={handleMenu}   sx={{height:'40px',width:'40px' }}>
@@ -318,39 +303,30 @@ export const Header: FC<HeaderProps> = (props) => {
         
       </IconButton>
       <Menu
-      anchorEl={anchorEl}
-      open={state}
-    
-      onClose={() => { setAnchorEl(null); }}
-      MenuListProps={{ disablePadding: true }}
-    >
-      <Box width={'270px'} sx={{ backgroundColor: darkTheme ? '#000000' : '#F3F2F7', color: darkTheme ? '' : '#124D81',border:'3px solid  grey' }}>
-      {/* <Stack direction={'row'} width={'100%'} padding={'5px'}>
-        <Box alignContent={'center'} >
-          <AccountCircleRoundedIcon/></Box>
-          <Stack>
-            <Typography variant="h6" style={{ marginLeft: '10%', marginTop: '2%' }}>
-              {user?.nickname}
-            </Typography>
-            <Typography variant="caption" style={{ marginLeft: '10%', marginTop: '1%' }}>
-              {user?.email}
-            </Typography>
-            <Typography variant="subtitle2" style={{ marginLeft: '10%', marginTop: '2%' }}>
-              {user?.role}
-            </Typography>
-          </Stack>
-          
-        </Stack> */}
+  anchorEl={anchorEl}
+  open={state}
+  onClose={() => { setAnchorEl(null); }}
+  MenuListProps={{ disablePadding: true }}
+  sx={{
+    '& .MuiPaper-root': {
+      borderRadius: '16px'
+    }
+  }}
+>
+      <Box width={'270px'} sx={{ backgroundColor: darkTheme ? '#000000' : '#F3F2F7', color: darkTheme ? '' : '#124D81',border:'4px solid  #AEAEAE',borderRadius:'16px' }}>
+     
         <Stack direction={'row'} width={'100%'} padding={'5px'} alignItems="center">
-  <Box alignContent={'center'} sx={{ marginRight: '10px' }}>
-    <AccountCircleRoundedIcon style={{ fontSize: '80px', color: darkTheme ? 'white' : '#124D81' }} />
+  <Box alignContent={'center'} sx={{ marginRight: '8px',marginTop:'0px' }}>
+    <AccountCircleRoundedIcon style={{ fontSize: '44px', color: darkTheme ? 'white' : '#124D81' }} />
   </Box>
   <Stack justifyContent="center">
     <Typography variant="h6" style={{ color: darkTheme ? 'white' : '#124D81' }}>
     {user?.nickname}
+    
     </Typography>
     <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
     {user?.email}
+   
     </Typography>
     <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
     {user?.role}
@@ -358,7 +334,7 @@ export const Header: FC<HeaderProps> = (props) => {
   </Stack>
 </Stack>
 
-        <Stack direction="row" justifyContent="flex-end" padding="5px">
+        <Stack direction="row" justifyContent="flex-end" paddingBottom="12px" paddingRight="22px">
           <Button
             onClick={() => logout()}
             sx={{ backgroundColor: '#124D81', color: 'white', textTransform: 'capitalize' }}
@@ -367,8 +343,8 @@ export const Header: FC<HeaderProps> = (props) => {
           </Button>
         </Stack>
 
-        <Divider sx={{ border: '0.3px solid grey' }} />
-        <Stack alignItems="flex-start" sx={{ marginTop: '5px', marginLeft: '5px' }}>
+        <Divider sx={{ border: '0.3px solid #AEAEAE' }} />
+        <Stack alignItems="flex-start" sx={{ marginTop: '5px', paddingLeft: '22px' }}>
           <Typography variant="subtitle1">View</Typography>
         </Stack>
         <Stack direction="row" width="100%" justifyContent="space-evenly" sx={{ marginY: '5px' }}>
@@ -385,12 +361,13 @@ export const Header: FC<HeaderProps> = (props) => {
          
         </Stack>
         {/* <Divider sx={{ border: '0.3px solid grey' }} /> */}
-        <Stack direction="row" width="100%" justifyContent="space-between" alignItems="center" sx={{ padding: '5px' }}>
-          <Typography variant="subtitle1">Dark Mode</Typography>
+        <Stack direction="row" width="100%" justifyContent="space-around"   >
+          <Typography variant="subtitle1" style={{marginRight:'50px'}}>Dark Mode</Typography>
           <Switch
             onChange={toggleDarkTheme}
             checked={darkTheme}
             sx={{
+              
               '& .MuiSwitch-switchBase.Mui-checked': {
                 color: '#FFFFFF',
                 '&:hover': {
