@@ -139,12 +139,12 @@ export const RoomCard: FC<roomData> = (props) => {
     //     }
     // ]);
     
-const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState(false);
     const [deviceChanged, setDeviceChanged] = useState(false)
     useEffect(() => {setDeviceChanged(!deviceChanged)},[props.deviceChangeToggle])
     const [renameRoom, setRenameRoom] = useState(false)
     useEffect(() => {
-        fetch(` ${import.meta.env.VITE_FHIRAPI_URL as string}/Device?_count=20`, {
+        fetch(` ${import.meta.env.VITE_FHIRAPI_URL as string}/Device?_count=40`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),

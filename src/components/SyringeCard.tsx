@@ -508,16 +508,15 @@ export const SyringeCard: FC<DeviceDetails> = (props): JSX.Element => {
           </Card>
         </ButtonBase>
         <NewDeviceDetails 
-        isDialogOpened={isOpen} 
-        handleCloseDialog={() => {console.log("MY BOI");setIsOpen(false)}}
-        observation_resource={props.observation_resource}
-        communication_resource={props.communication_resource}
-        device_id={props.device_id}
-        device_resource_id={props.device_resource_id}
-        patient={props.patient}
-        newData={newData}
-        darkTheme={props.darkTheme}
-        />
+                   isDialogOpened={isOpen}
+                   handleCloseDialog={() => { console.log("MY BOI"); setIsOpen(false); } }
+                   observation_resource={props.observation_resource}
+                   communication_resource={props.communication_resource}
+                   device_id={props.device_id}
+                   device_resource_id={props.device_resource_id}
+                   patient={props.patient}
+                   newData={newData}
+                   darkTheme={props.darkTheme} selectedIcon={''}        />
       </Box>
     );
   };

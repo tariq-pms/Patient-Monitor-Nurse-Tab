@@ -24,7 +24,8 @@ export const CentralMonitorEDA: React.FC<CentralMonitorEDAProps> = ({ currentRoo
         if (currentRoom !== "") {
             setIsLoading(true);
             fetch(`${import.meta.env.VITE_DEVICEDATA_URL as string}/devices?room=${currentRoom}`, {
-                // credentials: "omit",
+                
+                 credentials: "omit",
                 // headers: {
                 //     Authorization: "Basic " + btoa("fhiruser:change-password"),
                 // },

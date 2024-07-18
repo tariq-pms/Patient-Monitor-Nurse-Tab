@@ -16,7 +16,7 @@ import { Skeleton, Stack } from '@mui/material';
 import { BrammiCard } from '../components/BrammiCard';
 import { DeviceCard } from '../components/DeviceCard';
 import { SyringeCard } from '../components/SyringeCard';
-import { DummyCard } from '../components/DummyCard';
+//import { DummyCard } from '../components/DummyCard';
 
 
 interface DeviceMonitorProps{
@@ -319,11 +319,17 @@ useEffect(() => {
             key={String(device.resource.id)}
             device_id={String(device.resource.identifier[0].value)}
             device_resource_id={String(device.resource.id)}
-            patient= {patient[String(device.resource.id)]}//{device.resource.patient.reference.split("/")[1]}
+            patient={patient[String(device.resource.id)]} //{device.resource.patient.reference.split("/")[1]}
             observation_resource={parentobs[String(device.resource.id)]}
             communication_resource={parentcomm[String(device.resource.id)]}
-            darkTheme={darkTheme}
-        />
+            darkTheme={darkTheme} onClick={function (): void {
+              throw new Error('Function not implemented.');
+            } } pleth_resource={{
+              device_id: '',
+              patient_id: '',
+              timestamp: '',
+              data: []
+            }} selectedIcon={''}        />
         )
     }
     else{
@@ -335,8 +341,14 @@ useEffect(() => {
             patient={null}
             observation_resource={parentobs[String(device.resource.id)]}
             communication_resource={parentcomm[String(device.resource.id)]}
-            darkTheme={darkTheme}
-            
+            darkTheme={darkTheme} onClick={function (): void {
+              throw new Error('Function not implemented.');
+            } } pleth_resource={{
+              device_id: '',
+              patient_id: '',
+              timestamp: '',
+              data: []
+            }} selectedIcon={''}            
         />
         )
     }}
@@ -357,11 +369,17 @@ useEffect(() => {
               key={String(device.resource.id)}
               device_id={String(device.resource.identifier[0].value)}
               device_resource_id={String(device.resource.id)}
-              patient= {patient[String(device.resource.id)]}
+              patient={patient[String(device.resource.id)]}
               observation_resource={parentobs[String(device.resource.id)]}
               communication_resource={parentcomm[String(device.resource.id)]}
-              darkTheme={darkTheme}
-          />
+              darkTheme={darkTheme} onClick={function (): void {
+                throw new Error('Function not implemented.');
+              } } pleth_resource={{
+                device_id: '',
+                patient_id: '',
+                timestamp: '',
+                data: []
+              }} selectedIcon={''}          />
           )
       }
       else{
@@ -373,8 +391,14 @@ useEffect(() => {
               patient={null}
               observation_resource={parentobs[String(device.resource.id)]}
               communication_resource={parentcomm[String(device.resource.id)]}
-              darkTheme={darkTheme}
-          />
+              darkTheme={darkTheme} onClick={function (): void {
+                throw new Error('Function not implemented.');
+              } } pleth_resource={{
+                device_id: '',
+                patient_id: '',
+                timestamp: '',
+                data: []
+              }} selectedIcon={''}          />
           )
       }}
       })
@@ -394,11 +418,17 @@ useEffect(() => {
             key={String(device.resource.id)}
             device_id={String(device.resource.identifier[0].value)}
             device_resource_id={String(device.resource.id)}
-            patient= {patient[String(device.resource.id)]}//{device.resource.patient.reference.split("/")[1]}
+            patient={patient[String(device.resource.id)]} //{device.resource.patient.reference.split("/")[1]}
             observation_resource={parentobs[String(device.resource.id)]}
             communication_resource={parentcomm[String(device.resource.id)]}
-            darkTheme={darkTheme}
-        />
+            darkTheme={darkTheme} onClick={function (): void {
+              throw new Error('Function not implemented.');
+            } } pleth_resource={{
+              device_id: '',
+              patient_id: '',
+              timestamp: '',
+              data: []
+            }} selectedIcon={''}        />
         )
     }
     else{
@@ -410,8 +440,14 @@ useEffect(() => {
             patient={null}
             observation_resource={parentobs[String(device.resource.id)]}
             communication_resource={parentcomm[String(device.resource.id)]}
-            darkTheme={darkTheme}
-        />
+            darkTheme={darkTheme} onClick={function (): void {
+              throw new Error('Function not implemented.');
+            } } pleth_resource={{
+              device_id: '',
+              patient_id: '',
+              timestamp: '',
+              data: []
+            }} selectedIcon={''}        />
         )
     }}
     })
@@ -429,11 +465,12 @@ useEffect(() => {
             key={String(device.resource.id)}
             device_id={String(device.resource.identifier[0].value)}
             device_resource_id={String(device.resource.id)}
-            patient= {patient[String(device.resource.id)]}
+            patient={patient[String(device.resource.id)]}
             observation_resource={parentobs[String(device.resource.id)]}
             communication_resource={parentcomm[String(device.resource.id)]}
-            darkTheme={darkTheme}
-        />
+            darkTheme={darkTheme} onClick={function (): void {
+              throw new Error('Function not implemented.');
+            } } selectedIcon={''}        />
         )
     }
     else{
@@ -445,8 +482,9 @@ useEffect(() => {
             patient={null}
             observation_resource={parentobs[String(device.resource.id)]}
             communication_resource={parentcomm[String(device.resource.id)]}
-            darkTheme={darkTheme}
-            />
+            darkTheme={darkTheme} onClick={function (): void {
+              throw new Error('Function not implemented.');
+            } } selectedIcon={''}            />
         )
     }}
     })

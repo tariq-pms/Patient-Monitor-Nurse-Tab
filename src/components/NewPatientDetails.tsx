@@ -1,6 +1,6 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {Tooltip, Accordion,Card, CardContent, AccordionDetails, AccordionSummary, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Stack, ToggleButton, ToggleButtonGroup, Typography, MenuItem, Select } from "@mui/material";
+import {Tooltip, Accordion,AccordionDetails, AccordionSummary, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Stack, ToggleButton, ToggleButtonGroup, Typography, MenuItem, Select } from "@mui/material";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FC } from "react";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -16,7 +16,6 @@ import { MRT_ColumnDef } from "material-react-table";
 import { ExportToCsv } from "export-to-csv";
 import { DatePicker, LocalizationProvider } from "@mui/lab";
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 
 export interface PatientDetails {
@@ -1716,7 +1715,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
     const [gender, setGender] = useState('');
     const [expanded, setExpanded] = React.useState('');
 
-    const handleAccordionChange = (panel:any) => (event:any, isExpanded:any) => {
+    const handleAccordionChange = (panel:any) => (_event:any, isExpanded:any) => {
       setExpanded(isExpanded ? panel : '');
     };
   

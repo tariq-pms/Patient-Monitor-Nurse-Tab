@@ -1,13 +1,11 @@
 import { useState, useEffect, FC } from 'react'
-import { useAuth0 } from '@auth0/auth0-react';
+//import { useAuth0 } from '@auth0/auth0-react';
 import Box from '@mui/material/Box';
 import { RoomCard } from '../components/RoomCard';
-import { Alert, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle,  Paper, Snackbar, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Alert, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle,  Paper, Snackbar, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { CustomOkButton } from '../components/CustomOkButton';
 import { CustomNoButton } from '../components/CustomNoButton';
-import pmsLogo from '../assets/phx_logo.png';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 export interface roomdata{
   roomModified: Function;
   userOrganization: string;
@@ -15,7 +13,7 @@ export interface roomdata{
 }
 
 export const Rooms:FC<roomdata> = (props) => {
-    const {isAuthenticated, loginWithRedirect} = useAuth0();
+    //const {isAuthenticated, loginWithRedirect} = useAuth0();
     const theme = useTheme();
     const { darkTheme } = props;
     const [temproom, settemproom] = useState([{
@@ -39,7 +37,7 @@ export const Rooms:FC<roomdata> = (props) => {
     //const organizationId = '18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c'; // this is  organization identifier
     const [roomAddedRemoved, setRoomAddedRemoved] = useState(false)
     useEffect(() => {
-        if(isAuthenticated){
+        // if(isAuthenticated){
          
           console.log("In ROom Page:",props.userOrganization);
           //fetch(` https://pmsind.co.in:5000/Location`, {
@@ -57,7 +55,7 @@ export const Rooms:FC<roomdata> = (props) => {
           props.roomModified()
           settemproom(data.entry)
         }})
-        }  
+        // }  
     },[roomAddedRemoved])
     const [controlBorder, setControlboarder] = useState('grey')
     const [controlOpacity, setOpacity] = useState("0.8")
@@ -146,7 +144,7 @@ export const Rooms:FC<roomdata> = (props) => {
   return (
     
     <div>
-      {isAuthenticated && (
+      {/* {isAuthenticated && ( */}
         <div>
                 <Stack width={'100%'} direction={'row'} paddingTop={'2%'} justifyContent={'center'} textAlign={'center'}>
               <Typography variant='h5' color={darkTheme?'white':'#124D81'}>Rooms & Device Settings</Typography>
@@ -201,18 +199,18 @@ export const Rooms:FC<roomdata> = (props) => {
             {addNewRoomButton()}
         </div>
         </div>
-      )}
+      {/* )} */}
       {/* <Box width={'8%'} height={'50px'}><CustomOkButton text="YES"/></Box> */}
 
-      {!isAuthenticated && (
+      {/* {!isAuthenticated && (
         <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} >
           <img src={pmsLogo} alt="Phoenix" style={{
-            maxWidth: '20%', // Set the maximum width to 100%
-            height: 'auto', // Maintain the aspect ratio
+            maxWidth: '20%', 
+            height: 'auto', 
             marginLeft:'auto',
             marginRight:'auto'
           }}/>
-          <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
+          <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography> 
           <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
           <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
           <Button variant='outlined'sx={{width:'200px', height:'50px', borderRadius:'100px'}} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>
@@ -220,7 +218,7 @@ export const Rooms:FC<roomdata> = (props) => {
           
           </Stack>
         </Stack>
-      )}
+      )} */}
     </div>
   )
 }

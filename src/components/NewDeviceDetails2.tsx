@@ -585,6 +585,10 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
           
         },
     };
+    
+    
+
+
     useEffect(() => {
         console.log('Patient props:', props.patient);
       }, [props.patient]);
@@ -778,7 +782,7 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
     const alarmUI = newalarm[selectAlarm]?.time?.alarm.map((vals,index) => {
         if(newalarm[selectAlarm].time.priority[index]=="High Priority"){
             return (
-                <Box width={'200px'}  height={'110px'} sx={{border:'1px solid red', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px red`,backgroundColor:darkTheme?'#2F3D4A':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
+                <Box width={'200px'}  height={'110px'} sx={{border:'1px solid red', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px red`,backgroundColor:darkTheme?'#1C1C1E':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
                     <Typography variant='subtitle1' color={darkTheme?'white':'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
                         <Typography variant='subtitle2' color={darkTheme?'white':'#124D81'} >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
@@ -789,7 +793,7 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
         }
         if(newalarm[selectAlarm].time.priority[index]=="Medium Priority"){
             return (
-                <Box width={'200px'} height={'110px'} sx={{border:'1px solid #ffd700', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px #ffd700`,backgroundColor:darkTheme?'#2F3D4A':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
+                <Box width={'200px'} height={'110px'} sx={{border:'1px solid #ffd700', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px #ffd700`,backgroundColor:darkTheme?'#1C1C1E':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
                     <Typography variant='subtitle1'  color={darkTheme?'white':'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
                         <Typography variant='subtitle2'  color={darkTheme?'white':'#124D81'} >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
@@ -799,7 +803,7 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
         }
         if(newalarm[selectAlarm].time.priority[index]=="Low Priority"){
             return (
-                <Box width={'200px'} height={'110px'} sx={{border:'1px solid cyan', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px cyan`,backgroundColor:darkTheme?'#2F3D4A':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
+                <Box width={'200px'} height={'110px'} sx={{border:'1px solid cyan', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px cyan`,backgroundColor:darkTheme?'#1C1C1E':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
                     <Typography variant='subtitle1'  color={darkTheme?'white':'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
                         <Typography variant='subtitle2'  color={darkTheme?'white':'#124D81'}>{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
@@ -1775,10 +1779,7 @@ items.forEach((item) => {
                 <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={<Divider orientation='vertical' flexItem sx={{ marginLeft: '1%', backgroundColor: '#505050', color: '#505050' }} />}><CircularProgress/></Stack>
 
             );
-           
-            
-           
-        }
+       }
         if(props.observation_resource?.identifier[0]?.value?.toString()=="PMS-CIC"){
             return (
                 <Stack width={'100%'} height={'100%'}  direction={'row'} justifyContent={'center'} divider={
@@ -2032,14 +2033,15 @@ items.forEach((item) => {
           
                     {selectedTab === 'overview' && (
                     <>
-                    <Stack
+                     <Stack
                     direction={'row'}
-                    divider={<Divider orientation='vertical' flexItem/>}
-                    sx={{display: "flex",flexWrap: "wrap",gap: { xs: "2rem",sm: "2rem",md: "4rem",lg: "4rem",xl: "4rem"},
-                    mt: {xs: 5,sm: 6,md: 7,lg: 8,},
-                    mb: {xs: 5,sm: 6,md: 7,lg: 8,},
-                    justifyContent: "center",padding:'5px'}}>
-                    <Stack alignItems={'center'} spacing={'10px'}>
+                    // divider={<Divider orientation='vertical'  flexItem/>}
+                    sx={{display: "flex",flexWrap: "wrap",gap: { xs: "2rem",sm: "2rem",md: "0rem",lg: "0rem",xl: "4rem"},
+                    mt: {xs: 5,sm: 6,md: 5,lg: 5,},
+                    mb: {xs: 5,sm: 6,md: 4,lg: 4,},
+                    padding:'10px',
+                    justifyContent: "center"}}>
+                    <Stack alignItems={'center'} spacing={'5px'}>
                     <Typography variant="subtitle1" color={darkTheme?'#FFFFFF':'#124D81'}  >
                         {props.newData && props.observation_resource?.component[0]?.code.text}
                     </Typography>
@@ -2110,7 +2112,7 @@ items.forEach((item) => {
                     </Stack>
 
                     {props.newData && (
-                        <Divider sx={{marginTop:'20px'}} />
+                        <Divider sx={{marginTop:'10px',backgroundColor:'#1C1C1E' }} />
                     )}
                     
                     {props.newData?
@@ -2191,14 +2193,14 @@ items.forEach((item) => {
                     {selectedTab === 'trends' && (
                 <>
                 {props.observation_resource?.identifier[0]?.value?.toString()!="PMS-SYRINGE" &&
-                                <div style={{padding:'25px'}}>
+                                <div style={{padding:'2px'}}>
                                 {   
                                         graphData && (<>
                                         <Stack direction={'row'} width={"100%"} justifyContent={'space-between'}>
                                         {/* <Button color="primary" startIcon={<FileDownloadIcon />} variant="contained" sx={{width:'100px', marginLeft:'2%'}}>
                                                 Export
                                         </Button> */}
-                                        <Stack width={'100%'} direction={{ xs: 'row', sm: 'row', md:'row', lg:'column' }} marginBottom={{ xs: '30px', sm: '30px', md:'20px', lg:'20px' }}>
+                                        <Stack width={'100%'} direction={{ xs: 'row', sm: 'row', md:'row', lg:'column' }} marginBottom={{ xs: '30px', sm: '30px', md:'20px', lg:'20px' }} sx={{padding:'20px'}}>
 
                                         <Stack width={'100%'} direction={'row-reverse'}  textAlign={'start'}  >
                                         <IconButton  sx={{height:'30px', width:'40px', color:darkTheme?'#000000':'white', borderRadius:'5px',backgroundColor:darkTheme?'#CACACA':'#1C1C1E'}} onClick={() => {setDownloadConfirmation(true)}}><FileDownloadIcon  /></IconButton>
@@ -2214,7 +2216,7 @@ items.forEach((item) => {
         '& .Mui-selected': {
             backgroundColor: `${darkTheme ? '#CACACA' : '#000000'} !important`,
            
-            color: darkTheme ? '#000000' : '#FFFFFF',
+            color: `${darkTheme ? '#000000' : '#FFFFFF'} !important`,
         },
     }}
 >
@@ -2319,8 +2321,8 @@ items.forEach((item) => {
                                                 </Stack>
                                                 
                                             </DialogActions>
-                                        </Dialog></Stack>
-                                        
+                                        </Dialog>
+                                        </Stack>
                                         {/* <div style={{justifyContent:'center'}}>
                                             
                                         </div> */}
@@ -2338,9 +2340,9 @@ items.forEach((item) => {
                                 </div>
                 }
                     </>)}
-                 {selectedTab === 'alarms' && (
+                    {selectedTab === 'alarms' && (
                 <>
-                <Typography variant='h5' paddingLeft={'2%'} color={darkTheme?'#FFFFFF':'#124D81'} paddingTop={'3%'}>Alarms</Typography>
+               
                 <Stack direction={'row'} width={'100%'} justifyContent={'space-between'} marginTop={'3%'}>
                     <IconButton sx={{height:'50px', width:'50px', borderRadius:'100px', marginTop:'auto', marginBottom:'auto',color:'blue'}} onClick={() => {if(selectAlarm>0){setSelectAlarm(selectAlarm-1)}}}><FontAwesomeIcon fontSize={'30px'} icon={faChevronLeft} style={{color:`${leftarrowcolor}`}}/></IconButton>
                     <Box width={'100%'} display={'flex'} textAlign={'center'} justifyContent={'center'} flexWrap={'wrap'} >
@@ -2350,7 +2352,7 @@ items.forEach((item) => {
                     <IconButton sx={{height:'50px', width:'50px', borderRadius:'100px', marginTop:'auto', marginBottom:'auto'}} onClick={() => {if(selectAlarm<newalarm.length){setSelectAlarm(selectAlarm+1)}}}><FontAwesomeIcon fontSize={'30px'} icon={faChevronRight} style={{color:`${rightarrowcolor}`}} /></IconButton>  
                 </Stack>
                 {/* onClick={() => {setTableVisible(!tableVisisble)}} endIcon={tableVisisble ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />} */}
-                <Button sx={{width:'20%', height:'50px', marginLeft:'40%', marginTop:'3%', marginBottom:'3%', borderRadius:'50px', color:'#111522', backgroundColor:'white', border:'0.5px solid grey', fontWeight:50, boxShadow: `0px 0px 10px 1px #6e6f88`, textTransform:'capitalize'}}  endIcon={tableVisisble ? <KeyboardArrowUpIcon sx={{ fontSize: 80 }} /> : <KeyboardArrowDownIcon sx={{ fontSize: 80 }}  />} onClick={() => { handleClick();setTableVisible(!tableVisisble);}}> 
+                <Button sx={{width:'20%', height:'50px', marginLeft:'40%', marginTop:'3%', marginBottom:'3%', borderRadius:'50px', color:darkTheme? 'white':'#1C1C1E', backgroundColor:darkTheme?'#1C1C1E':'white', border:'0.5px solid grey', fontWeight:50, textTransform:'capitalize'}}  endIcon={tableVisisble ? <KeyboardArrowUpIcon sx={{ fontSize: 80 }} /> : <KeyboardArrowDownIcon sx={{ fontSize: 80 }}  />} onClick={() => { handleClick();setTableVisible(!tableVisisble);}}> 
                 <Box sx={{ fontWeight: 'regular', m: 1, fontSize:16, }}>Alarm Log</Box>
                 </Button>
                 <div  style={{ width:'100%'}} >
@@ -2361,7 +2363,8 @@ items.forEach((item) => {
                 </>
                  )}
               </Box></Box>
-) : (    
+) : 
+(    
             <Dialog
                 open={props.isDialogOpened}
                 sx={{
@@ -2807,3 +2810,4 @@ items.forEach((item) => {
         </React.Fragment>
     )
 }
+

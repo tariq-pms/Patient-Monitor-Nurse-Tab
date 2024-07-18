@@ -363,8 +363,12 @@ useEffect(() => {
                 communication_resource={parentcomm[String(device.id)]}
                 darkTheme={darkTheme}
                 selectedIcon={selectedIcon}
-                onClick={() => handleDeviceCardClick(device)}
-              />
+                onClick={() => handleDeviceCardClick(device)} pleth_resource={{
+                  device_id: '',
+                  patient_id: '',
+                  timestamp: '',
+                  data: []
+                }}              />
             );
           } else {
             return (
@@ -377,8 +381,12 @@ useEffect(() => {
                 communication_resource={parentcomm[String(device.id)]}
                 darkTheme={darkTheme}
                 selectedIcon={selectedIcon}
-                onClick={() => handleDeviceCardClick(device)}
-              />
+                onClick={() => handleDeviceCardClick(device)} pleth_resource={{
+                  device_id: '',
+                  patient_id: '',
+                  timestamp: '',
+                  data: []
+                }}              />
             );
           }
         }
@@ -400,13 +408,17 @@ useEffect(() => {
                 key={String(device.id)}
                 device_id={String(device.identifier[0].value)}
                 device_resource_id={String(device.id)}
-                patient= {patient[String(device.id)]}
+                patient={patient[String(device.id)]}
                 observation_resource={parentobs[String(device.id)]}
                 communication_resource={parentcomm[String(device.id)]}
                 darkTheme={darkTheme}
                 selectedIcon={selectedIcon}
-                onClick={() => handleDeviceCardClick(device)}
-            />
+                onClick={() => handleDeviceCardClick(device)} pleth_resource={{
+                  device_id: '',
+                  patient_id: '',
+                  timestamp: '',
+                  data: []
+                }}            />
             )
         }
         else{
@@ -420,8 +432,12 @@ useEffect(() => {
                 communication_resource={parentcomm[String(device.id)]}
                 darkTheme={darkTheme}
                 selectedIcon={selectedIcon}
-                onClick={() => handleDeviceCardClick(device)}
-            />
+                onClick={() => handleDeviceCardClick(device)} pleth_resource={{
+                  device_id: '',
+                  patient_id: '',
+                  timestamp: '',
+                  data: []
+                }}            />
             )
         }}
         })
@@ -443,27 +459,36 @@ useEffect(() => {
                     key={String(device.id)}
                     device_id={String(device.identifier[0].value)}
                     device_resource_id={String(device.id)}
-                    patient= {patient[String(device.id)]}//{device.resource.patient.reference.split("/")[1]}
+                    patient={patient[String(device.id)]} //{device.resource.patient.reference.split("/")[1]}
                     observation_resource={parentobs[String(device.id)]}
                     communication_resource={parentcomm[String(device.id)]}
                     darkTheme={darkTheme}
                     selectedIcon={selectedIcon}
-                    onClick={() => handleDeviceCardClick(device)}
-                />
+                    onClick={() => handleDeviceCardClick(device)} pleth_resource={{
+                      device_id: '',
+                      patient_id: '',
+                      timestamp: '',
+                      data: []
+                    }}                />
                 )
             }
             else{
                 return (
                 <SVAASCard 
-                        key={String(device.id)}
-                        device_id={String(device.identifier[0].value)}
-                        device_resource_id={String(device.id)}
-                        patient={null}
-                        observation_resource={parentobs[String(device.id)]}
-                        communication_resource={parentcomm[String(device.id)]}
-                        darkTheme={darkTheme}
-                        selectedIcon={selectedIcon}
-                        onClick={() => handleDeviceCardClick(device)}       />
+                    key={String(device.id)}
+                    device_id={String(device.identifier[0].value)}
+                    device_resource_id={String(device.id)}
+                    patient={null}
+                    observation_resource={parentobs[String(device.id)]}
+                    communication_resource={parentcomm[String(device.id)]}
+                    darkTheme={darkTheme}
+                    selectedIcon={selectedIcon}
+                    onClick={() => handleDeviceCardClick(device)} pleth_resource={{
+                      device_id: '',
+                      patient_id: '',
+                      timestamp: '',
+                      data: []
+                    }}       />
                 )
             }}
             })

@@ -1,10 +1,10 @@
 // import { AccountCircle } from '@mui/icons-material'
-import { Box, Card, Stack, Typography, ButtonBase  } from '@mui/material'
+import { Box, Card, Stack, Typography  } from '@mui/material'
 // import { red } from '@mui/material/colors'
 import { FC, useEffect, useState } from 'react'
 // import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {  faBell, faPowerOff,faTemperatureArrowDown, faTemperatureArrowUp} from '@fortawesome/free-solid-svg-icons'
+import {  faBell, faPowerOff,faTemperatureArrowDown} from '@fortawesome/free-solid-svg-icons'
 import { NewDeviceDetails } from './NewDeviceDetails';
 
 export interface DeviceDetails {
@@ -221,7 +221,7 @@ export const BrammiCard: FC<DeviceDetails> = (props): JSX.Element => {
 
     // const tick =setInterval(timer,1000)
 //   useEffect(() => {console.log(props.patient_id)},[props.patient_id])
-const [controlOpacity, setControlOpacity] = useState("0.8")
+//const [controlOpacity, setControlOpacity] = useState("0.8")
 const getCardWidth = () => {
     switch (props.selectedIcon) {
       case 'view':

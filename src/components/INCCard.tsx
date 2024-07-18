@@ -1,4 +1,4 @@
-import { Box, Card,Stack, Typography, ButtonBase, } from '@mui/material'
+import { Box, Card,Stack, Typography, } from '@mui/material'
 import { FC, useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBell, faPowerOff } from '@fortawesome/free-solid-svg-icons'
@@ -464,10 +464,24 @@ export const INCCard: FC<DeviceDetails> = (props): JSX.Element => {
                                   
                                     <div style={{ display: 'flex', justifyContent: 'left' }}>
 
-                                        <Typography variant='h3' color={"#F60D4C"}>{(() => {
+                                        {/* <Typography variant='h3' color={"#F60D4C"}>{(() => {
                                             let data = findData("Measured Skin Temp 2");
                                             return (data!.data);
-                                        })()}</Typography>
+                                        })()}</Typography> */}
+
+<Typography variant='h3' color={"#F60D4C"}>
+    {(() => {
+        let data1 = findData("Measured Skin Temp 2");
+        let data2 = findData("Measured Skin Temp 1");
+        if (data1 && data1.data !== 0) {
+            return data1.data;
+        } else if (data2 && data2.data !== 0) {
+            return data2.data;
+        } else {
+            return "No Data Available";
+        }
+    })()}
+</Typography>
 
                                     </div></Box>
                                

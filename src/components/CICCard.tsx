@@ -1,5 +1,5 @@
 // import { AccountCircle } from '@mui/icons-material'
-import { Box, Card, Stack, Typography, ButtonBase  } from '@mui/material'
+import { Box, Card, Stack, Typography  } from '@mui/material'
 // import { red } from '@mui/material/colors'
 import { FC, useEffect, useState } from 'react'
 // import { Link } from 'react-router-dom'
@@ -294,16 +294,29 @@ export const CICCard: FC<DeviceDetails> = (props): JSX.Element => {
 
 
                              <Stack height={'40%'} width={'100%'} direction={'row'}>
-                                <Box width={'28%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={"#FF6939"} style={{ fontFamily: 'Helvetica' }}>B.Temp <span style={{ fontSize: '12px' }}>℃</span></Typography></div>
+                             <Box width={'28%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={ alarm === 'Skin1 Temperature Low' || alarm === 'Skin1 Temperature High' ? alarmColor : '#FF6939' } style={{ fontFamily: 'Helvetica' }}>B.Temp <span style={{ fontSize: '12px' }}>℃</span></Typography></div>
                                   
-                                    <div style={{ display: 'flex', justifyContent: 'left' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'left' }}>
 
-                                        <Typography variant='h3' color={"#FF6939"}>{(() => {
-                                            let data = findData("Measured Skin Temp 1");
-                                            return (data!.data);
-                                        })()}</Typography>
+                                      {/* <Typography variant='h3' color={alarm === 'Skin1 Temperature Low' ? alarmColor : "#FF6939"}>{(() => {
+                                          let data = findData("Measured Skin Temp 1");
+                                          return (data!.data);
+                                      })()}</Typography> */}
+                                    <Typography variant='h3' color={alarm === 'Skin1 Temperature Low' ? alarmColor : "#FF6939"}>
+    {(() => {
+        let data1 = findData("Measured Skin Temp 2");
+        let data2 = findData("Measured Skin Temp 1");
+        if (data1 && data1.data !== 0) {
+            return data1.data;
+        } else if (data2 && data2.data !== 0) {
+            return data2.data;
+        } else {
+            return "No Data Available";
+        }
+    })()}
+</Typography>
 
-                                    </div></Box>
+                                  </div></Box>
                                
                                 <Box width={'22%'} sx={{ textAlign: 'left', paddingLeft: '10px' }}><div><Typography variant='subtitle1' color={"#FFD600"} style={{ fontFamily: 'Helvetica' }}>PR <span style={{ fontSize: '13px' }}>B/min</span></Typography></div>
                                     

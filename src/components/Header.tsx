@@ -1,17 +1,17 @@
 import React, { FC, useEffect, useState } from 'react';
-import {AppBar, Collapse, Divider,Drawer,FormControl,IconButton,Switch,InputAdornment,List,ListItem,ListItemButton,ListItemText,Menu,MenuItem,Select,SelectChangeEvent, Stack, TextField, useMediaQuery, useTheme} from '@mui/material';
+import {AppBar, Collapse, Divider,Drawer,FormControl,IconButton,Switch,List,ListItem,ListItemButton,ListItemText,Menu,MenuItem,Select,SelectChangeEvent, Stack, useMediaQuery, useTheme} from '@mui/material';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import SettingsIcon from '@mui/icons-material/Settings';
 import Button from '@mui/material/Button';
 import {  ExpandLess, ExpandMore } from '@mui/icons-material';
-import { useNavigate,useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import pmsLogo from '../assets/image 135.png';
-import { useAuth0 } from '@auth0/auth0-react';
+//import { useAuth0 } from '@auth0/auth0-react';
 import { Avatar, Typography } from '@material-ui/core';
 import MenuIcon from '@mui/icons-material/Menu';
-import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
-import SearchIcon from '@mui/icons-material/Search';
+//import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
+//import SearchIcon from '@mui/icons-material/Search';
 import DehazeIcon from '@mui/icons-material/Dehaze';
 import ViewCompactIcon from '@mui/icons-material/ViewCompact';
 import AppsIcon from '@mui/icons-material/Apps';
@@ -34,18 +34,17 @@ export interface HeaderProps {
 export const Header: FC<HeaderProps> = (props) => {
   const [smallList, setSmallList] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
   const theme = useTheme();
   const screenSize = useMediaQuery(theme.breakpoints.up('md'));
-  const {user, isLoading, isAuthenticated, logout, getIdTokenClaims} = useAuth0();
-  const[UserRole, setUserRole] = useState("");
-  const[UserOrganization, setUserOrganization] = useState("");
+  //const {user, isLoading, isAuthenticated, logout, getIdTokenClaims} = useAuth0();
+  //const[UserRole, setUserRole] = useState("");
+  //const[UserOrganization, setUserOrganization] = useState("");
  
   const handleIconClick = (icon: string) => {
     props.setSelectedIcon(icon); // This should work correctly now
   };
   
-  const [notHome, setNotHome] = useState(true);
+  const [, setNotHome] = useState(true);
   const [temproom, settemproom] = useState([
     {
       resource: {
@@ -107,66 +106,78 @@ export const Header: FC<HeaderProps> = (props) => {
   const [temp, settemp] = useState(false)
  const { darkTheme, toggleDarkTheme } = props;
 
- useEffect(() => {
-    getIdTokenClaims()
-    .then((res) => {
-      console.log('Role:', res);
-      setUserRole(res?.role);
-      setUserOrganization(res?.organization);
-       console.log("organization is here",UserOrganization )
-       if (isAuthenticated) {
-       fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?organization=${UserOrganization}`, {
-          credentials: 'omit',
-          headers: {
-            Authorization: 'Basic ' + btoa('fhiruser:change-password'),
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.entry) {
-              settemproom(data.entry);
-            }
-          })
-          .catch((error) => {
-            console.error('Failed to fetch locations:', error);
-          });
-      }
-    })
-    .catch((error) => {
-      console.error('Failed to fetch role:', error);
-    });
-}, [isAuthenticated,UserOrganization ]);
+//  useEffect(() => {
+//     //getIdTokenClaims()
+//     //.then((res) => {
+//       //console.log('Role:', res);
+//       //setUserRole(res?.role);
+//       //setUserOrganization(res?.organization);
+//        //console.log("organization is here",UserOrganization )
+      
+//        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location`, {
+//           credentials: 'omit',
+//           headers: {
+//             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
+//           },
+//         })
+//           .then((response) => response.json())
+//           .then((data) => {
+//             if (data.entry) {
+//               settemproom(data.entry);
+//             }
+//           })
+//           .catch((error) => {
+//             console.error('Failed to fetch locations:', error);
+//           });
+      
+//     })
+//     .catch((error) => {
+//       console.error('Failed to fetch role:', error);
+//     });
+// }, [props.roomAltered);
 
- useEffect(() => {
-  if (UserRole === 'Hospital Clinician' && (location.pathname === '/rooms' || location.pathname === '/Admin' || location.pathname === '/device-monitor'  )) {
-   navigate('/patient-monitor');
-  }
+useEffect(() => {
+  fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location`, {
+        credentials: "omit",
+        headers: {
+          Authorization: "Basic "+ btoa("fhiruser:change-password"),
+        },
+      })
+      .then((response) => response.json())
+      .then((data) => {if(data.entry){
+        settemproom(data.entry)
+      }})
+ 
+},[props.roomAltered])
 
-  if (UserRole === 'Phoenix' && location.pathname !== '/organization') {
-  navigate('/organization');
-  }
-}, [isAuthenticated, UserRole, location.pathname, navigate]);
+//  useEffect(() => {
+//   if (UserRole === 'Hospital Clinician' && (location.pathname === '/rooms' || location.pathname === '/Admin' || location.pathname === '/device-monitor'  )) {
+//    navigate('/patient-monitor');
+//   }
 
-    const handleBackButtonClick = () => {
-    setNotHome(true)
-    if(UserRole === 'Hospital Technician' ){
-      navigate('/central-monitor')
-    }
-    else{
-      navigate('/patient-monitor')
-    }
-    setRoom(prevRoom || props.currentRoom); 
-  };
+//   if (UserRole === 'Phoenix' && location.pathname !== '/organization') {
+//   navigate('/organization');
+//   }
+// }, [isAuthenticated, UserRole, location.pathname, navigate]);
+
+const handleBackButtonClick = () => {
+  setNotHome(true)
+
+    navigate('/central-monitor')
+ 
+ 
+  setRoom(prevRoom || props.currentRoom); // Display the previous room name if available, else the current room
+};
    
  
   return (
    <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" style={{ background: 'transparent', boxShadow: 'none' }} sx={{ boxShadow: '0px 5px 5px 0px yellow' }}>
         <Toolbar>
-          {!isLoading && isAuthenticated && (
+         
             <>
               <div style={{ display: 'flex', marginRight: 'auto' }}>
-                <Box onClick={handleBackButtonClick} sx={{ cursor: 'pointer' }}>
+                <Box onClick={handleBackButtonClick}  sx={{ cursor: 'pointer' }}>
                   <img src={pmsLogo} alt="Phoenix" style={{ maxWidth: '90%', height: 'auto' }} />
                   
                 </Box>
@@ -176,7 +187,7 @@ export const Header: FC<HeaderProps> = (props) => {
                     </div>
               
               </div>
-              {notHome && UserRole === 'Hospital Clinician' && (
+              {/* {notHome && UserRole === 'Hospital Clinician' && (
               <div style={{marginRight:'auto'}}>
        
 <Stack sx={{backgroundColor: darkTheme?'' :'#FFFFFF', borderRadius: '25px'}}> 
@@ -215,13 +226,13 @@ export const Header: FC<HeaderProps> = (props) => {
       /></Stack>
       </div> 
      
-               )}
+               )} */}
               {screenSize ? (
                 <>
                 <Stack direction={'row'} justifyContent={'center'} textAlign={'center'} >
-                    {notHome && UserRole === 'Hospital Technician' && (
+                    
                       <>
-                       
+                       {/* <Divider orientation="vertical" flexItem sx={{ marginRight: '20px',backgroundColor: darkTheme ? '#1C1C1E' : '#D6D6D6', marginLeft: '20px' }} /> */}
                        <FormControl
   variant="standard"
   sx={{
@@ -241,61 +252,32 @@ export const Header: FC<HeaderProps> = (props) => {
                         <Select label="Room" onChange={handleSetRoom} value={room}  MenuProps={{MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81',color: '#FFFFFF',},},}}sx={{ color: darkTheme?'white': 'grey' }}>
                             {temproom.map((room) => {
                                  return (
-                               <MenuItem key={room.resource.id} onClick={() => {setNotHome(true);}} value={String(room.resource.name)} sx={{justifyContent: 'center',padding: '6%',backgroundColor: '#F3F2F7',color: '#124D81'}}>
-                                {room.resource.name.toString()}
-                                </MenuItem>
+                                  <MenuItem
+    key={room.resource.id}
+    onClick={() => { setNotHome(true); }}
+    value={String(room.resource.name)}
+    sx={{
+        justifyContent: 'center',
+        padding: '6%',
+        backgroundColor: '#F3F2F7',
+        color: '#124D81',
+        '&:hover': {
+            backgroundColor: '#F3F2F7',  // Ensure hover color is the same as normal state
+        },
+        '&:hover:not($selected)': {
+            backgroundColor: '#F3F2F7',  // Ensure hover color is the same as normal state
+        },
+    }}
+>
+    {room.resource.name.toString()}
+</MenuItem>
                                  );
                               })}
                             
               <MenuItem value="R&D" sx={{width: '250px',padding: '6%', paddingLeft:'20px',backgroundColor: '#F3F2F7', color: '#124D81',borderTop:'1px solid black'}} onClick={() => {navigate('/rooms');setNotHome(false);setPrevRoom(room);}}>Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }}/></MenuItem>
             </Select> </FormControl>
                       </>
-                    )}
-                    {notHome && UserRole === 'Hospital Clinician' && (
-                      <>
-                        <FormControl variant="standard"  sx={{ width: '150px', backgroundColor: darkTheme?'':'#F3F2F7',borderRadius: '25px',border: '2px solid #BFDEFF'}}>
-                          {/* <InputLabel disabled sx={{ color: darkTheme? 'white':'#124D81 !important' }}>Room</InputLabel> */}
-                          <Select label="Room" onChange={handleSetRoom} style={{ height: '40px' }} value={room} disableUnderline MenuProps={{ MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81', color: '#FFFFFF' } },}} sx={{ color: darkTheme ? '#BFDEFF' : '#124D81',}}
->
-  {/* Menu items */}
-               
-            {temproom.map((room) => {
-                              
-                      return (
-                        <MenuItem key={room.resource.id} onClick={() => {setNotHome(true)
-                         if(UserRole=='Hospital Clinician'){
-                              navigate('/patient-monitor')
-                            }
-                            else{
-                              navigate('/device-monitor')
-                            }
-                          }}
-                          value={String(room.resource.name)}
-                          sx={{
-                            justifyContent: 'center',
-                            padding: '6%',
-                            backgroundColor: '#F3F2F7',
-                            color: '#124D81',
-                          }}
-                        
-                        >
-                          {/* {room.resource.name.toString()} */}
-                          {room.resource.name.toString()} 
-                        </MenuItem>
-                        
-                      );
-                      
-                    })}
-                <MenuItem value="R&1" sx={{justifyContent: 'center',padding: '6%',backgroundColor: '#F3F2F7',color: '#124D81'}} onClick={() => {navigate('/all-patient');setNotHome(true);setPrevRoom(room);}}>All Patients</MenuItem>   
-            
-                    </Select>
-                        </FormControl>
-                       
-                  
-                        
-                      </>
-                    )}
-  <Divider orientation="vertical" flexItem sx={{ marginRight: '20px',backgroundColor: darkTheme ? '#1C1C1E' : '#D6D6D6', marginLeft: '20px' }} />
+    <Divider orientation="vertical" flexItem sx={{ marginRight: '20px',backgroundColor: darkTheme ? '#1C1C1E' : '#D6D6D6', marginLeft: '20px' }} />
                     <div style={{ display: 'flex', alignItems: 'center' }}>
              
               <IconButton   onClick={handleMenu}   sx={{height:'40px',width:'40px' }}>
@@ -313,56 +295,31 @@ export const Header: FC<HeaderProps> = (props) => {
     }
   }}
 >
-      <Box width={'270px'} sx={{ backgroundColor: darkTheme ? '#000000' : '#F3F2F7', color: darkTheme ? '' : '#124D81',border:'4px solid  #AEAEAE',borderRadius:'16px' }}>
-     
-        <Stack direction={'row'} width={'100%'} padding={'5px'} alignItems="center">
-  <Box alignContent={'center'} sx={{ marginRight: '8px',marginTop:'0px' }}>
-    <AccountCircleRoundedIcon style={{ fontSize: '44px', color: darkTheme ? 'white' : '#124D81' }} />
-  </Box>
-  <Stack justifyContent="center">
-    <Typography variant="h6" style={{ color: darkTheme ? 'white' : '#124D81' }}>
-    {user?.nickname}
-    
-    </Typography>
-    <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
-    {user?.email}
-   
-    </Typography>
-    <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
-    {user?.role}
-    </Typography>
-  </Stack>
-</Stack>
-
-        <Stack direction="row" justifyContent="flex-end" paddingBottom="12px" paddingRight="22px">
-          <Button
-            onClick={() => logout()}
-            sx={{ backgroundColor: '#124D81', color: 'white', textTransform: 'capitalize' }}
-          >
-            <Typography variant="caption">Sign out</Typography>
-          </Button>
+      <Box width={'270px'} sx={{ backgroundColor: darkTheme ? '#000000' : '#F3F2F7', color: darkTheme ? '' : '#124D81',border:'2px solid  #AEAEAE',borderRadius:'16px',padding:'16px' }}>
+      
+      <Box sx={{borderBottom:'1px solid #AEAEAE'}}>
+      <Stack alignItems="flex-start" >
+          <Typography variant="subtitle1">View Layout</Typography>
         </Stack>
-
-        <Divider sx={{ border: '0.3px solid #AEAEAE' }} />
-        <Stack alignItems="flex-start" sx={{ marginTop: '5px', paddingLeft: '22px' }}>
-          <Typography variant="subtitle1">View</Typography>
-        </Stack>
+         {/* <Divider sx={{ border: '0.3px solid #AEAEAE' }} /> */}
         <Stack direction="row" width="100%" justifyContent="space-evenly" sx={{ marginY: '5px' }}>
         
           <IconButton onClick={() => handleIconClick('view')} sx={{ height: '40px', width: '40px' }}>
-            <ViewCompactIcon style={{ color: props.selectedIcon === 'view' ?(darkTheme ? '#124D81' : '#62ECFF'):(!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }}  />
+            <ViewCompactIcon style={{ color: props.selectedIcon === 'view' ?'#00AEEE':(!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }}  />
           </IconButton>
           <IconButton onClick={() => handleIconClick('apps')} sx={{ height: '40px', width: '40px'  }}>
-            <AppsIcon style={{ color: props.selectedIcon === 'apps' ?(darkTheme ? '#124D81' : '#62ECFF'):(!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }} />
+            <AppsIcon style={{ color: props.selectedIcon === 'apps' ? '#00AEEE':(!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }} />
           </IconButton>
           <IconButton onClick={() => handleIconClick('vertical')} sx={{ height: '40px', width: '40px' }}>
-            <VerticalSplitIcon style={{ color: props.selectedIcon === 'vertical' ?(darkTheme ? '#124D81' : '#62ECFF'):(!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }} />
+            <VerticalSplitIcon style={{ color: props.selectedIcon === 'vertical' ?'#00AEEE':(!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }} />
           </IconButton>
          
         </Stack>
-        {/* <Divider sx={{ border: '0.3px solid grey' }} /> */}
-        <Stack direction="row" width="100%" justifyContent="space-around"   >
-          <Typography variant="subtitle1" style={{marginRight:'50px'}}>Dark Mode</Typography>
+        </Box>
+        
+        
+        <Stack direction="row" width="100%" justifyContent="space-between" sx={{marginTop:'10px'}} >
+          <Typography variant="subtitle1" >Dark Mode</Typography>
           <Switch
             onChange={toggleDarkTheme}
             checked={darkTheme}
@@ -375,7 +332,7 @@ export const Header: FC<HeaderProps> = (props) => {
                 },
               },
               '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                backgroundColor: '#00AEEE',
+                backgroundColor: '#00C3DD',
               },
               '& .MuiSwitch-track': {
                 backgroundColor: 'grey',
@@ -404,11 +361,11 @@ export const Header: FC<HeaderProps> = (props) => {
                       <Stack height={'5%'} justifyContent={'center'} alignItems={'center'}>
                         <Typography>Settings</Typography>
                       </Stack>
-                      {notHome && UserRole === 'Hospital Clinician' && (
+                      {/* {notHome && UserRole === 'Hospital Clinician' && ( */}
                       <Stack direction={'row'} width={'100%'} height={'5%'} justifyContent={'center'} marginBottom={'3%'} marginTop={'5%'}>
                       
                       </Stack>
-                      )}
+                      {/* )} */}
 
                       <List>
                         <ListItemButton onClick={() => setSmallList(!smallList)}>
@@ -443,11 +400,13 @@ export const Header: FC<HeaderProps> = (props) => {
                             ))}
 
                             
-                        {notHome && UserRole === 'Hospital Technician' && (<>
+                        {/* {notHome && UserRole === 'Hospital Technician' && ( */}
+                          <>
                                   <MenuItem value="R&D" sx={{width: 'auto', padding: '6%', backgroundColor: '#131726', borderTop: '1px solid grey',}} onClick={() => {navigate('/rooms');setNotHome(false);setPrevRoom(room); } }>Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }} />
                                   </MenuItem>
                                   {/* <MenuItem value="R&D" sx={{width: '100%',padding: '6%',paddingLeft: '20px',backgroundColor: '#131726',textAlign:'space-between,'}}onClick={handleAdminClick}>Admin Access <PersonIcon sx={{ marginLeft: 'auto' }} /></MenuItem> */}
-                                  </> )}
+                                  </> 
+                                  {/* )} */}
                           </List>
                           
                         </Collapse> 
@@ -458,22 +417,25 @@ export const Header: FC<HeaderProps> = (props) => {
                           <Typography style={{ marginLeft: '3%', marginTop: '5%', marginBottom: '5%' }}>
                             Hospital Name
                           </Typography>
-                          <Button onClick={() => logout()} sx={{ color: 'white', textTransform: 'capitalize' }}>
+                          <Button 
+                          sx={{ color: 'white', textTransform: 'capitalize' }}>
                             <Typography variant="subtitle2">Sign out</Typography>
                           </Button>
                         </Stack>
                         <Stack direction={'row'} width={'100%'}>
                           <Avatar style={{ marginLeft: '3%', marginTop: '2%', width: 100, height: 100 }}>
                             {(() => (
-                              <Typography variant="h3">{String(user?.nickname)[0].toUpperCase()}</Typography>
+                              <Typography variant="h3">
+                                {/* {String(user?.nickname)[0].toUpperCase()} */}
+                                </Typography>
                             ))()}
                           </Avatar>
                           <Stack>
                             <Typography variant="h5" style={{ marginLeft: '8%', marginTop: '2%' }}>
-                              {user?.nickname}
+                              {/* {user?.nickname} */}
                             </Typography>
                             <Typography variant="subtitle1" style={{ marginLeft: '8%', marginTop: '2%' }}>
-                              {user?.email}
+                              {/* {user?.email} */}
                             </Typography>
                             <Typography variant="subtitle2" style={{ marginLeft: '8%', marginTop: '2%' }}>
                               Designation
@@ -487,7 +449,7 @@ export const Header: FC<HeaderProps> = (props) => {
                 
               )}
             </>
-          )}
+          
         </Toolbar>
       </AppBar>
     </Box>
