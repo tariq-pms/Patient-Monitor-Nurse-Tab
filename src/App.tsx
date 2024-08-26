@@ -17,6 +17,8 @@ import { AllPatient } from "./pages/AllPatient";
 import { CentralMonitor } from "./pages/CentralMonitor";
 import { CentralMonitorEDA } from "./pages/CentralMonitorEDA";
 import { DeviceProvider } from "./contexts/DeviceContext";
+import { ServiceDevice } from './pages/ServiceDevice';
+import {ServicePage } from "./pages/ServicePage";
 
 const theme = createTheme({
     typography: {
@@ -88,6 +90,8 @@ function App() {
                     <Route path="/organization" element={<Organization darkTheme={darkTheme} />} />
                     <Route path="/central-monitor" element={<CentralMonitor currentRoom={currentRoom} darkTheme={darkTheme} selectedIcon={selectedIcon} />} />
                     <Route path="/central-monitor-2" element={<CentralMonitorEDA currentRoom={currentRoom} darkTheme={darkTheme} selectedIcon={selectedIcon} />} />
+                    <Route path="/service"  element={<ServicePage darkTheme={darkTheme}/>}/>
+                     <Route path="/service-device/:organizationId" element={<ServiceDevice darkTheme={darkTheme}/>} />
                 </Routes>
             </DeviceProvider>
         </ThemeProvider>
