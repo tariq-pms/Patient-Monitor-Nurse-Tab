@@ -56,7 +56,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
         for (const device of devices) {
           const deviceId = device.resource.id;
           
-          const deviceMetricResponse = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}DeviceMetric?source=${deviceId}`, {
+          const deviceMetricResponse = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/DeviceMetric?source=${deviceId}`, {
             headers: {
               Authorization: 'Basic ' + btoa('fhiruser:change-password'),
             },
