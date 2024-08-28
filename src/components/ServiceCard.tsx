@@ -4,6 +4,7 @@ import { Alert, Snackbar, Stack, Typography, Skeleton, Divider } from '@mui/mate
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import DevicesIcon from '@mui/icons-material/Devices';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 interface ServiceCardProps {
   organizationData: {
@@ -145,17 +146,20 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
             Devices: {deviceList.length}
           </Typography>
         </Stack>
-        <Typography variant="subtitle1" sx={{ userSelect: 'none', color: darkTheme ? '#FF0000' : '#FF0000' }}>
-          Critical Devices: {criticalDeviceCount}
+        <Stack direction="row" spacing={1} alignItems="center">
+        <WarningAmberIcon sx={{ color: criticalDeviceCount ? '#FF0000' :'grey' }} />
+        <Typography variant="subtitle1" sx={{ userSelect: 'none', color: criticalDeviceCount ? '#FF0000' :'grey'  }}>
+          Devices: {criticalDeviceCount}
         </Typography>
+        </Stack>
       </Stack>
     </Box>
 
     {/* Section 3: Status */}
-    <Box sx={{  p: 1,  textAlign: 'center',backgroundColor: criticalDeviceCount ? '#FF0000' : '#505050' }}>
+    <Box sx={{  p: 1,  textAlign: 'center',backgroundColor: criticalDeviceCount ? '#FF0000' :darkTheme? '#303035':'#F3F2F7' }}>
       
       
-         <Typography variant="subtitle1" sx={{ userSelect: 'none', color:  '#FFFFFF' }}>
+         <Typography variant="subtitle1" sx={{ userSelect: 'none', color: criticalDeviceCount ? '#FFFFFF': darkTheme? '#FFFFFF':'#124D81' }}>
         Status: {deviceStatus}
       </Typography>
     </Box>

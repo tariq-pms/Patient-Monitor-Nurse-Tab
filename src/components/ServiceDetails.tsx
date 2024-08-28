@@ -87,7 +87,7 @@ export const ServiceDetails: React.FC<ServiceDetailsProps> = ({
     height: '100%',
     minWidth: { xs: '90%', sm: '90%', md: '90%', lg: '100%' },
     maxWidth: { xs: '90%', sm: '90%', md: '90%', lg: '100%' },
-    borderRadius: '25px',
+    borderRadius: '15px',
     border: '0.5px solid #505050',
     backgroundColor: darkTheme ? '#000000' : '#FFFFFF',
     overflowY: 'auto',
@@ -395,6 +395,7 @@ export const ServiceDetails: React.FC<ServiceDetailsProps> = ({
           </Stack>
         )}
       </Stack>
+      
     </Box>
   </React.Fragment>
   

@@ -98,10 +98,26 @@ export const ServiceDevice: React.FC <ServiceDeviceProps> = ({ darkTheme }) => {
   console.log("Selected deviceMetricId", deviceMetricId);
 
   return (
-    <div style={{ display: 'flex', height: '90vh', alignItems: 'stretch', width: '98%' }}>
-      <Box sx={{ flexWrap: 'wrap', mt: { xs: 5, sm: 6, md: 4, lg: 3 }, justifyContent: 'center', minWidth: '40%' ,maxWidth:'40%',height: '100%',}}>
+    <div style={{ display: 'flex', height: '100vh', alignItems: 'stretch', width: '98%' }}>
+      <Box sx={{ flexWrap: 'wrap', mt: { xs: 5, sm: 6, md: 3, lg: 2 }, justifyContent: 'center', minWidth: '38%' ,maxWidth:'38%',height: '100%',paddingLeft:'2%', overflowY: 'auto',
+    scrollbarGutter: 'stable', // Ensures the scrollbar doesn't overlap the content or corners
+    '&::-webkit-scrollbar': {
+      width: '8px', // Width of the scrollbar
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: darkTheme ? '#1C1C1E' : '#E0E0E0', // Background of the scrollbar track
+      borderRadius: '25px',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: darkTheme ? '#505050' : '#B0B0B0', // Scrollbar thumb color
+      borderRadius: '25px',
+      maxHeight: '24px', // Minimum height of the scrollbar thumb to avoid stretching
+    },
+    '&::-webkit-scrollbar-thumb:hover': {
+      backgroundColor: darkTheme ? '#A0A0A0' : '#808080', // Color on hover
+    },}}>
       
-   <Box sx={{marginLeft:'30px'}}>
+  
   <DeviceInService
     deviceList={filteredDeviceList}
     organizationId={organizationId}
@@ -112,10 +128,10 @@ export const ServiceDevice: React.FC <ServiceDeviceProps> = ({ darkTheme }) => {
  
     darkTheme={ darkTheme }  // Adjust as needed
   /></Box>
-</Box>
+
       
 
-      <Box sx={{display: 'flex', marginTop: '0px', gap: '2rem', mt: { xs: 5, sm: 6, md: 4, lg: 2 }, mb: { xs: 3, sm: 4, md: 4, lg: 2 }, justifyContent: 'center', width: '60%' ,height: '100%',}}>
+      <Box sx={{display: 'flex', marginLeft: '30px', gap: '2rem', mt: { xs: 5, sm: 6, md: 3, lg: 2 }, mb: { xs: 3, sm: 4, md: 4, lg: 2 }, justifyContent: 'center', width: '60%' ,height: '100%',}}>
         {selectedDevice && (
           <ServiceDetails
             isOpen={!selectedDevice}

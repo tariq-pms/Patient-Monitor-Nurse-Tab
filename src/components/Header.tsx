@@ -365,25 +365,26 @@ const handleBackButtonClick = () => {
         </Stack>
 
         <Divider sx={{ border: '0.3px solid #AEAEAE' }} />
-        <Stack alignItems="flex-start" sx={{ marginTop: '5px', paddingLeft: '22px' }}>
-          <Typography variant="subtitle1">View</Typography>
-        </Stack>
-        <Stack direction="row" width="100%" justifyContent="space-evenly" sx={{ marginY: '5px' }}>
-        
-          <IconButton onClick={() => handleIconClick('view')} sx={{ height: '40px', width: '40px' }}>
-            <ViewCompactIcon style={{ color: props.selectedIcon === 'view' ?(darkTheme ? '#124D81' : '#62ECFF'):(!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }}  />
-          </IconButton>
-          <IconButton onClick={() => handleIconClick('apps')} sx={{ height: '40px', width: '40px'  }}>
-            <AppsIcon style={{ color: props.selectedIcon === 'apps' ?(darkTheme ? '#124D81' : '#62ECFF'):(!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }} />
-          </IconButton>
-          <IconButton onClick={() => handleIconClick('vertical')} sx={{ height: '40px', width: '40px' }}>
-            <VerticalSplitIcon style={{ color: props.selectedIcon === 'vertical' ?(darkTheme ? '#124D81' : '#62ECFF'):(!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }} />
-          </IconButton>
-         
-        </Stack>
+        {notHome && (UserRole === 'Hospital Technician' || UserRole === 'Hospital Clinician') && (
+        <><Stack alignItems="flex-start" sx={{ marginTop: '5px', paddingLeft: '22px' }}>
+                              <Typography variant="subtitle1">View</Typography>
+                            </Stack><Stack direction="row" width="100%" justifyContent="space-evenly" sx={{ marginY: '5px' }}>
+
+                                <IconButton onClick={() => handleIconClick('view')} sx={{ height: '40px', width: '40px' }}>
+                                  <ViewCompactIcon style={{ color: props.selectedIcon === 'view' ? (darkTheme ? '#124D81' : '#62ECFF') : (!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }} />
+                                </IconButton>
+                                <IconButton onClick={() => handleIconClick('apps')} sx={{ height: '40px', width: '40px' }}>
+                                  <AppsIcon style={{ color: props.selectedIcon === 'apps' ? (darkTheme ? '#124D81' : '#62ECFF') : (!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }} />
+                                </IconButton>
+                                <IconButton onClick={() => handleIconClick('vertical')} sx={{ height: '40px', width: '40px' }}>
+                                  <VerticalSplitIcon style={{ color: props.selectedIcon === 'vertical' ? (darkTheme ? '#124D81' : '#62ECFF') : (!darkTheme ? '#1C1C1E' : ''), fontSize: '2rem' }} />
+                                </IconButton>
+
+                              </Stack></>
+        )}
         {/* <Divider sx={{ border: '0.3px solid grey' }} /> */}
         <Stack direction="row" width="100%" justifyContent="space-around"   >
-          <Typography variant="subtitle1" style={{marginRight:'50px'}}>Dark Mode</Typography>
+          <Typography variant="subtitle1" style={{marginRight:'50px',marginTop:'4px'}}>Dark Mode</Typography>
           <Switch
             onChange={toggleDarkTheme}
             checked={darkTheme}
