@@ -163,6 +163,7 @@ useEffect(() => {
 
 }, [isAuthenticated, UserRole, location.pathname, navigate]);
 
+const currentPath = window.location.pathname;
 
 const handleBackButtonClick = () => {
   setNotHome(true);
@@ -237,6 +238,43 @@ const handleBackButtonClick = () => {
       </div> 
      
                )}
+                {notHome && UserRole === 'Service' &&  (
+  <div style={{ marginLeft: 'auto' }}>
+    <Stack sx={{ backgroundColor: darkTheme ? '' : '#FFFFFF', borderRadius: '25px' }}>
+      <TextField
+        variant="outlined"
+        size="small"
+        inputProps={{ style: { color: darkTheme ? 'white' : '#124D81' } }} // Set text color to blue
+        sx={{
+          backgroundcolor: '#FFFFFF',
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '25px', // Set border radius
+            borderColor: '#F9F9F9', // Set border color
+            borderStyle: 'solid', // Set border style
+            borderWidth: '1px', // Set border width
+            '&:hover fieldset': {
+              borderColor: '#124D81' // Set border color on hover
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#124D81' // Set border color when focused
+            }
+          }
+        }}
+        placeholder={currentPath === '/service' ? 'Hospital Name' : 'Device S.NO'}
+        style={{ width: '200px' }}
+        onChange={(e) => props.setSearchQuery(e.target.value)}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <SearchIcon style={{ color: darkTheme ? 'white' : 'black' }} />
+            </InputAdornment>
+          ),
+        }}
+      />
+    </Stack>
+  </div>
+)}
+
               {screenSize ? (
                 <>
                 <Stack direction={'row'} justifyContent={'center'} textAlign={'center'} >

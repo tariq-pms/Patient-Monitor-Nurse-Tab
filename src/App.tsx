@@ -90,8 +90,8 @@ function App() {
                     <Route path="/organization" element={<Organization darkTheme={darkTheme} />} />
                     <Route path="/central-monitor" element={<CentralMonitor currentRoom={currentRoom} darkTheme={darkTheme} selectedIcon={selectedIcon} />} />
                     <Route path="/central-monitor-2" element={<CentralMonitorEDA currentRoom={currentRoom} darkTheme={darkTheme} selectedIcon={selectedIcon} />} />
-                    <Route path="/service"  element={<ServicePage darkTheme={darkTheme}/>}/>
-                     <Route path="/service-device/:organizationId" element={<ServiceDevice darkTheme={darkTheme}/>} />
+                    <Route path="/service"  element={<ServicePage searchQuery={searchQuery} setSearchQuery={setSearchQuery} darkTheme={darkTheme}/>}/>
+                     <Route path="/service-device/:organizationId" element={<ServiceDevice darkTheme={darkTheme}searchQuery={searchQuery} setSearchQuery={setSearchQuery}  />} />
                 </Routes>
             </DeviceProvider>
         </ThemeProvider>

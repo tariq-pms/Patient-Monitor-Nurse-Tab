@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Snackbar, Stack, Typography, Skeleton, Divider } from '@mui/material';
+import { Alert, Snackbar, Stack, Typography,  Divider } from '@mui/material';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import DevicesIcon from '@mui/icons-material/Devices';
@@ -24,7 +24,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
   const [snackSucc] = useState(false);
   const [snack, setSnack] = useState(false);
   const [controlColor, setControlColor] = useState('grey');
-  const [loading, setLoading] = useState(true);
+  
   const [deviceList, setDeviceList] = useState<any[]>([]);
   const [deviceStatus, setDeviceStatus] = useState('Normal');
   const [criticalDeviceCount, setCriticalDeviceCount] = useState(0);
@@ -93,10 +93,10 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
         }
 
         
-        setLoading(false);
+        
       } catch (error) {
         console.error('Error fetching devices or metrics:', error);
-        setLoading(false);
+      
       }
     };
 
@@ -114,10 +114,8 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
 
   return (
     <Box>
-      {loading ? (
-        <Skeleton animation="wave" variant="rectangular" width={'320px'} height={'280px'} sx={{ borderRadius: '25px' }} />
-      ) : (
-        <Card
+      
+      <Card
   elevation={5}
   onClick={handleCardClick}
   style={{
@@ -170,9 +168,9 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
       {snackSucc ? 'Operation Completed Successfully' : 'Operation Failed'}
     </Alert>
   </Snackbar>
-</Card>
+      </Card>
 
-      )}
+     
     </Box>
   );
 };

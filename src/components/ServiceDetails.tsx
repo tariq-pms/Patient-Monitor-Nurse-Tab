@@ -111,10 +111,12 @@ export const ServiceDetails: React.FC<ServiceDetailsProps> = ({
 >
       <Stack direction="row" justifyContent={'space-between'} marginTop="3%" spacing={1}>
   <Typography variant="subtitle1" sx={{ color:  darkTheme ? '#FFFFFF' : '#124D81' ,paddingLeft:'4%' }}>
-    {selectedDevice.resource.identifier[1]?.value} 
+    {/* {selectedDevice.resource.identifier[1]?.value}  */}
+    {`${selectedDevice.resource.identifier[1]?.value || ''} (${selectedDevice.resource.identifier[0]?.value})`}
   </Typography>
   <Typography variant="subtitle1" sx={{ color:  darkTheme ? '#FFFFFF' : '#124D81' ,paddingRight:'4%' }}>
-    S.No:{selectedDevice.resource.identifier[0]?.value}
+    {/* S.No:{selectedDevice.resource.identifier[2]?.value} */}
+    {`S.No: ${selectedDevice.resource.identifier[2]?.value || '--'}`}
   </Typography>
   {/* <Box sx={{ marginLeft: 'auto' }}>
     <IconButton>

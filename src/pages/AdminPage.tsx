@@ -1,4 +1,3 @@
-// AdminPage.tsx
 import { useState, useEffect, FC } from 'react';
 import { Box, Skeleton, Typography, Button, Paper, Dialog, DialogTitle, TextField, Select, MenuItem, DialogContent, CardContent, Card, InputLabel } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -50,27 +49,6 @@ console.log("in admin page",userOrganization);
     console.log('User clicked:', user);
   };
 
-  // useEffect(() => {
-  //   try {
-  //     fetch('https://pmsind.co.in:5000list')
-  //       .then((response) => {
-  //         if (!response.ok) {
-  //           throw new Error('Failed to fetch user data');
-  //         }
-  //         return response.json();
-  //       })
-  //       .then((data) => {
-  //         setUserData(data);
-  //         setLoading(false);
-  //       })
-  //       .catch((error) => {
-  //         console.error('Error fetching user data:', error);
-  //       });
-  //   } catch (error) {
-  //     console.error('Error in useEffect:', error);
-  //   }
-  // }, []);
-  
   useEffect(() => {
     try {
       // const organization = '18d1c76ef29-ba9f998e-83b1-4c43-bc5b-b91b572a6454';
@@ -112,66 +90,10 @@ console.log("in admin page",userOrganization);
     setDialogOpen(true);
   };
 
-  // const handleAddUser = () => {
-  //   // Extract username and password from state or form fields
-  //   const { email, username, password, role } = newUser;
-  
-  //   // Add your logic to make the API call for adding a new user
-  //   fetch('https://pmsind.co.in:5000create', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({ email, username, password, role }),
-  //   })
-  //     .then(response => response.json())
-  //     .then(data => {
-  //       console.log('API response:', data);
-  
-  //       // Update the state to include the newly created user
-  //       setUserData((prevUserData: User[]) => [...prevUserData, data]);
-  
-  //       // Add any additional logic you need after the API call
-  //     })
-  //     .catch(error => {
-  //       console.error('Error:', error);
-  //     });
-  
-  //   handleDialog2Close();
-  // };
-  // const handleAddUser = () => {
-  //   // Extract username, password, role, and organizationId from state or form fields
-  //   const { email, username, password, role, organization } = newUser;
-
-  //   // Add your logic to make the API call for adding a new user
-  //   fetch('https://pmsind.co.in:5000create', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({ email, username, password, role, organization }), // Include organizationId in the request
-  //   })
-  //     .then(response => response.json())
-  //     .then(data => {
-  //       console.log('API response:', data);
-
-  //       // Update the state to include the newly created user
-  //       setUserData((prevUserData: User[]) => [...prevUserData, data]);
-
-  //       // Add any additional logic you need after the API call
-  //     })
-  //     .catch(error => {
-  //       console.error('Error:', error);
-  //     });
-
-  //   handleDialog2Close();
-  // };
- 
   const handleAddUser = () => {
-    // Extract username, password, role, and organizationId from state or form fields
+ 
     const { email, username, password, role, organization } = newUser;
   
-    // Add your logic to make the API call for adding a new user
     fetch(`${import.meta.env.VITE_AUTH0API_URL as string}/create`, {
       method: 'POST',
       headers: {
