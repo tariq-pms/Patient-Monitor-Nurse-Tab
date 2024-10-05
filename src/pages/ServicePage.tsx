@@ -48,7 +48,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ darkTheme, searchQuery
   }, [isAuthenticated]);
 
   const filteredOrganizations = organizations
-    .filter(org => org.resource.name !== 'Sanjeev-Test' && org.resource.name !== 'PMS-DMS-Test')
+    .filter(org => org.resource.name !== 'Sanjeev-Test' )
     .filter(org => org.resource.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (

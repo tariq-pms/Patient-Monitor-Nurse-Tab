@@ -19,6 +19,7 @@ import { CentralMonitorEDA } from "./pages/CentralMonitorEDA";
 import { DeviceProvider } from "./contexts/DeviceContext";
 import { ServiceDevice } from './pages/ServiceDevice';
 import {ServicePage } from "./pages/ServicePage";
+import { NotificationProvider } from "./contexts/NotificationContext";
 
 const theme = createTheme({
     typography: {
@@ -74,6 +75,7 @@ function App() {
 
     return (
         <ThemeProvider theme={theme}>
+             <NotificationProvider>
             <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
                 <CircularProgress color="inherit" />
             </Backdrop>
@@ -94,6 +96,7 @@ function App() {
                      <Route path="/service-device/:organizationId" element={<ServiceDevice darkTheme={darkTheme}searchQuery={searchQuery} setSearchQuery={setSearchQuery}  />} />
                 </Routes>
             </DeviceProvider>
+            </NotificationProvider>
         </ThemeProvider>
     );
 }

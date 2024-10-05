@@ -1,12 +1,12 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Box, Divider, Stack, Typography } from '@mui/material';
+import { useNotification } from '../contexts/NotificationContext';
 
 interface DeviceInServiceProps {
   deviceList: any[];
   organizationId: string;
   handleDeviceSelection: (device: any) => void;
   searchQuery: string;
-  setSearchQuery: (query: string) => void;
   deviceMetrics: any[];
   darkTheme: boolean;
 }
@@ -17,79 +17,112 @@ export const DeviceInService: React.FC<DeviceInServiceProps> = ({
   handleDeviceSelection,
   searchQuery,
   deviceMetrics = [],
-  darkTheme
+  darkTheme,
 }) => {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const { addNotification, notifiedAlarms, addNotifiedAlarm, isAlarmNotified } = useNotification(); // Use the hook here
+  const ALARM_NOTIFICATION_DELAY = 5000; // 5 seconds
 
   const filteredDeviceList = useMemo(() => {
-    console.log('Device List:', deviceList);
-    console.log('Search Query:', searchQuery);
-  
-    const byOrganization = deviceList.filter(
-      (device) => device.resource?.owner?.reference === `Organization/${organizationId}`
-    );
-  
-    console.log('By Organization:', byOrganization);
-  
-    const bySearchQuery = byOrganization.filter((device) =>
+    return deviceList.filter(device =>
+      device.resource?.owner?.reference === `Organization/${organizationId}`
+    ).filter(device =>
       device.resource.identifier[0]?.value.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (device.resource.identifier[2]?.value && device.resource.identifier[2]?.value.toLowerCase().includes(searchQuery.toLowerCase()))
+      (device.resource.identifier[2]?.value &&
+        device.resource.identifier[2]?.value.toLowerCase().includes(searchQuery.toLowerCase()))
     );
-  
-    console.log('By Search Query:', bySearchQuery);
-  
-    return bySearchQuery;
   }, [deviceList, organizationId, searchQuery]);
-  
 
- 
   const hasCriticalCodes = (extensions: any[]) => {
     if (!Array.isArray(extensions)) {
-      return false; // If extensions is not an array, return false
+      return false;
     }
-    
     const criticalCodes = [56, 46, 45, 27, 23, 10];
     return extensions.some(ext => criticalCodes.includes(parseInt(ext.valueQuantity?.value)));
   };
-  
-  useEffect(() => {
-    console.log('Device List:', deviceList);
-    console.log('Device Metrics:', deviceMetrics);
-  }, [deviceList, deviceMetrics]);
-  useEffect(() => {
-    console.log('Filtered Device List:', filteredDeviceList);
-  }, [filteredDeviceList]);
-    
-  useEffect(() => {
-    const criticalMetrics = deviceMetrics.flatMap(metric => 
-      hasCriticalCodes(metric.extension || [])
-    );
 
-    if (criticalMetrics.length > 0) {
-      // sendEmail(criticalMetrics);
+ 
+  const sendEmail = async (metrics: any[]) => {
+    try {
+      const response = await fetch('http://pmsserver.local:3001/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: 'New device metrics fetched', metrics }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const result = await response.text();
+      console.log('Email sent:', result);
+    } catch (error) {
+      console.error('Error sending email:', error);
     }
-  }, [deviceMetrics]);
-
+  };
+  useEffect(() => {
+    deviceMetrics.forEach(metric => {
+      const typeDisplay = metric.type?.coding?.map((coding: { display: any; }) => coding.display).join(', ') || 'Unknown';
+      const identifierValue = metric.identifier?.[1]?.value || 'N/A';
+      const criticalExtensions = metric.extension?.filter((ext: any) => hasCriticalCodes([ext])) || [];
+      const metricTimestamp = metric.calibration?.[0]?.time 
+      ? new Date(metric.calibration[0].time).toLocaleString() 
+      : new Date(metric.meta?.lastUpdated).toLocaleString();
+      criticalExtensions.forEach((ext: { valueQuantity: { code: any; }; }) => {
+        const extensionCode = ext.valueQuantity?.code;
+        const uniqueAlarmKey = `${metric.id}-${extensionCode}`;
+  
+        console.log('Checking uniqueAlarmKey:', uniqueAlarmKey);
+  
+        if (!isAlarmNotified(uniqueAlarmKey)) {
+          const notification = {
+            id: `${uniqueAlarmKey}-${Date.now()}`,
+            message: `${typeDisplay} (${extensionCode}) in S.No: ${identifierValue} at ${metricTimestamp}`,
+            type: 'error',
+          };
+  
+          addNotification(notification);
+  
+          addNotifiedAlarm(uniqueAlarmKey); // Mark the alarm as notified
+  
+          // Trigger email sending when new alarm notification is added
+          sendEmail([{ metricId: identifierValue,alarmType:extensionCode, alarmCode: extensionCode, timestamp: metricTimestamp }]);
+  
+          // Reset the notification key after a delay
+          setTimeout(() => {
+            notifiedAlarms.delete(uniqueAlarmKey);
+            console.log('Removed from notified:', uniqueAlarmKey);
+          }, ALARM_NOTIFICATION_DELAY);
+        } else {
+          console.log('Already notified:', uniqueAlarmKey);
+        }
+      });
+    });
+  }, [deviceMetrics, addNotification, addNotifiedAlarm, isAlarmNotified, sendEmail]);
+  
   const handleDeviceClick = (device: any) => {
     setSelectedDeviceId(device.resource.id);
     handleDeviceSelection(device);
   };
 
-
   return (
-    <Box width={'100%'} height={"100%"} >
-        {filteredDeviceList.length > 0 ? (
+    <Box width={'100%'} height={'100%'}>
+      {filteredDeviceList.length > 0 ? (
         filteredDeviceList.map((device, index) => {
           const deviceMetricsForDevice = deviceMetrics
-            .filter((metric) => metric.source?.reference === `Device/${device.resource.id}`)
+            .filter(metric => metric.source?.reference === `Device/${device.resource.id}`)
             .sort((a, b) => new Date(b.meta.lastUpdated).getTime() - new Date(a.meta.lastUpdated).getTime());
 
-          const latestMetric = deviceMetricsForDevice[0]; // Get the latest metric
-          const hasCriticalMetric = latestMetric && hasCriticalCodes(latestMetric.extension || '');
-        
+          const latestMetric = deviceMetricsForDevice[0];
+          const hasCriticalMetric = latestMetric && hasCriticalCodes(latestMetric.extension || []);
+          const latestMetricTimestamp = latestMetric?.meta?.lastUpdated
+            ? new Date(latestMetric.meta.lastUpdated).toLocaleString()
+            : '--';
 
           return (
-            <Box
+              <Box
               key={index}
               width={'90%'}
               minHeight={'20%'}
@@ -106,21 +139,15 @@ export const DeviceInService: React.FC<DeviceInServiceProps> = ({
               }}
             >
               <Stack padding={2} alignItems="center">
-                
-              <Typography variant="subtitle1" sx={{ color: darkTheme ? '#FFFFFF' : '#124D81' }}>
-                  {`${device.resource.identifier[1]?.value || ''} (${device.resource.identifier[0]?.value})`}
-                </Typography>
-                
                 <Typography variant="h6" sx={{ color: darkTheme ? '#FFFFFF' : '#124D81' }}>
-                  {/* {`${device.resource.identifier[0]?.value} (SN: ${serialNumber})`} */}
-                  {`S.No: ${device.resource.identifier[2]?.value || '--'}`}
+                  {`${device.resource.identifier[1]?.value || ''} (S.No:${device.resource.identifier[2]?.value || '--'})`}
+                </Typography>
+                <Typography variant="body2" sx={{ color: darkTheme ? '#FFFFFF' : '#124D81', mt: 1 }}>
+                  {`Last Ac: ${latestMetricTimestamp}`}
                 </Typography>
                 <Divider sx={{ my: 2, backgroundColor: '#505050', width: '100%' }} />
                 <Box sx={{ mt: 1, p: 1, backgroundColor: hasCriticalMetric ? '#FF0000' : '#505050', borderRadius: 1 }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ color: '#FFFFFF' }}
-                  >
+                  <Typography variant="h6" sx={{ color: '#FFFFFF' }}>
                     {hasCriticalMetric ? 'Status: Action needed' : 'Status: Normal'}
                   </Typography>
                 </Box>
@@ -129,7 +156,7 @@ export const DeviceInService: React.FC<DeviceInServiceProps> = ({
           );
         })
       ) : (
-        <Typography sx={{color:darkTheme?'#FFFFFF':'#000000'}}>No devices found.</Typography>
+        <Typography sx={{ color: darkTheme ? '#FFFFFF' : '#000000' }}>No devices found.</Typography>
       )}
     </Box>
   );

@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import {AppBar, Collapse, Divider,Drawer,FormControl,IconButton,Switch,InputAdornment,List,ListItem,ListItemButton,ListItemText,Menu,MenuItem,Select,SelectChangeEvent, Stack, TextField, useMediaQuery, useTheme} from '@mui/material';
+import {AppBar, Collapse, Divider,Drawer,FormControl,IconButton,Switch,InputAdornment,List,ListItem,ListItemButton,ListItemText,Menu,MenuItem,Select,SelectChangeEvent, Stack, TextField, useMediaQuery, useTheme, Badge, Paper, FormControlLabel, AccordionDetails, AccordionSummary, Accordion, Checkbox, AccordionActions, Snackbar, Alert} from '@mui/material';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -16,6 +16,8 @@ import DehazeIcon from '@mui/icons-material/Dehaze';
 import ViewCompactIcon from '@mui/icons-material/ViewCompact';
 import AppsIcon from '@mui/icons-material/Apps';
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import { useNotification } from "../contexts/NotificationContext";
 
 
 export interface HeaderProps {
@@ -179,8 +181,55 @@ const handleBackButtonClick = () => {
   setRoom(prevRoom || props.currentRoom); 
 };
 
-   
- 
+const { notifications, clearNotifications } = useNotification();
+const [alarmChecked, setAlarmChecked] = useState(false);
+const [systemDataChecked, setSystemDataChecked] = useState(false);
+const [eventLogChecked, setEventLogChecked] = useState(false);
+const [filteredNotifications, setFilteredNotifications] = useState(notifications); // To store filtered notifications
+const [openSnackbar,setOpenSnackbar]= useState(false);
+// Handle checkbox changes
+const handleAlarmChange = (event: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {
+  setAlarmChecked(event.target.checked);
+};
+
+const handleSystemDataChange = (event: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {
+  setSystemDataChecked(event.target.checked);
+};
+
+const handleEventLogChange = (event: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {
+  setEventLogChecked(event.target.checked);
+};
+
+// Handle Save button
+const handleSaveSettings = () => {
+  // Filter notifications based on the checked settings
+  const newFilteredNotifications = notifications.filter(notification => {
+    if (alarmChecked && notification.type === 'alarm') return true;
+    if (systemDataChecked && notification.type === 'systemData') return true;
+    if (eventLogChecked && notification.type === 'eventLog') return true;
+    return false;
+  });
+
+  setFilteredNotifications(newFilteredNotifications);
+  handleCloseNotifications();
+  setOpenSnackbar(true); // Optionally close the notifications menu
+};
+const handleCloseSnackbar = (event: any, reason: string) => {
+  if (reason === 'clickaway') {
+    return;
+  }
+  setOpenSnackbar(false); // Close the snackbar
+};
+const [anchorElNotification, setAnchorElNotification] = useState<null | HTMLElement>(null);
+const isOpen = Boolean(anchorElNotification);  
+    const handleOpenNotifications = (event: { currentTarget: React.SetStateAction<HTMLElement | null>; }) => {
+      setAnchorElNotification(event.currentTarget);
+    };
+
+    const handleCloseNotifications = () => {
+      setAnchorElNotification(null);
+    };
+
   return (
    <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" style={{ background: 'transparent', boxShadow: 'none' }} sx={{ boxShadow: '0px 5px 5px 0px yellow' }}>
@@ -196,86 +245,149 @@ const handleBackButtonClick = () => {
                    {/* <Organization darkTheme={darkTheme} /> */}
                    <Typography style={{color:darkTheme?'white':'#124D81'}} > {currentTime.toLocaleTimeString()} | {currentTime.toLocaleDateString()}</Typography>
                     </div>
+                    
               
               </div>
-              {notHome && UserRole === 'Hospital Clinician' && (
-              <div style={{marginRight:'auto'}}>
-       
-<Stack sx={{backgroundColor: darkTheme?'' :'#FFFFFF', borderRadius: '25px'}}> 
-                   <TextField
-        variant="outlined"
-        size="small"
-        
-        inputProps={{ style: { color: darkTheme?'white' :'#124D81'  } }} // Set text color to blue
-        sx={{
-          backgroundcolor: '#FFFFFF',
-          '& .MuiOutlinedInput-root': {
-            borderRadius: '25px', // Set border radius
-            borderColor: '#F9F9F9', // Set border color
-            borderStyle: 'solid', // Set border style
-            borderWidth: '1px', // Set border width
-            '&:hover fieldset': {
-              borderColor: '#124D81' // Set border color on hover
-            },
-            '&.Mui-focused fieldset': {
-              borderColor: '#124D81' // Set border color when focused
-            }
-          }
-        }}
-      
-        placeholder="Search Baby Name/ID"
-        style={{ width: '300px' }} 
-        onChange={(e) => props.setSearchQuery(e.target.value)}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <SearchIcon style={{ color: darkTheme?'white':'black' }} />
-              
-            </InputAdornment>
-          ),
-        }}
-      /></Stack>
-      </div> 
-     
-               )}
+             
+
                 {notHome && UserRole === 'Service' &&  (
-  <div style={{ marginLeft: 'auto' }}>
-    <Stack sx={{ backgroundColor: darkTheme ? '' : '#FFFFFF', borderRadius: '25px' }}>
-      <TextField
-        variant="outlined"
-        size="small"
-        inputProps={{ style: { color: darkTheme ? 'white' : '#124D81' } }} // Set text color to blue
-        sx={{
-          backgroundcolor: '#FFFFFF',
-          '& .MuiOutlinedInput-root': {
-            borderRadius: '25px', // Set border radius
-            borderColor: '#F9F9F9', // Set border color
-            borderStyle: 'solid', // Set border style
-            borderWidth: '1px', // Set border width
-            '&:hover fieldset': {
-              borderColor: '#124D81' // Set border color on hover
-            },
-            '&.Mui-focused fieldset': {
-              borderColor: '#124D81' // Set border color when focused
-            }
-          }
-        }}
-        placeholder={currentPath === '/service' ? 'Hospital Name' : 'Device S.NO'}
-        style={{ width: '200px' }}
-        onChange={(e) => props.setSearchQuery(e.target.value)}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <SearchIcon style={{ color: darkTheme ? 'white' : 'black' }} />
-            </InputAdornment>
-          ),
-        }}
-      />
-    </Stack>
-  </div>
+                  <><div style={{ marginLeft: 'auto' }}>
+                  <Stack sx={{ backgroundColor: darkTheme ? '' : '#FFFFFF', borderRadius: '25px' }}>
+                    <TextField
+                      variant="outlined"
+                      size="small"
+                      inputProps={{ style: { color: darkTheme ? 'white' : '#124D81' } }} // Set text color to blue
+                      sx={{
+                        backgroundcolor: '#FFFFFF',
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '25px', // Set border radius
+                          borderColor: '#F9F9F9', // Set border color
+                          borderStyle: 'solid', // Set border style
+                          borderWidth: '1px', // Set border width
+                          '&:hover fieldset': {
+                            borderColor: '#124D81' // Set border color on hover
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#124D81' // Set border color when focused
+                          }
+                        }
+                      }}
+                      placeholder={currentPath === '/service' ? 'Hospital Name' : 'Device S.NO'}
+                      style={{ width: '200px' }}
+                      onChange={(e) => props.setSearchQuery(e.target.value)}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <SearchIcon style={{ color: darkTheme ? 'white' : 'black' }} />
+                          </InputAdornment>
+                        ),
+                      }} />
+                  </Stack>
+                </div>
+                
+                <div style={{ marginLeft: '1%' }}>
+                    {/* Notification Icon Button */}
+                    <IconButton
+                      onClick={handleOpenNotifications}
+                      style={{
+                        backgroundColor: isOpen ? (darkTheme ? '#333' : '#FFFFFF') : 'transparent',
+                        borderRadius: '50%',
+                      }}
+                    >
+                      <Badge badgeContent={notifications.length} color="error">
+                        <NotificationsIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} />
+                      </Badge>
+                    </IconButton>
+
+                    {/* Notification Menu */}
+                    <Menu
+                      anchorEl={anchorElNotification}
+                      open={isOpen}
+                      onClose={handleCloseNotifications}
+                      PaperProps={{
+                        style: {
+                          width: '400px',
+                          backgroundColor: darkTheme ? '#000000' : '#F3F2F7',
+                          maxHeight: '600px',
+                          overflowY: 'auto',
+                        },
+                      }}
+                    >
+                      {/* Notifications List */}
+                      <List>
+                        {notifications.length === 0 ? (
+                          <ListItem>
+                            <ListItemText primary="No Notifications" sx={{ color: 'grey' }} />
+                          </ListItem>
+                        ) : (
+                          notifications.map((notification) => (
+                            <ListItem key={notification.id} style={{ borderBottom: '1px solid lightgray' }}>
+                              <ListItemText
+                                primary={notification.message}
+                                primaryTypographyProps={{
+                                  style: {
+                                    color: darkTheme ? 'white' : '#124D81',
+                                    wordWrap: 'break-word',
+                                  },
+                                }} />
+                            </ListItem>
+                          ))
+                        )}
+                      </List>
+
+                      {/* Clear All and Settings */}
+                      <ListItem style={{ justifyContent: 'left' }}>
+                        <Button variant="contained" color="primary" onClick={clearNotifications} disabled={notifications.length === 0}>
+                          Clear
+                        </Button>
+
+                      </ListItem>
+                      <div><Accordion sx={{ backgroundColor: "transparent", backgroundImage: 'none' }}>
+                        <AccordionSummary
+                          expandIcon={<ExpandMore style={{ color: darkTheme ? '#FFFFFF' : "#124D81" }} />}
+                          aria-controls="panel1a-content"
+                          id="panel1a-header"
+                        >
+                          <Typography variant="subtitle1" style={{ color: darkTheme ? '#FFFFFF' : "#124D81" }}>Notification Settings</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+          <Stack direction="row" width="100%" justifyContent="space-evenly">
+            <FormControlLabel
+              control={<Checkbox checked={alarmChecked} onChange={handleAlarmChange} style={{ color: darkTheme ? '#FFFFFF' : "#124D81" }} />}
+              label={<Typography style={{ color: darkTheme ? '#FFFFFF' : '#124D81' }}>Alarm</Typography>} />
+            <FormControlLabel
+              control={<Checkbox checked={systemDataChecked} onChange={handleSystemDataChange} style={{ color: darkTheme ? '#FFFFFF' : "#124D81" }} />}
+              label={<Typography style={{ color: darkTheme ? '#FFFFFF' : '#124D81' }}>System Data</Typography>} />
+            <FormControlLabel
+              control={<Checkbox checked={eventLogChecked} onChange={handleEventLogChange} style={{ color: darkTheme ? '#FFFFFF' : "#124D81" }} />}
+              label={<Typography style={{ color: darkTheme ? '#FFFFFF' : '#124D81' }}>Event Log</Typography>} />
+          </Stack>
+        </AccordionDetails>
+        <AccordionActions>
+          <Button sx={{ color: '#FFFFFF', backgroundColor: '#124D81' }} onClick={handleSaveSettings}>
+            Save
+          </Button>
+        </AccordionActions>
+                      </Accordion></div>
+
+
+                    </Menu>
+                      {/* Snackbar */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}  // Auto-hide after 3 seconds
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert  severity="success" sx={{ width: '100%' }}>
+          Notification settings saved successfully!
+        </Alert>
+      </Snackbar>
+                  </div>
+                  </>
 )}
 
-              {screenSize ? (
+  {screenSize ? (
                 <>
                 <Stack direction={'row'} justifyContent={'center'} textAlign={'center'} >
                     {notHome && UserRole === 'Hospital Technician' && (

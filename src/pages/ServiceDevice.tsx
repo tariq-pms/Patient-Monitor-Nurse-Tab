@@ -13,7 +13,6 @@ interface ServiceDeviceProps {
 export const ServiceDevice: React.FC<ServiceDeviceProps> = ({ darkTheme, searchQuery,setSearchQuery }) => {
   const location = useLocation();
   const { deviceList = [], organizationId } = location.state || {};
-
   const [filteredDeviceList, setFilteredDeviceList] = useState<any[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<any>(null);
   const [metricsData, setMetricsData] = useState<any[]>([]);
@@ -30,7 +29,7 @@ export const ServiceDevice: React.FC<ServiceDeviceProps> = ({ darkTheme, searchQ
     }
   }, [deviceList, organizationId]);
   useEffect(() => {
-    // Clear search query when navigating to the ServicePage
+    
     setSearchQuery('');
   }, [setSearchQuery]);
 
@@ -123,9 +122,7 @@ export const ServiceDevice: React.FC<ServiceDeviceProps> = ({ darkTheme, searchQ
           searchQuery={searchQuery} // Pass searchQuery if needed
           deviceMetrics={metricsData}
           darkTheme={darkTheme} 
-          setSearchQuery={function (): void {
-            throw new Error('Function not implemented.');
-          } }        />
+          />
       </Box>
 
       <Box sx={{

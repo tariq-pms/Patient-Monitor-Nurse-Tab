@@ -54,15 +54,13 @@ export const ServiceDetails: React.FC<ServiceDetailsProps> = ({
     }
   }, [selectedDevice]);
   
-
   const handleTabChange = (_event: any, newTab: React.SetStateAction<string> | null) => {
     if (newTab !== null) {
       setSelectedTab(newTab);
     }
   };
 
-
-  const alarmsData = deviceMetricsHistory.filter(
+const alarmsData = deviceMetricsHistory.filter(
     (metric) => metric.type.coding[0].code === 'alarm'
   );
 
@@ -74,11 +72,6 @@ export const ServiceDetails: React.FC<ServiceDetailsProps> = ({
     (metric) => metric.type.coding[0].code === 'calibration'
   );
 
-  // const calibration = deviceMetricsHistory.filter((metric) =>
-  //   metric.extension?.some(
-  //     (ext: { url: string; }) => ext.url === 'http://terminology.hl7.org/fhir/StructureDefinition/calibration'
-  //   )
-  // );
   
   return (
     <React.Fragment>
@@ -118,12 +111,10 @@ export const ServiceDetails: React.FC<ServiceDetailsProps> = ({
     {/* S.No:{selectedDevice.resource.identifier[2]?.value} */}
     {`S.No: ${selectedDevice.resource.identifier[2]?.value || '--'}`}
   </Typography>
-  {/* <Box sx={{ marginLeft: 'auto' }}>
-    <IconButton>
-      <FontAwesomeIcon style={{ paddingRight: '15px', margin: '0px', color: '#FFFFFF' }} icon={faXmark} />
-    </IconButton>
-  </Box> */}
+ 
 </Stack>
+
+
 
       <Stack sx={{ alignItems: 'center', justifyContent: 'center', width: '100%', marginTop: '2%' }}>
         <ToggleButtonGroup
@@ -274,7 +265,29 @@ export const ServiceDetails: React.FC<ServiceDetailsProps> = ({
               <Box sx={{ display: 'flex', color: darkTheme?'#FFFFFF':"#000000", justifyContent: 'space-between', mb: 3 }}>
               <Card sx={{ p: 2, backgroundColor: darkTheme ? '#000000' : '#CACACA', flex: 1, mr: 1 }}>
   <List sx={{ color: darkTheme ? '#FFFFFF' : "#000000" }}>
-    {['SoftwareVersion', 'MASIMOVersion'].map((version) => {
+  {['SoftwareVersion'].map((version) => {
+    const versionResult = eventLogsData.find(metric => 
+      metric.extension?.some((ext: { valueQuantity: { system: string | string[]; }; }) => ext.valueQuantity?.system.includes(version))
+    );
+
+    const codeParts = versionResult?.extension[0]?.valueQuantity?.code?.split(',') || ['N/A', 'N/A']; // Split the code into two parts
+
+    return (
+      <React.Fragment key={version}>
+        <ListItem>
+          <ListItemText 
+            primary={`TFT Version: ${codeParts[0]}`}  // Display first part (TFT Version)
+          />
+        </ListItem>
+        <ListItem>
+          <ListItemText 
+            primary={`Control Board Version: ${codeParts[1]}`}  // Display second part (Control Board Version)
+          />
+        </ListItem>
+      </React.Fragment>
+    );
+  })}
+    {[ 'MASIMOVersion'].map((version) => {
       const versionResult = eventLogsData.find(metric => 
         metric.extension?.some((ext: { valueQuantity: { system: string | string[]; }; }) => ext.valueQuantity?.system.includes(version))
       );
@@ -360,7 +373,6 @@ export const ServiceDetails: React.FC<ServiceDetailsProps> = ({
         <TableRow>
           
           <TableCell style={{ color: darkTheme ? '#FFFFFF' : '#000000' }}>Calibration</TableCell>
-         
           <TableCell style={{ color: darkTheme ? '#FFFFFF' : '#000000' }}>Value</TableCell>
           <TableCell style={{ color: darkTheme ? '#FFFFFF' : '#000000' }}>Date & Time</TableCell>
         </TableRow>
