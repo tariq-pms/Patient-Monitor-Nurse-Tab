@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import {AppBar, Collapse, Divider,Drawer,FormControl,IconButton,Switch,InputAdornment,List,ListItem,ListItemButton,ListItemText,Menu,MenuItem,Select,SelectChangeEvent, Stack, TextField, useMediaQuery, useTheme, Badge, Paper, FormControlLabel, AccordionDetails, AccordionSummary, Accordion, Checkbox, AccordionActions, Snackbar, Alert} from '@mui/material';
+import {AppBar, Collapse, Divider,Drawer,FormControl,IconButton,Switch,InputAdornment,List,ListItem,ListItemButton,ListItemText,Menu,MenuItem,Select,SelectChangeEvent, Stack, TextField, useMediaQuery, useTheme, Badge, FormControlLabel, AccordionDetails, AccordionSummary, Accordion, Checkbox, AccordionActions, Snackbar, Alert} from '@mui/material';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -39,6 +39,7 @@ export const Header: FC<HeaderProps> = (props) => {
   const location = useLocation();
   const theme = useTheme();
   const screenSize = useMediaQuery(theme.breakpoints.up('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const {user, isLoading, isAuthenticated, logout, getIdTokenClaims} = useAuth0();
   const[UserRole, setUserRole] = useState("");
   const[UserOrganization, setUserOrganization] = useState("");
@@ -185,7 +186,7 @@ const { notifications, clearNotifications } = useNotification();
 const [alarmChecked, setAlarmChecked] = useState(false);
 const [systemDataChecked, setSystemDataChecked] = useState(false);
 const [eventLogChecked, setEventLogChecked] = useState(false);
-const [filteredNotifications, setFilteredNotifications] = useState(notifications); // To store filtered notifications
+const [, setFilteredNotifications] = useState(notifications); // To store filtered notifications
 const [openSnackbar,setOpenSnackbar]= useState(false);
 // Handle checkbox changes
 const handleAlarmChange = (event: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {
@@ -214,7 +215,7 @@ const handleSaveSettings = () => {
   handleCloseNotifications();
   setOpenSnackbar(true); // Optionally close the notifications menu
 };
-const handleCloseSnackbar = (event: any, reason: string) => {
+const handleCloseSnackbar = (_event: any, reason: string) => {
   if (reason === 'clickaway') {
     return;
   }
@@ -232,58 +233,71 @@ const isOpen = Boolean(anchorElNotification);
 
   return (
    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" style={{ background: 'transparent', boxShadow: 'none' }} sx={{ boxShadow: '0px 5px 5px 0px yellow' }}>
+      <AppBar position="static" style={{ background: 'transparent', boxShadow: 'none' }} >
         <Toolbar>
           {!isLoading && isAuthenticated && (
             <>
               <div style={{ display: 'flex', marginRight: 'auto' }}>
-                <Box onClick={handleBackButtonClick} sx={{ cursor: 'pointer' }}>
-                  <img src={pmsLogo} alt="Phoenix" style={{ maxWidth: '90%', height: 'auto' }} />
-                  
-                </Box>
-                <div >
-                   {/* <Organization darkTheme={darkTheme} /> */}
-                   <Typography style={{color:darkTheme?'white':'#124D81'}} > {currentTime.toLocaleTimeString()} | {currentTime.toLocaleDateString()}</Typography>
-                    </div>
-                    
               
-              </div>
+                  <Box onClick={handleBackButtonClick} sx={{ cursor: 'pointer' }}>
+                    <img src={pmsLogo} alt="Phoenix" style={{ maxWidth: '90%', height: 'auto' }} />
+                  </Box>
+                  {/* Show Time */}
+                  {!isMobile && (
+                    <Typography style={{ color: darkTheme ? 'white' : '#124D81', marginLeft: '20px' }}>
+                      {currentTime.toLocaleTimeString()} | {currentTime.toLocaleDateString()}
+                    </Typography>
+                  )}
+            </div>
              
 
                 {notHome && UserRole === 'Service' &&  (
-                  <><div style={{ marginLeft: 'auto' }}>
-                  <Stack sx={{ backgroundColor: darkTheme ? '' : '#FFFFFF', borderRadius: '25px' }}>
-                    <TextField
-                      variant="outlined"
-                      size="small"
-                      inputProps={{ style: { color: darkTheme ? 'white' : '#124D81' } }} // Set text color to blue
-                      sx={{
-                        backgroundcolor: '#FFFFFF',
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '25px', // Set border radius
-                          borderColor: '#F9F9F9', // Set border color
-                          borderStyle: 'solid', // Set border style
-                          borderWidth: '1px', // Set border width
-                          '&:hover fieldset': {
-                            borderColor: '#124D81' // Set border color on hover
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#124D81' // Set border color when focused
-                          }
-                        }
-                      }}
-                      placeholder={currentPath === '/service' ? 'Hospital Name' : 'Device S.NO'}
-                      style={{ width: '200px' }}
-                      onChange={(e) => props.setSearchQuery(e.target.value)}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <SearchIcon style={{ color: darkTheme ? 'white' : 'black' }} />
-                          </InputAdornment>
-                        ),
-                      }} />
-                  </Stack>
-                </div>
+                  <>
+                  <div style={{ marginLeft: 'auto' }}>
+      <Stack sx={{ backgroundColor: darkTheme ? '' : '#FFFFFF', borderRadius: '25px' }}>
+        <TextField
+          variant="outlined"
+          size="small"
+          inputProps={{
+            style: {
+              color: darkTheme ? 'white' : '#124D81',
+              padding: isMobile ? '4px 5px' : '8px 14px',  // Adjust padding for mobile
+              fontSize: isMobile ? '0.7rem' : '1rem',  // Adjust font size for mobile
+            },
+          }}
+          sx={{
+            backgroundcolor: '#FFFFFF',
+            width: isMobile ? '100px' : '200px',  // Adjust width for mobile
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '25px',  // Set border radius
+              borderColor: '#F9F9F9',  // Set border color
+              borderStyle: 'solid',  // Set border style
+              borderWidth: '1px',  // Set border width
+              '&:hover fieldset': {
+                borderColor: '#124D81',  // Set border color on hover
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#124D81',  // Set border color when focused
+              },
+            },
+          }}
+          placeholder={currentPath === '/service' ? 'Hospital Name' : 'Device S.NO'}
+          onChange={(e) => props.setSearchQuery(e.target.value)}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <SearchIcon
+                  style={{
+                    color: darkTheme ? 'white' : 'black',
+                    fontSize: isMobile ? '1.2rem' : '1.8rem',  // Adjust icon size for mobile
+                  }}
+                />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Stack>
+    </div>
                 
                 <div style={{ marginLeft: '1%' }}>
                     {/* Notification Icon Button */}
@@ -295,7 +309,7 @@ const isOpen = Boolean(anchorElNotification);
                       }}
                     >
                       <Badge badgeContent={notifications.length} color="error">
-                        <NotificationsIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} />
+                        <NotificationsIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize:isMobile ? '1.2rem' : '1.8rem' }} />
                       </Badge>
                     </IconButton>
 
@@ -306,7 +320,7 @@ const isOpen = Boolean(anchorElNotification);
                       onClose={handleCloseNotifications}
                       PaperProps={{
                         style: {
-                          width: '400px',
+                          width:isMobile ?'100%': '400px',
                           backgroundColor: darkTheme ? '#000000' : '#F3F2F7',
                           maxHeight: '600px',
                           overflowY: 'auto',
@@ -328,6 +342,7 @@ const isOpen = Boolean(anchorElNotification);
                                   style: {
                                     color: darkTheme ? 'white' : '#124D81',
                                     wordWrap: 'break-word',
+                                    fontSize:isMobile?'12px':'15px'
                                   },
                                 }} />
                             </ListItem>
@@ -348,19 +363,19 @@ const isOpen = Boolean(anchorElNotification);
                           aria-controls="panel1a-content"
                           id="panel1a-header"
                         >
-                          <Typography variant="subtitle1" style={{ color: darkTheme ? '#FFFFFF' : "#124D81" }}>Notification Settings</Typography>
+                          <Typography variant = {isMobile ? "caption":"subtitle1"} style={{ color: darkTheme ? '#FFFFFF' : "#124D81" }}>Notification Settings</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
           <Stack direction="row" width="100%" justifyContent="space-evenly">
             <FormControlLabel
               control={<Checkbox checked={alarmChecked} onChange={handleAlarmChange} style={{ color: darkTheme ? '#FFFFFF' : "#124D81" }} />}
-              label={<Typography style={{ color: darkTheme ? '#FFFFFF' : '#124D81' }}>Alarm</Typography>} />
+              label={<Typography variant = {isMobile ? "caption":"subtitle1"} style={{ color: darkTheme ? '#FFFFFF' : '#124D81' }}>Alarm</Typography>} />
             <FormControlLabel
               control={<Checkbox checked={systemDataChecked} onChange={handleSystemDataChange} style={{ color: darkTheme ? '#FFFFFF' : "#124D81" }} />}
-              label={<Typography style={{ color: darkTheme ? '#FFFFFF' : '#124D81' }}>System Data</Typography>} />
+              label={<Typography variant = {isMobile ? "caption":"subtitle1"} style={{ color: darkTheme ? '#FFFFFF' : '#124D81' }}>System Data</Typography>} />
             <FormControlLabel
               control={<Checkbox checked={eventLogChecked} onChange={handleEventLogChange} style={{ color: darkTheme ? '#FFFFFF' : "#124D81" }} />}
-              label={<Typography style={{ color: darkTheme ? '#FFFFFF' : '#124D81' }}>Event Log</Typography>} />
+              label={<Typography variant = {isMobile ? "caption":"subtitle1"}  style={{ color: darkTheme ? '#FFFFFF' : '#124D81' }}>Event Log</Typography>} />
           </Stack>
         </AccordionDetails>
         <AccordionActions>
@@ -564,95 +579,151 @@ const isOpen = Boolean(anchorElNotification);
                       (
                       <>
                   <IconButton onClick={() => settemp(true)}>
-                    <MenuIcon />
+                    <MenuIcon  style={{color: darkTheme ? '#FFFFFF' : '#124D81'}} />
                   </IconButton>
                   <Drawer
                     anchor="right"
                     open={temp}
                     onClose={() => settemp(false)}
-                    PaperProps={{ style: { width: '40%', backgroundColor: 'black' } }}
+                    PaperProps={{ style: { width: '55%', backgroundColor: darkTheme ? '' : '#FFFFFF' } }}
                   >
-                    <Stack width={'100%'} height={'100%'} sx={{ backgroundColor: '#131726' }} divider={<Divider />}>
-                      <Stack height={'5%'} justifyContent={'center'} alignItems={'center'}>
-                        <Typography>Settings</Typography>
-                      </Stack>
+                    <Stack width={'100%'} height={'100%'}  >
+                    <Stack direction="row" width="100%" justifyContent="space-around" padding={1}  borderBottom={"1px solid grey"}>
+          <Typography variant="subtitle1" style={{color: darkTheme ? '#FFFFFF' : '#124D81'}}>Dark Mode</Typography>
+          <Switch
+            onChange={toggleDarkTheme}
+            checked={darkTheme}
+            sx={{
+              
+              '& .MuiSwitch-switchBase.Mui-checked': {
+                color: '#FFFFFF',
+                '&:hover': {
+                  backgroundColor: 'rgba(18, 77, 129, 0.08)',
+                },
+              },
+              '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                backgroundColor: '#00AEEE',
+              },
+              '& .MuiSwitch-track': {
+                backgroundColor: 'grey',
+              },
+            }}
+          />
+        </Stack>
                       {notHome && UserRole === 'Hospital Clinician' && (
-                      <Stack direction={'row'} width={'100%'} height={'5%'} justifyContent={'center'} marginBottom={'3%'} marginTop={'5%'}>
-                      
-                      </Stack>
-                      )}
-
-                      <List>
-                        <ListItemButton onClick={() => setSmallList(!smallList)}>
-                          <ListItemText>
-                            <Typography variant='h6' style={{ marginTop: '3%', paddingBottom: '3%' }}>Rooms </Typography>
-                          </ListItemText>
-                          {smallList ? <ExpandLess /> : <ExpandMore />}
-                        </ListItemButton>
-                        <Collapse in={smallList} timeout="auto" unmountOnExit>
-                          <List component="div" disablePadding>
-                            {temproom.map((room) => (
-                              <ListItem key={room.resource.id}>
-                                <ListItemButton
-                                  onClick={() => {
-                                   
-                                      handleSetRoom2(room.resource.name);
-                                      setNotHome(true);
-                                      navigate('/device-monitor');
-                                   
-                                  }}
-                                  sx={{
-                                    marginLeft: '20px',
-                                    padding: '6%',
-                                    backgroundColor: '',
-                                  }}
-                                  
-                                >
-                                  {room.resource.name.toString()}
-                                </ListItemButton>
+                     <Stack direction={'row'} width={'100%'} justifyContent={'center'}borderBottom={"1px solid grey"}>
+                     <List>
+                     <ListItemButton onClick={() => setSmallList(!smallList)}>
+                       <ListItemText>
+                         <Typography variant='h6' >Rooms </Typography>
+                       </ListItemText>
+                       {smallList ? <ExpandLess /> : <ExpandMore />}
+                     </ListItemButton>
+                     <Collapse in={smallList} timeout="auto" unmountOnExit>
+                       <List component="div" disablePadding>
+                         {temproom.map((room) => (
+                           <ListItem key={room.resource.id}>
+                             <ListItemButton
+                               onClick={() => {
                                 
-                              </ListItem>
-                            ))}
+                                   handleSetRoom2(room.resource.name);
+                                   setNotHome(true);
+                                   navigate('/device-monitor');
+                                 
+                               }}
+                               sx={{
+                                 marginLeft: '20px',
+                                 padding: '6%',
+                                 backgroundColor: '',
+                               }}
+                               
+                             >
+                               {room.resource.name.toString()}
+                             </ListItemButton>  </ListItem>))} </List></Collapse>  </List></Stack> )}
 
-                            
-                        {notHome && UserRole === 'Hospital Technician' && (<>
-                                  <MenuItem value="R&D" sx={{width: 'auto', padding: '6%', backgroundColor: '#131726', borderTop: '1px solid grey',}} onClick={() => {navigate('/rooms');setNotHome(false);setPrevRoom(room); } }>Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }} />
-                                  </MenuItem>
-                                  {/* <MenuItem value="R&D" sx={{width: '100%',padding: '6%',paddingLeft: '20px',backgroundColor: '#131726',textAlign:'space-between,'}}onClick={handleAdminClick}>Admin Access <PersonIcon sx={{ marginLeft: 'auto' }} /></MenuItem> */}
-                                  </> )}
-                          </List>
-                          
-                        </Collapse> 
-                        
-                      </List>
-                      <Box width={'100%'} height={'200px'} marginTop={'auto'} sx={{ backgroundColor: '#131726' }}>
-                        <Stack direction={'row'} justifyContent={'space-between'}>
-                          <Typography style={{ marginLeft: '3%', marginTop: '5%', marginBottom: '5%' }}>
-                            Hospital Name
-                          </Typography>
-                          <Button onClick={() => logout()} sx={{ color: 'white', textTransform: 'capitalize' }}>
-                            <Typography variant="subtitle2">Sign out</Typography>
-                          </Button>
-                        </Stack>
-                        <Stack direction={'row'} width={'100%'}>
-                          <Avatar style={{ marginLeft: '3%', marginTop: '2%', width: 100, height: 100 }}>
-                            {(() => (
-                              <Typography variant="h3">{String(user?.nickname)[0].toUpperCase()}</Typography>
-                            ))()}
-                          </Avatar>
-                          <Stack>
-                            <Typography variant="h5" style={{ marginLeft: '8%', marginTop: '2%' }}>
-                              {user?.nickname}
-                            </Typography>
-                            <Typography variant="subtitle1" style={{ marginLeft: '8%', marginTop: '2%' }}>
-                              {user?.email}
-                            </Typography>
-                            <Typography variant="subtitle2" style={{ marginLeft: '8%', marginTop: '2%' }}>
-                              Designation
-                            </Typography>
-                          </Stack>
-                        </Stack>
-                      </Box>
+                    
+<Box  width={'100%'} height={'22%'}  marginTop={'auto'} sx={{ backgroundColor: darkTheme ? '' : '#FFFFFF',overflow: 'hidden'  // Prevent content overflow
+}}
+>
+ 
+
+  <Stack 
+    direction={'row'}  alignItems="center" paddingLeft={1} flexWrap="nowrap"  
+  >
+    <Typography 
+      variant="caption" 
+      noWrap  // Ensure text stays in one line
+      style={{ color: darkTheme ? 'white' : 'black', maxWidth: '50%' }} // Max width to prevent overflow
+    >
+      Hospital Name
+    </Typography>
+    
+    
+  </Stack>
+ 
+  <Stack 
+    direction={'row'} 
+    alignItems="center" 
+   
+    flexWrap="nowrap" // Prevent wrapping
+  >
+    <Avatar 
+      style={{ 
+        width: 55, 
+        height: 55, 
+        marginRight: '10px' 
+      }} 
+    >
+      <Typography variant="h5">
+        {String(user?.nickname)[0].toUpperCase()}
+      </Typography>
+    </Avatar>
+
+    <Stack padding={1} overflow="hidden">
+      <Typography 
+        variant="subtitle2" 
+        noWrap  // Ensure text stays in one line
+        style={{ color: darkTheme ? 'white' : 'black', maxWidth: '100%' }}
+      >
+        {user?.nickname}
+      </Typography>
+      
+      <Typography 
+        variant="caption" 
+        noWrap
+        style={{ color: darkTheme ? 'white' : 'black', maxWidth: '100%' }}
+      >
+        {user?.email}
+      </Typography>
+      
+      <Typography 
+        variant="caption" 
+        noWrap
+        style={{ color: darkTheme ? 'white' : 'black', maxWidth: '100%' }}
+      >
+        {user?.role}
+      </Typography>
+    </Stack>
+    
+  </Stack>
+  <Stack width={'95%'} alignItems="end" ><Button 
+      onClick={() => logout()} 
+      sx={{ 
+        backgroundColor: darkTheme ? 'white' : 'black', 
+        
+        whiteSpace: 'nowrap', // Ensure button text doesn't wrap
+        minWidth: 'auto'  // Prevent button from being too wide
+      }}
+    >
+      <Typography 
+        variant="caption" 
+        style={{ color: darkTheme ? 'black' : 'white' }}
+      >
+        Sign out
+      </Typography>
+    </Button></Stack>
+</Box>
+
                     </Stack>
                   </Drawer>
                       </>
