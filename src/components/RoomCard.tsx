@@ -104,41 +104,7 @@ export const RoomCard: FC<roomData> = (props) => {
             } 
         }
     }])
-    
-    // const [PatientList, setPatientList] = useState([
-    //     {
-    //         resource: {
-    //             resourceType: String,
-    //             id: String,
-    //             meta: {
-    //                 versionId: String,
-    //                 lastUpdated: String
-    //             },
-    //             extension: [
-    //                 {
-    //                     url: String,
-    //                     valueReference: {
-    //                         reference: String
-    //                     }
-    //                 },
-    //                 {
-    //                     url: String,
-    //                     valueString: String
-    //                 }
-    //             ],
-    //             identifier: [
-    //                 {
-    //                     system: String,
-    //                     value: String
-    //                 }
-    //             ],
-    //             managingOrganization: {
-    //                 reference: String
-    //             }
-    //         }
-    //     }
-    // ]);
-    
+ 
     const [open, setOpen] = useState(false);
     const [deviceChanged, setDeviceChanged] = useState(false)
     useEffect(() => {setDeviceChanged(!deviceChanged)},[props.deviceChangeToggle])
@@ -225,98 +191,6 @@ export const RoomCard: FC<roomData> = (props) => {
             
             )
         }
-   
-
-// const addButton = (index: any) => {
-//     let data = {};
-//     const device = deviceList[Number(index)].resource;
-//     const patientReference = device.patient.reference;
-
-//     // Ensure patientReference is a string before using split
-//     const patientReferenceString = patientReference as unknown as string;
-
-//     // Extract patient ID from the patient reference
-//     const patientId = patientReferenceString.split("/")[1];
-//     console.log("checking patient id in room card:", patientId);
-
-//     // Fetch patient data first to get the existing extensions
-//     fetch(`https://pmsind.co.in:5000/Patient/${patientId}`, {
-//         credentials: "omit",
-//         headers: {
-//             Authorization: "Basic " + btoa("fhiruser:change-password"),
-//         },
-//     })
-//     .then((response) => response.json())
-//     .then((patientData) => {
-//         // Create a copy of existing extensions
-//         let extensions = patientData.extension ? [...patientData.extension] : [];
-
-//         // Add the location extension to the extensions array
-//         extensions.push({
-//             url: "http://hl7.org/fhir/StructureDefinition/patient-location",
-//             valueReference: { reference: `Location/${props.roomId}` }
-//         });
-
-//         // Update the patient data with the new extensions
-//         patientData.extension = extensions;
-
-//         const apiUrl = `https://pmsind.co.in:5000/Patient/${patientId}`;
-//         const requestOptions: RequestInit = {
-//             credentials: "omit",
-//             method: "PUT",
-//             body: JSON.stringify(patientData),
-//             headers: {
-//                 "Content-Type": "application/json",
-//                 Authorization: "Basic " + btoa("fhiruser:change-password"),
-//             },
-//         };
-
-//         // Send request to update patient data with new extensions
-//         fetch(apiUrl, requestOptions)
-//         .then(response => {
-//             if (response.status === 200) {
-//                 // Update the device's location
-//                 let vvtemp = { "reference": `Location/${props.roomId}` };
-//                 data = {
-//                     ...device,
-//                     location: vvtemp
-//                 };
-
-//                 return fetch(`https://pmsind.co.in:5000/Device/${device.id}`, {
-//                     credentials: "omit",
-//                     method: "PUT",
-//                     body: JSON.stringify(data),
-//                     headers: {
-//                         "Content-Type": "application/json",
-//                         Authorization: "Basic " + btoa("fhiruser:change-password"),
-//                     },
-//                 });
-//             } else {
-//                 throw new Error("Failed to update patient data");
-//             }
-//         })
-//         .then(deviceResponse => {
-//             if (deviceResponse.status === 200) {
-//                 setSnack(true);
-//                 setSnackSucc(true);
-//                 setDeviceChanged(!deviceChanged);
-//                 props.deviceChange();
-//             } else {
-//                 throw new Error("Failed to update device location");
-//             }
-//         })
-//         .catch(error => {
-//             console.error("Error updating locations:", error);
-//             setSnack(true);
-//             setSnackSucc(false);
-//         });
-//     })
-//     .catch(error => {
-//         console.error("Error fetching patient data:", error);
-//         setSnack(true);
-//         setSnackSucc(false);
-//     });
-// };
 
 const addButton = (index: any) => {
     let data = {};

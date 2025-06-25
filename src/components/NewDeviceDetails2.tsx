@@ -315,10 +315,92 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
         "CmH2O": "y",
         "Bar": "y1",
     }
+    // const pressure1Option = {
+    //     animation: false,
+    //     tension: 0.3,
+    //     responsive: true,
+    //     // legend: {
+    //     //     position: 'bottom'
+    //     // },
+    //     interaction: {
+    //       mode: 'index' as const,
+    //       intersect: false,
+    //     },
+    //     stacked: false,
+    //     plugins: {
+    //         decimation:{
+    //             enabled: true,
+    //             algorithm: 'min-max',
+    //         },
+    //       colors: {
+    //         forceOverride: true
+    //       },
+    //       legend: {
+    //         display: false
+    //       },
+    //       htmlLegend: {
+    //         // ID of the container to put the legend in
+    //         containerID: 'legend-container',
+    //       },
+    //       zoom: {
+    //         pan: {
+    //             enabled: true,
+    //             mode: 'x',
+    //             modifierKey: 'ctrl'
+    //         },
+    //         zoom: {
+    //             wheel: {
+    //                 enabled: true,       // Enable wheel zooming
+    //                 modifierKey: 'ctrl'
+    //             },
+    //             mode: 'x', }
+    //     }
+    //     },
+    //     scales: {
+    //         x: {
+    //             ticks: {
+    //                 autoSkip: true,
+    //                 maxTicksLimit: 10
+    //             }
+    //         },
+    //       y: {      // Celcius
+    //         type: 'linear' as const,
+    //         display: true,
+    //         position: 'left' as const,
+    //         title: {
+    //             color:darkTheme? 'white':'black',
+    //             display: true,
+    //             text: "Percentage (%)"
+    //         },
+    //         ticks: {
+    //             color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
+    //         }
+    //       },
+    //       y1: {     // %
+    //         type: 'linear' as const,
+    //         display: true,
+    //         position: 'right' as const,
+    //         grid: {
+    //           drawOnChartArea: false,
+    //         },
+    //         title: {
+
+    //             color:darkTheme? 'white':'black',
+    //             display: true,
+    //             text: "Liters Per Minuite (LPM)"
+    //         },
+    //         ticks: {
+    //             color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
+    //         }
+
+    //       },
+    //     },
+    // };
     const pressure1Option = {
         animation: false,
         tension: 0.3,
         responsive: true,
+    
         // legend: {
         //     position: 'bottom'
         // },
@@ -326,6 +408,7 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
           mode: 'index' as const,
           intersect: false,
         },
+        
         stacked: false,
         plugins: {
             decimation:{
@@ -336,39 +419,63 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
             forceOverride: true
           },
           legend: {
-            display: false
+            display: false,
           },
+         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+         //   @ts-ignore
           htmlLegend: {
             // ID of the container to put the legend in
             containerID: 'legend-container',
           },
           zoom: {
-            pan: {
-                enabled: true,
-                mode: 'x',
-                modifierKey: 'ctrl'
-            },
+            // pan: {
+            //     enabled: true,
+            //     mode: 'x',
+            // },
             zoom: {
+                // pinch: {
+                //     enabled: true       // Enable pinch zooming
+                // },
                 wheel: {
                     enabled: true,       // Enable wheel zooming
                     modifierKey: 'ctrl'
                 },
-                mode: 'x', }
+                
+                mode: 'x',
+
+            }
         }
         },
         scales: {
+            
             x: {
                 ticks: {
+               
+                    color:darkTheme? 'white':'black' ,
                     autoSkip: true,
                     maxTicksLimit: 10
-                }
+                },
+                border: {
+                    display: true
+                },
+                grid: {
+                    display: true,
+                    drawOnChartArea: true,
+                    drawTicks: true,
+                    color:darkTheme? 'grey':'black'
+                },
+                
             },
           y: {      // Celcius
             type: 'linear' as const,
             display: true,
             position: 'left' as const,
+            grid: {
+                color: darkTheme? 'grey':'black',
+                drawOnChartArea: true,
+              },
             title: {
-                color:darkTheme? 'white':'black',
+                color:darkTheme?'white':'black',
                 display: true,
                 text: "Percentage (%)"
             },
@@ -381,25 +488,26 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
             display: true,
             position: 'right' as const,
             grid: {
+                color: darkTheme? 'grey':'black',  
               drawOnChartArea: false,
             },
             title: {
-
-                color:darkTheme? 'white':'black',
+                color:darkTheme?'white':'black',
                 display: true,
                 text: "Liters Per Minuite (LPM)"
             },
             ticks: {
                 color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
             }
-
           },
+          
         },
     };
     const pressure2Option = {
         animation: false,
         tension: 0.3,
         responsive: true,
+    
         // legend: {
         //     position: 'bottom'
         // },
@@ -407,26 +515,29 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
           mode: 'index' as const,
           intersect: false,
         },
+        
         stacked: false,
         plugins: {
             decimation:{
                 enabled: true,
                 algorithm: 'min-max',
             },
-            htmlLegend: {
-                // ID of the container to put the legend in
-                containerID: 'legend-container3',
-              },
           colors: {
             forceOverride: true
           },
           legend: {
-            display: false
+            display: false,
+          },
+         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+         //   @ts-ignore
+          htmlLegend: {
+            // ID of the container to put the legend in
+            containerID: 'legend-container3',
           },
           zoom: {
             // pan: {
             //     enabled: true,
-            //     mode: 'x'
+            //     mode: 'x',
             // },
             zoom: {
                 // pinch: {
@@ -436,23 +547,42 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
                     enabled: true,       // Enable wheel zooming
                     modifierKey: 'ctrl'
                 },
+                
                 mode: 'x',
+
             }
         }
         },
         scales: {
+            
             x: {
                 ticks: {
+               
+                    color:darkTheme? 'white':'black' ,
                     autoSkip: true,
                     maxTicksLimit: 10
-                }
+                },
+                border: {
+                    display: true
+                },
+                grid: {
+                    display: true,
+                    drawOnChartArea: true,
+                    drawTicks: true,
+                    color:darkTheme? 'grey':'black'
+                },
+                
             },
           y: {      // Celcius
             type: 'linear' as const,
             display: true,
             position: 'left' as const,
+            grid: {
+                color: darkTheme? 'grey':'black',
+                drawOnChartArea: true,
+              },
             title: {
-                color:darkTheme? 'white':'black',
+                color:darkTheme?'white':'black',
                 display: true,
                 text: "Centimeter of Water (CmH2O)"
             },
@@ -465,19 +595,103 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
             display: true,
             position: 'right' as const,
             grid: {
+                color: darkTheme? 'grey':'black',  
               drawOnChartArea: false,
             },
             title: {
-                color:darkTheme? 'white':'black',
+                color:darkTheme?'white':'black',
                 display: true,
-                text: "Bar"
+                text: "l/min"
             },
             ticks: {
                 color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
             }
           },
+          
         },
     };
+    // const pressure2Option = {
+    //     animation: false,
+    //     tension: 0.3,
+    //     responsive: true,
+    //     // legend: {
+    //     //     position: 'bottom'
+    //     // },
+    //     interaction: {
+    //       mode: 'index' as const,
+    //       intersect: false,
+    //     },
+    //     stacked: false,
+    //     plugins: {
+    //         decimation:{
+    //             enabled: true,
+    //             algorithm: 'min-max',
+    //         },
+    //         htmlLegend: {
+    //             // ID of the container to put the legend in
+    //             containerID: 'legend-container3',
+    //           },
+    //       colors: {
+    //         forceOverride: true
+    //       },
+    //       legend: {
+    //         display: false
+    //       },
+    //       zoom: {
+    //         // pan: {
+    //         //     enabled: true,
+    //         //     mode: 'x'
+    //         // },
+    //         zoom: {
+    //             // pinch: {
+    //             //     enabled: true       // Enable pinch zooming
+    //             // },
+    //             wheel: {
+    //                 enabled: true,       // Enable wheel zooming
+    //                 modifierKey: 'ctrl'
+    //             },
+    //             mode: 'x',
+    //         }
+    //     }
+    //     },
+    //     scales: {
+    //         x: {
+    //             ticks: {
+    //                 autoSkip: true,
+    //                 maxTicksLimit: 10
+    //             }
+    //         },
+    //       y: {      // Celcius
+    //         type: 'linear' as const,
+    //         display: true,
+    //         position: 'left' as const,
+    //         title: {
+    //             color:darkTheme? 'white':'black',
+    //             display: true,
+    //             text: "Centimeter of Water (CmH2O)"
+    //         },
+    //         ticks: {
+    //             color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
+    //         }
+    //       },
+    //       y1: {     // %
+    //         type: 'linear' as const,
+    //         display: true,
+    //         position: 'right' as const,
+    //         grid: {
+    //           drawOnChartArea: false,
+    //         },
+    //         title: {
+    //             color:darkTheme? 'white':'black',
+    //             display: true,
+    //             text: "Bar"
+    //         },
+    //         ticks: {
+    //             color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
+    //         }
+    //       },
+    //     },
+    // };
     const temperatureOption = {
         animation: false,
         tension: 0.3,
@@ -782,7 +996,7 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
     const alarmUI = newalarm[selectAlarm]?.time?.alarm.map((vals,index) => {
         if(newalarm[selectAlarm].time.priority[index]=="High Priority"){
             return (
-                <Box width={'200px'}  height={'110px'} sx={{border:'1px solid red', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px red`,backgroundColor:darkTheme?'#1C1C1E':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
+                <Box width={'200px'}  height={'110px'} sx={{border:'3px solid red', borderRadius:'10px', margin:'15px', backgroundColor:darkTheme?'#1C1C1E':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
                     <Typography variant='subtitle1' color={darkTheme?'white':'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
                         <Typography variant='subtitle2' color={darkTheme?'white':'#124D81'} >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
@@ -793,7 +1007,7 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
         }
         if(newalarm[selectAlarm].time.priority[index]=="Medium Priority"){
             return (
-                <Box width={'200px'} height={'110px'} sx={{border:'1px solid #ffd700', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px #ffd700`,backgroundColor:darkTheme?'#1C1C1E':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
+                <Box width={'200px'} height={'110px'} sx={{border:'3px solid #ffd700', borderRadius:'10px', margin:'15px', backgroundColor:darkTheme?'#1C1C1E':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
                     <Typography variant='subtitle1'  color={darkTheme?'white':'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
                         <Typography variant='subtitle2'  color={darkTheme?'white':'#124D81'} >{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
@@ -803,7 +1017,7 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
         }
         if(newalarm[selectAlarm].time.priority[index]=="Low Priority"){
             return (
-                <Box width={'200px'} height={'110px'} sx={{border:'1px solid cyan', borderRadius:'10px', margin:'15px', boxShadow: `0px 0px 10px 1px cyan`,backgroundColor:darkTheme?'#1C1C1E':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
+                <Box width={'200px'} height={'110px'} sx={{border:'1px solid cyan', borderRadius:'10px', margin:'15px', backgroundColor:darkTheme?'#1C1C1E':'#FFFFFF'}} justifyContent={'center'} textAlign={'center'}>
                     <Typography variant='subtitle1'  color={darkTheme?'white':'#124D81'} paddingTop={'13%'}><b>{vals}</b></Typography>
                     <div style={{display:'flex', justifyContent:'center', textAlign:'center'}}>
                         <Typography variant='subtitle2'  color={darkTheme?'white':'#124D81'}>{(newalarm[selectAlarm].date).toString()} - {(newalarm[selectAlarm].time.val).toString()}</Typography>
@@ -1597,7 +1811,7 @@ items.forEach((item) => {
                             yAxisID: "y"
                         })
                     }
-                    else if(data.valueQuantity.unit.toString() == "LPM" || data.code.text.toString() == "Set FiO2")
+                    else if(data.valueQuantity.unit.toString() == "%" || data.code.text.toString() == "Set FiO2")
                     {
                         let unit = data.valueQuantity.unit.toString() as keyof typeof pressure1OptionYaxis;
                         zeroth.push({
@@ -1612,7 +1826,7 @@ items.forEach((item) => {
                             yAxisID: pressure1OptionYaxis[unit] || "y"
                         })
                     }
-                    else if(data.valueQuantity.unit.toString() == "CmH2O" || data.valueQuantity.unit.toString() == "Bar"){
+                    else if(data.valueQuantity.unit.toString() == "cmH2O" || data.valueQuantity.unit.toString() == "l/min"){
                         let unit = data.valueQuantity.unit.toString() as keyof typeof pressure2OptionYaxis;
                         second.push({
                             label: data.code.text.toString(),
@@ -1674,7 +1888,7 @@ items.forEach((item) => {
                             yAxisID: heaterYaxis[unit] || "y"
                         })
                     }
-                    else if(data.code.text.toString() == "Pulse Rate" || data.code.text.toString() == "SpO2" || data.code.text.toString() == "SPO2"){
+                    else if(data.code.text.toString() == "Current Pulse Rate" || data.code.text.toString() == "Current SpO2" || data.code.text.toString() == "SPO2"){
                         let unit2 = data.valueQuantity.unit.toString() as keyof typeof pulseoximeterYaxis;
                         first.push({
                             label: data.code.text.toString() ,
@@ -1716,7 +1930,7 @@ items.forEach((item) => {
                             yAxisID: pressure1OptionYaxis[unit] || "y"
                         })
                     }
-                    else if(data.valueQuantity.unit.toString() == "CmH2O" || data.valueQuantity.unit.toString() == "Bar"){
+                    else if(data.valueQuantity.unit.toString() == "cmH2O" || data.valueQuantity.unit.toString() == "Bar"){
                         let unit = data.valueQuantity.unit.toString() as keyof typeof pressure2OptionYaxis;
                         second.push({
                             label: data.code.text.toString(),
@@ -1878,6 +2092,31 @@ items.forEach((item) => {
                 
             )
         }
+        if(props.observation_resource?.identifier[0]?.value?.toString()=="PMS-BCPAP"){
+
+            return (
+
+                <Stack width={'100%'} height={'100%'} direction={'row'} divider={
+                    <Divider orientation='vertical' flexItem sx={{marginLeft:'1%'}}/>
+                }>
+                    <Stack height={'100%'} width={'95%'} spacing={'5%'} sx={{backgroundColor:'transparent'}}  marginRight={'auto'} marginLeft={'2%'} marginTop={'2%'}>
+                        <Line ref={chartRef1} options={pressure1Option as ChartOptions<'line'>} data={temperatureData} height={"100%"} plugins={[temperatureLegendPlugin]} ></Line>
+                        <div id="legend-container"></div>
+                        <Divider />
+                        {/* <Line ref={chartRef2} options={pulseoximeterOption as ChartOptions<'line'>} data={pulseoximeterData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                        <div id="legend-container2"></div>
+                        <Divider /> */}
+                        <Line ref={chartRef3} options={pressure2Option as ChartOptions<'line'>} data={weightData} height={'100%'} plugins={[temperatureLegendPlugin]}></Line>
+                        <div id="legend-container3"></div> 
+                    </Stack>
+
+                </Stack>
+
+
+
+                
+            )
+        }
         if(props.observation_resource?.identifier[0]?.value?.toString()=="PMS-HCM"){
             return (
                 <Stack width={'100%'} height={'100%'} direction={'row'} justifyContent={'center'} divider={
@@ -1971,6 +2210,9 @@ items.forEach((item) => {
                                     else if(props.observation_resource.identifier[0].value.toString()=="PMS-SVAAS"){
                                         q = "SVAAS | "
                                     }
+                                    else if(props.observation_resource.identifier[0].value.toString()=="PMS-BCPAP"){
+                                        q = "BCPAP | "
+                                    }
                                     
                                     return (q+props.device_id)
                                 }
@@ -2057,9 +2299,9 @@ items.forEach((item) => {
                     </Typography>
                     </Stack>
                     {props.newData && props.observation_resource?.component.map((_obs: any,index: number) => {
-                    if((props.observation_resource?.component[index]?.code.text!="SIQ" && props.observation_resource?.component[index]?.code.text!="PVI" && props.observation_resource?.component[index]?.code.text!="PI" && props.observation_resource?.component[index]?.code.text!="SPO2" && props.observation_resource?.component[index]?.code.text!="Pulse Rate") && index!=0){
+                    if((props.observation_resource?.component[index]?.code.text!="SIQ" && props.observation_resource?.component[index]?.code.text!="PVI" && props.observation_resource?.component[index]?.code.text!="PI" && props.observation_resource?.component[index]?.code.text!="SPO2" && props.observation_resource?.component[index]?.code.text!="Pulse Rate") && index!=0 ) {
                     return (
-                    <Stack alignItems={'center'} spacing={'10px'} color={darkTheme?'#FFFFFF':'#124D81'}>
+                    <Stack alignItems={'center'} spacing={'10px'} color={ darkTheme ? '#FFFFFF' : '#124D81' }>
                     <Typography variant="subtitle1"  >
                         {props.observation_resource?.component[index]?.code.text}
                     </Typography>
@@ -2378,13 +2620,13 @@ items.forEach((item) => {
                     xs: '90%',
                     sm: '90%',
                     md: '70%',
-                    lg: '70%',
+                    lg: '80%',
                 },maxWidth:{
                     xs: '90%',
                     sm: '90%',
                     md: '70%',
-                    lg: '70%',
-                },minHeight:'90%',borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundColor: darkTheme?'#000000': '#FFFFFF'}}}
+                    lg: '80%',
+                },minHeight:'90%',borderRadius:'25px',  border:'0.4px solid #505050', backgroundColor: darkTheme?'#000000': '#FFFFFF'}}}
                 >
                 <DialogTitle
                     sx={{
@@ -2416,6 +2658,9 @@ items.forEach((item) => {
                                     }
                                     else if(props.observation_resource.identifier[0].value.toString()=="PMS-SVAAS"){
                                         q = "SVAAS | "
+                                    }
+                                    else if(props.observation_resource.identifier[0].value.toString()=="PMS-BCPAP"){
+                                        q = "BCPAP | "
                                     }
                                     
                                     return (q+props.device_id)
@@ -2474,10 +2719,10 @@ items.forEach((item) => {
                     </Stack>
                     {selectedTab === 'overview' && (
                     <>
-                    <Stack
+                    {/* <Stack
                     direction={'row'}
-                    divider={<Divider orientation='vertical' flexItem/>}
-                    sx={{display: "flex",flexWrap: "wrap",gap: { xs: "2rem",sm: "2rem",md: "4rem",lg: "4rem",xl: "4rem"},
+                    divider={<Divider orientation='vertical' flexItem sx={{ borderColor: darkTheme?'grey':'' }} />}
+                    sx={{display: "flex",flexWrap: "wrap",gap: { xs: "2rem",sm: "2rem",md: "3rem",lg: "3rem",xl: "3rem"},
                     mt: {xs: 5,sm: 6,md: 7,lg: 8,},
                     mb: {xs: 5,sm: 6,md: 7,lg: 8,},
                     justifyContent: "center",}}>
@@ -2485,7 +2730,7 @@ items.forEach((item) => {
                     <Typography variant="subtitle1" color={darkTheme?'#FFFFFF':'#124D81'}  >
                         {props.newData && props.observation_resource?.component[0]?.code.text}
                     </Typography>
-                    <Typography variant="h4" color={darkTheme?'#FFFFFF':'#124D81'} sx={{fontWeight:'bold'}}>
+                    <Typography variant="h5" color={darkTheme?'#FFFFFF':'#124D81'} sx={{fontWeight:'bold'}}>
                         {(() => {
                         if(props.newData){
                         return (props.observation_resource?.component[0]?.valueQuantity.unit=='1' || props.observation_resource?.component[0]?.valueQuantity.unit)
@@ -2538,7 +2783,7 @@ items.forEach((item) => {
                                     <Typography variant='h4'>
                                         {Math.round((props.observation_resource?.component[index]?.valueQuantity?.value + Number.EPSILON) * 100) / 100}&nbsp;
                                     </Typography>
-                                    <Typography variant='h5'>
+                                    <Typography variant='h6'>
                                         {props.observation_resource?.component[index]?.valueQuantity?.unit}
                                     </Typography>
                                 </>
@@ -2549,10 +2794,104 @@ items.forEach((item) => {
                     )
                     }
                     })}
-                    </Stack>
+                    </Stack> */}
+                    <Stack
+  direction="row"
+  divider={
+    <Divider
+      orientation="vertical"
+      flexItem
+      sx={{ borderColor: darkTheme ? "grey" : "" }}
+    />
+  }
+  sx={{
+    display: "flex",
+    flexWrap: "wrap",
+    gap: { xs: "1rem", sm: "1.5rem", md: "2rem", lg: "2.5rem", xl: "3rem" },
+    mt: { xs: 5, sm: 6, md: 7, lg: 8 },
+    mb: { xs: 5, sm: 6, md: 7, lg: 8 },
+    justifyContent: "center",
+    alignItems: "center",
+  }}
+>
+  {/* Main Component */}
+  <Stack alignItems="center" spacing={1}>
+    <Typography variant="subtitle1" color={darkTheme ? "#FFFFFF" : "#124D81"}>
+      {props.newData && props.observation_resource?.component[0]?.code.text}
+    </Typography>
+    <Typography
+      variant="h5"
+      color={darkTheme ? "#FFFFFF" : "#124D81"}
+      sx={{ fontWeight: "bold" }}
+    >
+      {props.newData
+        ? props.observation_resource?.component[0]?.valueQuantity.unit === "1" ||
+          props.observation_resource?.component[0]?.valueQuantity.unit
+        : "Device Not Active"}
+    </Typography>
+  </Stack>
+
+  {/* Additional Components */}
+  {props.newData &&
+    props.observation_resource?.component.map((_obs: any, index: number) => {
+      const comp = props.observation_resource?.component[index];
+      if (
+        !["SIQ", "PVI", "PI", "SPO2", "Pulse Rate"].includes(comp?.code?.text) &&
+        index !== 0
+      ) {
+        return (
+          <Stack
+            key={index}
+            alignItems="center"
+            spacing={1}
+            color={darkTheme ? "#FFFFFF" : "#124D81"}
+          >
+            <Typography variant="subtitle1">{comp?.code.text}</Typography>
+            {(() => {
+              if (comp?.valueQuantity?.unit === "Min") {
+                const value = Math.round(
+                  (comp?.valueQuantity?.value + Number.EPSILON) * 100
+                ) / 100;
+
+                if (value >= 60) {
+                  const hours = Math.floor(value / 60);
+                  const minutes = value % 60;
+                  return (
+                    <>
+                      <Typography variant="h4">{`${hours}:${minutes}`}</Typography>
+                      <Typography variant="h5">Hr</Typography>
+                    </>
+                  );
+                } else {
+                  return (
+                    <>
+                      <Typography variant="h4">{value}</Typography>
+                      <Typography variant="h5">Min</Typography>
+                    </>
+                  );
+                }
+              } else {
+                return (
+                  <>
+                    <Typography variant="h4">
+                      {Math.round(
+                        (comp?.valueQuantity?.value + Number.EPSILON) * 100
+                      ) / 100}
+                    </Typography>
+                    <Typography variant="h6">{comp?.valueQuantity?.unit}</Typography>
+                  </>
+                );
+              }
+            })()}
+          </Stack>
+        );  
+      }
+      return null;
+    })}
+</Stack>
 
                     {props.newData && (
-                        <Divider sx={{marginTop:'20px'}} />
+                        <Divider sx={{marginTop:'20px',backgroundColor:darkTheme?'#FFFFFF':'#124D81'}} />
                     )}
                     
                     {props.newData?
@@ -2575,7 +2914,7 @@ items.forEach((item) => {
                             {(() => {
                             var x = false
                             var items =  ( props.newData && props.observation_resource?.component.map((_obs: any, index: number) => {
-                                    if(props.observation_resource?.component[index]?.code.text=="SIQ"|| props.observation_resource?.component[index]?.code.text=="PVI" || props.observation_resource?.component[index]?.code.text=="PI"|| props.observation_resource?.component[index]?.code.text=="SPO2" || props.observation_resource?.component[index]?.code.text=="Pulse Rate"){
+                                    if(props.observation_resource?.component[index]?.code.text=="SIQ"|| props.observation_resource?.component[index]?.code.text=="PVI" || props.observation_resource?.component[index]?.code.text=="PI"|| props.observation_resource?.component[index]?.code.text=="Current SpO2" || props.observation_resource?.component[index]?.code.text=="Current Pulse Rate"){
                                         x = true
                                         var temp = false
                                         if(props.observation_resource?.component[index]?.code.text=="SIQ"){
@@ -2794,7 +3133,7 @@ items.forEach((item) => {
                     <IconButton sx={{height:'50px', width:'50px', borderRadius:'100px', marginTop:'auto', marginBottom:'auto'}} onClick={() => {if(selectAlarm<newalarm.length){setSelectAlarm(selectAlarm+1)}}}><FontAwesomeIcon fontSize={'30px'} icon={faChevronRight} style={{color:`${rightarrowcolor}`}} /></IconButton>  
                 </Stack>
                 {/* onClick={() => {setTableVisible(!tableVisisble)}} endIcon={tableVisisble ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />} */}
-                <Button sx={{width:'20%', height:'50px', marginLeft:'40%', marginTop:'3%', marginBottom:'3%', borderRadius:'50px', color:'#111522', backgroundColor:'white', border:'0.5px solid grey', fontWeight:50, boxShadow: `0px 0px 10px 1px #6e6f88`, textTransform:'capitalize'}}  endIcon={tableVisisble ? <KeyboardArrowUpIcon sx={{ fontSize: 80 }} /> : <KeyboardArrowDownIcon sx={{ fontSize: 80 }}  />} onClick={() => { handleClick();setTableVisible(!tableVisisble);}}> 
+                <Button sx={{width:'20%', height:'50px', marginLeft:'40%', marginTop:'3%', marginBottom:'3%', borderRadius:'50px', color:'#111522', backgroundColor:'white', border:'0.5px solid grey', fontWeight:50,  textTransform:'capitalize'}}  endIcon={tableVisisble ? <KeyboardArrowUpIcon sx={{ fontSize: 80 }} /> : <KeyboardArrowDownIcon sx={{ fontSize: 80 }}  />} onClick={() => { handleClick();setTableVisible(!tableVisisble);}}> 
                 <Box sx={{ fontWeight: 'regular', m: 1, fontSize:16, }}>Alarm Log</Box>
                 </Button>
                 <div  style={{ width:'100%'}} >

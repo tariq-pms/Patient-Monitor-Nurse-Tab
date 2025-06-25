@@ -65,7 +65,7 @@ const PlethEDA = ({ patientId, pleth_resource }) => {
                 }
                 resetTimeoutRef.current = setTimeout(() => {
                     resetDataPoints();
-                }, 2000); // Adjust the interval as needed
+                }, 3000); // Adjust the interval by tariq
 
                 // Update D3 chart
                 const svg = d3.select(svgRef.current);

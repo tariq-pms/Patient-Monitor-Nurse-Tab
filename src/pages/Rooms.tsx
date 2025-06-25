@@ -34,14 +34,13 @@ export const Rooms:FC<roomdata> = (props) => {
             
         }
     }])
-    //const organizationId = '18be1246820-bf933fa0-ba3c-4619-9591-9500e11d4a6c'; // this is  organization identifier
+    
     const [roomAddedRemoved, setRoomAddedRemoved] = useState(false)
     useEffect(() => {
         // if(isAuthenticated){
          
           console.log("In ROom Page:",props.userOrganization);
-          //fetch(` https://pmsind.co.in:5000/Location`, {
-            //changed here fetch(` https://pmsind.co.in:5000/Location?organization= 18d1c76ef29-ba9f998e-83b1-4c43-bc5b-b91b572a6454`, {
+         
           fetch(` ${import.meta.env.VITE_FHIRAPI_URL as string}/Location?organization=${props.userOrganization}`, {
             
             
@@ -199,26 +198,6 @@ export const Rooms:FC<roomdata> = (props) => {
             {addNewRoomButton()}
         </div>
         </div>
-      {/* )} */}
-      {/* <Box width={'8%'} height={'50px'}><CustomOkButton text="YES"/></Box> */}
-
-      {/* {!isAuthenticated && (
-        <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} >
-          <img src={pmsLogo} alt="Phoenix" style={{
-            maxWidth: '20%', 
-            height: 'auto', 
-            marginLeft:'auto',
-            marginRight:'auto'
-          }}/>
-          <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography> 
-          <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
-          <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
-          <Button variant='outlined'sx={{width:'200px', height:'50px', borderRadius:'100px'}} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>
-          <Button variant='contained' sx={{width:'200px', height:'50px', borderRadius:'100px'}} onClick={() => loginWithRedirect()}>Sign In</Button>
-          
-          </Stack>
-        </Stack>
-      )} */}
     </div>
   )
 }

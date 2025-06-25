@@ -1,14 +1,9 @@
 import { useEffect } from 'react';
-// import AppBar from '@mui/material/AppBar';
-// import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-// import IconButton from '@mui/material/IconButton';
 import pmsLogo from "../assets/phx_logo.png";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useAuth0 } from '@auth0/auth0-react';
-// import AccountCircle from '@mui/icons-material/AccountCircle';
-// import MenuItem from '@mui/material/MenuItem';
-// import Menu from '@mui/material/Menu';
+
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -20,7 +15,7 @@ export const Home = (_currentRoom: any) => {
   const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();
   const navigate = useNavigate();
 
-useEffect(() => {if(isAuthenticated){navigate('/central-monitor')}},[isAuthenticated])
+useEffect(() => {if(isAuthenticated){navigate('/patient-monitor')}},[isAuthenticated])
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
@@ -78,8 +73,8 @@ useEffect(() => {if(isAuthenticated){navigate('/central-monitor')}},[isAuthentic
 //   const navigate = useNavigate();
 
 //   useEffect(() => {
-//     // Directly navigate to /central-monitor
-//     navigate('/central-monitor-2');
+//     // Directly navigate to /patient-monitor
+//     navigate('/patient-monitor-2');
 //   }, [navigate]);
 
 //   return (

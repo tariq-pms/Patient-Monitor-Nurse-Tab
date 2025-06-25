@@ -4,7 +4,8 @@ import { useAuth0 } from '@auth0/auth0-react';
 import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { PatientCard } from '../components/PatientCard';
-import { NewPatientDetails } from "../components/NewPatientDetails";
+import { NewPatientDetails } from '../components/NewPatientDetails';
+
 
 type PatientMonitorProps = {
   userOrganization: string;

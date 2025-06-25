@@ -14,8 +14,9 @@ import { ExpandMoreRounded } from "@mui/icons-material";
 import { Table } from "./Table";
 import { MRT_ColumnDef } from "material-react-table";
 import { ExportToCsv } from "export-to-csv";
-import { DatePicker, LocalizationProvider } from "@mui/lab";
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import AdapterDateFns from '@mui/x-date-pickers/AdapterDateFns';
+
 
 
 export interface PatientDetails {
@@ -1402,6 +1403,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
               });
             }
         }
+       
         return (
             <div style={{marginTop:'25px'}}>
                 {   
@@ -1550,6 +1552,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                                             </Stack>
                                         )
                                     }
+                                    
                                     // if(props.observation_resource?.identifier[0]?.value?.toString()=="PMSinc" || props.observation_resource?.identifier[0]?.value?.toString()=="PMS-INC"){
                                         
                                     //     return (
@@ -1648,6 +1651,7 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
                                     //         </Stack>
                                     //     )
                                     // }
+
                                     return <div></div>
                                 })()}
                             
@@ -1913,16 +1917,14 @@ Mothers Name :
 <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{ fontFamily: 'Helvetica' }}>
 Date of Admission:
 </Typography>
-<LocalizationProvider dateAdapter={AdapterDateFns}>
+{/* <LocalizationProvider dateAdapter={AdapterDateFns}>
 <DatePicker
 value={selectedDate}
 onChange={handleDateChange}
-renderInput={(params: any) => (
-<Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} {...params} />
-)}
+
 style={{ marginLeft: '5px' }}
 />
-</LocalizationProvider>
+</LocalizationProvider> */}
 </Box>
 <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
 <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"}>
@@ -2234,7 +2236,7 @@ Gestational Age:
       <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"} style={{ fontFamily: 'Helvetica' }}>
         Date of Admission:
       </Typography>
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
+      {/* <LocalizationProvider dateAdapter={AdapterDateFns}>
         <DatePicker
           value={selectedDate}
           onChange={handleDateChange}
@@ -2243,7 +2245,7 @@ Gestational Age:
           )}
           style={{ marginLeft: '5px' }}
         />
-      </LocalizationProvider>
+      </LocalizationProvider> */}
     </Box>
          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
              <Typography variant="subtitle1" color={darkTheme ? '#FFFFFF':"#124D81"}>
