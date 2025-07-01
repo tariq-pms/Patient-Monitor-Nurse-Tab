@@ -14,8 +14,6 @@ import { ExpandMoreRounded } from "@mui/icons-material";
 import { Table } from "./Table";
 import { MRT_ColumnDef } from "material-react-table";
 import { ExportToCsv } from "export-to-csv";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import AdapterDateFns from '@mui/x-date-pickers/AdapterDateFns';
 
 
 
@@ -1741,11 +1739,8 @@ export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
   const handleChange1 = (event: { target: { value: React.SetStateAction<string>; }; }) => {
     setGender(event.target.value);
   };
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [] = useState<Date | null>(null);
 
-  const handleDateChange = (date: Date | null) => {
-    setSelectedDate(date);
-  };
 
     return (
         <React.Fragment>

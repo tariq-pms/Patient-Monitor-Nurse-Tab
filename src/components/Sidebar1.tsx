@@ -1,7 +1,7 @@
-import { FC, useState } from "react";
-import {Box,List,ListItem,ListItemText,ListItemIcon,IconButton,} from "@mui/material";
+import { FC } from "react";
+import {Box,List,ListItem,ListItemText,ListItemIcon} from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWindowRestore,faBell,faArrowRight,faArrowLeft,faSmile,faUserGroup,faClock,faFileImport,faFileWaveform,faChartSimple,faGear,} from "@fortawesome/free-solid-svg-icons";
+import { faWindowRestore,faBell,faSmile,faUserGroup,faClock,faFileImport,faFileWaveform,faChartSimple,faGear,} from "@fortawesome/free-solid-svg-icons";
 
 export interface SidebarProps {
   onIconClick: (index: number) => void;

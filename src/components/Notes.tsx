@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, TextField, Button, Select, MenuItem, Snackbar, Alert, Card, Chip, CardContent } from '@mui/material';
+import { Box, Typography, TextField, Button, Select, MenuItem, Snackbar, Alert, Card, CardContent } from '@mui/material';
 import MicIcon from '@mui/icons-material/Mic';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+
 interface NotesProps {
 
   patient_name: string;
@@ -20,7 +20,10 @@ export const Notes: React.FC<NotesProps> = (props) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 const [snackbarMessage, setSnackbarMessage] = useState("");
 const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
-const [fetchedNotes, setFetchedNotes] = useState<{ summary: string; noteType: string }[]>([]);
+const [fetchedNotes, setFetchedNotes] = useState<{
+  author: string;
+  date: string | number | Date; summary: string; noteType: string 
+}[]>([]);
 
   useEffect(() => {
     fetchNotes();
@@ -58,9 +61,9 @@ const handleCloseSnackbar = () => {
   setSnackbarOpen(false);
 };
 
-const [dateFilter, setDateFilter] = useState('all');
-const [categoryFilter, setCategoryFilter] = useState('all');
-const [authorFilter, setAuthorFilter] = useState('all');
+const [dateFilter] = useState('all');
+const [categoryFilter] = useState('all');
+const [authorFilter] = useState('all');
 const [filteredNotes, setFilteredNotes] = useState(fetchedNotes);
 
 useEffect(() => {
@@ -107,7 +110,11 @@ useEffect(() => {
 
 
 
-  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  // const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+const recognition = new SpeechRecognition();
+
   recognition.continuous = false;
   recognition.interimResults = false;
   recognition.lang = 'en-US';
@@ -136,7 +143,7 @@ useEffect(() => {
   };
   
 
-  recognition.onresult = (event: SpeechRecognitionEvent) => {
+  recognition.onresult = (event:any) => {
     const transcript = event.results[0][0].transcript;
     setNote(transcript);
     setIsListening(false);
@@ -303,17 +310,22 @@ useEffect(() => {
 
         {/* Voice-to-Text Button */}
         <Button
-          variant="outlined"
+          
           onClick={toggleListening}
           sx={{
             flex: 1,
             borderColor: '#FFFFFF',
             color: '#FFFFFF',
             backgroundColor:'#228BE6',
+             '&:hover': { 
+              backgroundColor: '#0D3252' 
+              
+            },
             display: 'flex',
             alignItems: 'center',
             gap: 1,
           }}
+         
         >
           <MicIcon />
           {isListening ? 'Listening...' : 'Voice to Text'}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box, Typography, TextField, Button,Grid,Divider,TableRow, TableCell,Table,TableBody, TableContainer,Paper,Autocomplete,MenuItem,
+  Box, Typography, TextField, Button,Grid,Divider,Paper,Autocomplete,MenuItem,
   Select,
  
   FormControl,
@@ -9,9 +9,8 @@ import {
   Stack,
 
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClock, faPrescription } from "@fortawesome/free-solid-svg-icons";
+import { faPrescription } from "@fortawesome/free-solid-svg-icons";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -40,16 +39,26 @@ type AdministrationHistoryItem = {
 };
 
 interface Medication {
+  id: string;
   name: string;
-  startDate: string | null;
-  dose: number;
+  startDate: string;
+  endDate: string;
   frequency: string;
+  frequency1?: string; // optional, if some don't have it
   route: string;
-  isCritical: boolean;
-  endDate: string | null;
+  totalDoses: number;
+  administeredCount: number;
+  dosageInstruction?: {
+    doseAndRate?: {
+      doseQuantity?: {
+        value?: number;
+        unit?: string;
+      };
+    }[];
+  }[];
   use: string;
-  additionalNote: string;
 }
+
 
 export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => {
 
@@ -66,10 +75,12 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
       const [days, setDays] = useState<number>(1);
       const [indication, setIndication] = useState("");
       const [additionalNote, setAdditionalNote] = useState("");
-      const [medicationList, setMedicationList] = useState<any[]>([]); // Store medications
-      const [drugOptions, setDrugOptions] = useState<any[]>([]); // Drug search options
+     // Store medications
+     const [drugOptions, setDrugOptions] = useState<any[]>([]);
+     // Drug search options
       const [selectedDrug, setSelectedDrug] = useState<any | null>(null); // Selected drug object
       const [administrationHistory, setAdministrationHistory] = useState<AdministrationHistoryItem[]>([]);
+      const [prescriptionHistory, setPrescriptionHistory] = useState<Medication[]>([]);
 
   // Fetch drug data (RxNorm API example)
   // const fetchDrugs = async (query: string) => {
@@ -147,7 +158,7 @@ useEffect(() => {
   }
 }, [startDate, frequency, days]);
   const resetForm = () => {
-    setDrugOptions('');
+    setDrugOptions([]); // Clears the dropdown options safely
     setSelectedDrug(null);
     setSelectedDrugName('');
     setSelectedDrugCategory('');
@@ -177,7 +188,7 @@ useEffect(() => {
   const [medicationResourceId, setMedicationResourceId] = useState<string | null>(null);
 
   const [loading, setLoading] = useState<boolean>(true);
-  const [prescriptionHistory, setPrescriptionHistory] = useState([]);
+ 
  
   const [administering, setAdministering] = useState(false);
   const [currentMedicationId, setCurrentMedicationId] = useState<string | null>(null);
@@ -670,9 +681,16 @@ useEffect(() => {
   
     const period = frequency === 'Q12H' ? 12 : frequency === 'Q8H' ? 8 : frequency === 'Q6H' ? 6 : 12;
     console.log("Total frequency (hours between doses):", period);
-  
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+  if (!startDate || !endDate) {
+  setSnackbarMessage("Start date and end date must be provided.");
+  setSnackbarSeverity("error");
+  setSnackbarOpen(true);
+  setLoading(false);
+  return;
+}
+
+const start = new Date(startDate);
+const end = new Date(endDate);
     console.log("Start Date:", start, "End Date:", end);
   
     const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
@@ -681,6 +699,8 @@ useEffect(() => {
     const dosesPerDay = Math.floor(24 / period);
     const totalDoses = (dosesPerDay * totalDays) + 1;
     console.log("Total doses:", totalDoses);
+    console.log("indication:", indication);
+     console.log("selectedDrugCategory:", selectedDrugCategory);
   
     const prescriptionData = {
       resourceType: "MedicationRequest",
@@ -763,22 +783,22 @@ const calculateDuration = (startDate: string, endDate: string): number => {
 };
 
 // Helper function to calculate next dose date
-const calculateNextDoseDate = (
-  startDate: string,
-  frequency: number,
-  administeredCount: number
-): Date | null => {
-  if (!startDate || frequency <= 0) return null;
+// const calculateNextDoseDate = (
+//   startDate: string,
+//   frequency: number,
+//   administeredCount: number
+// ): Date | null => {
+//   if (!startDate || frequency <= 0) return null;
   
-  const start = new Date(startDate);
-  const hoursBetweenDoses = 24 / frequency;
-  const hoursToAdd = hoursBetweenDoses * administeredCount;
+//   const start = new Date(startDate);
+//   const hoursBetweenDoses = 24 / frequency;
+//   const hoursToAdd = hoursBetweenDoses * administeredCount;
   
-  const nextDate = new Date(start);
-  nextDate.setHours(nextDate.getHours() + hoursToAdd);
+//   const nextDate = new Date(start);
+//   nextDate.setHours(nextDate.getHours() + hoursToAdd);
   
-  return nextDate;
-};
+//   return nextDate;
+// };
   // const handlePrescribe = async () => {
   //   setLoading(true);
   
@@ -1013,6 +1033,7 @@ const calculateNextDoseDate = (
     console.log("MedicationResourceId:", medicationResourceId);
     setAdministering(true);
     setCurrentMedicationId(medicationResourceId);
+    console.log('currentMedicationId',currentMedicationId)
 
     try {
         // Fetch MedicationRequest to get details
@@ -1516,7 +1537,7 @@ const calculateNextDoseDate = (
   </Box>
 </Box>)}
     {/* nurse view */}
-    {props.UserRole === "NICU Nurse" && (
+    
   <Box >
   <Grid container alignItems="center" justifyContent="space-between" >
     <Typography variant="h6" sx={{ color: "#0F3B61" }} gutterBottom>
@@ -1537,18 +1558,13 @@ const calculateNextDoseDate = (
         if (remainingDoses <= 0) return null;
 
         // Extract dosage information from dosageInstruction
-        const dosageInstruction = medication.dosageInstruction?.[0];
-        const dose = dosageInstruction?.doseAndRate?.[0]?.doseQuantity;
-        const doseValue = dose?.value || "N/A";
-        const doseUnit = dose?.unit || "";
+        // const dosageInstruction = medication.dosageInstruction?.[0];
+        // const dose = dosageInstruction?.doseAndRate?.[0]?.doseQuantity;
+        // const doseValue = dose?.value || "N/A";
+        // const doseUnit = dose?.unit || "";
         
         // Calculate next administration date based on frequency and last administered time
-        const nextDoseDate = calculateNextDoseDate(
-          medication.startDate,
-          medication.frequency,
-          medication.administeredCount
-        );
-
+       
         return (
           <Paper
             key={index}
@@ -1638,7 +1654,7 @@ const calculateNextDoseDate = (
               <Box>
               <Typography variant="body2" sx={{ color: "#A7B3CD" }}>
                   Next: <span style={{ color: "#124D81", fontWeight: "bold" }}>
-                  {nextDoseDate ? new Date(nextDoseDate).toLocaleTimeString() : "N/A"}
+                  {/* {nextDoseDate ? new Date(nextDoseDate).toLocaleTimeString() : "N/A"} */}
 
                     {/* {nextDoseDate ? new Date(nextDoseDate).toLocaleString() : "N/A"} */}
                   </span>
@@ -1676,9 +1692,9 @@ const calculateNextDoseDate = (
     )}
   </Box>
 </Box>
-    )}
+    
       {/* Medications  adding */}
-      {props.UserRole !== "NICU Nurse" && (
+     
       <Box marginTop={5}>
      
           <Typography variant="h6" sx={{ color: "#0F3B61" }} gutterBottom>
@@ -1980,7 +1996,7 @@ const calculateNextDoseDate = (
   </Table>
 </TableContainer> */}
 
-      </Box>)}
+      </Box>
     
       <Snackbar
       open={snackbarOpen}

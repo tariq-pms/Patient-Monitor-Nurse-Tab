@@ -1,28 +1,16 @@
-import {
-  Box,
-  Typography,
-  Stack,
-  IconButton,
-} from "@mui/material";
-
+import {Box,Typography,Stack} from "@mui/material";
 import { SidebarOg } from '../components/SidebarOg';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBed, faNotesMedical } from "@fortawesome/free-solid-svg-icons";
-
+import { faBed } from "@fortawesome/free-solid-svg-icons";
 import { FC, useState } from "react";
-import  { ApgarScreen } from '../components/ApgarScreen';
-import  {BallardScore } from '../components/BallardScore';
 import  {PrescriptionScreen } from '../components/PrescriptionScreen';
 import { PatientOverview } from "../components/PatientOverview";
 import { FeedsScreen } from "../components/FeedsScreen";
 import { Assessments } from "../components/AssesmentScreen";
 import { useLocation } from "react-router-dom";
-
-// import { Trends } from "../components/Trends";
 import { Trends1 } from "../components/Trends1";
 import { Notes } from "../components/Notes";
 import { Treatment } from "../components/Treatment";
-
 import { Dashboard } from '../components/Dashboard';
 
 // export const NewPatientDetails: FC<PatientDetails> = (props): JSX.Element => {
@@ -156,7 +144,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
   const [selectedMenuItemId, setSelectedMenuItemId] = useState('overview');
   const location = useLocation();
   
-  const { patientName, patientId,deviceId ,observation,patientResourceId} = location.state || {};
+  const { patientName, patientId,patientResourceId} = location.state || {};
   // const handleIconClick = (index: number) => {
   //   setSelectedIndex(index);
   //   console.log('fetched UserRole1',props.UserRole)
@@ -236,7 +224,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
         return (
           <Dashboard patient_name={patientName} patient_id={patientId} patient_resource_id={patientResourceId} UserRole={props.UserRole} onClose={function (): void {
             throw new Error("Function not implemented.");
-          } }  />
+          } } patient={""}  />
         );
         case 'medication':
         return (
@@ -255,13 +243,35 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
       case 'feeds': // Special case
       return (
         <Box sx={{ flexGrow: 1, paddingLeft: 2,paddingRight: 2, overflowY: "auto" }}>
-         <FeedsScreen patient_name={patientName} patient_id={patientId} patient_resource_id={patientResourceId} />
+         <FeedsScreen />
         </Box>
       );
       case 'trends': // Special case
       return (
         <Box sx={{ flexGrow: 1, paddingLeft: 2,paddingRight: 2, overflowY: "auto" }}>
-        <Trends1    patient_id={patientId} patient_name={patientName} device={[]} patient_resource_id={patientResourceId} observation_resource={[]}  />
+        <Trends1 device_id={""} patient={null} device_resource_id={""} observation_resource={{
+            resourceType: "",
+            id: "",
+            effectiveDateTime: "",
+            meta: {
+              versionId: "",
+              lastUpdated: ""
+            },
+            identifier: [],
+            status: "",
+            category: [],
+            code: {
+              coding: [],
+              text: ""
+            },
+            subject: {
+              reference: ""
+            },
+            device: {
+              reference: ""
+            },
+            component: []
+          }} darkTheme={false} selectedIcon={""}  />
         </Box>
       );
       case 'treatment': // Make sure this matches your menu item ID exactly

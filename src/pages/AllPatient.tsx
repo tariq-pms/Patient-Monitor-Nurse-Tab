@@ -373,7 +373,7 @@ export const AllPatient: React.FC< PatientMonitorProps> = ({ userOrganization, c
       observation_resource={parentobs[String(patient.id)]}
       communication_resource={parentcomm[String(patient.id)]}
       darkTheme={darkTheme}
-      selectedIcon={selectedIcon}
+      // selectedIcon={selectedIcon}
       onClick={() => handlePatientCardClick(patient)} 
     />
   )});

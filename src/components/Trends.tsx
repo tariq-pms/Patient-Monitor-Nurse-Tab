@@ -1,8 +1,7 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, Divider, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
+import { Box, Divider, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { ChartOptions, LegendItem, Plugin } from 'chart.js';
 import React, { useMemo, useRef, useState } from 'react';
 import { Bar } from 'react-chartjs-2'; // Import Bar instead of Line
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 import 'chart.js/auto';
 
@@ -10,7 +9,7 @@ import { Chart, CategoryScale } from 'chart.js';
 
 Chart.register(CategoryScale);
 
-export const Trends = (props: { darkTheme: boolean }): JSX.Element => {
+export const Trends = (): JSX.Element => {
     type TemperatureData = {
         labels: any[];
         datasets: any[];
@@ -34,8 +33,8 @@ export const Trends = (props: { darkTheme: boolean }): JSX.Element => {
     const chartRef2 = useRef<any | null>(null);
     const chartRef3 = useRef<any | null>(null);
     const [S_and_D, setS_and_D] = useState(0);
-    const [selectedLegends, setSelectedLegends] = useState<any>([]);
-    const [downloadConfirmation, setDownloadConfirmation] = useState(false);
+    const [ setSelectedLegends] = useState<any>([]);
+    // const [downloadConfirmation, setDownloadConfirmation] = useState(false);
 
     const [temperatureData] = useState<TemperatureData>({
         labels: ['27/12/23', '26/12/23', '25/12/23', '24/12/23', '23/12/23', '22/12/23', '21/12/23'],

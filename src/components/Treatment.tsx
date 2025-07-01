@@ -44,10 +44,10 @@ const TherapyTab = () => (
   </Box>
 );
 
-export const Treatment = ({ patient_name, patient_id, patient_resource_id }: TreatmentProps) => {
+export const Treatment = ({  }: TreatmentProps) => {
   const [activeTab, setActiveTab] = useState(0);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
 

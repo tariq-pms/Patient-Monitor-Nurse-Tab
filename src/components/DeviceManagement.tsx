@@ -7,7 +7,7 @@ import {
   Grid,
   Button,
   Box,
-  CircularProgress,
+  
   Tabs,
   Tab,
   TextField,
@@ -30,7 +30,7 @@ interface LocationResource {
 export const DeviceManagement: React.FC<DeviceManagementProps> = ({ userOrganization }) => {
 
   const [locations, setLocations] = useState<LocationResource[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState(0);
   const [deviceList, setDeviceList] = useState<any[]>([]);
   const [newRoomName, setNewRoomName] = useState("");

@@ -1,10 +1,10 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC,  useState } from 'react';
 import {
   AppBar, Box, Toolbar, IconButton, Badge, Menu, MenuItem,
   TextField, InputAdornment, Button, Switch, Typography
 } from '@mui/material';
 import { useMediaQuery, useTheme } from '@mui/material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNotification } from "../contexts/NotificationContext";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -27,7 +27,6 @@ export interface HeaderProps {
 
 export const Header: FC<HeaderProps> = (props) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { user, isAuthenticated, logout } = useAuth0();

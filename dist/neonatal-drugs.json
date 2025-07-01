@@ -1,0 +1,548 @@
+{
+    "neonatal_drugs": [
+      {
+        "name": "Vitamin K1",
+        "category": "Vitamins",
+        "use": "Prevention of vitamin K deficiency bleeding"
+
+
+      },
+      {
+        "name": "Surfactant (e.g., Beractant, Poractant Alfa)",
+        "category": "Respiratory Support",
+        "use": "Treatment of Respiratory Distress Syndrome (RDS)"
+      },
+      {
+        "name": "Caffeine Citrate",
+        "category": "Central Nervous System Stimulants",
+        "use": "Treatment of apnea of prematurity"
+      },
+      {
+        "name": "Gentamicin",
+        "category": "Antibiotics",
+        "use": "Treatment of bacterial infections"
+      },
+      {
+        "name": "Amikacin",
+        "category": "Antibiotics",
+        "use": "Treatment of infections caused by Gram-negative bacteria"
+      },
+      {
+        "name": "Penicillin G",
+        "category": "Antibiotics",
+        "use": "Treatment of neonatal infections like sepsis"
+      },
+      {
+        "name": "Ampicillin",
+        "category": "Antibiotics",
+        "use": "Treatment of neonatal infections, especially bacterial meningitis"
+      },
+      {
+        "name": "Lactulose",
+        "category": "Gastrointestinal",
+        "use": "Treatment of neonatal constipation"
+      },
+      {
+        "name": "Paracetamol (Acetaminophen)",
+        "category": "Analgesics and Antipyretics",
+        "use": "Pain and fever relief"
+      },
+      {
+        "name": "Morphine",
+        "category": "Analgesics",
+        "use": "Pain management in critically ill neonates"
+      },
+      {
+        "name": "Furosemide",
+        "category": "Diuretics",
+        "use": "Management of fluid overload"
+      },
+      {
+        "name": "Sodium Bicarbonate",
+        "category": "Electrolytes",
+        "use": "Correction of metabolic acidosis"
+      },
+      {
+        "name": "Magnesium Sulfate",
+        "category": "Electrolytes",
+        "use": "Prevention and treatment of seizures in neonates"
+      },
+      {
+        "name": "Betamethasone",
+        "category": "Corticosteroids",
+        "use": "Mature lungs in preterm infants"
+      },
+      {
+        "name": "Naloxone",
+        "category": "Opioid Antagonists",
+        "use": "Reversal of opioid-induced respiratory depression"
+      },
+      {
+        "name": "Vitamin D",
+        "category": "Vitamins",
+        "use": "Prevention of rickets and bone health"
+      },
+      {
+        "name": "Ranitidine",
+        "category": "Antacids/Antisecretory",
+        "use": "Treatment of gastric reflux and ulcers"
+      },
+      {
+        "name": "Phenobarbital",
+        "category": "Anticonvulsants",
+        "use": "Management of seizures"
+      },
+      {
+        "name": "Bromocriptine",
+        "category": "Hormones",
+        "use": "Management of hyperprolactinemia"
+      },
+      {
+        "name": "Ropivacaine",
+        "category": "Local Anesthetics",
+        "use": "Analgesia in neonatal procedures"
+      },
+      {
+        "name": "Folic Acid",
+        "category": "Vitamins",
+        "use": "Prevention of neural tube defects"
+      },
+      
+      {
+        "name": "Dexamethasone",
+        "category": "Corticosteroids",
+        "use": "Treatment of chronic lung disease (CLD)"
+      },
+      {
+        "name": "Dobutamine",
+        "category": "Inotropes",
+        "use": "Management of cardiac output and low blood pressure"
+      },
+      {
+        "name": "Dopamine",
+        "category": "Inotropes",
+        "use": "Treatment of hypotension in neonates"
+      },
+      {
+        "name": "Midazolam",
+        "category": "Sedatives",
+        "use": "Sedation in ventilated neonates"
+      },
+      {
+        "name": "Prostaglandin E1 (Alprostadil)",
+        "category": "Prostaglandins",
+        "use": "Maintaining ductus arteriosus patency in congenital heart defects"
+      },
+      {
+        "name": "Erythropoietin",
+        "category": "Hematopoietic Agents",
+        "use": "Management of anemia of prematurity"
+      },
+      {
+        "name": "Clindamycin",
+        "category": "Antibiotics",
+        "use": "Treatment of serious bacterial infections in neonates"
+      },
+      {
+        "name": "Vancomycin",
+        "category": "Antibiotics",
+        "use": "Treatment of Gram-positive bacterial infections, including MRSA"
+      },
+      {
+        "name": "Meropenem",
+        "category": "Antibiotics",
+        "use": "Treatment of multidrug-resistant bacterial infections"
+      },
+      {
+        "name": "Thyroxine (Levothyroxine)",
+        "category": "Hormones",
+        "use": "Treatment of congenital hypothyroidism"
+      },
+      {
+        "name": "Digoxin",
+        "category": "Cardiac Glycosides",
+        "use": "Management of heart failure and arrhythmias"
+      },
+      {
+        "name": "Albumin",
+        "category": "Plasma Volume Expanders",
+        "use": "Management of hypoalbuminemia and shock"
+      },
+      {
+        "name": "Povidone Iodine",
+        "category": "Antiseptics",
+        "use": "Prevention of neonatal infections during procedures"
+      },
+      {
+        "name": "Cefotaxime",
+        "category": "Antibiotics",
+        "use": "Treatment of neonatal sepsis and meningitis"
+      },
+      {
+        "name": "Ceftriaxone",
+        "category": "Antibiotics",
+        "use": "Broad-spectrum antibiotic for severe infections"
+      },
+      {
+        "name": "Piperacillin-Tazobactam",
+        "category": "Antibiotics",
+        "use": "Treatment of severe Gram-negative bacterial infections"
+      },
+      {
+        "name": "Linezolid",
+        "category": "Antibiotics",
+        "use": "Treatment of resistant Gram-positive infections"
+      },
+      {
+        "name": "Metronidazole",
+        "category": "Antibiotics",
+        "use": "Treatment of anaerobic bacterial infections"
+      },
+      {
+        "name": "Heparin",
+        "category": "Anticoagulants",
+        "use": "Prevention of thrombosis in neonates"
+      },
+      {
+        "name": "Enoxaparin",
+        "category": "Anticoagulants",
+        "use": "Management of neonatal thrombosis"
+      },
+      {
+        "name": "Nitric Oxide",
+        "category": "Respiratory Support",
+        "use": "Treatment of persistent pulmonary hypertension of the newborn (PPHN)"
+      },
+      {
+        "name": "Pentoxifylline",
+        "category": "Anti-inflammatory Agents",
+        "use": "Adjunctive treatment in neonatal sepsis"
+      },
+      {
+        "name": "Clonidine",
+        "category": "Sedatives",
+        "use": "Sedation and pain management"
+      },
+      {
+        "name": "Ketamine",
+        "category": "Anesthetics",
+        "use": "Procedural sedation and pain relief"
+      },
+      {
+        "name": "Propofol",
+        "category": "Anesthetics",
+        "use": "Sedation during invasive procedures"
+      },
+      {
+        "name": "Colistin",
+        "category": "Antibiotics",
+        "use": "Treatment of multidrug-resistant Gram-negative infections"
+      },
+      {
+        "name": "Vitamin A",
+        "category": "Vitamins",
+        "use": "Prevention of bronchopulmonary dysplasia"
+      },
+      {
+        "name": "Iron Sucrose",
+        "category": "Hematopoietic Agents",
+        "use": "Treatment of iron deficiency anemia"
+      },
+      {
+        "name": "Ondansetron",
+        "category": "Antiemetics",
+        "use": "Management of nausea and vomiting"
+      },
+      {
+        "name": "Phenytoin",
+        "category": "Anticonvulsants",
+        "use": "Management of neonatal seizures"
+      },
+      {
+        "name": "Levetiracetam",
+        "category": "Anticonvulsants",
+        "use": "Treatment of neonatal seizures"
+      },
+      {
+        "name": "Calcium Gluconate",
+        "category": "Electrolytes",
+        "use": "Treatment of hypocalcemia"
+      },
+      {
+        "name": "Zinc Sulfate",
+        "category": "Trace Elements",
+        "use": "Management of zinc deficiency"
+      },
+      {
+        "name": "Chlorhexidine",
+        "category": "Antiseptics",
+        "use": "Prevention of neonatal sepsis during cord care"
+      },
+      {
+        "name": "IV Immunoglobulin (IVIG)",
+        "category": "Immunomodulators",
+        "use": "Management of immune-related disorders and severe infections"
+      },
+      {
+        "name": "Bumetanide",
+        "category": "Diuretics",
+        "use": "Management of fluid overload and pulmonary edema"
+      },
+      {
+        "name": "Epinephrine",
+        "category": "Vasopressors",
+        "use": "Resuscitation during neonatal cardiac arrest"
+      },
+      {
+        "name": "Noradrenaline (Norepinephrine)",
+        "category": "Vasopressors",
+        "use": "Management of hypotension and shock"
+      },
+      {
+        "name": "Milrinone",
+        "category": "Inotropes",
+        "use": "Treatment of low cardiac output syndrome"
+      },
+      {
+        "name": "Acetazolamide",
+        "category": "Diuretics",
+        "use": "Management of metabolic alkalosis and intracranial hypertension"
+      },
+      {
+        "name": "Albuterol (Salbutamol)",
+        "category": "Bronchodilators",
+        "use": "Management of neonatal bronchospasm"
+      },
+      {
+        "name": "Ipratropium Bromide",
+        "category": "Bronchodilators",
+        "use": "Treatment of bronchospasm in neonates"
+      },
+      {
+        "name": "Desmopressin (DDAVP)",
+        "category": "Hormones",
+        "use": "Management of diabetes insipidus in neonates"
+      },
+      {
+        "name": "Tranexamic Acid",
+        "category": "Antifibrinolytics",
+        "use": "Management of bleeding disorders"
+      },
+      {
+        "name": "Sucrose",
+        "category": "Analgesics",
+        "use": "Pain relief during minor neonatal procedures"
+      },
+      {
+        "name": "Lidocaine",
+        "category": "Local Anesthetics",
+        "use": "Management of ventricular arrhythmias and local anesthesia"
+      },
+      {
+        "name": "Chloral Hydrate",
+        "category": "Sedatives",
+        "use": "Sedation in neonates for diagnostic procedures"
+      },
+      {
+        "name": "Fluconazole",
+        "category": "Antifungals",
+        "use": "Treatment and prophylaxis of fungal infections"
+      },
+      {
+        "name": "Voriconazole",
+        "category": "Antifungals",
+        "use": "Treatment of invasive fungal infections"
+      },
+      {
+        "name": "Methadone",
+        "category": "Opioid Agonists",
+        "use": "Management of neonatal abstinence syndrome (NAS)"
+      },
+      {
+        "name": "Ibuprofen",
+        "category": "NSAIDs",
+        "use": "Closure of patent ductus arteriosus (PDA)"
+      },
+      {
+        "name": "Indomethacin",
+        "category": "NSAIDs",
+        "use": "Closure of patent ductus arteriosus (PDA)"
+      },
+      {
+        "name": "Sildenafil",
+        "category": "Pulmonary Vasodilators",
+        "use": "Treatment of persistent pulmonary hypertension of the newborn (PPHN)"
+      },
+      {
+        "name": "Nitroglycerin",
+        "category": "Vasodilators",
+        "use": "Management of severe pulmonary hypertension"
+      },
+      {
+        "name": "Clotrimazole",
+        "category": "Antifungals",
+        "use": "Treatment of localized fungal infections"
+      },
+      {
+        "name": "Miconazole",
+        "category": "Antifungals",
+        "use": "Treatment of oral and skin fungal infections"
+      },
+      {
+        "name": "Tacrolimus",
+        "category": "Immunosuppressants",
+        "use": "Management of neonatal organ transplantation"
+      },
+      {
+        "name": "Beclomethasone",
+        "category": "Corticosteroids",
+        "use": "Prophylaxis for bronchopulmonary dysplasia"
+      },
+      {
+        "name": "Pyridoxine (Vitamin B6)",
+        "category": "Vitamins",
+        "use": "Treatment of neonatal seizures due to pyridoxine dependency"
+      },
+      {
+        "name": "Biotin",
+        "category": "Vitamins",
+        "use": "Management of biotinidase deficiency"
+      },
+      {
+        "name": "L-Asparaginase",
+        "category": "Antineoplastics",
+        "use": "Treatment of neonatal leukemia"
+      },
+      {
+        "name": "Hydrocortisone",
+        "category": "Corticosteroids",
+        "use": "Treatment of adrenal insufficiency and hypotension"
+      },
+      {
+        "name": "Levetiracetam",
+        "category": "Anticonvulsants",
+        "use": "Management of neonatal seizures"
+      },
+      {
+        "name": "Pancuronium",
+        "category": "Neuromuscular Blockers",
+        "use": "Muscle relaxation during mechanical ventilation"
+      },
+      {
+        "name": "Vecuronium",
+        "category": "Neuromuscular Blockers",
+        "use": "Adjunct in neonatal surgical procedures"
+      },
+      {
+        "name": "Atropine",
+        "category": "Anticholinergics",
+        "use": "Prevention of bradycardia during intubation"
+      },
+      {
+        "name": "Propranolol",
+        "category": "Beta-Blockers",
+        "use": "Treatment of infantile hemangiomas and tachycardia"
+      },
+      {
+        "name": "Dexmedetomidine",
+        "category": "Sedatives",
+        "use": "Sedation during mechanical ventilation"
+      },
+      {
+        "name": "Omeprazole",
+        "category": "Proton Pump Inhibitors",
+        "use": "Treatment of severe GERD and gastric ulcers"
+      },
+      {
+        "name": "Erythromycin",
+        "category": "Antibiotics",
+        "use": "Treatment of pertussis and gastrointestinal motility issues"
+      },
+      {
+        "name": "Dopamine",
+        "category": "Inotropes",
+        "use": "Treatment of hypotension and improving renal perfusion"
+      },
+      {
+        "name": "Dobutamine",
+        "category": "Inotropes",
+        "use": "Support of cardiac function in neonates"
+      },
+      {
+        "name": "Phenylephrine",
+        "category": "Vasopressors",
+        "use": "Management of hypotension"
+      },
+      {
+        "name": "Nitric Oxide",
+        "category": "Vasodilators",
+        "use": "Management of pulmonary hypertension"
+      },
+      {
+        "name": "Labetalol",
+        "category": "Antihypertensives",
+        "use": "Management of hypertension in neonates"
+      },
+      {
+        "name": "Digoxin",
+        "category": "Cardiac Glycosides",
+        "use": "Management of heart failure and arrhythmias"
+      },
+      {
+        "name": "Vancomycin",
+        "category": "Antibiotics",
+        "use": "Treatment of infections caused by Gram-positive bacteria"
+      },
+      {
+        "name": "Clindamycin",
+        "category": "Antibiotics",
+        "use": "Treatment of severe bacterial infections"
+      },
+      {
+        "name": "Linezolid",
+        "category": "Antibiotics",
+        "use": "Treatment of multi-drug resistant bacterial infections"
+      },
+      {
+        "name": "Acyclovir",
+        "category": "Antivirals",
+        "use": "Treatment of neonatal herpes simplex virus (HSV) infections"
+      },
+      {
+        "name": "Ganciclovir",
+        "category": "Antivirals",
+        "use": "Treatment of congenital cytomegalovirus (CMV) infection"
+      },
+      {
+        "name": "Palivizumab",
+        "category": "Monoclonal Antibodies",
+        "use": "Prophylaxis against Respiratory Syncytial Virus (RSV)"
+      },
+      {
+        "name": "Filgrastim",
+        "category": "Hematopoietic Agents",
+        "use": "Treatment of neonatal neutropenia"
+      },
+      {
+        "name": "Epoetin Alfa",
+        "category": "Hematopoietic Agents",
+        "use": "Treatment of anemia of prematurity"
+      },
+      {
+        "name": "Fibrinogen Concentrate",
+        "category": "Hemostatic Agents",
+        "use": "Treatment of bleeding disorders"
+      },
+      {
+        "name": "Albumin",
+        "category": "Plasma Expanders",
+        "use": "Management of hypoalbuminemia and shock"
+      },
+      {
+        "name": "Hyaluronidase",
+        "category": "Enzymes",
+        "use": "Enhancement of drug absorption and tissue perfusion"
+      }
+    ]
+  }
+  

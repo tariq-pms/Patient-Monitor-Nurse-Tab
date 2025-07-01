@@ -1,4 +1,4 @@
-import {Box,Typography,TableRow, TableCell, Table, TableBody,Paper, TableHead, Link, TextField, TableContainer, Stack, Button, DialogActions, Dialog,DialogContent, DialogTitle, Snackbar, Alert,InputLabel, Grid, FormControl,Select,MenuItem, CircularProgress, Chip,} from "@mui/material";
+import {Box,Typography,TableRow, TableCell, Table, TableBody,Paper, TableHead, Link, TextField, TableContainer, Stack, Button, DialogActions, Dialog,DialogContent, DialogTitle, Snackbar, Alert,InputLabel, Grid, FormControl,Select,MenuItem, CircularProgress} from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Webcam from 'react-webcam';
 import { PhotoCamera, Scanner } from "@mui/icons-material";
@@ -107,7 +107,7 @@ const webcamRef = useRef<Webcam>(null);
 const [isProcessing, setIsProcessing] = useState(false);
 const [capturedImage, setCapturedImage] = useState<string | null>(null);
 const [selectedPatient, setSelectedPatient] = useState<any>(null);
-const [openPatientDialog, setOpenPatientDialog] = useState(false);
+// const [openPatientDialog, setOpenPatientDialog] = useState<boolean>(false);
 
 
 // These states must be defined
@@ -158,7 +158,7 @@ const captureAndProcess = async () => {
 
 const handlePatientClick = (patient: any) => {
   setSelectedPatient(patient);
-  setOpenPatientDialog(true);
+  // setOpenPatientDialog(true);
 };
 
 const handleScanClick = () => {
@@ -229,9 +229,8 @@ return (
   {selectedPatient ? (
     // Show Dashboard when a patient is selected
     <Dashboard
-      patient={selectedPatient}
-      onClose={() => setSelectedPatient(null)}
-    />
+        patient={selectedPatient}
+        onClose={() => setSelectedPatient(null)} patient_name={""} patient_id={""} patient_resource_id={""} UserRole={""}    />
   ) : (
     
     <>

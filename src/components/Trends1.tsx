@@ -102,7 +102,16 @@ export const Trends1: FC<DeviceDetails> = (props): JSX.Element => {
 
     const [graphData, setGraphData] = useState(false)
     
-    const [observation, setObservation] = useState( [])
+    const [observation, setObservation] = useState<{
+        resource: {
+          component: {
+            code: { text: string };
+            valueQuantity: { value: number; unit: string };
+          }[];
+          effectiveDateTime: string;
+        };
+      }[]>([]);
+      
    const [timeFrame, setTimeFrame] = useState(-1)
     const [times, setTimes] = useState<Array<any>>([])
     const [dataset, setDataSet] = useState([[{}]])
@@ -519,14 +528,16 @@ items.forEach((item) => {
                 )
                 }))
         }
-        else if(observation[0]?.resource?.component?.length>1){
+        else if(
+            
+            observation[0]?.resource?.component?.length>1){
             setTimes(observation.map((obs) => {
                 let zeroth: {}[] = []
                 let first: {}[] = []
                 let second: {}[] = []
                 let third: {}[] = []
 
-                observation[0].resource.component.map((data, index) => {
+                observation[0].resource.component.map((data: { valueQuantity: { unit: { toString: () => string; }; }; code: { text: { toString: () => string; }; }; }, index: any) => {
                     if(data.valueQuantity.unit.toString() == "C" || data.valueQuantity.unit.toString()=="C°" || data.valueQuantity.unit.toString() == "C°" || data.code.text.toString()=="Set Heater" || data.code.text.toString()=="Heater Level"){
                         let unit = data.valueQuantity.unit.toString() as keyof typeof heaterYaxis;
                         zeroth.push({

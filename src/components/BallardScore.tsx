@@ -1,5 +1,5 @@
 import{ useEffect, useState } from "react";
-import {Box,Typography,Button,Grid,Tabs,Tab,Stack,CardContent, TableContainer, TableRow, TableBody, Table, TableCell, TableHead, Paper, Snackbar, Alert, ToggleButton, ToggleButtonGroup,} from "@mui/material";
+import {Box,Typography,Button,Grid,Stack,CardContent, TableContainer, TableRow, TableBody, Table, TableCell, TableHead, Paper, Snackbar, Alert, ToggleButton, ToggleButtonGroup,} from "@mui/material";
 import posture from '../assets/posture1.png';
 import posture1 from '../assets/posture2.png';
 import posture2 from '../assets/posture3.png';

@@ -13,7 +13,7 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 
 const drawerWidth = 240;
-const drawerHeight = 740;
+// const drawerHeight = 740;
 
 const menuItems = [
   { text: "Overview", icon: <DashboardIcon />, path: "" },

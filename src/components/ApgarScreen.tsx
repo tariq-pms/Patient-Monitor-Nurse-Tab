@@ -1,5 +1,5 @@
   import React, { useEffect, useState } from "react";
-  import { Box, Typography, Button, Grid, Paper, Stack,  Table, TableCell, TableBody, TableHead, TableRow, TableContainer, Snackbar, Alert } from "@mui/material";
+  import { Box, Typography, Button,  Paper,  Table, TableCell, TableBody, TableHead, TableRow, TableContainer, Snackbar, Alert } from "@mui/material";
 
   interface Procedure {
     resourceType: string;

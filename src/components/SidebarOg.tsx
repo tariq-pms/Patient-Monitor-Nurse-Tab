@@ -14,7 +14,7 @@ import {
   faClipboardCheck,
   faDroplet,
   faBaby,
-  faHeartCircleCheck,
+  
   faTasks,
   faHeartPulse,
   faInbox,

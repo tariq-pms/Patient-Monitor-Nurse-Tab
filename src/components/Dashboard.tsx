@@ -9,6 +9,7 @@ import Webcam from "react-webcam";
 import { useEffect, useRef, useState } from "react";
 
 interface DashboardProps {
+  patient: string;
   patient_name: string;
   patient_id: string;
   patient_resource_id: string;
@@ -17,6 +18,7 @@ interface DashboardProps {
 }
 
 interface LabReport {
+  test: string | undefined;
   testName?: string;
   result?: string;
   unit?: string;
@@ -27,9 +29,7 @@ interface LabReport {
 
 export const Dashboard: React.FC<DashboardProps> = ({ 
   patient_name, 
-  patient_id,
   patient_resource_id,
-  UserRole,
   onClose 
 }) => {
   const [showScanner, setShowScanner] = useState(false);

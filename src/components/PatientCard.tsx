@@ -1,11 +1,11 @@
 
-import { Box, Button, Card, CardContent, Grid, IconButton, Stack, Typography } from "@mui/material";
+import { Box,  Card, CardContent, Grid, IconButton, Stack, Typography } from "@mui/material";
 import { isArray } from "chart.js/helpers";
 import { FC, useEffect, useState } from "react";
-import { NewPatientDetails } from "./NewPatientDetails";
-import { faArrowTrendUp, faBed, faDashboard, faDroplet, faEllipsisVertical, faFlask, faHeartPulse, faLungs, faNotesMedical, faPrescription, faTemperatureHalf } from "@fortawesome/free-solid-svg-icons";
+import { faArrowTrendUp, faBed,  faDroplet,  faFlask, faHeartPulse, faLungs, faNotesMedical, faPrescription, faTemperatureHalf } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
+
 
 export interface PatientDetails {
     onClick: () => void;
@@ -125,16 +125,15 @@ export interface PatientDetails {
     }[];
     patient_name: string;
     darkTheme:boolean;
-    selectedIcon:string; 
+    // selectedIcon:string; 
   }
 
 
 export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
     console.log('PatientCard props:', props);
-    
     const [obsResource, setObsResource] = useState<any[]>([])
-    const [isOpen, setIsOpen] = useState(false);
     const [, setIsBlinking] = useState(false);
+    
     const [alarmColor, setAlarmColor] = useState("")
     const [obsmeta, setobsmeta] = useState<any[]>([])
     const [commeta, setcommeta] = useState<any[]>([])
@@ -190,10 +189,11 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                                     setAlarmColor('yellow')
                                 }
                             } } }})}}
-    },[props])
+},[props])
         
     useEffect(() => {
-        let intervalId: number | undefined;
+      let intervalId: ReturnType<typeof setInterval> | undefined;
+
     
         if (newData) {
           intervalId = setInterval(() => {
@@ -208,15 +208,16 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
         return () => {
           clearInterval(intervalId);
         };
-    }, [alarmColor]);
+      }, [alarmColor]);
 
     useEffect(() => {
-    let timer: number | undefined;
+      let timer: ReturnType<typeof setInterval> | undefined;
+   
     if(newData){
         timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},2000)
     }
 
-    return () => {
+   return () => {
         
         clearInterval(timer); 
     };
@@ -261,13 +262,14 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
             });
     };
 
+   
     return (
         <Box
         width={{
           xs: "350px",
           sm: "750px",
           md: "500px",
-          lg: "500px"
+          lg: "1050px"
         }}
         sx={{
          mb:2,

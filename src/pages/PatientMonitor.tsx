@@ -4,15 +4,13 @@ import { useAuth0 } from '@auth0/auth0-react';
 import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { PatientCard } from '../components/PatientCard';
-import AddIcon from '@mui/icons-material/Add';
-// import { DummyPatientCard } from '../components/DummyPatientCard';
-import { NewPatientDetails } from "../components/NewPatientDetails";
+
 
 type PatientMonitorProps = {
   userOrganization: string;
   currentRoom: any;
   darkTheme: boolean; 
-  selectedIcon: string;
+  // selectedIcon: string;
 };
 
 type Patient = {
@@ -47,11 +45,10 @@ interface State {
   [patientId: string]: DataEntity[];
 }
 
-  export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, currentRoom ,darkTheme,selectedIcon}) => {
+  export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, currentRoom ,darkTheme}) => {
   
   //console.log("in patient Monitor Page rooms",currentRoom);
   //console.log("in patient Monitor Page",userOrganization);
-  
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
@@ -277,7 +274,7 @@ interface State {
 
   const handlePatientCardClick = (patient: Patient) => {
     setSelectedPatient(patient);
-    console.log("handlepatientclick", patient);
+    console.log("handlepatientclick", selectedPatient);
   };
 
   const handleSave = async () => {
@@ -333,7 +330,7 @@ interface State {
     setSnackbarOpen(true);
   };
 
-  const handleOpenDialog = () => setOpenDialog(true);
+  // const handleOpenDialog = () => setOpenDialog(true);
   const handleCloseDialog = () => setOpenDialog(false);
 
   const containerStyles = {
@@ -343,34 +340,34 @@ interface State {
     
   };
 
-  const floatingButtonStyles = {
-    position: 'fixed',
-    bottom: '20px',
-    right: '20px',
-    zIndex: 1000,
-    borderRadius: '50%',
-    backgroundColor: '#124D81',
-    color: '#fff',
-    width: '60px',
-    height: '60px',
-    minWidth: 'unset',
-    border: '2px solid #124D81',
-    animation: 'pulseAnimation 3s infinite ease-in-out',
-    '&:hover': {
-      backgroundColor: '#124D81',
-    },
-    '@keyframes pulseAnimation': {
-      '0%': {
-        boxShadow: '0 0 0 0 rgba(63, 81, 181, 0.7)',
-      },
-      '70%': {
-        boxShadow: '0 0 0 10px rgba(63, 81, 181, 0)',
-      },
-      '100%': {
-        boxShadow: '0 0 0 0 rgba(63, 81, 181, 0)',
-      },
-    },
-  };
+  // const floatingButtonStyles = {
+  //   position: 'fixed',
+  //   bottom: '20px',
+  //   right: '20px',
+  //   zIndex: 1000,
+  //   borderRadius: '50%',
+  //   backgroundColor: '#124D81',
+  //   color: '#fff',
+  //   width: '60px',
+  //   height: '60px',
+  //   minWidth: 'unset',
+  //   border: '2px solid #124D81',
+  //   animation: 'pulseAnimation 3s infinite ease-in-out',
+  //   '&:hover': {
+  //     backgroundColor: '#124D81',
+  //   },
+  //   '@keyframes pulseAnimation': {
+  //     '0%': {
+  //       boxShadow: '0 0 0 0 rgba(63, 81, 181, 0.7)',
+  //     },
+  //     '70%': {
+  //       boxShadow: '0 0 0 10px rgba(63, 81, 181, 0)',
+  //     },
+  //     '100%': {
+  //       boxShadow: '0 0 0 0 rgba(63, 81, 181, 0)',
+  //     },
+  //   },
+  // };
 
   return (
     <div style={containerStyles}>
@@ -387,7 +384,7 @@ interface State {
                 observation_resource={parentObs[String(patient.id)]}
                 communication_resource={parentComm[String(patient.id)]}
                 darkTheme={darkTheme}
-                selectedIcon={selectedIcon}
+                // selectedIcon={selectedIcon}
                 onClick={() => handlePatientCardClick(patient)}
               />
             ))}

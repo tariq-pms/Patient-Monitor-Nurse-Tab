@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useState } from 'react';
 import {
-  AppBar, Box, Toolbar, IconButton, Badge, Menu, MenuItem,
-  TextField, InputAdornment, Button, Switch, Typography,
+  AppBar, Box, Toolbar, IconButton, Menu, MenuItem,
+  TextField, InputAdornment, Button, Typography,
   FormControl,
   Select,
   SelectChangeEvent,
@@ -12,16 +12,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faAngleDoubleLeft,
-  faAngleDoubleRight,
-  faCircleChevronLeft, faCircleChevronRight, 
-  faMaximize, 
-  faMinimize, 
-  faPlus, faUserCircle, faUserNurse 
-} from '@fortawesome/free-solid-svg-icons';
+import { faAngleDoubleLeft,faAngleDoubleRight,faPlus, faUserCircle, faUserNurse } from '@fortawesome/free-solid-svg-icons';
 import SearchIcon from '@mui/icons-material/Search';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import pmsLogo from '../assets/image 135.png';
 
 export interface HeaderProps {
