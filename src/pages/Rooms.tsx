@@ -152,12 +152,7 @@ export const Rooms:FC<roomdata> = (props) => {
             
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
           
-        <Box
-            sx={{
-              
-              display: "flex",
-              flexWrap: "wrap",
-              gap: '2rem',
+        <Box sx={{display: "flex",flexWrap: "wrap",gap: '2rem',
               mt: {
                 xs: 5,
                 sm: 6,

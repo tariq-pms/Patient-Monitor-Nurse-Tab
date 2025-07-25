@@ -20,6 +20,7 @@ import { DeviceProvider } from "./contexts/DeviceContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import {PatientDetailView } from "./pages/PatientDetails";
 import { Administration } from "./pages/Administration";
+import { ModuleProvider } from './contexts/ModuleContext';
 
 const theme = createTheme({
     typography: {
@@ -97,11 +98,13 @@ function App() {
     return (
         <ThemeProvider theme={theme}>
              <NotificationProvider>
+                
             <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
                 <CircularProgress color="inherit" />
             </Backdrop>
             <Header darkTheme={darkTheme} setSearchQuery={setSearchQuery} toggleDarkTheme={toggleDarkTheme} roomAltered={roomAltered} currentRoom={currentRoom} roomChange={roomChange} onToggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} onAddClick={handleOpenDialog} userOrganization={""}               />
             <DeviceProvider>
+            <ModuleProvider>
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/user" element={<UserInfo />} />
@@ -109,11 +112,13 @@ function App() {
                     <Route path="/patient-monitor" element={<PatientMonitor currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
                     {/* <Route path="/all-patient" element={<AllPatient searchQuery={searchQuery} currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} /> */}
                     <Route path="/admin" element={<AdminPage userOrganization={UserOrganization} darkTheme={darkTheme} />} />
-                    <Route path="/administration" element={<Administration isSidebarCollapsed={isSidebarCollapsed} openDialog={openDialog} onCloseDialog={handleCloseDialog}/>} />
-                    <Route path="/organization" element={<Organization darkTheme={darkTheme} />} /> 
+                    <Route path="/administration" element={<Administration isSidebarCollapsed={isSidebarCollapsed} openDialog={openDialog} userOrganization={UserOrganization} darkTheme={darkTheme} onCloseDialog={handleCloseDialog}/>} />
+                    <Route path="/organization" element={<Organization darkTheme={darkTheme} userOrganization={UserOrganization}/>} /> 
                      <Route path="/patient/:id" element={<PatientDetailView  isSidebarCollapsed={isSidebarCollapsed} key={""} newData={false}   patient_id={""} device={[]} patient_resource_id={""} observation_resource={[]} communication_resource={[]} patient_name={""} darkTheme={false} UserRole ={UserRole}selectedIcon={""} />} />
                 </Routes>
+                </ModuleProvider>
             </DeviceProvider>
+
             </NotificationProvider>
         </ThemeProvider>
     );

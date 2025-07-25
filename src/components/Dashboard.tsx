@@ -77,7 +77,7 @@ const [isLoadingReports, setIsLoadingReports] = useState(false);
     setError(null);
     
     try {
-      const response = await fetch('https://pmsserver.local:5001/api/scan', {
+      const response = await fetch('https://pmsind.co.in:5001/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageData })
@@ -107,7 +107,7 @@ const [isLoadingReports, setIsLoadingReports] = useState(false);
 
     const formData = new FormData();
     formData.append('file', file);
-    fetch('https://pmsserver.local:5001/api/upload', {
+    fetch('https://pmsind.co.in:5001/api/upload', {
       method: 'POST',
       body: formData
     })

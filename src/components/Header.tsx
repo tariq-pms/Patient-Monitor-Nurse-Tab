@@ -130,7 +130,7 @@ useEffect(() => {
   
   if (UserRole === 'Hospital Technician' && 
       (location.pathname === '/patient-monitor' || location.pathname === '/organization')) {
-    navigate('patient-monitor');
+    navigate('/administration');
   }
 
   if (UserRole === 'Phoenix' && location.pathname !== '/organization') {
@@ -161,14 +161,14 @@ const handleBackButtonClick = () => {
 
   return (
    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" style={{ background: 'transparent', boxShadow: 'none' }} >
+      <AppBar position="static" style={{ background: '#FFFFFF', boxShadow: 'none' }} >
         <Toolbar>
           {!isLoading && isAuthenticated && (
             <>
               <div style={{ marginRight: 'auto' }}>
               <Box sx={{ cursor: 'pointer',width:'55%',maxWidth: '55%', display:'flex'}}>
                  {/* Sidebar Toggle */}
-          <IconButton 
+          {/* <IconButton 
             onClick={props.onToggleSidebar} 
             size={isMobile ? 'small' : 'medium'}
             
@@ -180,7 +180,7 @@ const handleBackButtonClick = () => {
                 fontSize: isMobile ? '1.2rem' : '1.2rem' 
               }}
             />
-          </IconButton>
+          </IconButton> */}
 
           {/* Logo */}
           <Box 
@@ -196,7 +196,7 @@ const handleBackButtonClick = () => {
               src={pmsLogo} // Replace with your logo path
               alt="Logo" 
               style={{ 
-                width: isMobile ? '60px' : '100px', 
+                width: isMobile ? '60px' : '120px', 
                 height: 'auto'
               }} 
             />
@@ -204,7 +204,7 @@ const handleBackButtonClick = () => {
               variant="h2"
               style={{
                 color: props.darkTheme ? 'white' : '#124D81',
-                fontSize: isMobile ? '0.9rem' : '1.2rem',
+                fontSize: isMobile ? '0.9rem' : '1.5rem',
                 fontWeight: 400,
                 lineHeight: 1,
               }}
@@ -229,7 +229,7 @@ const handleBackButtonClick = () => {
     width: '160px',
     borderRadius: '16px',
     height:'35px',
-    backgroundColor: darkTheme ? '#1C1C1E' : '#FFFFFF',
+    backgroundColor: darkTheme ? '#1C1C1E' : '#868E96',
     '& .MuiInput-underline:before': { // Remove underline before focus
       borderBottom: 'none',
     },
@@ -345,12 +345,7 @@ const handleBackButtonClick = () => {
         </Stack>
 
         <Divider sx={{ border: '0.3px solid #AEAEAE' }} />
-        {notHome && (UserRole === 'Hospital Technician' || UserRole === 'Hospital Clinician') && (
-        <><Stack alignItems="flex-start" sx={{ marginTop: '5px', paddingLeft: '22px' }}>
-                              <Typography variant="subtitle1">View</Typography>
-                            </Stack>
-                            </>
-        )}
+      
         {/* <Divider sx={{ border: '0.3px solid grey' }} /> */}
         <Stack direction="row" width="100%" justifyContent="space-around"   >
           <Typography variant="subtitle1" style={{marginRight:'50px',marginTop:'4px'}}>Dark Mode</Typography>

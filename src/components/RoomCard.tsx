@@ -580,6 +580,8 @@ const removeButton = (index: number) => {
     }
     const [miniDialog, setMiniDialog] = useState(false)
     const [selectedDevice, setSelectedDevice] = useState(Number)
+    
+    
     const addToRoom = () => {
        
         return (
@@ -641,14 +643,14 @@ const removeButton = (index: number) => {
       return () => clearTimeout(timer);
     }, []);
     const [controlColor, setControlColor] = useState("grey")
-  const [controlOpacity, setOpacity] = useState("0.8")
+  
   return (
       <Box>
         {loading ? (
           <Skeleton animation="wave" variant="rectangular" width={"350px"} height={"280px"} sx={{borderRadius:"25px"}} />
         ) : (
         
-      <Card elevation={5} onMouseLeave={() => { setControlColor('grey'); setOpacity('0.8') }} onMouseEnter={() => { setControlColor('#2BA0E0'); setOpacity('1') }}style={{width: '350px',opacity: controlOpacity, backgroundColor: 'transparent', boxShadow: 'none', background: 'transparent', borderRadius: '25px', minHeight: '280px', border: `1px solid ${controlColor}` }}>
+      <Card elevation={5} onMouseLeave={() => { setControlColor('grey')}} onMouseEnter={() => { setControlColor('#2BA0E0'); }}style={{width: '350px', backgroundColor: 'transparent', boxShadow: 'none', background: 'transparent', borderRadius: '25px', minHeight: '280px', border: `1px solid ${controlColor}` }}>
               <Stack width={'100%'} direction={'row'} justifyContent={'center'} textAlign={'center'}>
               <CardContent sx={{marginTop:'0%', width:'100%', justifyContent:'center', textAlign:'center'}}>
                       <Stack marginTop={'0%'}>

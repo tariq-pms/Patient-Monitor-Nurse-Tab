@@ -198,9 +198,7 @@ console.log("in admin page",userOrganization);
             <Skeleton animation="wave" variant="rectangular" width={"350px"}  height={"200px"} sx={{ borderRadius: "25px",marginTop:"120px",marginRight:"400px" }} />
           ) : (
             <Box display="flex" flexDirection="column" alignItems="center">
-              <Box width={'100%'} marginBottom={'10%'} paddingTop={'2%'} textAlign={'center'}>
-                <Typography variant='h5' color={darkTheme?'white':'#124D81'}>Admin Settings</Typography>
-              </Box>
+             
               <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center">
                 {userData.map((user: User, index: number) => (
                  <UserCard key={index} user={user} onUserClick={handleUserClick} onDeleteUser={handleDeleteUser} updateUserInList={updateUserInList} user_id={''} darkTheme={darkTheme} />

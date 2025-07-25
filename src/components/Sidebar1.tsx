@@ -1,94 +1,132 @@
-import { FC } from "react";
-import {Box,List,ListItem,ListItemText,ListItemIcon} from "@mui/material";
+import { FC, useState } from "react";
+import { Box, List, ListItem, ListItemText, ListItemIcon } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWindowRestore,faBell,faSmile,faUserGroup,faClock,faFileImport,faFileWaveform,faChartSimple,faGear,} from "@fortawesome/free-solid-svg-icons";
+import {
+  faSmile,
+  faHospital,
+  faUserGroup,
+  faFileWaveform,
+  faGear,
+  faAngleDoubleLeft,
+  faAngleDoubleRight,
+} from "@fortawesome/free-solid-svg-icons";
 
 export interface SidebarProps {
   onIconClick: (index: number) => void;
-  isSidebarCollapsed:boolean, // Callback to handle icon clicks
+  selectedIndex: number | null;
 }
 
-export const Sidebar1: FC<SidebarProps & { onIconClick: (index: number) => void; selectedIndex: number | null }> = ({
-  onIconClick,
-  selectedIndex,
-  isSidebarCollapsed
-}) => {
-  
+export const Sidebar1: FC<SidebarProps> = ({ onIconClick, selectedIndex }) => {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   const menuItems = [
-    { label: "Overview", icon: faWindowRestore },
     { label: "Patients", icon: faSmile },
-    { label: "Staffs management", icon: faUserGroup },
-    { label: "Shift Handovers", icon: faClock },
-    { label: "Transfers/Discharge", icon: faFileImport },
+    { label: "Rooms & Beds", icon: faHospital },
+    { label: "User management", icon: faUserGroup },
     { label: "Device management", icon: faFileWaveform },
-    { label: "Notifications & Alerts", icon: faBell },
-    { label: "Reports & Analytics", icon: faChartSimple },
     { label: "Setting", icon: faGear },
-  
-    
   ];
 
- return (
+  return (
     <Box
       sx={{
-        width: isSidebarCollapsed ? 237: 60,
+        width: isSidebarCollapsed ? 60 : 270,  // fixed width depending on collapse only
         backgroundColor: "#FFFFFF",
         display: "flex",
+        height: "90vh",
         flexDirection: "column",
         alignItems: "center",
-        // Fixed padding
-       
-       
         transition: "width 0.3s",
+        justifyContent: "space-between",
+        paddingY: 0,
+        overflowX: "hidden",  // prevent horizontal scroll when collapsed
       }}
     >
-      
-      <List sx={{ width: "100%", padding: 0 }}>
+      <List sx={{ width: "100%", paddingX: 0 }}>
         {menuItems.map((item, index) => (
-        <ListItem
-        key={index}
+          <ListItem
+            key={index}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              height: 40,
+              fontSize: "1.3rem",
+              paddingX: 1,
+              backgroundColor: selectedIndex === index ? "#CCE6FF" : "transparent",
+              marginBottom: 1,
+              cursor: "pointer",
+              "&:hover": { backgroundColor: "#E6F2FF" },
+            }}
+            onClick={() => onIconClick(index)}
+          >
+            <ListItemIcon
+              sx={{
+                color: selectedIndex === index ? "#124D81" : "#757575",
+                justifyContent: "center",
+                minWidth: 36,
+              }}
+            >
+              <FontAwesomeIcon icon={item.icon} style={{ fontSize: "100%" }} />
+            </ListItemIcon>
+
+            <ListItemText
+              primary={item.label}
+              sx={{
+                color: selectedIndex === index ? "#124D81" : "#757575",
+                fontWeight: selectedIndex === index ? "bold" : "normal",
+                marginLeft: 2,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                // Use opacity and fixed width instead of 'auto' to avoid layout shifts
+                opacity: isSidebarCollapsed ? 0 : 1,
+                transition: "opacity 0.3s ease",
+                width: isSidebarCollapsed ? 0 : 180,  // fixed width for text area when expanded
+              }}
+            />
+          </ListItem>
+        ))}
+      </List>
+
+      {/* Collapse/Expand Button */}
+      <ListItem
         sx={{
           display: "flex",
           alignItems: "center",
-          height: 40, 
-          fontSize:'1.3rem',// consistent height
+          height: 40,
+          fontSize: "1.3rem",
           paddingX: 1,
-          backgroundColor: selectedIndex === index ? "#CCE6FF" : "transparent",
-          marginBottom: 2,
           cursor: "pointer",
           "&:hover": { backgroundColor: "#E6F2FF" },
+          width: "100%",
         }}
-        onClick={() => onIconClick(index)}
+        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       >
         <ListItemIcon
           sx={{
-            color: selectedIndex === index ? "#124D81" : "#757575",
+            color: "#757575",
             minWidth: 36,
             justifyContent: "center",
           }}
         >
-          <FontAwesomeIcon icon={item.icon} style={{ fontSize: "100%" }} />
+          <FontAwesomeIcon
+            icon={isSidebarCollapsed ? faAngleDoubleRight : faAngleDoubleLeft}
+            style={{ fontSize: "100%" }}
+          />
         </ListItemIcon>
-      
+
         <ListItemText
-          primary={item.label}
+          primary={isSidebarCollapsed ? "" : "Collapse"} // only show text when expanded
           sx={{
-            color: selectedIndex === index ? "#124D81" : "#757575",
-            fontWeight: selectedIndex === index ? "bold" : "normal",
+            color: "#757575",
             marginLeft: 2,
-            opacity: isSidebarCollapsed ? 1 : 0,
+            opacity: isSidebarCollapsed ? 0 : 1,
             whiteSpace: "nowrap",
             overflow: "hidden",
             transition: "opacity 0.3s ease",
-            width: isSidebarCollapsed ? "auto" : 0,
+            width: isSidebarCollapsed ? 0 : 180,
           }}
         />
       </ListItem>
-      
-        ))}
-      </List>
     </Box>
   );
 };
-

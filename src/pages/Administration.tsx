@@ -3,14 +3,18 @@ import { FC, useState } from "react";
 import  { DeviceManagement }  from "../components/DeviceManagement";
 import { Sidebar1 } from "../components/Sidebar1";
 import { Patient } from "../components/Patient";
+import { AdminPage } from "./AdminPage";
 
 interface AdministrationPageProps {
   openDialog: boolean; 
   onCloseDialog: () => void;
-  isSidebarCollapsed:boolean
+  isSidebarCollapsed:boolean;
+  userOrganization: string;
+  darkTheme:boolean
+  
 }
 
-export const Administration: FC<AdministrationPageProps>= ({ isSidebarCollapsed ,openDialog,onCloseDialog}) => {
+export const Administration: FC<AdministrationPageProps>= ({ isSidebarCollapsed ,openDialog,onCloseDialog,userOrganization}) => {
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const handleIconClick = (index: number) => {
@@ -28,21 +32,27 @@ export const Administration: FC<AdministrationPageProps>= ({ isSidebarCollapsed 
       {(() => {
     switch (selectedIndex) {
      
-      case 1:
+      case 0:
         return (
           <Box sx={{ flexGrow: 1, paddingLeft: 2,paddingRight: 2, overflowY: "auto" }}>
           <Patient  openDialog={openDialog} onCloseDialog={onCloseDialog}/>
          </Box>
         );
         
-      case 5: // Special case
+      case 1: // Special case
       return (
         <Box sx={{ flexGrow: 1, paddingLeft: 1,paddingRight: 1, overflowY: "auto" }}>
          {/* <AssessmentScreen /> */}
-         <DeviceManagement userOrganization={""}/>
+         <DeviceManagement userOrganization={userOrganization}  darkTheme={false}/>
         </Box>
       );
-      
+      case 2: // Special case
+      return (
+        <Box sx={{ flexGrow: 1, paddingLeft: 1,paddingRight: 1, overflowY: "auto" }}>
+         {/* <AssessmentScreen /> */}
+         <AdminPage userOrganization={userOrganization} darkTheme={false}/>
+        </Box>
+      );
     
       
       default:

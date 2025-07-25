@@ -1,595 +1,616 @@
-import {Box,Typography,TableRow, TableCell, Table, TableBody,Paper, TableHead, Link, TextField, TableContainer, Stack, Button, DialogActions, Dialog,DialogContent, DialogTitle, Snackbar, Alert,InputLabel, Grid, FormControl,Select,MenuItem, CircularProgress} from "@mui/material";
-import { useEffect, useRef, useState } from "react";
-import Webcam from 'react-webcam';
-import { PhotoCamera, Scanner } from "@mui/icons-material";
-import { Dashboard } from './Dashboard';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
+import {
+  Box, Typography, TableRow, TableCell, Table, TableBody, Paper, 
+  TableHead, TextField, Stack, Button, Tabs, Tab,
+  Grid, InputAdornment, Dialog, DialogTitle, DialogContent,
+  DialogActions, InputLabel, Snackbar, Alert, CircularProgress,
+  IconButton,
+  Menu,
+  MenuItem
+} from "@mui/material";
+import { useEffect, useState } from "react";
+import AddIcon from '@mui/icons-material/Add';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
-const PATIENTS_PER_PAGE = 10;
-export interface PatientProps {
-  openDialog: boolean; 
-  onCloseDialog: () => void;
+interface Patient {
+  active: boolean;
+  id: string;
+  name: string;
+  patientId: string;
+  bed: string;
+  assignee: string;
+  birthDateTime: string;
+  dischargedDate: string;
+  gestation: string;
+  birthWeight: string;
+  lastUpdated: string;
 }
-export const Patient: React.FC<PatientProps> = ({
-  openDialog,
-  onCloseDialog,
-}) => {
 
-  const [patientList, setPatientList] = useState<any[]>([]);
-  const [filteredPatients, setFilteredPatients] = useState<any[]>([]);
+export const Patient = () => {
+  const [activeTab, setActiveTab] = useState("current");
+  const [openDialog, setOpenDialog] = useState(false);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const fetchPatients = async () => {
-    try {
-      const response = await fetch(
-        
-        `${import.meta.env.VITE_FHIRAPI_URL as string}/Patient?_count=1000&organization=190a1bc01d5-74da227d-60cc-459b-9046-3173eee76c83`,
-        {
-          credentials: "omit",
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error"
+  });
+  const [formData, setFormData] = useState({
+    mothersName: "",
+    patientId: "",
+    birthDate: "",
+    birthTime: "",
+    gestationWeeks: "",
+    gestationDays: "",
+    birthWeight: "",
+  });
+
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Patient`, {
           headers: {
             Authorization: "Basic " + btoa("fhiruser:change-password"),
-          },
-        }
-      );
+            "Content-Type": "application/fhir+json"
+          }
+        });
 
-      if (response.ok) {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
-        if (data.entry) {
-          const patients = data.entry.map((entry: { resource: any }) => entry.resource);
-  
-          // Sort patients by lastUpdated descending
-          const sorted = patients.sort(
-            (a: { meta: { lastUpdated: any; }; }, b: { meta: { lastUpdated: any; }; }) =>
-              new Date(b.meta?.lastUpdated || "").getTime() -
-              new Date(a.meta?.lastUpdated || "").getTime()
-          );
-  
-          setPatientList(sorted);
-          setFilteredPatients(sorted);
-        }
-      } else {
-        throw new Error("Network response was not ok");
+        const fetchedPatients = data.entry?.map((entry: any) => {
+          const resource = entry.resource;
+          
+          // Extract mother's name from extensions
+          const mothersName = resource.extension?.find(
+            (ext: any) => ext.url === "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName"
+          )?.valueString || "Unknown";
+
+          // Extract gestation from extensions
+          const gestation = resource.extension?.find(
+            (ext: any) => ext.url === "http://example.org/fhir/StructureDefinition/patient-gestationalAge"
+          )?.valueString || "N/A";
+
+          // Extract birth weight from extensions
+          const birthWeight = resource.extension?.find(
+            (ext: any) => ext.url === "http://example.org/fhir/StructureDefinition/patient-birthWeight"
+          )?.valueQuantity?.value || "N/A";
+
+          return {
+            id: resource.id,
+            name: ` ${mothersName}`,
+            patientId: resource.identifier?.[0]?.value || "N/A",
+            birthDateTime: resource.birthDate ? formatDate(resource.birthDate) : "N/A",
+            gestation,
+            birthWeight: birthWeight !== "N/A" ? `${birthWeight} g` : "N/A",
+            lastUpdated: resource.meta?.lastUpdated ? formatDateTime(resource.meta.lastUpdated) : "N/A",
+            bed: "--", // You'll need to get this from your system
+            assignee: "--", // You'll need to get this from your system
+            dischargedDateTime: "--", // Will be updated when discharged
+            active: resource.active !== false // Default to true if not specified
+          };
+        }) || [];
+
+        setPatients(fetchedPatients);
+      } catch (err) {
+        console.error("Error fetching patients:", err);
+        setError("Failed to load patient data");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching patients:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchPatients();
-  }, []);
-  
-  useEffect(() => {
-    const filtered = patientList.filter((patient) => {
-    const name = getMaidenName(patient.extension).toLowerCase();
-    const id = patient.identifier?.[0]?.value?.toLowerCase() || "";
-    return (
-    name.includes(searchTerm.toLowerCase()) ||
-    id.includes(searchTerm.toLowerCase())
-    );
-    });
-setFilteredPatients(filtered);
-setCurrentPage(1); // Reset page on search
-}, [searchTerm, patientList]);
-
-const getMaidenName = (extensions: any[]) => {
-  const maidenExt = extensions?.find(
-  (ext) =>
-  ext.url === "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName"
-  );
-  return maidenExt?.valueString || "Unknown";
-  };
-  
-  const totalPages = Math.ceil(filteredPatients.length / PATIENTS_PER_PAGE);
-  
-  const handlePrevPage = () => {
-  setCurrentPage((prev) => Math.max(prev - 1, 1));
-  };
-  
-  const handleNextPage = () => {
-  setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  };
-  
-  const paginatedPatients = filteredPatients.slice(
-  (currentPage - 1) * PATIENTS_PER_PAGE,
-  currentPage * PATIENTS_PER_PAGE
-  );
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success"); 
-  const handleCloseSnackbar = () => setSnackbarOpen(false);
- 
-  const [showScanner, setShowScanner] = useState(false);
-const webcamRef = useRef<Webcam>(null);
-const [isProcessing, setIsProcessing] = useState(false);
-const [capturedImage, setCapturedImage] = useState<string | null>(null);
-const [selectedPatient, setSelectedPatient] = useState<any>(null);
-// const [openPatientDialog, setOpenPatientDialog] = useState<boolean>(false);
-
-
-// These states must be defined
-const [mothersName, setMothersName] = useState('');
-const [patientId, setPatientId] = useState('');
-const [dob, setDob] = useState('');
-const [gender, setGender] = useState('');
-const [gestation, setGestation] = useState('');
-
-
-// const [ocrSuggestions, setOcrSuggestions] = useState<Record<string, string>>({});
-
-const captureAndProcess = async () => {
-  if (!webcamRef.current) return;
-  const imageSrc = webcamRef.current.getScreenshot();
-  setCapturedImage(imageSrc);      // Save the captured image
-  setIsProcessing(true);           // Show processing animation
-
-  try {
-    const response = await fetch('https://pmsserver.local:5001/api/autofill', {
-    // const response = await fetch('http://localhost:5000/api/autofill', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageBase64: imageSrc }),
-    });
-    
-
-    const data = await response.json();
-    if (data.error) throw new Error(data.error);
-
-    const extracted = data.structuredData || {};
-    setMothersName(extracted.mothersName || '');
-    setPatientId(extracted.patientId || '');
-    setDob(extracted.dob || '');
-    setGender(extracted.gender || '');
-    setGestation(extracted.gestation || '');
-    
-
-  } catch (error) {
-    console.error('OCR Error:', error);
-    alert('Error processing image. Please try again.');
-  } finally {
-    setIsProcessing(false);
-    setShowScanner(false);
-    setCapturedImage(null); // Clear after process finishes
-  }
-};
-
-const handlePatientClick = (patient: any) => {
-  setSelectedPatient(patient);
-  // setOpenPatientDialog(true);
-};
-
-const handleScanClick = () => {
-  setShowScanner(true);
-};
-
-  const handleSave = async () => {
-    const patientResource = {
-      resourceType: 'Patient',
-      extension: [
-        {
-          url: 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName',
-          valueString: mothersName,
-        },
-        {
-          url: 'http://example.org/fhir/StructureDefinition/patient-gestation',
-          valueString: gestation,
-        },
-        {
-          url: 'http://hl7.org/fhir/StructureDefinition/patient-location',
-          valueReference: {
-            reference: `Location/190a1c7d532-d4d344eb-e974-4fb6-9469-e66dd33b1c04`,
-          },
-        },
-      ],
-      identifier: [
-        {
-          system: 'urn:ietf:rfc:3986',
-          value: patientId,
-        },
-      ],
-      gender: gender?.toLowerCase(), // 'male', 'female', 'other', or 'unknown'
-      birthDate: dob, // YYYY-MM-DD format
-      managingOrganization: {
-        reference: `Organization/190a1bc01d5-74da227d-60cc-459b-9046-3173eee76c83`,
-      },
     };
 
-    try {
-      const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient`, {
-        credentials: "omit",
-        method: "POST",
-        body: JSON.stringify(patientResource),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Basic " + btoa("fhiruser:change-password"),
-        },
-      });
-
-      if (response.ok) {
-        console.log('Patient data saved successfully!');
-        setSnackbarMessage("Patient data saved successfully!");
-        setSnackbarSeverity("success");
-      } else {
-        console.error('Failed to save patient data:', response.statusText);
-        setSnackbarMessage("Failed to save patient data.");
-        setSnackbarSeverity("error");
-      }
-    } catch (error) {
-      console.error('Error saving patient data:', error);
-    }
-    onCloseDialog();
-    setSnackbarOpen(true);
     fetchPatients();
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
-return (
-<Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
-  {selectedPatient ? (
-    // Show Dashboard when a patient is selected
-    <Dashboard
-        patient={selectedPatient}
-        onClose={() => setSelectedPatient(null)} patient_name={""} patient_id={""} patient_resource_id={""} UserRole={""}    />
-  ) : (
-    
-    <>
-       
-          <Box sx={{ width: '100%', height: '90vh' ,mt:3}}>
-          
 
-            <Paper elevation={1} sx={{ p: 2, backgroundColor: '#ffffff' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="h6" color="#000000">
-                  Recent Admissions
-                </Typography>
+  const formatDateTime = (dateTimeString: string) => {
+    const date = new Date(dateTimeString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + 
+           ' ' + date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', weekday: 'short' });
+  };
 
-                <TextField
-                  size="small"
-                  placeholder="Search by name or ID"
-                  variant="outlined"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      color: '#000000',
-                      '& fieldset': {
-                        borderColor: '#000000',
-                      },
-                      '&:hover fieldset': {
-                        borderColor: '#000000',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#000000',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: '#000000',
-                    },
-                    '& .MuiInputBase-input::placeholder': {
-                      color: '#000000',
-                      opacity: 1,
-                    },
-                  }} />
-              </Box>
-              <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                <TableContainer
-                  component={Paper}
-                  sx={{
-                    backgroundColor: '#F3F2F7',
-                    borderRadius: 3,
-                    boxShadow: 'none',
-                  }}
-                >
-                  <Table size="small">
-                    <TableHead sx={{ backgroundColor: '#E0E0E0' }}>
-                      <TableRow sx={{ '& th': { p: 2 } }}>
-                        <TableCell sx={{ color: '#868E96', fontWeight: 'bold' }}>Patient Name</TableCell>
-                        {/* <TableCell sx={{ color: '#868E96', fontWeight: 'bold' }}>Bed No</TableCell> */}
-                        <TableCell sx={{ color: '#868E96', fontWeight: 'bold' }}>Patient ID</TableCell>
-                        <TableCell sx={{ color: '#868E96', fontWeight: 'bold' }}>DOB</TableCell>
-                        <TableCell sx={{ color: '#868E96', fontWeight: 'bold' }}>G.A</TableCell>
-                        <TableCell sx={{ color: '#868E96', fontWeight: 'bold' }}>Gender</TableCell>
-                        <TableCell sx={{ color: '#868E96', fontWeight: 'bold' }}>Admission Time</TableCell>
-                      </TableRow>
-                    </TableHead>
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-                    <TableBody>
-                      {paginatedPatients.map((patient, index) => (
-                        <TableRow
-                          key={index}
-                          hover
-                          sx={{
-                            '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },
-                            '& td': { p: 1 },
-                          }}
-                        >
-                          <TableCell sx={{ color: '#124D81' }}>
-                            <Link
-                              href="#"
-                              underline="hover"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handlePatientClick(patient);
-                              } }
-                            >
-                              {getMaidenName(patient.extension)}
-                            </Link>
-                          </TableCell>
-                          {/* <TableCell sx={{ color: '#000000' }}>{patient.bed || '-'}</TableCell> */}
-                          <TableCell sx={{ color: '#000000' }}>
-                            {patient.identifier?.[0]?.value || 'N/A'}
-                          </TableCell>
-                          
-                          <TableCell sx={{ color: '#000000' }}>{patient.birthDate || '-'}</TableCell>
-                          <TableCell sx={{ color: '#000000' }}>{patient.gestation || '-'}</TableCell>
-                          <TableCell sx={{ color: '#000000' }}>{patient.gender || '-'}</TableCell>
-                          <TableCell sx={{ color: '#000000' }}>
-                            {new Date(patient.meta?.lastUpdated).toLocaleString() || 'N/A'}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Box>
-              <Stack
-                direction="row"
-                spacing={1}
-                justifyContent="flex-end"
-                sx={{ mt: 2 }}
-              >
-                <Button
-                  variant="outlined"
-                  onClick={handlePrevPage}
-                  disabled={currentPage === 1}
-                  sx={{
-                    backgroundColor: '#228BE61A',
-                    color: '#228BE6',
-                    textTransform: 'none',
-                  }}
-                >
-                  Previous
-                </Button>
-
-                <Typography
-                  variant="body2"
-                  sx={{ alignSelf: 'center', color: '#000000' }}
-                >
-                  Page {currentPage} of {totalPages}
-                </Typography>
-
-                <Button
-                  variant="outlined"
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                  sx={{
-                    backgroundColor: '#228BE61A',
-                    color: '#228BE6',
-                    textTransform: 'none',
-                  }}
-                >
-                  Next
-                </Button>
-              </Stack>
-            </Paper>
-          </Box>
-          <Dialog
-            open={openDialog}
-            onClose={onCloseDialog}
-            fullWidth
-            maxWidth="sm"
-            PaperProps={{ sx: { width: '100%', maxWidth: '478px', maxHeight: '90vh', backgroundColor: '#FFFFFF', color: 'black', borderRadius: 2, }, }}>
-            <DialogTitle sx={{ fontWeight: 'bold' }}>NICU Admission</DialogTitle>
-
-            <DialogContent dividers sx={{ overflowY: 'auto' }}>
-              {showScanner ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Typography variant="body1" sx={{ mb: 1, textAlign: 'center' }}>
-                    {capturedImage ? 'Processing image, please wait...' : 'Position the document clearly within the frame'}
-                  </Typography>
-                  {!capturedImage && (
-                    <Webcam
-                      audio={false}
-                      ref={webcamRef}
-                      screenshotQuality={0.5}
-                      screenshotFormat="image/jpeg"
-                      videoConstraints={{
-                        facingMode: 'environment',
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                      }}
-                      style={{
-                        width: '100%',
-                        borderRadius: '8px',
-                        maxHeight: '60vh',
-                        objectFit: 'contain',
-                      }} />
-                  )}
-                  {capturedImage && isProcessing && (
-                    <Box>
-                      <CircularProgress size={40} />
-                      <Typography variant="body2" sx={{ color: '#ccc' }}>
-                        Extracting data
-                      </Typography>
-                    </Box>
-                  )}
-
-                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                    {!capturedImage && (
-                      <Button
-                        variant="contained"
-                        onClick={captureAndProcess}
-                        disabled={isProcessing}
-                        startIcon={<PhotoCamera />}
-                      >
-                        Capture & Extract
-                      </Button>
-                    )}
-                    <Button
-                      variant="outlined"
-                      onClick={() => {
-                        setShowScanner(false);
-                        setCapturedImage(null); // Reset if cancelled mid-process
-                      } }
-                      disabled={isProcessing}
-                    >
-                      Cancel
-                    </Button>
-                  </Box>
-                </Box>
-
-              ) : (
-                <>
-                   <Grid container spacing={3}>
-  <Grid item xs={12}>
-    <TextField
-      fullWidth
-      label="Mother's Name"
-      value={mothersName}
-      onChange={(e) => setMothersName(e.target.value)}
-      sx={{
-        input: { color: 'black' },
-        '& label': { color: 'black' },
-        '& .MuiOutlinedInput-root': {
-          '& fieldset': { borderColor: 'black' },
-          '&:hover fieldset': { borderColor: 'black' },
-          '&.Mui-focused fieldset': { borderColor: 'black' },
-        },
-      }}
-    />
-  </Grid>
-
-  <Grid item xs={12}>
-    <TextField
-      fullWidth
-      label="Patient ID"
-      value={patientId}
-      onChange={(e) => setPatientId(e.target.value)}
-      sx={{
-        input: { color: 'black' },
-        '& label': { color: 'black' },
-        '& .MuiOutlinedInput-root': {
-          '& fieldset': { borderColor: 'black' },
-          '&:hover fieldset': { borderColor: 'black' },
-          '&.Mui-focused fieldset': { borderColor: 'black' },
-        },
-      }}
-    />
-  </Grid>
-
-  <Grid item xs={12}>
-    <TextField
-      fullWidth
-      label="Gestation"
-      value={gestation}
-      onChange={(e) => setGestation(e.target.value)}
-      sx={{
-        input: { color: 'black' },
-        '& label': { color: 'black' },
-        '& .MuiOutlinedInput-root': {
-          '& fieldset': { borderColor: 'black' },
-          '&:hover fieldset': { borderColor: 'black' },
-          '&.Mui-focused fieldset': { borderColor: 'black' },
-        },
-      }}
-    />
-  </Grid>
-
-  <Grid item xs={12}>
-  <LocalizationProvider dateAdapter={AdapterDayjs}>
-  <DatePicker
-    label="DOB"
-    value={dob ? dayjs(dob) : null}
-    onChange={(newValue) => setDob(newValue ? newValue.format('YYYY-MM-DD') : '')}
-    slotProps={{
-      textField: {
-        fullWidth: true,
-        sx: {
-          input: { color: 'black' },
-          '& label': { color: 'black' },
-          '& .MuiOutlinedInput-root': {
-            '& fieldset': { borderColor: 'black' },
-            '&:hover fieldset': { borderColor: 'black' },
-            '&.Mui-focused fieldset': { borderColor: 'black' },
-            '& .MuiSvgIcon-root': {
-              color: 'black' // calendar icon color
-            },
+  const handleSubmit = async () => {
+    try {
+      // Validate required fields
+      if (!formData.mothersName || !formData.patientId || !formData.birthDate) {
+        throw new Error("Required fields are missing");
+      }
+  
+      // Create FHIR Patient resource
+      const patientResource = {
+        resourceType: "Patient",
+        active: true,
+        identifier: [{
+          system: "urn:ietf:rfc:3986",
+          value: formData.patientId
+        }],
+        name: [{
+          use: "official",
+          family: formData.mothersName,
+          prefix: ["B/O"]
+        }],
+        birthDate: formData.birthDate,
+        extension: [
+          {
+            url: "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName",
+            valueString: formData.mothersName
           },
+          {
+            url: "http://example.org/fhir/StructureDefinition/patient-gestationalAge",
+            valueString: `${formData.gestationWeeks || 0}W ${formData.gestationDays || 0}D`
+          },
+          {
+            url: "http://example.org/fhir/StructureDefinition/patient-birthWeight",
+            valueQuantity: {
+              value: parseFloat(formData.birthWeight) || 0,
+              unit: "g",
+              system: "http://unitsofmeasure.org",
+              code: "g"
+            }
+          }
+        ]
+      };
+  
+      console.log("FHIR Payload:", JSON.stringify(patientResource, null, 2));
+  
+      const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Patient`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/fhir+json",
+          "Authorization": "Basic " + btoa("fhiruser:change-password")
         },
-      },
-    }}
-  />
-</LocalizationProvider>
+        body: JSON.stringify(patientResource)
+      });
+  
+      const responseText = await response.text();
+      
+      if (!response.ok) {
+        console.error("Full error response:", responseText);
+        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+      }
+  
+      const result = responseText ? JSON.parse(responseText) : {};
+      console.log("Patient created:", result);
+  
+      // Create the new patient object for state update
+      const newPatient: Patient = {
+        id: result.id,
+        name: `B/O ${formData.mothersName}`,
+        patientId: formData.patientId,
+        bed: "--", // Default value, update as needed
+        assignee: "--", // Default value, update as needed
+        birthDateTime: formData.birthDate,
 
-  </Grid>
+        gestation: `${formData.gestationWeeks || 0}W ${formData.gestationDays || 0}D`,
+        birthWeight: `${formData.birthWeight || 0} g`,
+        lastUpdated: new Date().toISOString(),
+        active: true,
+        dischargedDate: ""
+      };
+  
+      // Success handling
+      setSnackbar({
+        open: true,
+        message: "Patient successfully added!",
+        severity: "success"
+      });
+  
+      setOpenDialog(false);
+      setFormData({
+        mothersName: "",
+        patientId: "",
+        birthDate: "",
+        birthTime: "",
+        gestationWeeks: "",
+        gestationDays: "",
+        birthWeight: "",
+      });
+  
+      // Update state with the new patient
+      setPatients(prevPatients => [...prevPatients, newPatient]);
+  
+    } catch (error: any) {
+      console.error("Error saving patient:", error);
+      setSnackbar({
+        open: true,
+        message: error.message || "Failed to add patient",
+        severity: "error"
+      });
+    }
+  };
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
 
-  <Grid item xs={12}>
-  <FormControl
-  fullWidth
-  sx={{
-    '& label': { color: 'black' },
-    '& .MuiOutlinedInput-root': {
-      color: 'black',
-      '& fieldset': { borderColor: 'black' },
-      '&:hover fieldset': { borderColor: 'black' },
-      '&.Mui-focused fieldset': { borderColor: 'black' },
-      '& .MuiSvgIcon-root': {
-        color: 'black' // dropdown arrow color
-      },
-    },
-  }}
+  const filteredPatients = patients.filter(patient => {
+    const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.patientId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (patient.bed && patient.bed.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    if (activeTab === "current") {
+      return matchesSearch && patient.active !== false;
+    } else {
+      return matchesSearch && patient.active === false;
+    }
+  });
+
+  if (loading) return (
+    <Box sx={{ p: 3, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+      <CircularProgress />
+    </Box>
+  );
+
+  if (error) return (
+    <Box sx={{ p: 3 }}>
+      <Alert severity="error">{error}</Alert>
+    </Box>
+  );
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, patient: Patient) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedPatient(patient);
+  };
+  
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedPatient(null);
+  };
+
+  const handleDischarge = async () => {
+    if (!selectedPatient) return;
+    
+    try {
+      // First, fetch the current patient data to ensure we have all fields
+      const patientResponse = await fetch(
+        `${import.meta.env.VITE_FHIRAPI_URL}/Patient/${selectedPatient.id}`,
+        {
+          headers: {
+            "Authorization": "Basic " + btoa("fhiruser:change-password"),
+            "Content-Type": "application/fhir+json"
+          }
+        }
+      );
+  
+      if (!patientResponse.ok) {
+        throw new Error("Failed to fetch patient data");
+      }
+  
+      const currentPatient = await patientResponse.json();
+  
+      // Create the updated patient resource with all existing data
+      const patientUpdate = {
+        ...currentPatient, // Spread all existing patient data
+        active: false, // Update only the active status
+      };
+  
+      // Create a discharge encounter
+      const dischargeEncounter = {
+        resourceType: "Encounter",
+        status: "finished",
+        class: {
+          system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+          code: "IMP",
+          display: "inpatient encounter"
+        },
+        subject: {
+          reference: `Patient/${selectedPatient.id}`
+        },
+        period: {
+          end: new Date().toISOString()
+        },
+        // Add any other relevant discharge information
+      };
+  
+      // Send both requests
+      const [encounterResponse, updateResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Encounter`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/fhir+json",
+            "Authorization": "Basic " + btoa("fhiruser:change-password")
+          },
+          body: JSON.stringify(dischargeEncounter)
+        }),
+        fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Patient/${selectedPatient.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/fhir+json",
+            "Authorization": "Basic " + btoa("fhiruser:change-password")
+          },
+          body: JSON.stringify(patientUpdate)
+        })
+      ]);
+  
+      if (!encounterResponse.ok || !updateResponse.ok) {
+        throw new Error("Failed to discharge patient");
+      }
+  
+      setSnackbar({
+        open: true,
+        message: "Patient successfully discharged!",
+        severity: "success"
+      });
+  
+      // Refresh the patient list
+      setPatients(prev => prev.filter(p => p.id !== selectedPatient.id));
+    } catch (error) {
+      console.error("Error discharging patient:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to discharge patient",
+        severity: "error"
+      });
+    } finally {
+      handleMenuClose();
+    }
+  };
+  return (
+    <Box sx={{ p: 3 }}>
+      
+      <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+        NICU Patients
+      </Typography>
+
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mb: 1, backgroundColor: "black", p: 1 }}
+      >
+        <Tabs
+          value={activeTab}
+          onChange={(e, newValue) => setActiveTab(newValue)}
+          sx={{ minHeight: "36px" }}
+        >
+          <Tab label="Current Patients" value="current" sx={{ p: 0, mr: 2, color: 'white' }} />
+          <Tab label="Discharged Patients" value="discharged" sx={{ p: 0, color: 'white' }} />
+        </Tabs>
+
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <TextField
+            size="small"
+            placeholder="Search patients..."
+            variant="outlined"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ width: 300}}
+          />
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenDialog(true)}
+            sx={{ backgroundColor: "#228BE61A", color: "#228BE6" }}
+          >
+            Patient
+          </Button>
+        </Box>
+      </Stack>
+
+      <Paper sx={{ boxShadow: 'none', border: '1px solid #e0e0e0' }}>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: 'red' }}>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Patient Name</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Patient ID</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Bed No</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Assignee</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Birth Date and Time</TableCell>
+              {activeTab === "discharged" && (
+                <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Discharged Date</TableCell>
+              )}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+  {filteredPatients.map((patient, index) => (
+    <TableRow key={index} hover>
+      <TableCell>{patient.name}</TableCell>
+      <TableCell>{patient.patientId}</TableCell>
+      <TableCell>{patient.bed}</TableCell>
+      <TableCell>{patient.assignee}</TableCell>
+      <TableCell>{patient.birthDateTime}</TableCell>
+      {activeTab === "discharged" ? (
+        <TableCell>{patient.dischargedDate}</TableCell>
+      ) : (
+        <TableCell>
+          <IconButton
+            aria-label="actions"
+            onClick={(e) => handleMenuOpen(e, patient)}
+          >
+            <MoreVertIcon />
+          </IconButton>
+        </TableCell>
+      )}
+    </TableRow>
+  ))}
+</TableBody>
+        </Table>
+      </Paper>
+      <Menu
+  anchorEl={anchorEl}
+  open={Boolean(anchorEl)}
+  onClose={handleMenuClose}
 >
-  <InputLabel id="gender-label">Gender</InputLabel>
-  <Select
-    labelId="gender-label"
-    id="gender"
-    value={gender}
-    label="Gender"
-    onChange={(e) => setGender(e.target.value)}
-  >
-    <MenuItem value="male">Male</MenuItem>
-    <MenuItem value="female">Female</MenuItem>
-  </Select>
-</FormControl>
+  <MenuItem onClick={handleDischarge}>Discharge Patient</MenuItem>
+  <MenuItem onClick={handleMenuClose}>View Details</MenuItem>
+  <MenuItem onClick={handleMenuClose}>Edit Information</MenuItem>
+</Menu>
 
-  </Grid>
-</Grid>
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        maxWidth="xs"
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            p: 2
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: "bold", p: 0, fontSize: '1.25rem' }}>NICU Admission</DialogTitle>
 
-                </>
+        <DialogContent dividers>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Mother's Name*"
+                placeholder="Lolina"
+                name="mothersName"
+                value={formData.mothersName}
+                onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">B/O -</InputAdornment>
+                  )
+                }}
+              />
+            </Grid>
 
-              )}
-            </DialogContent>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Patient ID*"
+                placeholder="07996799"
+                name="patientId"
+                value={formData.patientId}
+                onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">MRH -</InputAdornment>
+                  )
+                }}
+              />
+            </Grid>
 
-            <DialogActions sx={{ justifyContent: 'space-between', px: 3, pb: 2 }}>
-              {!showScanner && (
-                <Button
-                  variant="outlined"
-                  onClick={handleScanClick}
-                  startIcon={<Scanner />}
-                >
-                  Scan Document
-                </Button>
-              )}
-              <Button
-                variant="contained"
-                sx={{color:'white',backgroundColor:'#228BE6'}}
-                onClick={handleSave}
-                disabled={!patientId || !mothersName}
-              >
-                Add Patient
-              </Button>
-            </DialogActions>
-          </Dialog></>
-  )}
+            <Grid item xs={12}>
+              <Box sx={{ mb: 1 }}>
+                <InputLabel sx={{ fontWeight: "bold" }}>Birth Date and Time</InputLabel>
+              </Box>
+              <Stack direction="row" spacing={2}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  name="birthDate"
+                  value={formData.birthDate}
+                  onChange={handleChange}
+                 
+                />
+                <TextField
+                  fullWidth
+                  type="time"
+                  name="birthTime"
+                  value={formData.birthTime}
+                  onChange={handleChange}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Stack>
+            </Grid>
 
-  <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-    <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: "100%" }}>
-      {snackbarMessage}
-    </Alert>
-  </Snackbar>
-</Box>
-);
+            <Grid item xs={12}>
+              <Grid container justifyContent={'space-between'}>
+                <Grid item xs={12} sm="auto">
+                  <InputLabel sx={{ fontWeight: "bold" }}>Gestation*</InputLabel>
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+                    <TextField
+                      placeholder="27"
+                      name="gestationWeeks"
+                      value={formData.gestationWeeks}
+                      onChange={handleChange}
+                      sx={{ width: 60 }}
+                      size="small"
+                      inputProps={{ style: { textAlign: "center" } }}
+                    />
+                    <Typography variant="body2">W</Typography>
+                    <TextField
+                      placeholder="04"
+                      name="gestationDays"
+                      value={formData.gestationDays}
+                      onChange={handleChange}
+                      sx={{ width: 60 }}
+                      size="small"
+                      inputProps={{ style: { textAlign: "center" } }}
+                    />
+                    <Typography variant="body2">D</Typography>
+                  </Stack>
+                </Grid>
+
+                <Grid item xs={12} sm="auto">
+                  <InputLabel sx={{ fontWeight: "bold" }}>Birth Weight*</InputLabel>
+                  <TextField
+                    placeholder="2300"
+                    name="birthWeight"
+                    value={formData.birthWeight}
+                    onChange={handleChange}
+                    size="small"
+                    sx={{ width: 190, mt: 1 }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">gram</InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </DialogContent>
+
+        <DialogActions sx={{ justifyContent: "space-between", p: 2 }}>
+          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            onClick={handleSubmit}
+            sx={{ 
+              backgroundColor: "#228BE6", 
+              color: "white",
+              '&:hover': {
+                backgroundColor: '#1976d2'
+              }
+            }}
+          >
+            Save Admission
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Box>
+  );
 };
-
-
