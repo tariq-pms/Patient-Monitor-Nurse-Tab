@@ -5,12 +5,18 @@ import {
   DialogActions, InputLabel, Snackbar, Alert, CircularProgress,
   IconButton,
   Menu,
-  MenuItem
+  MenuItem,
+
+  useTheme,
+  useMediaQuery
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import AddIcon from '@mui/icons-material/Add';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-
+interface PatientProps {
+  userOrganization: string;
+  darkTheme: boolean;
+}
 interface Patient {
   active: boolean;
   id: string;
@@ -24,8 +30,8 @@ interface Patient {
   birthWeight: string;
   lastUpdated: string;
 }
+export const Patient: FC<PatientProps> = ({ userOrganization, darkTheme }) => {
 
-export const Patient = () => {
   const [activeTab, setActiveTab] = useState("current");
   const [openDialog, setOpenDialog] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -33,6 +39,15 @@ export const Patient = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [practitioners, setPractitioners] = useState<any[]>([]);
+const [locations, setLocations] = useState<any[]>([]);
+const theme = useTheme();
+const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+const [assignDialog, setAssignDialog] = useState({
+  open: false,
+  type: "", // "user" or "bed"
+  selectedValue: ""
+});
 const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -109,6 +124,58 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     fetchPatients();
   }, []);
 
+  const fetchPractitioners = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Practitioner`, {
+        headers: {
+          Authorization: "Basic " + btoa("fhiruser:change-password"),
+          "Content-Type": "application/fhir+json"
+        }
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      return data.entry?.map((entry: any) => ({
+        id: entry.resource.id,
+        name: entry.resource.name?.[0]?.text || "Unknown"
+      })) || [];
+    } catch (err) {
+      console.error("Error fetching practitioners:", err);
+      return [];
+    }
+  };
+  
+  const fetchLocations = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Location`, {
+        headers: {
+          Authorization: "Basic " + btoa("fhiruser:change-password"),
+          "Content-Type": "application/fhir+json"
+        }
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      return data.entry?.map((entry: any) => ({
+        id: entry.resource.id,
+        name: entry.resource.name,
+        type: entry.resource.physicalType?.coding?.[0]?.code,
+        identifier: entry.resource.identifier?.[0]?.value
+      })).filter((loc: any) => loc.type === "bd" || loc.type === "ro") || []; // Filter for beds and rooms
+    } catch (err) {
+      console.error("Error fetching locations:", err);
+      return [];
+    }
+  };
+  useEffect(() => {
+    const fetchData = async () => {
+      const [practitionersData, locationsData] = await Promise.all([
+        fetchPractitioners(),
+        fetchLocations()
+      ]);
+      setPractitioners(practitionersData);
+      setLocations(locationsData);
+    };
+    fetchData();
+  }, []);
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { 
       year: 'numeric', 
@@ -134,6 +201,136 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     }));
   };
 
+  const handleAssignClick = (type: string) => {
+    setAssignDialog({
+      open: true,
+      type,
+      selectedValue: ""
+    });
+  };
+  
+  const handleAssignDialogClose = () => {
+    setAssignDialog(prev => ({ ...prev, open: false }));
+  };
+  
+  const handleAssignSubmit = async () => {
+    if (!selectedPatient || !assignDialog.selectedValue) return;
+  
+    try {
+      if (assignDialog.type === "user") {
+        // Assign practitioner to patient
+        await assignPractitionerToPatient(selectedPatient.id, assignDialog.selectedValue);
+        setSnackbar({
+          open: true,
+          message: "User assigned successfully!",
+          severity: "success"
+        });
+      } else if (assignDialog.type === "bed") {
+        // Assign bed to patient
+        await assignBedToPatient(selectedPatient.id, assignDialog.selectedValue);
+        setSnackbar({
+          open: true,
+          message: "Bed assigned successfully!",
+          severity: "success"
+        });
+      }
+  
+      // Update local state
+      setPatients(prev => prev.map(p => 
+        p.id === selectedPatient.id 
+          ? { 
+              ...p, 
+              assignee: assignDialog.type === "user" 
+                ? practitioners.find(pr => pr.id === assignDialog.selectedValue)?.name || "--"
+                : p.assignee,
+              bed: assignDialog.type === "bed" 
+                ? locations.find(loc => loc.id === assignDialog.selectedValue)?.identifier || "--"
+                : p.bed
+            } 
+          : p
+      ));
+  
+      handleAssignDialogClose();
+      handleMenuClose();
+    } catch (error) {
+      console.error("Error assigning:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to assign",
+        severity: "error"
+      });
+    }
+  };
+  
+  const assignPractitionerToPatient = async (patientId: string, practitionerId: string) => {
+    // In FHIR, you would typically create a PractitionerRole or Encounter to link them
+    // For simplicity, we'll create a basic Encounter
+    const encounter = {
+      resourceType: "Encounter",
+      status: "in-progress",
+      class: {
+        system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        code: "IMP",
+        display: "inpatient encounter"
+      },
+      subject: {
+        reference: `Patient/${patientId}`
+      },
+      participant: [
+        {
+          individual: {
+            reference: `Practitioner/${practitionerId}`
+          }
+        }
+      ]
+    };
+  
+    const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Encounter`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/fhir+json",
+        "Authorization": "Basic " + btoa("fhiruser:change-password")
+      },
+      body: JSON.stringify(encounter)
+    });
+  
+    if (!response.ok) throw new Error("Failed to assign practitioner");
+  };
+  
+  const assignBedToPatient = async (patientId: string, locationId: string) => {
+    // Create an encounter with the location
+    const encounter = {
+      resourceType: "Encounter",
+      status: "in-progress",
+      class: {
+        system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        code: "IMP",
+        display: "inpatient encounter"
+      },
+      subject: {
+        reference: `Patient/${patientId}`
+      },
+      location: [
+        {
+          location: {
+            reference: `Location/${locationId}`
+          }
+        }
+      ]
+    };
+  
+    const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Encounter`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/fhir+json",
+        "Authorization": "Basic " + btoa("fhiruser:change-password")
+      },
+      body: JSON.stringify(encounter)
+    });
+  
+    if (!response.ok) throw new Error("Failed to assign bed");
+  };
+
   const handleSubmit = async () => {
     try {
       // Validate required fields
@@ -145,14 +342,12 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
       const patientResource = {
         resourceType: "Patient",
         active: true,
+        managingOrganization: {
+          "reference": `Organization/${userOrganization}`
+      },
         identifier: [{
           system: "urn:ietf:rfc:3986",
           value: formData.patientId
-        }],
-        name: [{
-          use: "official",
-          family: formData.mothersName,
-          prefix: ["B/O"]
         }],
         birthDate: formData.birthDate,
         extension: [
@@ -280,7 +475,7 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     setAnchorEl(null);
     setSelectedPatient(null);
   };
-
+ 
   const handleDischarge = async () => {
     if (!selectedPatient) return;
     
@@ -370,233 +565,442 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     }
   };
   return (
-    <Box sx={{ p: 3 }}>
-      
-      <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
-        NICU Patients
-      </Typography>
+    <Box sx={{ p: 1 }}>
+  {/* Responsive Header */}
+  <Typography
+    variant={isMobile ? "h6" : "h5"}
+    sx={{ fontWeight: "bold", mb: 1 }}
+  >
+    NICU Patients
+  </Typography>
 
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ mb: 1, backgroundColor: "black", p: 1 }}
-      >
-        <Tabs
-          value={activeTab}
-          onChange={(e, newValue) => setActiveTab(newValue)}
-          sx={{ minHeight: "36px" }}
-        >
-          <Tab label="Current Patients" value="current" sx={{ p: 0, mr: 2, color: 'white' }} />
-          <Tab label="Discharged Patients" value="discharged" sx={{ p: 0, color: 'white' }} />
-        </Tabs>
+  {/* Responsive Row: Tabs + Search + Button */}
+  <Stack
+    direction={isMobile ? "column" : "row"}
+    justifyContent="space-between"
+    alignItems={isMobile ? "flex-start" : "center"}
+    spacing={1}
+    sx={{ mt: 1, mb: 2 }}
+  >
+    {/* Tabs */}
+    <Tabs
+      value={activeTab}
+      onChange={(e, newValue) => setActiveTab(newValue)}
+      variant="scrollable"
+      scrollButtons={isMobile ? "auto" : false}
+      allowScrollButtonsMobile
+      sx={{ minHeight: "36px" }}
+    >
+      <Tab
+        label="Current Patients"
+        value="current"
+        sx={{ p: 0, mr: isMobile ? 0 : 2, color: "black" }}
+      />
+      <Tab
+        label="Discharged Patients"
+        value="discharged"
+        sx={{ p: 0, color: "black" }}
+      />
+    </Tabs>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <TextField
-            size="small"
-            placeholder="Search patients..."
-            variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ width: 300}}
-          />
-          <Button
-            variant="outlined"
-            startIcon={<AddIcon />}
-            onClick={() => setOpenDialog(true)}
-            sx={{ backgroundColor: "#228BE61A", color: "#228BE6" }}
-          >
-            Patient
-          </Button>
-        </Box>
-      </Stack>
+    {/* Search + Button */}
+    <Stack
+      direction="row"
+      alignItems="center"
+      spacing={1}
+      sx={{ width: isMobile ? "100%" : "auto", mt: isMobile ? 1 : 0 }}
+    >
+      <TextField
+        size="small"
+        fullWidth={isMobile}
+        placeholder="Search patients..."
+        variant="outlined"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        sx={{
+          maxWidth: isMobile ? "100%" : 300,
+          backgroundColor: "white",
+          borderRadius: "20px",
+          "& .MuiOutlinedInput-root": {
+            borderRadius: "20px",
+            color: "black",
+          },
+          "& .MuiInputBase-input": {
+            color: "black",
+          },
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderRadius: "20px",
+          },
+        }}
+      />
 
-      <Paper sx={{ boxShadow: 'none', border: '1px solid #e0e0e0' }}>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ backgroundColor: 'red' }}>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Patient Name</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Patient ID</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Bed No</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Assignee</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Birth Date and Time</TableCell>
-              {activeTab === "discharged" && (
-                <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Discharged Date</TableCell>
-              )}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-  {filteredPatients.map((patient, index) => (
-    <TableRow key={index} hover>
-      <TableCell>{patient.name}</TableCell>
-      <TableCell>{patient.patientId}</TableCell>
-      <TableCell>{patient.bed}</TableCell>
-      <TableCell>{patient.assignee}</TableCell>
-      <TableCell>{patient.birthDateTime}</TableCell>
-      {activeTab === "discharged" ? (
-        <TableCell>{patient.dischargedDate}</TableCell>
-      ) : (
-        <TableCell>
-          <IconButton
-            aria-label="actions"
-            onClick={(e) => handleMenuOpen(e, patient)}
-          >
-            <MoreVertIcon />
-          </IconButton>
-        </TableCell>
-      )}
-    </TableRow>
-  ))}
-</TableBody>
-        </Table>
-      </Paper>
-      <Menu
-  anchorEl={anchorEl}
-  open={Boolean(anchorEl)}
-  onClose={handleMenuClose}
->
-  <MenuItem onClick={handleDischarge}>Discharge Patient</MenuItem>
-  <MenuItem onClick={handleMenuClose}>View Details</MenuItem>
-  <MenuItem onClick={handleMenuClose}>Edit Information</MenuItem>
-</Menu>
-
-      <Dialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        maxWidth="xs"
-        PaperProps={{
-          sx: {
-            borderRadius: 2,
-            p: 2
-          }
+      <Button
+        variant="outlined"
+        startIcon={<AddIcon />}
+        onClick={() => setOpenDialog(true)}
+        sx={{
+          backgroundColor: "#228BE61A",
+          color: "#228BE6",
+          whiteSpace: "nowrap",
+          minWidth: isMobile ? "auto" : "unset",
         }}
       >
-        <DialogTitle sx={{ fontWeight: "bold", p: 0, fontSize: '1.25rem' }}>NICU Admission</DialogTitle>
+        {!isMobile && "Patient"}
+      </Button>
+    </Stack>
+  </Stack>
 
-        <DialogContent dividers>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Mother's Name*"
-                placeholder="Lolina"
-                name="mothersName"
-                value={formData.mothersName}
-                onChange={handleChange}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">B/O -</InputAdornment>
-                  )
-                }}
-              />
-            </Grid>
+  {/* Responsive Table */}
+  <Paper
+    sx={{
+      boxShadow: "none",
+      border: "1px solid #e0e0e0",
+      overflowX: "auto",
+    }}
+  >
+    <Table sx={{ minWidth: 600 }}>
+      <TableHead>
+        <TableRow sx={{ backgroundColor: "lightgrey" }}>
+          {[
+            "Patient Name",
+            "Patient ID",
+            "Bed No",
+            "Assignee",
+            "Birth Date and Time",
+          ].map((header) => (
+            <TableCell
+              key={header}
+              sx={{ fontWeight: "bold", color: "#868E96", whiteSpace: "nowrap" }}
+            >
+              {header}
+            </TableCell>
+          ))}
+          <TableCell sx={{ fontWeight: "bold", color: "#868E96", whiteSpace: "nowrap" }}>
+            {activeTab === "current" ? "Action" : "Discharged Date"}
+          </TableCell>
+        </TableRow>
+      </TableHead>
 
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Patient ID*"
-                placeholder="07996799"
-                name="patientId"
-                value={formData.patientId}
-                onChange={handleChange}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">MRH -</InputAdornment>
-                  )
-                }}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Box sx={{ mb: 1 }}>
-                <InputLabel sx={{ fontWeight: "bold" }}>Birth Date and Time</InputLabel>
-              </Box>
-              <Stack direction="row" spacing={2}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  name="birthDate"
-                  value={formData.birthDate}
-                  onChange={handleChange}
-                 
-                />
-                <TextField
-                  fullWidth
-                  type="time"
-                  name="birthTime"
-                  value={formData.birthTime}
-                  onChange={handleChange}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Stack>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Grid container justifyContent={'space-between'}>
-                <Grid item xs={12} sm="auto">
-                  <InputLabel sx={{ fontWeight: "bold" }}>Gestation*</InputLabel>
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
-                    <TextField
-                      placeholder="27"
-                      name="gestationWeeks"
-                      value={formData.gestationWeeks}
-                      onChange={handleChange}
-                      sx={{ width: 60 }}
-                      size="small"
-                      inputProps={{ style: { textAlign: "center" } }}
-                    />
-                    <Typography variant="body2">W</Typography>
-                    <TextField
-                      placeholder="04"
-                      name="gestationDays"
-                      value={formData.gestationDays}
-                      onChange={handleChange}
-                      sx={{ width: 60 }}
-                      size="small"
-                      inputProps={{ style: { textAlign: "center" } }}
-                    />
-                    <Typography variant="body2">D</Typography>
-                  </Stack>
-                </Grid>
-
-                <Grid item xs={12} sm="auto">
-                  <InputLabel sx={{ fontWeight: "bold" }}>Birth Weight*</InputLabel>
-                  <TextField
-                    placeholder="2300"
-                    name="birthWeight"
-                    value={formData.birthWeight}
-                    onChange={handleChange}
-                    size="small"
-                    sx={{ width: 190, mt: 1 }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">gram</InputAdornment>
-                      ),
-                    }}
-                  />
-                </Grid>
-              </Grid>
-            </Grid>
-          </Grid>
-        </DialogContent>
-
-        <DialogActions sx={{ justifyContent: "space-between", p: 2 }}>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button 
-            variant="contained" 
-            onClick={handleSubmit}
-            sx={{ 
-              backgroundColor: "#228BE6", 
-              color: "white",
-              '&:hover': {
-                backgroundColor: '#1976d2'
-              }
+      <TableBody>
+        {filteredPatients.map((patient) => (
+          <TableRow
+            key={patient.id || patient.patientId}
+            sx={{
+              backgroundColor: "#FFFFFF",
+              "&:hover": {
+                backgroundColor: "#f5f5f5",
+                cursor: "pointer",
+              },
             }}
           >
-            Save Admission
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <TableCell sx={{ color: "#000000" }}>{patient.name}</TableCell>
+            <TableCell sx={{ color: "#000000" }}>{patient.patientId}</TableCell>
+            <TableCell sx={{ color: "#000000" }}>{patient.bed}</TableCell>
+            <TableCell sx={{ color: "#000000" }}>{patient.assignee}</TableCell>
+            <TableCell sx={{ color: "#000000" }}>{patient.birthDateTime}</TableCell>
+
+            <TableCell sx={{ color: "#333", width: 120 }}>
+              {activeTab === "discharged" ? (
+                patient.dischargedDate
+              ) : (
+                <IconButton
+                  aria-label="actions"
+                  sx={{
+                    color: "#555",
+                    padding: "6px",
+                    "&:hover": {
+                      backgroundColor: "rgba(0, 0, 0, 0.04)",
+                    },
+                  }}
+                  onClick={(e) => handleMenuOpen(e, patient)}
+                >
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
+              )}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </Paper>
+
+  {/* Menu */}
+  <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+    <MenuItem onClick={handleDischarge}>Discharge Patient</MenuItem>
+    <MenuItem onClick={() => handleAssignClick("user")}>Assign User</MenuItem>
+    <MenuItem onClick={() => handleAssignClick("bed")}>Assign Bed</MenuItem>
+  </Menu>
+  <Dialog
+  open={openDialog}
+  onClose={() => setOpenDialog(false)}
+  maxWidth="xs"
+  PaperProps={{
+    sx: {
+      borderRadius: 2,
+      p: 1,
+      backgroundColor: 'white',
+      color: 'black' // makes all text/icons inside black by default
+    }
+  }}
+>
+<DialogTitle sx={{ fontWeight: 500, pb: 1, color: '#000000', textAlign: 'center' }}>
+NICU Admission
+</DialogTitle>
+
+  <DialogContent dividers sx={{ borderColor: '#ccc' }}>
+    <Grid container spacing={3}>
+      
+    <Grid item xs={12}>
+        
+        <TextField
+          fullWidth
+          label="Mother's Name"
+          placeholder="Mother's Name"
+          name="mothersName"
+          value={formData.mothersName}
+          onChange={handleChange}
+          required
+          InputProps={{startAdornment: (
+            <InputAdornment position="start">
+              <Typography color="black">B/O -</Typography>
+            </InputAdornment>
+          ),
+            sx: {
+              backgroundColor: '#F5F5F5',
+              borderRadius: 1,
+              color: '#000',
+            },
+          }}
+          InputLabelProps={{ sx: { color: '#000' } }}
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <TextField
+          fullWidth
+          label="Patient ID"
+          placeholder="07996799"
+          name="patientId"
+          value={formData.patientId}
+          onChange={handleChange}
+          required
+          InputProps={{startAdornment: (
+            <InputAdornment position="start">
+              <Typography color="black">UHID -</Typography>
+            </InputAdornment>
+          ),
+            sx: {
+              backgroundColor: '#F5F5F5',
+              borderRadius: 1,
+              color: '#000',
+            },
+          }}
+          InputLabelProps={{ sx: { color: '#000' } }}
+        />
+      </Grid>
+      
+   
+
+      <Grid item xs={12}>
+       
+        <InputLabel sx={{  color: 'black', mb: 1 }}>
+  Birth Date and Time
+</InputLabel>
+        <Stack direction="row" spacing={2}>
+        <TextField
+            fullWidth
+            type="date"
+            name="birthDate"
+            value={formData.birthDate}
+            onChange={handleChange}
+             InputProps={{
+      sx: {
+        backgroundColor: '#F5F5F5',
+        borderRadius: 1,
+        color: '#000',
+      },
+    }}
+          />
+          <TextField
+            fullWidth
+            type="time"
+            name="birthTime"
+            value={formData.birthTime}
+            onChange={handleChange}
+            InputProps={{
+      sx: {
+        backgroundColor: '#F5F5F5',
+        borderRadius: 1,
+        color: '#000',
+      },
+    }}
+          />
+      
+         
+        </Stack>
+      </Grid>
+
+      <Grid item xs={12}>
+        <Grid container justifyContent={'space-between'}>
+          <Grid item xs={12} sm="auto">
+            <InputLabel sx={{  color: 'black' }}>
+              Gestation*
+            </InputLabel>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+              <TextField
+                placeholder="27"
+                name="gestationWeeks"
+                value={formData.gestationWeeks}
+                onChange={handleChange}
+                sx={{ width: 60 }}
+                size="small"
+                InputProps={{
+                  sx: {
+                    backgroundColor: '#F5F5F5',
+                    borderRadius: 1,
+                    color: '#000',
+                  },
+                }}
+              />
+              <Typography variant="body2" color="black">W</Typography>
+              <TextField
+                placeholder="04"
+                name="gestationDays"
+                value={formData.gestationDays}
+                onChange={handleChange}
+                sx={{ width: 60 }}
+                size="small"
+                InputProps={{
+                  sx: {
+                    backgroundColor: '#F5F5F5',
+                    borderRadius: 1,
+                    color: '#000',
+                  },
+                }}
+              />
+              <Typography variant="body2" color="black">D</Typography>
+            </Stack>
+          </Grid>
+
+          <Grid item xs={12} sm="auto">
+            <InputLabel sx={{ color: 'black' }}>
+              Birth Weight*
+            </InputLabel>
+            <TextField
+              placeholder="2300"
+              name="birthWeight"
+              value={formData.birthWeight}
+              onChange={handleChange}
+              size="small"
+              sx={{ width: 190, mt: 1 }}
+              InputProps={{endAdornment: (
+                <InputAdornment position="end">
+                  <Typography color="black">gram</Typography>
+                </InputAdornment>
+              ),
+                sx: {
+                  backgroundColor: '#F5F5F5',
+                  borderRadius: 1,
+                  color: '#000',
+                },
+              }}
+              
+            />
+          </Grid>
+        </Grid>
+      </Grid>
+    </Grid>
+  </DialogContent>
+
+  <DialogActions sx={{ justifyContent: "space-between", p: 2 }}>
+  <Button
+    onClick={() => setOpenDialog(false)}
+    variant="outlined"
+    sx={{
+      textTransform: 'none',
+      borderColor: '#D0D5DD',
+      color: '#344054',
+      fontWeight: 500,
+      backgroundColor: '#FFFFFF',
+      '&:hover': {
+        backgroundColor: '#F9FAFB',
+      },
+    }}>
+      Cancel
+    </Button>
+    <Button
+      
+      onClick={handleSubmit}
+      sx={{
+        backgroundColor: '#228BE6',
+        color: '#FFFFFF',
+        '&:hover': {
+          backgroundColor: '#228BE6',
+        color: '#FFFFFF',
+        },
+        '&.Mui-disabled': {
+          backgroundColor: '#228BE61A',
+          color: 'grey',
+          opacity: 1, // prevents dimming
+        },
+      }}
+    >
+      Save Admission
+    </Button>
+  </DialogActions>
+</Dialog>
+<Dialog open={assignDialog.open} onClose={handleAssignDialogClose}>
+  <DialogTitle>
+    {assignDialog.type === "user" ? "Assign User" : "Assign Bed"}
+  </DialogTitle>
+  <DialogContent>
+    {assignDialog.type === "user" ? (
+      <>
+        <InputLabel>Select Practitioner</InputLabel>
+        <TextField
+          select
+          fullWidth
+          value={assignDialog.selectedValue}
+          onChange={(e) => setAssignDialog(prev => ({ ...prev, selectedValue: e.target.value }))}
+          sx={{ mt: 1 }}
+        >
+          {practitioners.map((practitioner) => (
+            <MenuItem key={practitioner.id} value={practitioner.id}>
+              {practitioner.name}
+            </MenuItem>
+          ))}
+        </TextField>
+      </>
+    ) : (
+      <>
+        <InputLabel>Select Bed</InputLabel>
+        <TextField
+          select
+          fullWidth
+          value={assignDialog.selectedValue}
+          onChange={(e) => setAssignDialog(prev => ({ ...prev, selectedValue: e.target.value }))}
+          sx={{ mt: 1 }}
+        >
+          {locations.map((location) => (
+            <MenuItem key={location.id} value={location.id}>
+              {location.identifier} ({location.type === "bd" ? "Bed" : "Room"})
+            </MenuItem>
+          ))}
+        </TextField>
+      </>
+    )}
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleAssignDialogClose}>Cancel</Button>
+    <Button 
+      onClick={handleAssignSubmit} 
+      disabled={!assignDialog.selectedValue}
+      variant="contained"
+    >
+      Assign
+    </Button>
+  </DialogActions>
+</Dialog>
 
       <Snackbar
         open={snackbar.open}
@@ -611,6 +1015,8 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+</Box>
+
+   
   );
 };

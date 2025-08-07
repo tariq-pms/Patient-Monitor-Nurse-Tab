@@ -1,10 +1,13 @@
 import  { useState, useEffect, useRef, SetStateAction, useCallback } from 'react';
-import { Box, Typography, Stack, Button, DialogContent, DialogActions, Dialog, TextField, DialogTitle, Snackbar, Alert} from '@mui/material';
+import { Box, Typography, Stack, Button, DialogContent, DialogActions, Dialog, TextField, DialogTitle, Snackbar, Alert, Tabs, Tab, useTheme, useMediaQuery} from '@mui/material';
 import { useAuth0 } from '@auth0/auth0-react';
 import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { PatientCard } from '../components/PatientCard';
-
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 type PatientMonitorProps = {
   userOrganization: string;
@@ -52,20 +55,22 @@ interface State {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
-  const [patientList, setPatientList] = useState<Patient[] | null>(null);
+  const [patientList, setPatientList] = useState<Patient[]>([]);
   const [parentDevice, setParentDevice] = useState<{ [key: string]: any }>({});
   const [parentObs, setParentObs] = useState<{ [key: string]: any }>({});
   const [parentComm, setParentComm] = useState<{ [key: string]: any }>({});
   const { isAuthenticated, loginWithRedirect } = useAuth0();
   const [isLoading, setIsLoading] = useState(true);
   const [pageNumber, setPageNumber] = useState(1);
-  const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
+  const [selectedTab, setSelectedTab] = useState<number>(1); // Default to Patients tab
+  // const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [mothersName, setMothersName] = useState('');
   const [id, setId] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const triggerRef = useRef<HTMLDivElement | null>(null);
-
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const fetchWithRetry = useCallback(async (url: string, options: RequestInit, retries: number = 3, initialDelay: number = 50): Promise<any> => {
     try {
       const response = await fetch(url, options);
@@ -150,6 +155,9 @@ interface State {
     return { tempParentObs, tempParentComm, tempParentDevice };
   }, [fetchObservations, fetchCommunication, fetchDevice]);
 
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setSelectedTab(newValue);
+  };
   useEffect(() => {
     const fetchPatients = async () => {
       try {
@@ -164,6 +172,8 @@ interface State {
           if (data.entry) {
             const patients = data.entry.map((entry: { resource: any }) => entry.resource);
             setPatientList(patients);
+            console.log('patient list in patient monitoring',patients);
+            
           }
         } else {
           throw new Error('Network response was not ok');
@@ -225,15 +235,7 @@ interface State {
     };
   }, [fetchWithRetry]);
 
-  useEffect(() => {
-    if (patientList && currentRoom) {
-      const filtered = patientList.filter((patient) => {
-        const locationExtension = patient.extension.find((ext) => ext.url === 'http://hl7.org/fhir/StructureDefinition/patient-location');
-        return locationExtension && locationExtension.valueReference?.reference === `Location/${currentRoom}`;
-      });
-      setFilteredPatients(filtered);
-    }
-  }, [patientList, currentRoom]);
+
 
   useEffect(() => {
     if (patientList != null && patientList.length > 0) {
@@ -334,47 +336,67 @@ interface State {
   const handleCloseDialog = () => setOpenDialog(false);
 
   const containerStyles = {
-    display: 'flex',
+    
     justifyContent: 'center',
     alignItems: 'center',
     
   };
-
-  // const floatingButtonStyles = {
-  //   position: 'fixed',
-  //   bottom: '20px',
-  //   right: '20px',
-  //   zIndex: 1000,
-  //   borderRadius: '50%',
-  //   backgroundColor: '#124D81',
-  //   color: '#fff',
-  //   width: '60px',
-  //   height: '60px',
-  //   minWidth: 'unset',
-  //   border: '2px solid #124D81',
-  //   animation: 'pulseAnimation 3s infinite ease-in-out',
-  //   '&:hover': {
-  //     backgroundColor: '#124D81',
-  //   },
-  //   '@keyframes pulseAnimation': {
-  //     '0%': {
-  //       boxShadow: '0 0 0 0 rgba(63, 81, 181, 0.7)',
-  //     },
-  //     '70%': {
-  //       boxShadow: '0 0 0 10px rgba(63, 81, 181, 0)',
-  //     },
-  //     '100%': {
-  //       boxShadow: '0 0 0 0 rgba(63, 81, 181, 0)',
-  //     },
-  //   },
-  // };
-
+  const tabConfig = [
+    { label: "My Tasks", icon: <AssignmentIcon /> },
+    { label: "Patients", icon: <EmojiEmotionsIcon /> },
+    { label: "Assessments", icon: <AssessmentIcon /> },
+    { label: "Reports", icon: <BarChartIcon /> },
+  
+  ];
   return (
-    <div style={containerStyles}>
+
+    
+    <div >
       {isAuthenticated && (
-        <>
+        <Box>
+          <Box sx={{  borderColor: "divider",border:'0.1px solid #DEE2E6'}}>
+          <Tabs
+  value={selectedTab}
+  onChange={handleTabChange}
+  textColor="secondary"
+  indicatorColor="primary"
+  variant="fullWidth"
+  scrollButtons
+  allowScrollButtonsMobile
+>
+{tabConfig.map((tab, index) => (
+    <Tab
+      key={index}
+      icon={
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: isMobile ? "column" : "row",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 1,
+            width: "100%",
+          }}
+        >
+          {tab.icon}
+          {!isMobile && <Typography variant="body2">{tab.label}</Typography>}
+        </Box>
+      }
+      sx={{
+        textTransform: "none",
+        fontWeight: "bold",
+        minWidth: isMobile ? 58 : 120,
+        color: "black",
+        padding: isMobile ? 1 : 2,
+      }}
+    />
+  ))}
+</Tabs>
+          </Box>
+       
+
           <Box sx={{ alignItems: 'center', justifyContent: 'center',p:1 }}>
-            {filteredPatients.map(patient => (
+            {patientList.map(patient => (
               <PatientCard
                 key={String(patient.id)}
                 patient_resource_id={String(patient.id)}
@@ -424,7 +446,7 @@ interface State {
               </Button>
             </DialogActions>
           </Dialog>
-        </>
+        </Box>
       )}
       {!isAuthenticated && !isLoading && (
         <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>

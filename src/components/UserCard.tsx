@@ -68,32 +68,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onUserClick, onDeleteU
     setDeleteConfirmationOpen(false);
   };
 
-  // const handleUpdateUser = () => {
-  //   const { email, username, role } = updatedUserData;
-  //   const userId = user.user_id;
-
-  //   // Make an API call to update the user information
-  //   fetch(`https://pmsind.co.in:5000rename/${userId}`, {
-  //     method: 'PUT',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       // Add any other headers you need, such as authorization
-  //     },
-  //     body: JSON.stringify({ email, username, app_metadata: { role } }),
-  //   })
-  //     .then(response => {
-  //       if (response.ok) {
-  //         // Handle successful update
-  //         console.log(`User with ID ${userId} updated successfully`);
-  //         setUpdateUser(false); // Close the update dialog if needed
-  //       } else {
-  //         console.error(`Error updating user: ${response.statusText}`);
-  //       }
-  //     })
-  //     .catch(error => {
-  //       console.error('Error:', error);
-  //     });
-  // };
+  
   const handleUpdateUser = () => {
     const { username, role } = updatedUserData;
     const userId = decodeURIComponent(user.user_id);

@@ -1,97 +1,114 @@
 import { useState, useEffect, FC } from 'react';
-import { Box, Skeleton, Typography, Button, Paper, Dialog, DialogTitle, TextField, Select, MenuItem, DialogContent, CardContent, Card, InputLabel } from '@mui/material';
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  Dialog, 
+  DialogTitle, 
+  TextField, 
+  Select, 
+  MenuItem, 
+  DialogContent, 
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Tooltip,
+  Avatar,
+  DialogActions
+} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { UserCard } from '../components/UserCard';
-import { User } from '@auth0/auth0-react';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useAuth0 } from '@auth0/auth0-react';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import pmsLogo from '../assets/phx_logo.png';
 
 interface AdminPageProps {
   userOrganization: string;
-  darkTheme:boolean
+  darkTheme: boolean;
 }
 
-export const AdminPage: FC<AdminPageProps>= ({ userOrganization ,darkTheme }) => {
+interface User {
+  user_id: string;
+  email: string;
+  name: string;
+  nickname?: string;
+  app_metadata?: {
+    role?: string;
+  };
+  email_verified?: boolean;
+  created_at?: string;
+}
+
+export const AdminPage: FC<AdminPageProps> = ({ userOrganization, darkTheme }) => {
   const { isAuthenticated, loginWithRedirect } = useAuth0();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<User[]>([]);
-  const [controlOpacity1, setControlOpacity1] = useState('0.8');
-  const [controlBorder1, setControlboarder1] = useState('grey');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  const handleSnackbarOpen = (message: string, severity: 'success' | 'error') => {
-  setSnackbarMessage(message);
-  setSnackbarSeverity(severity);
-  setSnackbarOpen(true);
-};
-const handleSnackbarClose = () => {
-  setSnackbarOpen(false);
-};
-console.log("in admin page",userOrganization);
-
-  const [, setUserInfo] = useState({
-    userEmail: '',
-    userRole: '',
-    userName: '',
-  });
-  const [openDialog2, setOpenDialog2] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
   const [newUser, setNewUser] = useState({
     email: '',
     username: '',
     password: '',
-    role: '',
-    organization:userOrganization, // default role
+    role: 'Hospital Technician',
+    organization: userOrganization,
   });
-  const onUserClick = (user: User) => {
-    // Define the logic you want to execute when a user is clicked
-    console.log('User clicked:', user);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  const handleSnackbarOpen = (message: string, severity: 'success' | 'error') => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   useEffect(() => {
-    try {
-      // const organization = '18d1c76ef29-ba9f998e-83b1-4c43-bc5b-b91b572a6454';
-
-      fetch(`${import.meta.env.VITE_AUTH0API_URL as string}/list`, {
-        // fetch(`https://pmsind.co.in:5000/delete/${userId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ organization:userOrganization }),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('Failed to fetch user data');
-          }
-          return response.json();
-        })
-        .then((data) => {
-          console.log('Fetched User Data:', data);
-          setUserData(data);
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error('Error fetching user data:', error);
-        });
-    } catch (error) {
-      console.error('Error in useEffect:', error);
+    if (isAuthenticated) {
+      fetchUsers();
     }
-  }, [userOrganization]);
+  }, [userOrganization, isAuthenticated]);
 
-  const handleUserClick = (user: User) => {
-    setUserInfo({
-      userEmail: user.email || '',
-      userRole: user.app_metadata?.role || '',
-      userName: user.name || '',
-    });
-    onUserClick(user);
-    setDialogOpen(true);
+  const fetchUsers = () => {
+    setLoading(true);
+    fetch(`${import.meta.env.VITE_AUTH0API_URL as string}/list`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ organization: userOrganization }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setUserData(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching user data:', error);
+        setLoading(false);
+      });
   };
 
   const handleAddUser = () => {
- 
     const { email, username, password, role, organization } = newUser;
   
     fetch(`${import.meta.env.VITE_AUTH0API_URL as string}/create`, {
@@ -99,60 +116,32 @@ console.log("in admin page",userOrganization);
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, username, password, role, organization }), // Include organizationId in the request
+      body: JSON.stringify({ email, username, password, role, organization }),
     })
       .then(response => {
-        // Check explicitly for success status (2xx)
         if (response.status >= 200 && response.status < 300) {
           return response.json();
         } else {
-          // If there's an error, throw an error to go to the catch block
           throw new Error(`Failed to create user. Server responded with status: ${response.status}`);
         }
       })
-      .then(data => {
-        console.log('API response:', data);
-  
-        // After creating the user, fetch the updated user data
-        fetch(`${import.meta.env.VITE_AUTH0API_URL as string}/list`, {
-        method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ organization: userOrganization }),
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error('Failed to fetch updated user data');
-            }
-            return response.json();
-          })
-          .then((updatedData) => {
-            console.log('Fetched Updated User Data:', updatedData);
-  
-            // Update the state to include the newly created user
-            setUserData(updatedData);
-  
-            // Show success snackbar
-            handleSnackbarOpen('User created successfully', 'success');
-          })
-          .catch((error) => {
-            // Show error snackbar
-            handleSnackbarOpen('Failed to fetch updated user data', 'error');
-            console.error('Error fetching updated user data:', error);
-          });
+      .then(() => {
+        fetchUsers();
+        handleSnackbarOpen('User created successfully', 'success');
+        setOpenDialog(false);
+        setNewUser({
+          email: '',
+          username: '',
+          password: '',
+          role: 'Hospital Technician',
+          organization: userOrganization,
+        });
       })
       .catch(error => {
-        // Show error snackbar
         handleSnackbarOpen(error.message, 'error');
-        console.error('Error:', error);
       });
-  
-    handleDialog2Close();
   };
-  
-  
-  
+
   const handleDeleteUser = (userId: string) => {
     fetch(`${import.meta.env.VITE_AUTH0API_URL as string}/delete/${userId}`, {
       method: 'DELETE',
@@ -162,149 +151,307 @@ console.log("in admin page",userOrganization);
     })
       .then(response => {
         if (response.ok) {
-          console.log(`User with ID ${userId} deleted successfully`);
-          // Update the state to remove the deleted user
-          setUserData(prevUserData => prevUserData.filter(user => user.user_id !== userId));
-          
+          fetchUsers();
+          handleSnackbarOpen('User deleted successfully', 'success');
         } else {
-          console.error(`Error deleting user: ${response.statusText}`);
-         
+          throw new Error(`Failed to delete user. Server responded with status: ${response.status}`);
         }
       })
       .catch(error => {
-        console.error('Error:', error);
-       
+        handleSnackbarOpen(error.message, 'error');
+      })
+      .finally(() => {
+        setDeleteDialogOpen(false);
       });
   };
-  
-  const updateUserInList = (updatedUser: User) => {
-    setUserData(prevUserData =>
-      prevUserData.map(user => (user.user_id === updatedUser.user_id ? updatedUser : user))
-    );
-    handleSnackbarOpen('User updated successfully', 'success');
+
+  const handleUpdateUser = () => {
+    if (!selectedUser) return;
+
+    const { username, role } = newUser;
+    const userId = decodeURIComponent(selectedUser.user_id);
+
+    fetch(`${import.meta.env.VITE_AUTH0API_URL as string}/rename/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: username,
+        app_metadata: {
+          role: role,
+        },
+        connection: 'Username-Password-Authentication',
+      }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          fetchUsers();
+          handleSnackbarOpen('User updated successfully', 'success');
+          setEditDialogOpen(false);
+        } else {
+          throw new Error(`Failed to update user. Server responded with status: ${response.status}`);
+        }
+      })
+      .catch((error) => {
+        handleSnackbarOpen(error.message, 'error');
+      });
   };
 
-  const [, setDialogOpen] = useState(false);
+  const renderAuthPrompt = () => (
+    <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'}>
+      <img 
+        src={pmsLogo} 
+        alt="Phoenix" 
+        style={{ maxWidth: '20%', height: 'auto', margin: '0 auto' }} 
+      />
+      <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography>
+      <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
+      <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
+        <Button 
+          variant='outlined' 
+          sx={{ width: '200px', height: '50px', borderRadius: '100px' }} 
+          endIcon={<OpenInNewIcon />} 
+          target='_blank' 
+          href='https://www.phoenixmedicalsystems.com/'
+        >
+          Product page
+        </Button>
+        <Button 
+          variant='contained' 
+          sx={{ width: '200px', height: '50px', borderRadius: '100px' }} 
+          onClick={() => loginWithRedirect()}
+        >
+          Sign In
+        </Button>
+      </Stack>
+    </Stack>
+  );
 
-  const handleDialog2Close = () => {
-    setOpenDialog2(false);
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      day: 'numeric', 
+      month: 'short', 
+      year: 'numeric' 
+    });
   };
 
   return (
     <div>
       {isAuthenticated ? (
-        <Box display="flex" justifyContent="center" minHeight="100vh">
-          {loading ? (
-            <Skeleton animation="wave" variant="rectangular" width={"350px"}  height={"200px"} sx={{ borderRadius: "25px",marginTop:"120px",marginRight:"400px" }} />
-          ) : (
-            <Box display="flex" flexDirection="column" alignItems="center">
-             
-              <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center">
-                {userData.map((user: User, index: number) => (
-                 <UserCard key={index} user={user} onUserClick={handleUserClick} onDeleteUser={handleDeleteUser} updateUserInList={updateUserInList} user_id={''} darkTheme={darkTheme} />
+        <Box sx={{ p: 2 }}>
+          
+          <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mt:1,mb: 1, backgroundColor: ""}}
+      >
+       
+       <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+       Users
+            </Typography>
+            <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenDialog(true)}
+            sx={{ backgroundColor: "#228BE61A", color: "#228BE6" }}
+          >
+             Add User
+          </Button>
+      </Stack>
 
+          <TableContainer component={Paper} sx={{ 
+            backgroundColor: darkTheme ? '#1E1E1E' : '',
+            border: darkTheme ? '1px solid #444' : '1px solid #E0E0E0'
+          }}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: darkTheme ? '#2A2A2A' : 'grey' }}>
+                  <TableCell sx={{ fontWeight: 'bold' }}>User Name</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>User ID</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Assigned Patients</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Created Date</TableCell>
+                 
+                  <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center">Loading users...</TableCell>
+                  </TableRow>
+                ) : userData.length > 0 ? (
+                  userData.map((user) => (
+                    <TableRow key={user.user_id} hover>
+                      <TableCell>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Avatar sx={{ 
+                            width: 32, 
+                            height: 32, 
+                            bgcolor: darkTheme ? '#124D81' : '#228BE6',
+                            fontSize: '0.875rem'
+                          }}>
+                            {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                          </Avatar>
+                          <Typography>{user.name || 'N/A'}</Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>{user.email || 'N/A'}</TableCell>
+                      <TableCell>
+                        {user.app_metadata?.role || 'N/A'}
+                      </TableCell>
+                      <TableCell>{formatDate(user.created_at)}</TableCell>
+                     
+                      <TableCell>
+                        <Stack direction="row" spacing={1}>
+                          <Tooltip title="Edit">
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setNewUser({
+                                  email: user.email || '',
+                                  username: user.name || '',
+                                  password: '',
+                                  role: user.app_metadata?.role || 'Hospital Technician',
+                                  organization: userOrganization,
+                                });
+                                setEditDialogOpen(true);
+                              }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setDeleteDialogOpen(true);
+                              }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center">No users found</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-                ))}
-                <Box
-                  width={'350px'}
-                 height={'200px'}
-                  
-                  sx={{ opacity: controlOpacity1, backgroundColor: 'transparent', borderRadius: '30px' }}
-                  onMouseLeave={() => {
-                    setControlboarder1('grey');
-                    setControlOpacity1('0.8');
-                  }}
-                  onMouseEnter={() => {
-                    setControlboarder1('#2BA0E0');
-                    setControlOpacity1('1');
-                  }}
-                >
-                  <Paper elevation={5} sx={{ borderRadius: '25px', background: 'transparent' }}>
-                    <Card
-                      sx={{
-                        background: 'transparent',
-                        borderRadius: '25px',
-                        height: '200px',
-                        border: `1px solid ${controlBorder1}`,
-                      }}
-                    >
-                      <Box sx={{cursor:"pointer"}} width={'100%'} display="flex" flexDirection="row" justifyContent="center" marginTop={'5px'} onClick={() => setOpenDialog2(true)}>
-                        <CardContent sx={{marginTop:'0px', textAlign: 'center'}} >
-                          <Typography sx={{ padding: '0px',marginTop:'0px',color:darkTheme?'white':'#124D81' }}>Add new User</Typography>
-                          <AddIcon sx={{ fontSize: 150, color: controlBorder1 }} />
-                        </CardContent>
-                      </Box>
-                    </Card>
-                  </Paper>
-                </Box>
-              </Box>
-              <Dialog open={openDialog2} onClose={handleDialog2Close} PaperProps={{ style: { borderRadius: '25px', boxShadow: `0px 0px 40px 1px #404040`, border: '0.4px solid #505050', backgroundImage: 'linear-gradient(to bottom, #111522, #111522, #111522)', minWidth: '600px', minHeight: '200px' } }}>
-                <DialogTitle>Add New User</DialogTitle>
-                <DialogContent>
-                  <TextField
-                    type="email"
-                    label="Email"
-                    fullWidth
-                    margin="normal"
-                    value={newUser.email}
-                    onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                  />
-                  <TextField
-                    type="password"
-                    label="Password"
-                    fullWidth
-                    margin="normal"
-                    value={newUser.password}
-                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                  />
-                  <TextField
-                    label="Username"
-                    fullWidth
-                    margin="normal"
-                    value={newUser.username}
-                    onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
-                  />
-                   <InputLabel id="demo-simple-select-standard-label">Role</InputLabel>
-                  <Select
-                  
-                  
-                    fullWidth
-                    value={newUser.role}
-                    onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-                  >
-                    <MenuItem value="Hospital Technician">Hospital Technician</MenuItem>
-                    <MenuItem value="Hospital Clinician">Hospital Clinician</MenuItem>
-                  </Select>
-                  <Button
-                    sx={{
-                      textAlign: 'center',
-                      margin: '20px 0',
-                      display: 'block',
-                      marginLeft: 'auto',
-                      marginRight: 'auto',
-                    }}
-                    variant="contained"
-                    onClick={handleAddUser}
-                  >
-                    Add User
-                  </Button>
-                </DialogContent>
-              </Dialog>
-            </Box>
-            
-          )}
+          {/* Add User Dialog */}
+          <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="sm">
+            <DialogTitle>Add New User</DialogTitle>
+            <DialogContent>
+              <TextField
+                type="email"
+                label="Email"
+                fullWidth
+                margin="normal"
+                value={newUser.email}
+                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+              />
+              <TextField
+                type="password"
+                label="Password"
+                fullWidth
+                margin="normal"
+                value={newUser.password}
+                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+              />
+              <TextField
+                label="Username"
+                fullWidth
+                margin="normal"
+                value={newUser.username}
+                onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+              />
+              <Select
+                fullWidth
+               
+                value={newUser.role}
+                onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+              >
+                <MenuItem value="Hospital Technician">Hospital Technician</MenuItem>
+                <MenuItem value="Hospital Clinician">Hospital Clinician</MenuItem>
+              </Select>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+              <Button 
+                variant="contained" 
+                onClick={handleAddUser}
+                disabled={!newUser.email || !newUser.password || !newUser.username}
+              >
+                Add User
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Edit User Dialog */}
+          <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="sm">
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogContent>
+              <TextField
+                label="Username"
+                fullWidth
+                margin="normal"
+                value={newUser.username}
+                onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+              />
+              <Select
+                fullWidth
+                
+                value={newUser.role}
+                onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+              >
+                <MenuItem value="Hospital Technician">Hospital Technician</MenuItem>
+                <MenuItem value="Hospital Clinician">Hospital Clinician</MenuItem>
+              </Select>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+              <Button 
+                variant="contained" 
+                onClick={handleUpdateUser}
+                disabled={!newUser.username}
+              >
+                Update User
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+            <DialogTitle>Delete User</DialogTitle>
+            <DialogContent>
+              <Typography>Are you sure you want to delete this user?</Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+              <Button 
+                variant="contained" 
+                color="error"
+                onClick={() => selectedUser && handleDeleteUser(selectedUser.user_id)}
+              >
+                Delete
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Box>
-        
-      ) : (
-        <Box marginTop={'9%'} textAlign={'center'}>
-          <Typography variant='h3' color={'white'} fontWeight={'50'}>Admin Portal</Typography>
-          <Typography variant='h6' color={'grey'} fontWeight={'50'}>Manage users and settings</Typography>
-          <Box marginTop={'2%'} display="flex" flexDirection="row" justifyContent="center">
-            <Button variant='contained' sx={{ width: '200px', height: '50px', borderRadius: '100px' }} onClick={() => loginWithRedirect()}>Sign In</Button>
-          </Box>
-        </Box>
-        
-      )}
+      ) : renderAuthPrompt()}
+
       <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
         <MuiAlert
           elevation={6}

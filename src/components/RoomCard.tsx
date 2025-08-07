@@ -1,4 +1,4 @@
-import { Alert, Button, Dialog, DialogActions,Menu, DialogContent, DialogContentText, DialogTitle, Select, Snackbar, Stack, Typography, MenuItem, Divider, TextField, Skeleton,} from '@mui/material'
+import { Alert, Button, Dialog, DialogActions,Menu, DialogContent, DialogContentText, DialogTitle, Select, Snackbar, Stack, Typography, MenuItem, Divider, TextField, Skeleton, ListItemText, ListItemButton, ListItem, List, Paper, TableContainer, TableRow, TableCell, TableHead, Table, TableBody, Chip, useTheme, useMediaQuery,} from '@mui/material'
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -7,7 +7,11 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import IconButton from '@mui/material/IconButton';
 import { CustomNoButton } from './CustomNoButton'
 import { CustomOkButton } from './CustomOkButton'
-
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import HotelIcon from '@mui/icons-material/Hotel';
+import { Edit } from '@mui/icons-material'
 export interface roomData {
     roomName: string;
     roomId: string;
@@ -16,8 +20,18 @@ export interface roomData {
     deviceChangeToggle: Boolean;
     userOrganization:string;
     darkTheme:boolean;
+    capacity?: number;
+    roomType?: string;
 }
-
+interface BedData {
+    id: string;
+    name: string;
+    status: string;
+    patientName?: string;
+    patientId?: string;
+    addedDate?: string;
+    type?: string;
+  }
 interface Patient {
     resourceType: string;
     id: string;
@@ -43,8 +57,8 @@ interface Patient {
 
 
 export const RoomCard: FC<roomData> = (props) => {
-    const [snackSucc, setSnackSucc] = useState(false);
-    const [snack, setSnack] = useState(false);
+    const [snackSucc, setSnackSucc] = useState(false)
+    const [snack, setSnack] = useState(false)
     const initialPatientList: Patient[] = [
         {
             resourceType: "",
@@ -65,7 +79,8 @@ export const RoomCard: FC<roomData> = (props) => {
             },
         },
     ];
-    const [] = useState(initialPatientList);
+    const [] = useState(initialPatientList)
+    
     const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
         console.log(event)
         if (reason === 'clickaway') {
@@ -104,8 +119,11 @@ export const RoomCard: FC<roomData> = (props) => {
             } 
         }
     }])
- 
-    const [open, setOpen] = useState(false);
+    const [beds, setBeds] = useState<BedData[]>([])
+    const [loadingBeds, setLoadingBeds] = useState(true)
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const [open, setOpen] = useState(false)
     const [deviceChanged, setDeviceChanged] = useState(false)
     useEffect(() => {setDeviceChanged(!deviceChanged)},[props.deviceChangeToggle])
     const [renameRoom, setRenameRoom] = useState(false)
@@ -127,9 +145,147 @@ export const RoomCard: FC<roomData> = (props) => {
         setAnchorEl(null);
     };
     const open1 = Boolean(anchorEl);
-    const handleClick1 = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
+    const addNewBed = (bedName: string) => {
+        const data = {
+            "resourceType": "Location",
+            "identifier": [{
+                "value": bedName
+            }],
+            "status": "active",
+            "name": bedName,
+            "physicalType": {
+                "coding": [{
+                    "system": "http://terminology.hl7.org/CodeSystem/location-physical-type",
+                    "code": "bd",
+                    "display": "Bed"
+                }]
+            },
+            "partOf": {
+                "reference": `Location/${props.roomId}`
+            },
+            "managingOrganization": {
+                "reference": `Organization/${props.userOrganization}`
+            }
+        }
+
+        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location`, {
+            credentials: "omit",
+            method: "POST",
+            body: JSON.stringify(data),
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Basic " + btoa("fhiruser:change-password"),
+            },
+        })
+        .then((response) => {
+            setSnack(true)
+            if (response.status === 201) {
+                setSnackSucc(true)
+                // Refresh beds list
+                props.roomChange()
+            } else {
+                setSnackSucc(false)
+            }
+        })
+    }
+    const fetchPatientAssignments = async (bedId: string) => {
+        try {
+          // Fetch active encounters for this location (bed)
+          const response = await fetch(
+            `${import.meta.env.VITE_FHIRAPI_URL}/Encounter?location=${bedId}&status=in-progress`,
+            {
+              headers: {
+                Authorization: "Basic " + btoa("fhiruser:change-password"),
+              },
+            }
+          );
+      
+          if (!response.ok) throw new Error("Failed to fetch encounters");
+      
+          const data = await response.json();
+          
+          if (!data.entry || data.entry.length === 0) return null;
+      
+          // Get the most recent encounter
+          const latestEncounter = data.entry[0].resource;
+          
+          // Extract patient reference
+          const patientRef = latestEncounter.subject?.reference;
+          if (!patientRef) return null;
+      
+          // Fetch patient details
+          const patientId = patientRef.split('/')[1];
+          const patientResponse = await fetch(
+            `${import.meta.env.VITE_FHIRAPI_URL}/Patient/${patientId}`,
+            {
+              headers: {
+                Authorization: "Basic " + btoa("fhiruser:change-password"),
+              },
+            }
+          );
+      
+          if (!patientResponse.ok) throw new Error("Failed to fetch patient");
+      
+          const patient = await patientResponse.json();
+          
+          // Format patient name
+          const name = patient.name?.[0]?.text || 
+                      `${patient.name?.[0]?.given?.[0] || 'Unknown'} ${patient.name?.[0]?.family || ''}`.trim();
+          
+          return {
+            name,
+            id: patient.id,
+            addedDate: latestEncounter.period?.start 
+              ? new Date(latestEncounter.period.start).toLocaleDateString() 
+              : 'Unknown date'
+          };
+        } catch (error) {
+          console.error("Error fetching patient assignment:", error);
+          return null;
+        }
+      };
+      useEffect(() => {
+        setLoadingBeds(true);
+        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?partof=${props.roomId}`, {
+          credentials: "omit",
+          headers: {
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+          },
+        })
+          .then((response) => response.json())
+          .then(async (data) => {
+            if (data.entry) {
+              // First get all beds
+              const bedData = data.entry.map((bed: any) => ({
+                id: bed.resource.id,
+                name: bed.resource.name || bed.resource.identifier?.[0]?.value || 'Unnamed Bed',
+                status: bed.resource.status,
+                type: bed.resource.physicalType?.coding?.[0]?.display || '-'
+              }));
+      
+              // Then fetch patient assignments for each bed
+              const bedsWithPatients = await Promise.all(
+                bedData.map(async (bed: BedData) => {
+                  const assignment = await fetchPatientAssignments(bed.id);
+                  return {
+                    ...bed,
+                    patientName: assignment?.name || '-',
+                    patientId: assignment?.id || '',
+                    addedDate: assignment?.addedDate || '-'
+                  };
+                })
+              );
+      
+              setBeds(bedsWithPatients);
+            }
+            setLoadingBeds(false);
+          })
+          .catch((error) => {
+            console.error("Error fetching beds:", error);
+            setLoadingBeds(false);
+          });
+      }, [props.roomId, props.deviceChangeToggle]);
+   
     const renameButton = ( x: string ) => {
         let data = {
             "resourceType": "Location",
@@ -166,28 +322,113 @@ export const RoomCard: FC<roomData> = (props) => {
         })
     }
     const [renameRoomName, setRenameRoomName] = useState("")
+    const [addBedDialogOpen, setAddBedDialogOpen] = useState(false)
+    const [newBedName, setNewBedName] = useState("")
     const renameRoomButton = () => {
        
             return (
-                <Dialog 
+
+
+                <Dialog
                 open={renameRoom}
                 onClose={() => setRenameRoom(false)}
-                aria-labelledby="responsive-dialog-title"
-                PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', width:'400px',textAlign:'center', minHeight:'200px'}}}
-            >
-                <DialogTitle id="responsive-dialog-title">
-                {`Rename ${props.roomName}?`}
-                </DialogTitle>
-                <DialogContent>
-                <TextField id="standard-basic" label="Enter the new Room Name" variant="standard" onChange={(e) => {setRenameRoomName(e.target.value)}} />
-                </DialogContent>
-                <DialogActions sx={{width:'90%'}}>
-                    <Stack direction={'row'} width={'100%'} justifyContent={'space-evenly'} paddingBottom={'5%'} paddingLeft={'5%'}>
-                    <Box onClick={() => {setRenameRoom(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomNoButton text="Cancel"></CustomNoButton></Box>
-                    <Box onClick={() => {renameButton(renameRoomName); setRenameRoom(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomOkButton text="Rename"></CustomOkButton></Box>
-                    </Stack>  
+                fullWidth
+                maxWidth="xs"
+                PaperProps={{
+                  sx: {
+                    backgroundColor: '#FFFFFF',
+                    color: '#000000',
+                    borderRadius: 3,
+                  },
+                }}
+              >
+              <DialogTitle sx={{ fontWeight: 500, pb: 1, color: '#000000', textAlign: 'center' }}>
+              {`Rename ${props.roomName}?`}
+              </DialogTitle>
+              
+             
+              <DialogContent dividers sx={{borderColor: '#ccc'}}>
+
+  <TextField
+      autoFocus
+      margin="dense"
+      id="bed-name"
+      label="Enter the new Room Name"
+      type="text"
+      fullWidth
+      variant="outlined"
+      value={newBedName}
+      onChange={(e) => {setRenameRoomName(e.target.value)}}
+     
+      InputProps={{
+        sx: {
+          backgroundColor: '#F5F5F5',
+          borderRadius: 1,
+          color: '#000000',
+        },
+      }}
+      InputLabelProps={{ sx: { color: '#000000' } }}
+    />
+   
+
+  
+  </DialogContent>  
+                
+              
+                <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'space-between' }}>
+                  <Button
+                   onClick={() => {setRenameRoom(false)}}
+                    variant="outlined"
+                    sx={{
+                      textTransform: 'none',
+                      borderColor: '#D0D5DD',
+                      color: '#344054',
+                      fontWeight: 500,
+                      backgroundColor: '#FFFFFF',
+                      '&:hover': {
+                        backgroundColor: '#F9FAFB',
+                      },
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+          variant="contained"
+          color="error"
+          onClick={() => {renameButton(renameRoomName); setRenameRoom(false)}}
+          sx={{
+            backgroundColor: '#228BE6',
+            color: '#FFFFFF',
+            '&:hover': {
+              backgroundColor: '#228BE6',
+            color: '#FFFFFF',
+            }
+            
+          }}
+        
+        >Rename</Button>
+                  
                 </DialogActions>
-            </Dialog>
+              </Dialog>
+            //     <Dialog 
+            //     open={renameRoom}
+            //     onClose={() => setRenameRoom(false)}
+            //     aria-labelledby="responsive-dialog-title"
+            //     PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', width:'400px',textAlign:'center', minHeight:'200px'}}}
+            // >
+            //     <DialogTitle id="responsive-dialog-title">
+            //     {`Rename ${props.roomName}?`}
+            //     </DialogTitle>
+            //     <DialogContent>
+            //     <TextField id="standard-basic" label="Enter the new Room Name" variant="standard" onChange={(e) => {setRenameRoomName(e.target.value)}} />
+            //     </DialogContent>
+            //     <DialogActions sx={{width:'90%'}}>
+            //         <Stack direction={'row'} width={'100%'} justifyContent={'space-evenly'} paddingBottom={'5%'} paddingLeft={'5%'}>
+            //         <Box onClick={() => {setRenameRoom(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomNoButton text="Cancel"></CustomNoButton></Box>
+            //         <Box onClick={() => {renameButton(renameRoomName); setRenameRoom(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomOkButton text="Rename"></CustomOkButton></Box>
+            //         </Stack>  
+            //     </DialogActions>
+            // </Dialog>
             
             )
         }
@@ -479,6 +720,9 @@ const removeButton = (index: number) => {
     //         }
     //       });
     //   };
+
+
+
     const [deleteDevice, setDeleteDevice] = useState(false)
     const [deleteRoom, setDeleteRoom] = useState(false)
     const removeRoomButton = () => {
@@ -505,27 +749,62 @@ const removeButton = (index: number) => {
             <Dialog
             open={deleteRoom}
             onClose={() => setDeleteDevice(false)}
-            aria-labelledby="responsive-dialog-title"
-            PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', width:'400px',textAlign:'center', minHeight:'200px'}}}
-
-        >
-            <DialogTitle id="responsive-dialog-title">
-            {`Remove ${props.roomName}?`}
-            
-            </DialogTitle>
-            <DialogContent>
-                <DialogContentText>
-                Are you sure you want to remove {props.roomName}?
-            </DialogContentText>
+            fullWidth
+            maxWidth="xs"
+            PaperProps={{
+              sx: {
+                backgroundColor: '#FFFFFF',
+                color: '#000000',
+                borderRadius: 3,
+              },
+            }}
+          >
+          <DialogTitle sx={{ fontWeight: 500, pb: 1, color: '#000000', textAlign: 'center' }}>
+          {`Remove ${props.roomName}?`}
+          </DialogTitle>
+          
+          <DialogContent dividers sx={{borderColor: '#ccc', fontWeight: 500, pb: 1, color: '#000000', textAlign: 'center' }}>
+          <DialogContentText sx={{ color: '#000000' }}>
+  Are you sure you want to delete {props.roomName}
+</DialogContentText>
             
             </DialogContent>
-            <DialogActions sx={{width:'90%'}}>
-                    <Stack direction={'row'} width={'100%'} justifyContent={'space-evenly'} paddingBottom={'5%'} paddingLeft={'5%'}>
-                    <Box onClick={() => {setDeleteRoom(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomNoButton text="Cancel"></CustomNoButton></Box>
-                    <Box onClick={() => {removeRoomButton(); setDeleteRoom(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomOkButton text="Delete"></CustomOkButton></Box>
-                    </Stack>  
-                </DialogActions>
-        </Dialog>
+          
+            <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'space-between' }}>
+              <Button
+                onClick={() => {setDeleteRoom(false)}}
+                variant="outlined"
+                sx={{
+                  textTransform: 'none',
+                  borderColor: '#D0D5DD',
+                  color: '#344054',
+                  fontWeight: 500,
+                  backgroundColor: '#FFFFFF',
+                  '&:hover': {
+                    backgroundColor: '#F9FAFB',
+                  },
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+      variant="contained"
+      color="error"
+      onClick={() => {removeRoomButton(); setDeleteRoom(false)}}
+      sx={{
+        textTransform: 'none',
+        fontWeight: 500,
+        backgroundColor: '#D92D20',
+        '&:hover': {
+          backgroundColor: '#B42318',
+        },
+      }}
+    >Delete</Button>
+              
+            </DialogActions>
+          </Dialog>
+
+         
         
         )
     }
@@ -540,7 +819,7 @@ const removeButton = (index: number) => {
             <DialogTitle sx={{textAlign:"center", fontWeight:'bold', paddingTop:'6%'}}>
             {`Remove device from ${props.roomName}`}
             </DialogTitle>
-            <DialogContent sx={{display:'flex',flexWrap: "wrap",textAlign:"center", marginBottom:'auto' }}>
+            <DialogContent dividers sx={{ borderColor: '#ccc',display:'flex',flexWrap: "wrap",textAlign:"center", marginBottom:'auto' }}>
             <Stack width={'100%'} display={'flex'} direction={'row'} flexWrap={'wrap'}
                 >
                 {deviceList.map((device, index) => {
@@ -567,7 +846,7 @@ const removeButton = (index: number) => {
                 <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', padding:'5%'}}>
                 {`Remove device`}
                 </DialogTitle>
-                <DialogContent><i>{`${deviceList[selectedDevice].resource.identifier[0].value} `}</i>{`from room `}<i>{`${props.roomName}`}?</i></DialogContent>
+                <DialogContent  dividers sx={{ borderColor: '#ccc'}}><i>{`${deviceList[selectedDevice].resource.identifier[0].value} `}</i>{`from room `}<i>{`${props.roomName}`}?</i></DialogContent>
                 <DialogActions sx={{paddingBottom:'5%'}}>
                     <Stack direction={'row'} width={'100%'} justifyContent={'space-around'}>
                     <Box onClick={() => {setMiniDialog(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomNoButton text="Cancel"></CustomNoButton></Box>
@@ -595,7 +874,7 @@ const removeButton = (index: number) => {
             {`Add device to ${props.roomName}`}
             
             </DialogTitle>
-            <DialogContent sx={{display:'flex',flexWrap: "wrap",textAlign:"center", marginBottom:'auto', paddingBottom:'9%'}} >
+            <DialogContent  dividers  sx={{borderColor: '#ccc',display:'flex',flexWrap: "wrap",textAlign:"center", marginBottom:'auto', paddingBottom:'9%'}} >
                 <Stack width={'100%'} display={'flex'} direction={'row'} flexWrap={'wrap'}
                 >
                 {deviceList.map((device, index) => {
@@ -638,33 +917,344 @@ const removeButton = (index: number) => {
   useEffect(() => {
       const timer = setTimeout(() => {
         setLoading(false);
-      }, 2000);
+      }, 1000);
   
       return () => clearTimeout(timer);
     }, []);
-    const [controlColor, setControlColor] = useState("grey")
-  
+   
+    const [bedDialogOpen, setBedDialogOpen] = useState(false);
+const [selectedBed, setSelectedBed] = useState<any>(null);
+    const handleAddBedSubmit = () => {
+        if (newBedName.trim()) {
+            addNewBed(newBedName)
+            setAddBedDialogOpen(false)
+            setNewBedName("")
+        }
+    }
+    const handleDischargePatient = async (bedId: string, patientId: string) => {
+        if (!patientId || patientId === '') return;
+      
+        try {
+          // Find and update the active encounter
+          const encountersResponse = await fetch(
+            `${import.meta.env.VITE_FHIRAPI_URL}/Encounter?location=${bedId}&status=in-progress&subject=Patient/${patientId}`,
+            {
+              headers: {
+                Authorization: "Basic " + btoa("fhiruser:change-password"),
+              },
+            }
+          );
+      
+          if (!encountersResponse.ok) throw new Error("Failed to fetch encounters");
+      
+          const encountersData = await encountersResponse.json();
+          
+          if (!encountersData.entry || encountersData.entry.length === 0) {
+            throw new Error("No active encounter found");
+          }
+      
+          const encounter = encountersData.entry[0].resource;
+          
+          // Update encounter status to finished
+          const updatedEncounter = {
+            ...encounter,
+            status: "finished",
+            period: {
+              ...encounter.period,
+              end: new Date().toISOString()
+            }
+          };
+      
+          const updateResponse = await fetch(
+            `${import.meta.env.VITE_FHIRAPI_URL}/Encounter/${encounter.id}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/fhir+json",
+                Authorization: "Basic " + btoa("fhiruser:change-password"),
+              },
+              body: JSON.stringify(updatedEncounter)
+            }
+          );
+      
+          if (!updateResponse.ok) throw new Error("Failed to update encounter");
+      
+          // Refresh bed data
+          setBeds(prev => prev.map(bed => 
+            bed.id === bedId 
+              ? { ...bed, patientName: '-', patientId: '', addedDate: '-' } 
+              : bed
+          ));
+      
+          // Show success message
+          // You can use your existing snackbar system here
+          console.log("Patient discharged successfully");
+        } catch (error) {
+          console.error("Error discharging patient:", error);
+          // Show error message
+        }
+      };
+    const handleBedClick = (bed: any) => {
+        setSelectedBed(bed);
+        setBedDialogOpen(true);
+    };
   return (
       <Box>
-        {loading ? (
-          <Skeleton animation="wave" variant="rectangular" width={"350px"} height={"280px"} sx={{borderRadius:"25px"}} />
-        ) : (
+        {/* {loading ? (
+       <Box sx={{ p: 2 }}>
+       <Skeleton
+         animation="pulse"
+         variant="rectangular"
+         width="100%"
+         height={60}
+         sx={{
+           borderRadius: '12px',
+           backgroundColor: props.darkTheme ? '#444' : '#F5F5F5',
+           mb: 1,
+         }}
+       />
+       <Skeleton
+         animation="pulse"
+         variant="rectangular"
+         width="100%"
+         height={60}
+         sx={{
+           borderRadius: '12px',
+           backgroundColor: props.darkTheme ? '#444' : '#F5F5F5',
+         }}
+       />
+     </Box>
+     
+       
         
-      <Card elevation={5} onMouseLeave={() => { setControlColor('grey')}} onMouseEnter={() => { setControlColor('#2BA0E0'); }}style={{width: '350px', backgroundColor: 'transparent', boxShadow: 'none', background: 'transparent', borderRadius: '25px', minHeight: '280px', border: `1px solid ${controlColor}` }}>
-              <Stack width={'100%'} direction={'row'} justifyContent={'center'} textAlign={'center'}>
+        ) : (
+         */}
+      <Box  sx={{backgroundColor:'#FFFFFF'}}>
+              <Stack width={'100%'} direction={'row'} >
               <CardContent sx={{marginTop:'0%', width:'100%', justifyContent:'center', textAlign:'center'}}>
-                      <Stack marginTop={'0%'}>
-                      <IconButton sx={{width:'10%',marginLeft:'auto',marginRight:'3%',color:props.darkTheme?'white':'#124D81'}}  onClick={handleClick1}><SettingsIcon /></IconButton>
-                      <Menu id="demo-positioned-menu" aria-labelledby="demo-positioned-button" anchorEl={anchorEl} open={open1} onClose={handleClose1} anchorOrigin={{vertical: 'top', horizontal: 'right', }}  PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #3C4661, #3C4661, #3C4661)', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', textAlign:'center'}}} MenuListProps={{sx:{py:0}}} >
-          <Stack divider={<Divider sx={{backgroundColor:'white'}} flexItem />}>
-          <Button onClick={() => {setRenameRoom(true)}}  sx={{color:'white', padding:'5%'}}><Typography variant='caption' textTransform={'capitalize'}>Rename</Typography></Button>
-          <Button onClick={() => {setDeleteRoom(true)}} sx={{backgroundColor:'#E48227',color:'white', paddingTop:'5%', paddingBottom:'5%'}}><Typography variant='caption' textTransform={'capitalize'}>Delete Room</Typography></Button>
-          </Stack>
-          
-          </Menu>
-              <Typography   style={{userSelect: 'none',color:props.darkTheme?'white': '#124D81',fontWeight: 'bold'}}>{props.roomName}</Typography>
-                  </Stack>
-              <Stack spacing={"10%"} marginTop={'10%'} width={'70%'} marginLeft={'auto'} marginRight={'auto'}>
+              <Stack
+    direction={isMobile ? 'column' : 'row'}
+    justifyContent="space-between"
+  
+    spacing={2}
+    sx={{ borderRadius: 2, flexWrap: 'wrap' }}
+  >
+      {/* Room Info Section */}
+      <Stack
+      direction="row"
+      justifyContent={isMobile ? 'center' : 'space-between'}
+      alignItems="center"
+     
+      spacing={2}
+      sx={{ width: isMobile ? '100%' : '60%' }}
+    >
+      {[
+        { label: 'Room Name', value: props.roomName },
+        { label: 'Capacity', value: props.capacity },
+        { label: 'Type', value: props.roomType },
+        { label: 'Occupied Bed', value: '--' },
+      ].map((item, i) => (
+        <Stack key={i} alignItems={isMobile ? 'center' : 'flex-start'}>
+          <Typography
+            variant="subtitle2"
+            sx={{ color: 'gray' }}
+          >
+            {item.label}
+          </Typography>
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            sx={{ color: props.darkTheme ? 'white' : 'black' }}
+          >
+            {item.value}
+          </Typography>
+        </Stack>
+      ))}
+    </Stack>
+
+      {/* Action Buttons */}
+      <Stack
+      direction="row"
+      spacing={1}
+      justifyContent="center"
+      alignItems="center"
+      sx={{
+        width: isMobile ? '100%' : '20%',
+        mt: isMobile ? 2 : 0,
+      }}
+    >
+      <IconButton
+        onClick={() => setRenameRoom(true)}
+        sx={{ color: props.darkTheme ? 'white' : 'grey' }}
+      >
+        <EditIcon />
+      </IconButton>
+
+      <IconButton
+        onClick={() => setDeleteRoom(true)}
+        sx={{ color: props.darkTheme ? 'white' : 'grey' }}
+      >
+        <DeleteIcon />
+      </IconButton>
+
+      <Button
+        variant="outlined"
+        startIcon={<AddIcon />}
+        onClick={() => setAddBedDialogOpen(true)}
+        sx={{
+          borderRadius: '15px',
+          color: props.darkTheme ? 'white' : '#124D81',
+          borderColor: props.darkTheme ? 'white' : '#124D81',
+          '&:hover': {
+            borderColor: props.darkTheme ? '#2BA0E0' : '#0d3a63',
+          },
+          whiteSpace: 'nowrap',
+        }}
+      >
+        Add Bed
+      </Button>
+    </Stack>
+  </Stack>
+                         {/* Beds Section */}
+                         <Box sx={{ mt: 2 }}>
+               
+    {loadingBeds ? (
+        <Box sx={{ p: 2 }}>
+            <Skeleton variant="rectangular" width="100%" height={60} />
+            <Skeleton variant="rectangular" width="100%" height={60} sx={{ mt: 1 }} />
+        </Box>
+    ) : (
+        <Box
+        sx={{
+          border: props.darkTheme ? '1px solid #444' : '1px solid #124D81',
+          borderRadius: 1,
+          overflowX: 'auto', // Responsive horizontal scroll
+          width: '100%',
+        }}
+      >
+        <TableContainer
+          component={Paper}
+          sx={{
+            backgroundColor: props.darkTheme ? '#2A2A2A' : '#FFFFFF',
+            minWidth: isMobile ? 600 : '100%', // Enforces scroll on mobile
+          }}
+        >
+          <Table size="small">
+            <TableHead>
+              <TableRow
+                sx={{
+                  backgroundColor: props.darkTheme ? '#2A2A2A' : '#868E961F',
+                }}
+              >
+                <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Beds</strong></TableCell>
+                <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Patient</strong></TableCell>
+                <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Added date</strong></TableCell>
+                <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Type</strong></TableCell>
+                <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Status</strong></TableCell>
+                <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Actions</strong></TableCell>
+              </TableRow>
+            </TableHead>
+      
+            <TableBody>
+              {beds.length > 0 ? (
+                beds.map((bed) => (
+                  <TableRow
+                    key={bed.id}
+                    hover
+                    sx={{
+                      cursor: 'pointer',
+                      backgroundColor: props.darkTheme ? '#333' : '#FFF',
+                    }}
+                    onClick={() => handleBedClick(bed)}
+                  >
+                    <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>{bed.name}</TableCell>
+      
+                    <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>
+                      {bed.patientName !== '-' ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography component="span">
+                            {bed.patientName}
+                            {bed.patientId && (
+                              <Typography
+                                component="span"
+                                variant="caption"
+                                sx={{
+                                  ml: 1,
+                                  color: props.darkTheme ? '#AAA' : '#666',
+                                }}
+                              >
+                                (ID: {bed.patientId})
+                              </Typography>
+                            )}
+                          </Typography>
+                        </Box>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+      
+                    <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>{bed.addedDate}</TableCell>
+                    <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>{bed.type}</TableCell>
+      
+                    <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>
+                      <Chip
+                        label={bed.status}
+                        size="small"
+                        color={
+                          bed.status === 'active'
+                            ? 'success'
+                            : bed.status === 'suspended'
+                            ? 'warning'
+                            : 'default'
+                        }
+                      />
+                    </TableCell>
+      
+                    <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>
+                      {bed.patientName !== '-' && (
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDischargePatient(bed.id, bed.patientId);
+                          }}
+                        >
+                          {/* Add Icon here if needed */}
+                        </IconButton>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6}>
+                    <Box textAlign="center" sx={{ p: 2 }}>
+                      <Typography variant="subtitle1" color="grey">
+                        No Beds Added
+                      </Typography>
+                      <HotelIcon sx={{ fontSize: 40, mt: 1, color: 'grey' }} />
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+      
+    )}
+
+    {/* Bed Dialog - Add this where appropriate in your component */}
+    <Dialog
+        open={bedDialogOpen}
+        onClose={() => setBedDialogOpen(false)}
+        fullWidth
+        maxWidth="sm"
+    >
+        <DialogTitle>Bed Details</DialogTitle>
+        <DialogContent dividers sx={{ borderColor: '#ccc' }}>
+            {/* Add your bed details form here */}
+            <Stack spacing={"10%"} marginTop={'10%'} width={'70%'} marginLeft={'auto'} marginRight={'auto'}>
                   <Select  sx={{fontSize:'10%', borderRadius:'25px',border:'2px solid #124D81',placeholder:'Devices in this organization'}} >
                       {deviceList.map((device) => {
                           if(device?.resource?.owner?.reference === `Organization/${props.userOrganization}` && device?.resource?.location?.reference.split("/")[1] === props.roomId){
@@ -679,7 +1269,100 @@ const removeButton = (index: number) => {
                   <Button variant="contained" sx={{borderRadius:'25px'}} onClick={()=> {setOpen(true)}}>Add/Move Devices</Button>
                   <Button variant="contained" sx={{borderRadius:'25px'}} color='warning' onClick={() => {setDeleteDevice(true)}}>Remove Device</Button>
               </Stack>
+            {/* Add more details or edit form as needed */}
+        </DialogContent>
+        <DialogActions>
+            <Button onClick={() => setBedDialogOpen(false)}>Close</Button>
+        </DialogActions>
+    </Dialog>
+</Box>
+             
               </CardContent>
+              <Dialog
+  open={addBedDialogOpen}
+  onClose={() => setAddBedDialogOpen(false)}
+  fullWidth
+  maxWidth="xs"
+  PaperProps={{
+    sx: {
+      backgroundColor: '#FFFFFF',
+      color: '#000000',
+      borderRadius: 3,
+    },
+  }}
+>
+<DialogTitle sx={{ fontWeight: 500, pb: 1, color: '#000000', textAlign: 'center' }}>
+Add New Bed
+</DialogTitle>
+
+  <DialogContent dividers sx={{ borderColor: '#ccc' }}>
+
+  <TextField
+      autoFocus
+      margin="dense"
+      id="bed-name"
+      label="Bed Name"
+      type="text"
+      fullWidth
+      variant="outlined"
+      value={newBedName}
+      onChange={(e) => setNewBedName(e.target.value)}
+     
+      InputProps={{
+        sx: {
+          backgroundColor: '#F5F5F5',
+          borderRadius: 1,
+          color: '#000000',
+        },
+      }}
+      InputLabelProps={{ sx: { color: '#000000' } }}
+    />
+   
+
+  
+  </DialogContent>
+
+  <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'space-between' }}>
+    <Button
+      onClick={() => setAddBedDialogOpen(false)}
+      variant="outlined"
+      sx={{
+        textTransform: 'none',
+        borderColor: '#D0D5DD',
+        color: '#344054',
+        fontWeight: 500,
+        backgroundColor: '#FFFFFF',
+        '&:hover': {
+          backgroundColor: '#F9FAFB',
+        },
+      }}
+    >
+      Cancel
+    </Button>
+    <Button
+      onClick={handleAddBedSubmit}
+      
+      sx={{
+        backgroundColor: '#228BE6',
+        color: '#FFFFFF',
+        '&:hover': {
+          backgroundColor: '#228BE6',
+        color: '#FFFFFF',
+        },
+        '&.Mui-disabled': {
+          backgroundColor: '#228BE61A',
+          color: 'grey',
+          opacity: 1, // prevents dimming
+        },
+      }}
+    >
+      Save
+    </Button>
+  </DialogActions>
+</Dialog>
+
+             
+
               {addToRoom()}
               {removeFromRoom()}
               {removeRoom()}
@@ -691,11 +1374,468 @@ const removeButton = (index: number) => {
                       </Alert>
               </Snackbar>
               </Stack>
-            </Card>
-            )}
             </Box>
+            {/* )} */}
+             </Box>
    
   
   )
 }
 
+// import { 
+//     Alert, Button, Dialog, DialogActions, Menu, DialogContent, DialogContentText, 
+//     DialogTitle, Snackbar, Stack, Typography, Divider, TextField, Skeleton, 
+//     ListItemText, ListItemButton, ListItem, List, Accordion, AccordionSummary, 
+//     AccordionDetails, Chip 
+//   } from '@mui/material'
+//   import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+//   import Box from '@mui/material/Box'
+//   import Card from '@mui/material/Card'
+//   import CardContent from '@mui/material/CardContent'
+//   import { FC, useEffect, useState } from 'react'
+//   import SettingsIcon from '@mui/icons-material/Settings';
+//   import IconButton from '@mui/material/IconButton';
+//   import { CustomNoButton } from './CustomNoButton'
+//   import { CustomOkButton } from './CustomOkButton'
+//   import AddIcon from '@mui/icons-material/Add';
+  
+//   export interface roomData {
+//       roomName: string;
+//       roomId: string;
+//       roomChange: Function;
+//       deviceChange: Function;
+//       deviceChangeToggle: Boolean;
+//       userOrganization:string;
+//       darkTheme:boolean;
+//       onBedClick?: (bedId: string, bedName: string) => void; // Add this prop
+//   }
+  
+//   interface BedData {
+//       id: string;
+//       name: string;
+//       status: string;
+//   }
+  
+//   export const RoomCard: FC<roomData> = (props) => {
+//       const [snackSucc, setSnackSucc] = useState(false)
+//       const [snack, setSnack] = useState(false)
+//       const [expanded, setExpanded] = useState(false); // Accordion state
+      
+//       const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+//           console.log(event)
+//           if (reason === 'clickaway') {
+//             return;
+//           }
+//           setSnack(false);
+//       }; 
+      
+//       const [beds, setBeds] = useState<BedData[]>([])
+//       const [loadingBeds, setLoadingBeds] = useState(true)
+//       const [renameRoom, setRenameRoom] = useState(false)
+//       const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+      
+//       const handleClose1 = () => {
+//           setAnchorEl(null);
+//       };
+      
+//       const open1 = Boolean(anchorEl);
+      
+//       const addNewBed = (bedName: string) => {
+//           const data = {
+//               "resourceType": "Location",
+//               "identifier": [{
+//                   "value": bedName
+//               }],
+//               "status": "active",
+//               "name": bedName,
+//               "physicalType": {
+//                   "coding": [{
+//                       "system": "http://terminology.hl7.org/CodeSystem/location-physical-type",
+//                       "code": "bd",
+//                       "display": "Bed"
+//                   }]
+//               },
+//               "partOf": {
+//                   "reference": `Location/${props.roomId}`
+//               },
+//               "managingOrganization": {
+//                   "reference": `Organization/${props.userOrganization}`
+//               }
+//           }
+  
+//           fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location`, {
+//               credentials: "omit",
+//               method: "POST",
+//               body: JSON.stringify(data),
+//               headers: {
+//                   "Content-Type": "application/json",
+//                   Authorization: "Basic " + btoa("fhiruser:change-password"),
+//               },
+//           })
+//           .then((response) => {
+//               setSnack(true)
+//               if (response.status === 201) {
+//                   setSnackSucc(true)
+//                   // Refresh beds list
+//                   props.roomChange()
+//               } else {
+//                   setSnackSucc(false)
+//               }
+//           })
+//       }
+      
+//       useEffect(() => {
+//           setLoadingBeds(true)
+//           fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?partof=${props.roomId}`, {
+//               credentials: "omit",
+//               headers: {
+//                   Authorization: "Basic " + btoa("fhiruser:change-password"),
+//               },
+//           })
+//           .then((response) => response.json())
+//           .then((data) => {
+//               if (data.entry) {
+//                   const bedData = data.entry.map((bed: any) => ({
+//                       id: bed.resource.id,
+//                       name: bed.resource.name || bed.resource.identifier?.[0]?.value || 'Unnamed Bed',
+//                       status: bed.resource.status
+//                   }))
+//                   setBeds(bedData)
+//               }
+//               setLoadingBeds(false)
+//           })
+//           .catch(() => setLoadingBeds(false))
+//       }, [props.roomId, props.deviceChangeToggle])
+      
+//       const handleClick1 = (event: React.MouseEvent<HTMLElement>) => {
+//           event.stopPropagation(); // Prevent accordion toggle when clicking settings
+//           setAnchorEl(event.currentTarget);
+//       };
+      
+//       const renameButton = (x: string) => {
+//           let data = {
+//               "resourceType": "Location",
+//               "id": props.roomId,
+//               "identifier": [
+//                   {
+//                       "value": x
+//                   }
+//               ],
+//               "status": "suspended",
+//               "name": x,
+//               "managingOrganization": {
+//                   "reference": `Organization/${props.userOrganization}`
+//               }
+//           }
+//           fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location/${props.roomId}`, {
+//               credentials: "omit",
+//               method: "PUT",
+//               body: JSON.stringify(data),
+//               headers: {
+//                   "Content-Type": "application/json",
+//                   Authorization: "Basic " + btoa("fhiruser:change-password"),
+//               },
+//           })
+//           .then((response) => {
+//               console.log(response.status)
+//               setSnack(true)
+//               if(response.status==200){setSnackSucc(true); props.roomChange()}
+//               else{setSnackSucc(false)}
+//           })
+//       }
+      
+//       const [renameRoomName, setRenameRoomName] = useState("")
+//       const [addBedDialogOpen, setAddBedDialogOpen] = useState(false)
+//       const [newBedName, setNewBedName] = useState("")
+      
+//       const renameRoomButton = () => {
+//           return (
+//               <Dialog 
+//                   open={renameRoom}
+//                   onClose={() => setRenameRoom(false)}
+//                   aria-labelledby="responsive-dialog-title"
+//                   PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', width:'400px',textAlign:'center', minHeight:'200px'}}}
+//               >
+//                   <DialogTitle id="responsive-dialog-title">
+//                   {`Rename ${props.roomName}?`}
+//                   </DialogTitle>
+//                   <DialogContent>
+//                   <TextField id="standard-basic" label="Enter the new Room Name" variant="standard" onChange={(e) => {setRenameRoomName(e.target.value)}} />
+//                   </DialogContent>
+//                   <DialogActions sx={{width:'90%'}}>
+//                       <Stack direction={'row'} width={'100%'} justifyContent={'space-evenly'} paddingBottom={'5%'} paddingLeft={'5%'}>
+//                       <Box onClick={() => {setRenameRoom(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomNoButton text="Cancel"></CustomNoButton></Box>
+//                       <Box onClick={() => {renameButton(renameRoomName); setRenameRoom(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomOkButton text="Rename"></CustomOkButton></Box>
+//                       </Stack>  
+//                   </DialogActions>
+//               </Dialog>
+//           )
+//       }
+  
+//       const [deleteRoom, setDeleteRoom] = useState(false)
+//       const removeRoomButton = () => {
+//           console.log("Called")
+//           fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location/${props.roomId}`, {
+//               credentials: "omit",
+//               method: "DELETE",
+//               headers: {
+//                   "Content-Type": "application/json",
+//                   Authorization: "Basic " + btoa("fhiruser:change-password"),
+//               },
+//           })
+//           .then((response) => {
+//               console.log(response.status)
+//               setSnack(true)
+//               if(response.status==200){setSnackSucc(true);props.roomChange()}
+//               else{setSnackSucc(false)}
+//           })
+//           .then((data) => {console.log(data)})
+//       }
+      
+//       const removeRoom = () => {
+//           return (
+//               <Dialog
+//                   open={deleteRoom}
+//                   aria-labelledby="responsive-dialog-title"
+//                   PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', width:'400px',textAlign:'center', minHeight:'200px'}}}
+//               >
+//                   <DialogTitle id="responsive-dialog-title">
+//                   {`Remove ${props.roomName}?`}
+//                   </DialogTitle>
+//                   <DialogContent>
+//                       <DialogContentText>
+//                       Are you sure you want to remove {props.roomName}?
+//                   </DialogContentText>
+//                   </DialogContent>
+//                   <DialogActions sx={{width:'90%'}}>
+//                           <Stack direction={'row'} width={'100%'} justifyContent={'space-evenly'} paddingBottom={'5%'} paddingLeft={'5%'}>
+//                           <Box onClick={() => {setDeleteRoom(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomNoButton text="Cancel"></CustomNoButton></Box>
+//                           <Box onClick={() => {removeRoomButton(); setDeleteRoom(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomOkButton text="Delete"></CustomOkButton></Box>
+//                           </Stack>  
+//                       </DialogActions>
+//               </Dialog>
+//           )
+//       }
+     
+//       const [loading, setLoading] = useState(true);
+//       useEffect(() => {
+//           const timer = setTimeout(() => {
+//             setLoading(false);
+//           }, 2000);
+//           return () => clearTimeout(timer);
+//       }, []);
+      
+//       const handleAddBedSubmit = () => {
+//           if (newBedName.trim()) {
+//               addNewBed(newBedName)
+//               setAddBedDialogOpen(false)
+//               setNewBedName("")
+//           }
+//       }
+      
+//       const handleBedClick = (bedId: string, bedName: string) => {
+//           if (props.onBedClick) {
+//               props.onBedClick(bedId, bedName);
+//           }
+//       }
+  
+//       return (
+//           <Box>
+//               {loading ? (
+//                   <Skeleton animation="wave" variant="rectangular" width={"350px"} height={"280px"} sx={{borderRadius:"25px"}} />
+//               ) : (
+//                   <Accordion 
+//                       expanded={expanded}
+//                       onChange={() => setExpanded(!expanded)}
+//                       sx={{
+//                           width: '350px',
+//                           borderRadius: '25px !important',
+//                           overflow: 'hidden',
+//                           background: 'transparent',
+//                           border: `1px solid ${props.darkTheme ? '#444' : '#ddd'}`,
+//                           boxShadow: 'none',
+//                           '&:before': {
+//                               display: 'none',
+//                           },
+//                           mb: 2
+//                       }}
+//                   >
+//                       <AccordionSummary
+//                           expandIcon={<ExpandMoreIcon sx={{ color: props.darkTheme ? 'white' : '#124D81' }} />}
+//                           aria-controls="panel1bh-content"
+//                           id="panel1bh-header"
+//                           sx={{
+//                               backgroundColor: props.darkTheme ? '#1A1A1A' : '#f5f5f5',
+//                               '&:hover': {
+//                                   backgroundColor: props.darkTheme ? '#2A2A2A' : '#eeeeee',
+//                               },
+//                           }}
+//                       >
+//                           <Stack direction="row" alignItems="center" width="100%">
+//                               <Typography sx={{ flexShrink: 0, color: props.darkTheme ? 'white' : '#124D81', fontWeight: 'bold' }}>
+//                                   {props.roomName}
+//                               </Typography>
+//                               <Box sx={{ ml: 'auto' }}>
+//                                   <IconButton 
+//                                       onClick={handleClick1}
+//                                       sx={{ color: props.darkTheme ? 'white' : '#124D81' }}
+//                                   >
+//                                       <SettingsIcon />
+//                                   </IconButton>
+//                                   <Menu 
+//                                       id="demo-positioned-menu" 
+//                                       aria-labelledby="demo-positioned-button" 
+//                                       anchorEl={anchorEl} 
+//                                       open={open1} 
+//                                       onClose={handleClose1} 
+//                                       anchorOrigin={{vertical: 'top', horizontal: 'right'}}  
+//                                       PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #3C4661, #3C4661, #3C4661)', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', textAlign:'center'}}} 
+//                                       MenuListProps={{sx:{py:0}}}
+//                                   >
+//                                       <Stack divider={<Divider sx={{backgroundColor:''}} flexItem />}>
+//                                           <Button onClick={() => {setRenameRoom(true); handleClose1();}} sx={{color:'white', padding:'5%'}}>
+//                                               <Typography variant='caption' textTransform={'capitalize'}>Rename</Typography>
+//                                           </Button>
+//                                           <Button onClick={() => {setDeleteRoom(true); handleClose1();}} sx={{backgroundColor:'#E48227',color:'white', paddingTop:'5%', paddingBottom:'5%'}}>
+//                                               <Typography variant='caption' textTransform={'capitalize'}>Delete Room</Typography>
+//                                           </Button>
+//                                       </Stack>
+//                                   </Menu>
+//                               </Box>
+//                           </Stack>
+//                       </AccordionSummary>
+//                       <AccordionDetails sx={{ backgroundColor: props.darkTheme ? '#1E1E1E' : '#fafafa' }}>
+//                           {/* Beds Section */}
+//                           <Box sx={{ mt: 1 }}>
+//                               <Typography variant="subtitle1" sx={{ 
+//                                   color: props.darkTheme ? 'white' : '#124D81',
+//                                   fontWeight: 'bold',
+//                                   textAlign: 'left',
+//                                   pl: 1,
+//                                   mb: 1
+//                               }}>
+//                                   Beds
+//                               </Typography>
+                              
+//                               {loadingBeds ? (
+//                                   <Box sx={{ p: 1 }}>
+//                                       <Skeleton variant="rectangular" width="100%" height={60} />
+//                                       <Skeleton variant="rectangular" width="100%" height={60} sx={{ mt: 1 }} />
+//                                   </Box>
+//                               ) : (
+//                                   <List dense sx={{ 
+//                                       maxHeight: 200, 
+//                                       overflow: 'auto',
+//                                       border: props.darkTheme ? '1px solid #444' : '1px solid #ddd',
+//                                       borderRadius: 1,
+//                                       mb: 1
+//                                   }}>
+//                                       {beds.length > 0 ? (
+//                                           beds.map((bed) => (
+//                                               <ListItem key={bed.id} disablePadding>
+//                                                   <ListItemButton onClick={() => handleBedClick(bed.id, bed.name)}>
+//                                                       <ListItemText 
+//                                                           primary={bed.name} 
+//                                                           sx={{
+//                                                               color: props.darkTheme ? 'white' : 'text.primary',
+//                                                           }}
+//                                                       />
+//                                                       <Chip 
+//                                                           label={bed.status} 
+//                                                           size="small"
+//                                                           color={bed.status === 'active' ? 'success' : 'error'}
+//                                                       />
+//                                                   </ListItemButton>
+//                                               </ListItem>
+//                                           ))
+//                                       ) : (
+//                                           <ListItem>
+//                                               <ListItemText 
+//                                                   primary="No beds in this room" 
+//                                                   sx={{ color: props.darkTheme ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary' }}
+//                                               />
+//                                           </ListItem>
+//                                       )}
+//                                   </List>
+//                               )}
+                              
+//                               <Button 
+//                                   variant="outlined"
+//                                   startIcon={<AddIcon />}
+//                                   onClick={(e) => {
+//                                       e.stopPropagation();
+//                                       setAddBedDialogOpen(true);
+//                                   }}
+//                                   sx={{
+//                                       mt: 1,
+//                                       borderRadius: '25px',
+//                                       color: props.darkTheme ? 'white' : '#124D81',
+//                                       borderColor: props.darkTheme ? 'white' : '#124D81',
+//                                       '&:hover': {
+//                                           borderColor: props.darkTheme ? '#2BA0E0' : '#0d3a63'
+//                                       }
+//                                   }}
+//                               >
+//                                   Add Bed
+//                               </Button>
+//                           </Box>
+//                       </AccordionDetails>
+                      
+//                       <Dialog
+//                           open={addBedDialogOpen}
+//                           onClose={() => setAddBedDialogOpen(false)}
+//                           aria-labelledby="add-bed-dialog-title"
+//                           PaperProps={{
+//                               style: {
+//                                   borderRadius: '40px', 
+//                                   boxShadow: `0px 0px 40px 1px #404040`, 
+//                                   border: '0.4px solid #505050', 
+//                                   backgroundImage: 'linear-gradient(to bottom, #111522, #111522, #111522)', 
+//                                   minWidth: '400px', 
+//                                   minHeight: '250px', 
+//                                   textAlign: 'center'
+//                               }
+//                           }}
+//                       >
+//                           <DialogTitle sx={{textAlign: "center", fontWeight: 'bold', paddingTop: '9%'}}>
+//                               {"Add New Bed"}
+//                           </DialogTitle>
+//                           <DialogContent>
+//                               <TextField 
+//                                   autoFocus
+//                                   margin="dense"
+//                                   id="bed-name"
+//                                   label="Bed Name"
+//                                   type="text"
+//                                   fullWidth
+//                                   variant="standard"
+//                                   value={newBedName}
+//                                   onChange={(e) => setNewBedName(e.target.value)}
+//                                   sx={{width: '90%'}} 
+//                               />
+//                           </DialogContent>
+//                           <DialogActions>
+//                               <Stack direction={'row'} width={'100%'} justifyContent={'space-around'} sx={{marginBottom: '7%'}}>
+//                                   <Box onClick={() => setAddBedDialogOpen(false)}>
+//                                       <CustomNoButton text="Cancel" />
+//                                   </Box>
+//                                   <Box onClick={handleAddBedSubmit}>
+//                                       <CustomOkButton text="Confirm" />
+//                                   </Box>
+//                               </Stack>     
+//                           </DialogActions>
+//                       </Dialog>
+                      
+//                       {removeRoom()}
+//                       {renameRoomButton()}
+//                       <Snackbar open={snack} autoHideDuration={5000} onClose={handleClose}>
+//                           <Alert onClose={handleClose} variant="filled" severity={snackSucc ? 'success':'error'}>
+//                               {snackSucc && "Operation Completed Successfully"}
+//                               {!snackSucc && "Operation Failed"}
+//                           </Alert>
+//                       </Snackbar>
+//                   </Accordion>
+//               )}
+//           </Box>
+//       )
+//   }

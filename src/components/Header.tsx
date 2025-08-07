@@ -220,7 +220,7 @@ const handleBackButtonClick = () => {
                  
             </div>
                <Stack direction={'row'} justifyContent={'center'} textAlign={'center'} >
-                    {notHome && UserRole === 'Hospital Technician' && (
+                    {/* {notHome && UserRole === 'Hospital Technician' && (
                       <>
                        
                        <FormControl
@@ -255,10 +255,10 @@ const handleBackButtonClick = () => {
                     {notHome && UserRole === 'Hospital Clinician' && (
                       <>
                         <FormControl variant="standard"  sx={{ width: '150px', backgroundColor: darkTheme?'':'#F3F2F7',borderRadius: '25px',border: '2px solid #BFDEFF'}}>
-                          {/* <InputLabel disabled sx={{ color: darkTheme? 'white':'#124D81 !important' }}>Room</InputLabel> */}
+                          
                           <Select label="Room" onChange={handleSetRoom} style={{ height: '40px' }} value={room} disableUnderline MenuProps={{ MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81', color: '#FFFFFF' } },}} sx={{ color: darkTheme ? '#BFDEFF' : '#124D81',}}
 >
-  {/* Menu items */}
+
                
             {temproom.map((room) => {
                               
@@ -280,7 +280,7 @@ const handleBackButtonClick = () => {
                           }}
                         
                         >
-                          {/* {room.resource.name.toString()} */}
+                         
                           {room.resource.name.toString()} 
                         </MenuItem>
                         
@@ -295,14 +295,19 @@ const handleBackButtonClick = () => {
                   
                         
                       </>
-                    )}
-                    <Divider orientation="vertical" flexItem sx={{ marginRight: '20px',backgroundColor: darkTheme ? '#1C1C1E' : '#D6D6D6', marginLeft: '20px' }} />
+                    )} */}
+                    <Divider orientation="vertical" flexItem sx={{backgroundColor: darkTheme ? '#1C1C1E' : '#D6D6D6' }} />
                     <div style={{ display: 'flex', alignItems: 'center' }}>
              
-              <IconButton   onClick={handleMenu}   sx={{height:'40px',width:'40px' }}>
-        < DehazeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} />
-        
+              <IconButton   onClick={handleMenu}   sx={{height:'40px'}}>
+              <AccountCircleRoundedIcon style={{color: darkTheme ? 'white' : '#124D81' }} />       
+        {/* < DehazeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} /> */}
+        <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
+    {user?.nickname}
+    
+    </Typography>
       </IconButton>
+     
       <Menu
   anchorEl={anchorEl}
   open={state}
@@ -314,7 +319,7 @@ const handleBackButtonClick = () => {
     }
   }}
 >
-      <Box width={'270px'} sx={{ backgroundColor: darkTheme ? '#000000' : '#F3F2F7', color: darkTheme ? '' : '#124D81',border:'4px solid  #AEAEAE',borderRadius:'16px' }}>
+      <Box  width={'270px'} sx={{ backgroundColor: darkTheme ? '#000000' : '#F3F2F7', color: darkTheme ? '' : '#124D81',border:'4px solid  #AEAEAE',borderRadius:'16px' }}>
      
         <Stack direction={'row'} width={'100%'} padding={'5px'} alignItems="center">
   <Box alignContent={'center'} sx={{ marginRight: '8px',marginTop:'0px' }}>

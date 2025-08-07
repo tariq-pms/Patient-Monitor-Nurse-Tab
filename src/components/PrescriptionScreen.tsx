@@ -18,6 +18,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import ClearIcon from '@mui/icons-material/Clear';
 import { addHours } from "date-fns";
+import  DrugCalculator  from "../components/DrugCalculator";
 
 interface PrescriptionScreenProps {
 
@@ -1227,315 +1228,302 @@ const calculateDuration = (startDate: string, endDate: string): number => {
     <Box sx={{  borderRadius: "25px", padding: 2 }}>
     
     {props.UserRole !== "NICU Nurse" && (
-     <Box sx={{ padding: 3, borderRadius: 5, backgroundColor: "#FFFFFF" }}>
-  <Typography variant="h6" sx={{ color: "#0F3B61", marginBottom: 3 }}>New Prescription</Typography>
-  
-  {/* Drug Name with Autocomplete */}
-  <Box sx={{ marginBottom: 3 }}>
-    <Typography variant="subtitle2" sx={{ color: "#0F3B61", marginBottom: 1 }}>Drug Name*</Typography>
-    <Autocomplete
-      freeSolo
-      options={drugOptions}
-      value={selectedDrug}
-      onChange={(_event, newValue) => {
-        setSelectedDrug(newValue);
-        if (newValue) {
-          setSelectedDrugName(newValue.name);
-          setSelectedDrugCategory(newValue.category);
-          setSelectedDrugUse(newValue.use);
-        }
-      }}
-      onInputChange={(_event: any, newInputValue: string) => {
-        if (newInputValue.trim()) {
-          fetchDrugs(newInputValue);
-        }
-      }}
-      getOptionLabel={(option) => option.name}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          placeholder="Start typing name..."
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              '& fieldset': {
-                borderColor: '#DBE2F2',
-              },
-            },
-            '& .MuiInputBase-root': {
-              color: '#0F3B61',
-            },
-          }}
-        />
-      )}
-      clearIcon={<ClearIcon sx={{ color: '#0F3B61' }} />}
-    />
-  </Box>
+      <><DrugCalculator /><Box sx={{ padding: 3, borderRadius: 5, backgroundColor: "#FFFFFF" }}>
+          <Typography variant="h6" sx={{ color: "#0F3B61", marginBottom: 3 }}>New Prescription</Typography>
 
-  {/* Indication */}
-  <Box sx={{ marginBottom: 3 }}>
-    <Typography variant="subtitle2" sx={{ color: "#0F3B61", marginBottom: 1 }}>Indication*</Typography>
-    <TextField
-      placeholder="Eg. Sepsis Prophylaxis"
-      fullWidth
-      value={selectedDrugUse}
-      onChange={(e) => setIndication(e.target.value)}
-      sx={{
-        '& .MuiOutlinedInput-root': {
-          '& fieldset': {
-            borderColor: '#DBE2F2',
-          },
-        },
-        '& .MuiInputBase-root': {
-          color: '#0F3B61',
-        },
-      }}
-    />
-  </Box>
+          {/* Drug Name with Autocomplete */}
+          <Box sx={{ marginBottom: 3 }}>
+            <Typography variant="subtitle2" sx={{ color: "#0F3B61", marginBottom: 1 }}>Drug Name*</Typography>
+            <Autocomplete
+              freeSolo
+              options={drugOptions}
+              value={selectedDrug}
+              onChange={(_event, newValue) => {
+                setSelectedDrug(newValue);
+                if (newValue) {
+                  setSelectedDrugName(newValue.name);
+                  setSelectedDrugCategory(newValue.category);
+                  setSelectedDrugUse(newValue.use);
+                }
+              } }
+              onInputChange={(_event: any, newInputValue: string) => {
+                if (newInputValue.trim()) {
+                  fetchDrugs(newInputValue);
+                }
+              } }
+              getOptionLabel={(option) => option.name}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder="Start typing name..."
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: '#DBE2F2',
+                      },
+                    },
+                    '& .MuiInputBase-root': {
+                      color: '#0F3B61',
+                    },
+                  }} />
+              )}
+              clearIcon={<ClearIcon sx={{ color: '#0F3B61' }} />} />
+          </Box>
 
-  {/* Dosage Table */}
-  <Box sx={{ marginBottom: 3 }}>
-   
-    <Box sx={{ display: 'flex', gap: 2 }}>
-    <TextField
-          label="Dosage"
-          value={dose}
-          onChange={(e) => setDose(e.target.value)}
-          type="number"
-        
-        sx={{ flex: 1 ,
-         
-            '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-          borderColor: '#DBE2F2', 
-        },
-       
-      },'& .MuiInputBase-root': {
-              color: '#0F3B61', // Text color inside the input
-            },
-            '& .MuiInputLabel-root  ': {
-              color: '#9BA1AE', // Label color (optional)
-            },
-            
-          }}
-        />
-      <Select
-        value={unit}
-        onChange={(e) => setUnit(e.target.value)}
-        MenuProps={{MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81',color: '#FFFFFF',},},}}
-  sx={{
- '& .MuiSelect-icon': { color: '#0F3B61', backgroundColor: '#F2FBFF' },
- 
- flex: 1,
- color: '#0F3B61',
- border: '1px solid #DBE2F2', // Adding the red border here
-}}>
-        <MenuItem value="mg/kg">mg/kg</MenuItem>
-        <MenuItem value="mg">mg</MenuItem>
-        <MenuItem value="mcg">mcg</MenuItem>
-        <MenuItem value="mL">mL</MenuItem>
-      </Select>
-      <Select
-  value={frequency}
-  onChange={(e) => setFrequency(e.target.value)}
-  fullWidth
-  MenuProps={{MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81',color: '#FFFFFF',},},}}
-  sx={{
- '& .MuiSelect-icon': { color: '#0F3B61', backgroundColor: '#F2FBFF' },
- 
- flex: 1,
- color: '#0F3B61',
- border: '1px solid #DBE2F2', // Adding the red border here
-}}>
-  <MenuItem value="Q12H">Q12H</MenuItem>
-  <MenuItem  value="Q8H">Q8H </MenuItem>
-  <MenuItem value="Q6H">Q6H</MenuItem>
-</Select>
-      <Select value={route} onChange={(e) => setRoute(e.target.value)} fullWidth 
-      MenuProps={{MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81',color: '#FFFFFF',},},}}
-     sx={{
-    '& .MuiSelect-icon': { color: '#0F3B61', backgroundColor: '#F2FBFF' },
-    flex: 1,
-    color: '#0F3B61',
-    border: '1px solid #DBE2F2',
-     // Adding the red border here
-  }}>
-      
-      <MenuItem value="Oral">Oral</MenuItem>
-      <MenuItem value="Intravenous" >IV-Intravenous</MenuItem>
-      <MenuItem value="Rectal">Rectal</MenuItem>
-      <MenuItem value="Epidural">Epidural</MenuItem>
-      <MenuItem value="Nasal">Nasal</MenuItem>
-      
-
-      </Select>
-    </Box>
-  </Box>
-
-  {/* Dates */}
-  <Box sx={{ display: "flex", gap: 2, marginBottom: 2 }}>
-        
-       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        
-          <FormControl fullWidth>
-            <DateTimePicker
-              label="Start"
-              value={startDate}
-              onChange={(newValue) => setStartDate(newValue)}
-              format="dd/MM/yyyy hh:mm a"
-              minDateTime={new Date()}
-              slotProps={{
-                textField: {
-                  variant: "outlined",
-                  fullWidth: true,
-                  size: "medium",
-                },
-              }}
-              sx={{ 
-                marginBottom: 2, 
+          {/* Indication */}
+          <Box sx={{ marginBottom: 3 }}>
+            <Typography variant="subtitle2" sx={{ color: "#0F3B61", marginBottom: 1 }}>Indication*</Typography>
+            <TextField
+              placeholder="Eg. Sepsis Prophylaxis"
+              fullWidth
+              value={selectedDrugUse}
+              onChange={(e) => setIndication(e.target.value)}
+              sx={{
                 '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-              borderColor: '#DBE2F2', // Border color when the field is not focused
-            },
-           
-          },
+                  '& fieldset': {
+                    borderColor: '#DBE2F2',
+                  },
+                },
                 '& .MuiInputBase-root': {
-                  color: '#0F3B61', // Text color inside the input
+                  color: '#0F3B61',
                 },
-                '& .MuiInputLabel-root  ': {
-                  color: '#9BA1AE', // Label color (optional)
-                },
-                
-              }}
-            />
-          </FormControl>
-        </LocalizationProvider>
+              }} />
+          </Box>
 
-        <FormControl fullWidth>
-          <Select
-            value={days}
-            onChange={(e) => setDays(e.target.value as number)}
-            fullWidth
-            MenuProps={{MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81',color: '#FFFFFF',},},}}
-            sx={{
-           '& .MuiSelect-icon': { color: '#0F3B61', backgroundColor: '#F2FBFF' },
-         
-           color: '#0F3B61',
-           border: '1px solid #DBE2F2', // Adding the red border here
-          }}>
-             {Array.from({ length: Math.max(days, 7) }, (_, i) => i + 1).map((day) => (
-            <MenuItem key={day} value={day}>
-              {day} Day
-            </MenuItem>
-          ))}
-          </Select>
-        </FormControl>
+          {/* Dosage Table */}
+          <Box sx={{ marginBottom: 3 }}>
 
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <FormControl fullWidth>
-            <DateTimePicker
-              label="End"
-              value={endDate}
-              onChange={handleEndDateChange}
-              format="dd/MM/yyyy hh:mm a"
-              minDateTime={new Date()} // Prevent selecting past dates/times
-              slotProps={{
-                textField: {
-                  variant: "outlined",
-                  fullWidth: true,
-                  size: "medium",
-                },
-              }}
-              sx={{ 
-                marginBottom: 2, 
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                label="Dosage"
+                value={dose}
+                onChange={(e) => setDose(e.target.value)}
+                type="number"
+
+                sx={{
+                  flex: 1,
+
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: '#DBE2F2',
+                    },
+                  }, '& .MuiInputBase-root': {
+                    color: '#0F3B61', // Text color inside the input
+                  },
+                  '& .MuiInputLabel-root  ': {
+                    color: '#9BA1AE', // Label color (optional)
+                  },
+
+                }} />
+              <Select
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                MenuProps={{ MenuListProps: { disablePadding: true }, sx: { '&& .Mui-selected': { backgroundColor: '#124D81', color: '#FFFFFF', }, }, }}
+                sx={{
+                  '& .MuiSelect-icon': { color: '#0F3B61', backgroundColor: '#F2FBFF' },
+
+                  flex: 1,
+                  color: '#0F3B61',
+                  border: '1px solid #DBE2F2', // Adding the red border here
+                }}>
+                <MenuItem value="mg/kg">mg/kg</MenuItem>
+                <MenuItem value="mg">mg</MenuItem>
+                <MenuItem value="mcg">mcg</MenuItem>
+                <MenuItem value="mL">mL</MenuItem>
+              </Select>
+              <Select
+                value={frequency}
+                onChange={(e) => setFrequency(e.target.value)}
+                fullWidth
+                MenuProps={{ MenuListProps: { disablePadding: true }, sx: { '&& .Mui-selected': { backgroundColor: '#124D81', color: '#FFFFFF', }, }, }}
+                sx={{
+                  '& .MuiSelect-icon': { color: '#0F3B61', backgroundColor: '#F2FBFF' },
+
+                  flex: 1,
+                  color: '#0F3B61',
+                  border: '1px solid #DBE2F2', // Adding the red border here
+                }}>
+                <MenuItem value="Q12H">Q12H</MenuItem>
+                <MenuItem value="Q8H">Q8H </MenuItem>
+                <MenuItem value="Q6H">Q6H</MenuItem>
+              </Select>
+              <Select value={route} onChange={(e) => setRoute(e.target.value)} fullWidth
+                MenuProps={{ MenuListProps: { disablePadding: true }, sx: { '&& .Mui-selected': { backgroundColor: '#124D81', color: '#FFFFFF', }, }, }}
+                sx={{
+                  '& .MuiSelect-icon': { color: '#0F3B61', backgroundColor: '#F2FBFF' },
+                  flex: 1,
+                  color: '#0F3B61',
+                  border: '1px solid #DBE2F2',
+                  // Adding the red border here
+                }}>
+
+                <MenuItem value="Oral">Oral</MenuItem>
+                <MenuItem value="Intravenous">IV-Intravenous</MenuItem>
+                <MenuItem value="Rectal">Rectal</MenuItem>
+                <MenuItem value="Epidural">Epidural</MenuItem>
+                <MenuItem value="Nasal">Nasal</MenuItem>
+
+
+              </Select>
+            </Box>
+          </Box>
+
+          {/* Dates */}
+          <Box sx={{ display: "flex", gap: 2, marginBottom: 2 }}>
+
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+
+              <FormControl fullWidth>
+                <DateTimePicker
+                  label="Start"
+                  value={startDate}
+                  onChange={(newValue) => setStartDate(newValue)}
+                  format="dd/MM/yyyy hh:mm a"
+                  minDateTime={new Date()}
+                  slotProps={{
+                    textField: {
+                      variant: "outlined",
+                      fullWidth: true,
+                      size: "medium",
+                    },
+                  }}
+                  sx={{
+                    marginBottom: 2,
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: '#DBE2F2', // Border color when the field is not focused
+                      },
+                    },
+                    '& .MuiInputBase-root': {
+                      color: '#0F3B61', // Text color inside the input
+                    },
+                    '& .MuiInputLabel-root  ': {
+                      color: '#9BA1AE', // Label color (optional)
+                    },
+                  }} />
+              </FormControl>
+            </LocalizationProvider>
+
+            <FormControl fullWidth>
+              <Select
+                value={days}
+                onChange={(e) => setDays(e.target.value as number)}
+                fullWidth
+                MenuProps={{ MenuListProps: { disablePadding: true }, sx: { '&& .Mui-selected': { backgroundColor: '#124D81', color: '#FFFFFF', }, }, }}
+                sx={{
+                  '& .MuiSelect-icon': { color: '#0F3B61', backgroundColor: '#F2FBFF' },
+
+                  color: '#0F3B61',
+                  border: '1px solid #DBE2F2', // Adding the red border here
+                }}>
+                {Array.from({ length: Math.max(days, 7) }, (_, i) => i + 1).map((day) => (
+                  <MenuItem key={day} value={day}>
+                    {day} Day
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <FormControl fullWidth>
+                <DateTimePicker
+                  label="End"
+                  value={endDate}
+                  onChange={handleEndDateChange}
+                  format="dd/MM/yyyy hh:mm a"
+                  minDateTime={new Date()} // Prevent selecting past dates/times
+                  slotProps={{
+                    textField: {
+                      variant: "outlined",
+                      fullWidth: true,
+                      size: "medium",
+                    },
+                  }}
+                  sx={{
+                    marginBottom: 2,
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: '#DBE2F2', // Border color when the field is not focused
+                      },
+                    },
+                    '& .MuiInputBase-root': {
+                      color: '#0F3B61', // Text color inside the input
+                    },
+                    '& .MuiInputLabel-root  ': {
+                      color: '#9BA1AE', // Label color (optional)
+                    },
+                  }} />
+              </FormControl>
+            </LocalizationProvider>
+          </Box>
+
+          {/* Additional Notes */}
+          <Box sx={{ marginBottom: 3 }}>
+            <Typography variant="subtitle2" sx={{ color: "#0F3B61", marginBottom: 1 }}>Additional Notes or Special instruction</Typography>
+            <TextField
+              placeholder="Enter any additional notes..."
+              fullWidth
+              multiline
+              rows={3}
+              value={additionalNote}
+              onChange={(e) => setAdditionalNote(e.target.value)}
+              sx={{
                 '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-              borderColor: '#DBE2F2', // Border color when the field is not focused
-            },
-          
-          },
+                  '& fieldset': {
+                    borderColor: '#DBE2F2',
+                  },
+                },
                 '& .MuiInputBase-root': {
-                  color: '#0F3B61', // Text color inside the input
+                  color: '#0F3B61',
                 },
-                '& .MuiInputLabel-root  ': {
-                  color: '#9BA1AE', // Label color (optional)
-                },
-                
+              }} />
+          </Box>
+
+          {/* Footer */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3 }}>
+            <Box
+              sx={{
+                padding: '1%',
+                borderRadius: '7px',
+                backgroundColor: '#5E84CC1A',
+                // Adjust multiplier (10) as needed for desired width
               }}
-            />
-          </FormControl>
-        </LocalizationProvider>
-       </Box>
-
-  {/* Additional Notes */}
-  <Box sx={{ marginBottom: 3 }}>
-    <Typography variant="subtitle2" sx={{ color: "#0F3B61", marginBottom: 1 }}>Additional Notes or Special instruction</Typography>
-    <TextField
-      placeholder="Enter any additional notes..."
-      fullWidth
-      multiline
-      rows={3}
-      value={additionalNote}
-      onChange={(e) => setAdditionalNote(e.target.value)}
-      sx={{
-        '& .MuiOutlinedInput-root': {
-          '& fieldset': {
-            borderColor: '#DBE2F2',
-          },
-        },
-        '& .MuiInputBase-root': {
-          color: '#0F3B61',
-        },
-      }}
-    />
-  </Box>
-
-  {/* Footer */}
-  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3 }}>
-  <Box
-  sx={{
-   
-    padding: '1%',
-    borderRadius: '7px',
-    backgroundColor: '#5E84CC1A',
-   // Adjust multiplier (10) as needed for desired width
-  }}
->
-  <Typography variant="body2" sx={{ color: "#9BA1AE" }}>
-    Prescribed by
-  </Typography>
-  <Typography
-    variant="body2"
-    sx={{
-     
-      display: "flex",
-      alignItems: "center",
-      color: "#0F3B61",
-    }}
-  >
-    {props.UserRole}
-    <span style={{ color: "green", marginLeft: 4 }}></span>
-  </Typography>
-</Box>
-<Box sx={{ display: "flex",gap:3, justifyContent: "space-between" }}>
-        <Button variant="outlined" onClick={resetForm} sx={{ borderColor: "#0F3B61", color: "#0F3B61" }}>
-          Reset
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => {
-            handlePrescribe();
-            resetForm();
-          }}
-          sx={{
-            pointerEvents: isFormEmpty() ? 'none' : 'auto',
-            opacity: isFormEmpty() ? 0.5 : 1, 
-          }}
-        >
-          Prescribe
-        </Button>
-      </Box>
-  </Box>
-</Box>)}
+            >
+              <Typography variant="body2" sx={{ color: "#9BA1AE" }}>
+                Prescribed by
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  color: "#0F3B61",
+                }}
+              >
+                {props.UserRole}
+                <span style={{ color: "green", marginLeft: 4 }}></span>
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", gap: 3, justifyContent: "space-between" }}>
+              <Button variant="outlined" onClick={resetForm} sx={{ borderColor: "#0F3B61", color: "#0F3B61" }}>
+                Reset
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  handlePrescribe();
+                  resetForm();
+                } }
+                sx={{
+                  pointerEvents: isFormEmpty() ? 'none' : 'auto',
+                  opacity: isFormEmpty() ? 0.5 : 1,
+                }}
+              >
+                Prescribe
+              </Button>
+            </Box>
+          </Box>
+        </Box></>)}
     {/* nurse view */}
     
   <Box >
