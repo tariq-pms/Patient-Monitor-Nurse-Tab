@@ -48,7 +48,7 @@ interface State {
   [patientId: string]: DataEntity[];
 }
 
-  export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, currentRoom ,darkTheme}) => {
+  export const NurseMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, currentRoom ,darkTheme}) => {
   
   //console.log("in patient Monitor Page rooms",currentRoom);
   //console.log("in patient Monitor Page",userOrganization);
@@ -167,7 +167,7 @@ interface State {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient?_count=50&organization=${userOrganization}`, {
+        const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient?_count=1000&organization=${userOrganization}`, {
           credentials: 'omit',
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),

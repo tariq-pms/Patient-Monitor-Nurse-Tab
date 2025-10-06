@@ -67,7 +67,7 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Patient`, {
+        const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Patient?_count=1000&organization=${userOrganization}`, {
           headers: {
             Authorization: "Basic " + btoa("fhiruser:change-password"),
             "Content-Type": "application/fhir+json"
@@ -82,17 +82,15 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
         const fetchedPatients = data.entry?.map((entry: any) => {
           const resource = entry.resource;
           
-          // Extract mother's name from extensions
+          // Extract patient details
           const mothersName = resource.extension?.find(
             (ext: any) => ext.url === "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName"
           )?.valueString || "Unknown";
 
-          // Extract gestation from extensions
           const gestation = resource.extension?.find(
             (ext: any) => ext.url === "http://example.org/fhir/StructureDefinition/patient-gestationalAge"
           )?.valueString || "N/A";
 
-          // Extract birth weight from extensions
           const birthWeight = resource.extension?.find(
             (ext: any) => ext.url === "http://example.org/fhir/StructureDefinition/patient-birthWeight"
           )?.valueQuantity?.value || "N/A";
@@ -105,14 +103,19 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
             gestation,
             birthWeight: birthWeight !== "N/A" ? `${birthWeight} g` : "N/A",
             lastUpdated: resource.meta?.lastUpdated ? formatDateTime(resource.meta.lastUpdated) : "N/A",
-            bed: "--", // You'll need to get this from your system
-            assignee: "--", // You'll need to get this from your system
-            dischargedDateTime: "--", // Will be updated when discharged
-            active: resource.active !== false // Default to true if not specified
+            bed: "--",
+            assignee: "--",
+            dischargedDateTime: "--",
+            active: resource.active !== false
           };
         }) || [];
 
-        setPatients(fetchedPatients);
+        // Sort by lastUpdated in descending order (newest first)
+        const sortedPatients = [...fetchedPatients].sort((a, b) => {
+          return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+        });
+
+        setPatients(sortedPatients);
       } catch (err) {
         console.error("Error fetching patients:", err);
         setError("Failed to load patient data");
@@ -454,17 +457,10 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     }
   });
 
-  if (loading) return (
-    <Box sx={{ p: 3, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-      <CircularProgress />
-    </Box>
-  );
+  if (loading) return <CircularProgress />;
+  if (error) return <Alert severity="error">{error}</Alert>;
 
-  if (error) return (
-    <Box sx={{ p: 3 }}>
-      <Alert severity="error">{error}</Alert>
-    </Box>
-  );
+  
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, patient: Patient) => {
     setAnchorEl(event.currentTarget);
@@ -564,15 +560,16 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
       handleMenuClose();
     }
   };
+
   return (
     <Box sx={{ p: 1 }}>
   {/* Responsive Header */}
-  <Typography
+  {/* <Typography
     variant={isMobile ? "h6" : "h5"}
     sx={{ fontWeight: "bold", mb: 1 }}
   >
     NICU Patients
-  </Typography>
+  </Typography> */}
 
   {/* Responsive Row: Tabs + Search + Button */}
   <Stack
@@ -592,12 +589,12 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
       sx={{ minHeight: "36px" }}
     >
       <Tab
-        label="Current Patients"
+        label="Current"
         value="current"
         sx={{ p: 0, mr: isMobile ? 0 : 2, color: "black" }}
       />
       <Tab
-        label="Discharged Patients"
+        label="Discharged"
         value="discharged"
         sx={{ p: 0, color: "black" }}
       />
@@ -652,12 +649,15 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
   {/* Responsive Table */}
   <Paper
-    sx={{
-      boxShadow: "none",
-      border: "1px solid #e0e0e0",
-      overflowX: "auto",
-    }}
-  >
+  sx={{
+    boxShadow: "none",
+    border: "1px solid #e0e0e0",
+    overflow: "auto", // Change from "auto" to "hidden" for better control
+    height: "calc(100vh - 200px)", // Adjust this value based on your needs
+    display: "flex",
+    flexDirection: "column"
+  }}
+>
     <Table sx={{ minWidth: 600 }}>
       <TableHead>
         <TableRow sx={{ backgroundColor: "lightgrey" }}>

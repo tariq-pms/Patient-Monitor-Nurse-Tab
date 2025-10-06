@@ -161,7 +161,7 @@ const handleBackButtonClick = () => {
 
   return (
    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" style={{ background: '#FFFFFF', boxShadow: 'none' }} >
+      <AppBar position="static" style={{ background: '#F5F5F5', boxShadow: 'none' }} >
         <Toolbar>
           {!isLoading && isAuthenticated && (
             <>
@@ -303,7 +303,7 @@ const handleBackButtonClick = () => {
               <AccountCircleRoundedIcon style={{color: darkTheme ? 'white' : '#124D81' }} />       
         {/* < DehazeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} /> */}
         <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
-    {user?.nickname}
+    {user?.name}
     
     </Typography>
       </IconButton>

@@ -14,7 +14,7 @@ function DrugCalculator() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    axios.get('http://192.168.0.139:4000/drugs')
+    axios.get('http://localhost:4000/drugs')
       .then(res => setDrugs(res.data))
       .catch(err => {
         console.error('Failed to fetch drugs list:', err);
@@ -26,7 +26,7 @@ function DrugCalculator() {
   const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://192.168.0.139:4000/calculate', form);
+      const res = await axios.post('http://localhost:4000/calculate', form);
 
       setResult(res.data);
       setError('');

@@ -264,306 +264,214 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
 
    
     return (
-        <Box
-        width={{
-          xs: "350px",
-          sm: "750px",
-          md: "500px",
-          lg: "1050px"
-        }}
+      <Box
+      width="100%"
+      sx={{
+        mb: 1,
+      height:'80px'
+      }}
+    >
+      <Card
+        onClick={handleCardClick}
         sx={{
-         mb:2,
-          height: "124px", // Set a fixed height for the outer Box
+          backgroundColor: props.darkTheme ? "#1C1C1E" : "#FFFFFF",
+          borderRadius: "16px",
+          height: "100%",
+          display: "flex",
+          mb: 1,
+          flexDirection: "column",
         }}
       >
-        <Card
-        onClick={handleCardClick}
+        <CardContent
           sx={{
-            backgroundColor: props.darkTheme ? "#1C1C1E" : "#FFFFFF",
-            borderRadius: "16px",
-            maxHeight: "100%", // Ensure it fills the parent's height
-            height: "100%", // Fixed height to match the parent Box
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            p: 0,
+            height: "100%",
+            width: "100%",
           }}
         >
-          <CardContent
+          {/* First Section - Patient Info */}
+          <Box
             sx={{
+              flex: { xs: "1 1 auto", md: "0 0 35%" },
+              backgroundColor: "#F9FAFF",
+              borderRight: { md: "1px solid #E0E0E0" },
+              borderBottom: { xs: "1px solid #E0E0E0", md: "none" },
               display: "flex",
-              padding: "0",
-              height: "100%", // Ensures the CardContent fills the Card
+              flexDirection: "column",
+              minHeight: { xs: "80px", md: "100%" },
             }}
           >
-            {/* first Section */}
-            <Grid
-              item
+            {/* Header */}
+            <Stack
+              direction="row"
               sx={{
-                width: "45%", // Occupy 50% of the outer Box's width
-                backgroundColor: "#F9FAFF",
-                borderRight: "1px solid #E0E0E0",
-                height: "100%", // Ensures it fills the parent's height
+                height: { xs: "40px", md: "60%" },
+                backgroundColor: "#2A6194",
+                px: 2,
+                alignItems: "center",
+                justifyContent: "space-between",
               }}
             >
-              {/* Header Section */}
-              <Stack
-                direction="row"
-                height={'40%'}
-                justifyContent="space-between"
-                sx={{ backgroundColor: "#2A6194" ,pr:2,pl:2}}
-              >
-                <Stack direction="row" alignItems="center" >
-                  <Typography variant="subtitle1" sx={{ color: "#FFFFFF" }}>
-                  B/O - {props.patient_name}
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <FontAwesomeIcon icon={faBed} color="BDC7DF" />
-                  <Typography variant="subtitle1" color="#FFFFFF">
-                    {/* 6-II */}
-                    {props.patient_id} 
-                  </Typography>
-                </Stack>
+              <Typography variant="subtitle1" sx={{ color: "#FFFFFF", fontSize: { xs: "0.875rem", md: "1rem" } }}>
+                B/O - {props.patient_name}
+              </Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <FontAwesomeIcon icon={faBed} color="#BDC7DF" />
+                <Typography variant="subtitle1" color="#FFFFFF" sx={{ fontSize: { xs: "0.875rem", md: "1rem" } }}>
+                  {props.patient_id}
+                </Typography>
               </Stack>
-      
-              {/* Weight and Gestation Age */}
-              <Stack
-               height={'60%'}
-                direction="row"
-                justifyContent="center"
-                alignItems="center"
-                spacing={12}
-                sx={{ backgroundColor: "#FFFFFF" }}
+            </Stack>
+    
+            {/* Weight + GA */}
+            <Stack
+              sx={{
+                height: { xs: "40px", md: "50%" },
+                flexDirection: "row",
+                justifyContent: { xs: "space-around", md: "space-evenly" },
+                alignItems: "center",
+                backgroundColor: "#FFFFFF",
+                flexWrap: "wrap",
+                gap: { xs: 1, md: 0 },
+              
+              }}
+            >
+              <Typography
+                variant="h6"
+                color="#FF4A4A"
+                sx={{
+                  backgroundColor: "#FFEDED",
+                  borderRadius: 2,
+                  px: 1,
+                  textAlign: "center",
+                  fontSize: { xs: "0.875rem", md: "1.25rem" },
+                }}
               >
+                2130{" "}
                 <Typography
-                  variant="h6"
+                  component="span"
+                  variant="subtitle2"
                   color="#FF4A4A"
-                  sx={{
-                    backgroundColor: "#FFEDED",
-                    textAlign: "center",
-                    pr:1,pl:1,
-                    borderRadius:16                 }}
+                  sx={{ fontSize: { xs: "0.75rem", md: "0.875rem" } }}
                 >
-                  2130
-                  {/* {(() => {
-                             let data = finddata("Measure Weigh")
-                                                                             return (data!.data)
-                                                                           }
-                                                                       )()} g{" "} */}
-                  <Typography
-                    component="span"
-                    variant="subtitle2"
-                    color="#FF4A4A"
-                    sx={{ fontWeight: "medium", textAlign: "center" }}
-                  >
-                    ↓ 125 g
-                  </Typography>
+                  ↓ 125 g
                 </Typography>
-      
-                <Typography
-                  variant="subtitle1"
-                  color="#124D81"
-                  sx={{ textAlign: "center" }}
-                >
-                  G.A.: 22 Wk
-                </Typography>
-              </Stack>
-            </Grid>
-            {/* second Section */}
-            <Grid
-              item
+              </Typography>
+              <Typography variant="subtitle1" color="#124D81" sx={{ fontSize: { xs: "0.875rem", md: "1rem" } }}>
+                G.A.: 22 Wk
+              </Typography>
+            </Stack>
+          </Box>
+    
+          {/* Second Section - Vital Signs */}
+          <Box
+            sx={{
+              flex: { xs: "1 1 auto", md: "0 0 35%" },
+              display: "flex",flexDirection: "column",minHeight: { xs: "80px", md: "50%" },
+              borderRight: { md: "1px solid #E0E0E0" },
+              borderBottom: { xs: "1px solid #E0E0E0", md: "none" },
+            }}
+          >
+            {/* First Row */}
+            <Stack
+              direction="row"
               sx={{
-                width: "35%", // Occupy 50% of the outer Box's width
-            height: "100%",
-             // Ensures it fills the parent's height
+                height: { xs: "40px", md: "50%" },
+                justifyContent: "space-around",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: { xs: 1, md: 0 },
+                px: 1,
               }}
             >
-            
-              <Stack
-                direction="row"
-                height={'50%'}
-                justifyContent="space-around"
-               
-                
-              >
-                <Stack direction="row" alignItems="center" >
-                  <Typography variant="h6" sx={{ color: "#124D81" }}>
-                  <FontAwesomeIcon
-                            icon={faHeartPulse}
-                           style={{
-                            fontSize: 20 ,
-                              color: "red",
-                             
-                             }}
-                          />  {(() => {
-                              // let data = finddata("Pulse Rate")
-                              let data = finddata("Current Pulse Rate")
-
-                              return (data!.data)
-                      })()}
-                  </Typography>
-                </Stack>
-                <Stack direction="row" alignItems="center">
-                
-                <Typography variant="h6" sx={{  color: "#124D81" }}>
-                <FontAwesomeIcon
-                            icon={faDroplet}
-                           style={{
-                            fontSize: 20 ,
-                              color: "#0CB0D3",
-                             
-                             }}
-                          />  {(() => {
-                              let data = finddata("Current SpO2")
-                              return (data!.data)
-                      })()}
-                  </Typography>
-                </Stack>
-              </Stack>
-      
-              {/* Weight and Gestation Age */}
-              <Stack
-                direction="row"
-                height={'50%'}
-                justifyContent="space-around"
-                
-              >
-                <Stack direction="row" alignItems="center">
-                  <Typography variant="h6" sx={{  color: "#124D81"}}>
-                  <FontAwesomeIcon
-                            icon={faTemperatureHalf}
-                           style={{
-                             fontSize: 20 ,
-                              color: "#FF9D61",
-                             
-                             }}
-                          />    {(() => {
-                              let data1 = finddata("Measured Skin Temp 2");
-                              let data2 = finddata("Measured Skin Temp 1");
-                              if (data1 && data1.data !== 0) {
-                                  return data1.data;
-                              } else if (data2 && data2.data !== 0) {
-                                  return data2.data;
-                              } else {
-                                  return "No Data Available";
-                              }
-                          })()}
-                  </Typography>
-                </Stack>
-                <Stack direction="row"  alignItems="center">
-                
-                <Typography variant="h6" sx={{ color: "#124D81"}}>
-                <FontAwesomeIcon
-                            icon={faLungs}
-                           style={{
-                            fontSize: 20 ,
-                              color: "#EACB1C",
-                             
-                             }}
-                          /> 98
-                  </Typography>
-                </Stack>
-              </Stack>
-            </Grid>
-             {/* third Section */}
+              <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
+                <FontAwesomeIcon icon={faHeartPulse} style={{ fontSize: { xs: "1rem", md: "1.2rem" }, color: "red" }} />{" "}
+                {finddata("Current Pulse Rate")?.data}
+              </Typography>
+              <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
+                <FontAwesomeIcon icon={faDroplet} style={{ fontSize: { xs: "1rem", md: "1.2rem" }, color: "#0CB0D3" }} />{" "}
+                {finddata("Current SpO2")?.data}
+              </Typography>
+            </Stack>
+    
+            {/* Second Row */}
+            <Stack
+              direction="row"
+              sx={{
+                height: { xs: "40px", md: "50%" },
+                justifyContent: "space-around",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: { xs: 1, md: 0 },
+                px: 1,
+              }}
+            >
+              <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
+                <FontAwesomeIcon icon={faTemperatureHalf} style={{ fontSize: { xs: "1rem", md: "1.2rem" }, color: "#FF9D61" }} />{" "}
+                {(() => {
+                  let t2 = finddata("Measured Skin Temp 2");
+                  let t1 = finddata("Measured Skin Temp 1");
+                  return t2?.data || t1?.data || "No Data";
+                })()}
+              </Typography>
+              <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
+                <FontAwesomeIcon icon={faLungs} style={{ fontSize: { xs: "1rem", md: "1.2rem" }, color: "#EACB1C" }} />{" "}
+                98
+              </Typography>
+            </Stack>
+          </Box>
+    
+          {/* Third Section - Action Buttons */}
           
-<Grid
-              item
+          <Box sx={{marginTop:'0.5%',
+              flex: { xs: "1 1 auto", md: "0 0 30%" },
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              
+            }}
+          >
+            <Stack 
+              direction="row" 
               sx={{
-                mt:0.5,
-                mr:1,
-                alignContent:'center',
-                justifyContent:'center',
-                width: "30%", // Occupy 50% of the outer Box's width
-            height: "100%", // Ensures it fills the parent's height
+                flexWrap: "wrap",
+                justifyContent: "space-around",
+                gap: { xs: 1, md: 2 },
+                width: "100%",
+                px: 1,
               }}
             >
-            
-              <Stack
-                direction="row"
-                alignItems={'center'}
-                
-                justifyContent="space-around"
-               
-                
-              >
-               <Stack direction="row" alignItems="center">
+              {[faPrescription, faNotesMedical, faArrowTrendUp, faFlask].map((icon, idx) => (
                 <IconButton
-      sx={{
-        backgroundColor: "#F2FBFF",
-        borderRadius: 2,
-        width:'90px',
-        height:'45px',
-      }}
-    >
-                
-                <FontAwesomeIcon
-        icon={faPrescription}
-        style={{ color: "#228BE6", fontSize: 18 }}
-      />
-                  </IconButton>
-                </Stack>
-                <Stack direction="row"  alignItems="center">
-                <IconButton
-      sx={{
-        backgroundColor: "#F2FBFF",
-        borderRadius: 2,
-        width:'90px',
-        height:'45px',
-      }}
-    >
-                
-                <FontAwesomeIcon
-        icon={faNotesMedical}
-        style={{ color: "#228BE6", fontSize: 18}}
-      />
-                  </IconButton>
-                </Stack>
-              </Stack>
-      
-              {/* Weight and Gestation Age */}
-              <Stack
-                direction="row"
-                height={'50%'}
-                justifyContent="space-around"
-                
-              >
-                 <Stack direction="row"  alignItems="center">
-                <IconButton
-      sx={{
-        backgroundColor: "#F2FBFF",
-        borderRadius: 2,
-        width:'90px',
-        height:'45px',
-      }}
-    >
-                
-                <FontAwesomeIcon
-        icon={faArrowTrendUp}
-        style={{ color: "#228BE6", fontSize: 18 }}
-      />
-                  </IconButton>
-                </Stack>
-                <Stack direction="row" spacing={1} alignItems="center">
-                <IconButton
-      sx={{
-        backgroundColor: "#F2FBFF",
-        borderRadius: 2,
-        width:'90px',
-        height:'45px',
-      }}
-    >
-                
-                <FontAwesomeIcon
-        icon={faFlask}
-        style={{ color: "#228BE6", fontSize: 18 }}
-      />
-                  </IconButton>
-                </Stack>
-              </Stack>
-            </Grid>
+                  key={idx}
+                  sx={{
+                    backgroundColor: props.darkTheme ? "#3A3A3E" : "#E6F7FF",
+                    borderRadius: 2,
+                    width: { xs: "40px", sm: "50px", md: "60px" },
+                    height: { xs: "40px", sm: "50px", md: "60px" },
+                    '&:hover': {
+                      backgroundColor: props.darkTheme ? "#4A4A4E" : "#D0F0FF",
+                    }
+                  }}
+                >
+                  <FontAwesomeIcon 
+                    icon={icon} 
+                    style={{ 
+                      color: props.darkTheme ? "#228BE6" : "#228BE6",
+                      fontSize: { xs: "0.9rem", md: "1rem" } 
+                    }} 
+                  />
+                </IconButton>
+              ))}
+            </Stack>
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
+    
 
-</CardContent>
-        </Card>
-      
-      </Box>
     )
 }
 

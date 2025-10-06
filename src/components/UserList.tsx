@@ -1,40 +1,22 @@
 import { useState, useEffect, FC } from 'react';
 import { 
-  Box, 
-  Typography, 
-  Button, 
-  Dialog, 
-  DialogTitle, 
-  TextField, 
-  Select, 
-  MenuItem, 
-  DialogContent, 
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  Tooltip,
-  Avatar,
-  DialogActions,
-  Skeleton,
-  InputAdornment,
-  useMediaQuery,
-  useTheme
-} from '@mui/material';
+  Box, Typography, Button, Dialog, DialogTitle, TextField, Select, 
+  MenuItem, DialogContent, Stack, Table, TableBody, TableCell, 
+  TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, 
+  Avatar, DialogActions, Skeleton, InputAdornment, useMediaQuery, 
+  useTheme, Tabs, Tab, Checkbox, 
+  Switch} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useAuth0 } from '@auth0/auth0-react';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import pmsLogo from '../assets/phx_logo.png';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import PeopleIcon from "@mui/icons-material/People";
+import HotelIcon from "@mui/icons-material/Hotel";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import LockIcon from "@mui/icons-material/Lock";
 
 interface AdminPageProps {
   userOrganization: string;
@@ -48,10 +30,32 @@ interface User {
   nickname?: string;
   app_metadata?: {
     role?: string;
+    permissions?: ModulePermissions;
   };
   email_verified?: boolean;
   created_at?: string;
 }
+
+interface ModulePermissions {
+  [moduleName: string]: {
+    create: boolean;
+    view: boolean;
+    edit: boolean;
+    delete: boolean;
+  };
+}
+
+// Define the modules and their default permissions
+const defaultModulePermissions: ModulePermissions = {
+  "Patients Clinical List": { create: false, view: false, edit: false, delete: false },
+  "Patients Overview": { create: false, view: false, edit: false, delete: false },
+  "Vitals & Trends": { create: false, view: false, edit: false, delete: false },
+  "Medications": { create: false, view: false, edit: false, delete: false },
+  "Assessments": { create: false, view: false, edit: false, delete: false },
+  "Clinical Notes": { create: false, view: false, edit: false, delete: false },
+  "Patient Birth Details": { create: false, view: false, edit: false, delete: false },
+  "Diagnostics": { create: false, view: false, edit: false, delete: false },
+};
 
 export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) => {
   const { isAuthenticated, loginWithRedirect } = useAuth0();
@@ -71,10 +75,17 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [permissionDialogOpen, setPermissionDialogOpen] = useState(false);
+  const [userPermissions, setUserPermissions] = useState<ModulePermissions>(defaultModulePermissions);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [showPassword, setShowPassword] = useState(false);
   const theme = useTheme();
-const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+    setSelectedIndex(newValue);
+  };
 
   const handleSnackbarOpen = (message: string, severity: 'success' | 'error') => {
     setSnackbarMessage(message);
@@ -121,16 +132,16 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   };
 
   const handleAddUser = async () => {
-   
     const { email, username, password, role, organization } = newUser;
   
     try {
-      // 1. Create Auth0 user (existing code)
+      // 1. Create Auth0 user (just for authentication)
       const auth0Response = await fetch(`${import.meta.env.VITE_AUTH0API_URL}/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, username, password, role, organization }),
       });
+      
       const handleAuth0Response = async (response: Response) => {
         if (!response.ok) {
           const error = await response.text();
@@ -138,9 +149,10 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
         }
         return response.json();
       };
+      
       const auth0User = await handleAuth0Response(auth0Response);
       
-      // 2. Create FHIR Practitioner (simplified)
+      // 2. Create FHIR Practitioner with default permissions
       const practitioner = {
         resourceType: "Practitioner",
         identifier: [
@@ -163,6 +175,12 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
             use: "work",
           },
         ],
+        extension: [
+          {
+            url: "http://example.org/fhir/StructureDefinition/permissions",
+            valueString: JSON.stringify(defaultModulePermissions)
+          }
+        ],
         active: true,
       };
       
@@ -179,7 +197,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
         throw new Error("Failed to create FHIR Practitioner");
       }
   
-      // 3. Success handling (existing code)
+      // 3. Success handling
       fetchUsers();
       handleSnackbarOpen(`${username} created successfully`, 'success');
       setOpenDialog(false);
@@ -253,6 +271,350 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
       });
   };
 
+  // const handleOpenPermissionDialog = (user: User) => {
+  //   setSelectedUser(user);
+    
+  //   // Try to get permissions from app_metadata first, then from FHIR if needed
+  //   if (user.app_metadata?.permissions) {
+  //     setUserPermissions(user.app_metadata.permissions);
+  //   } else {
+  //     // Fetch permissions from FHIR Practitioner resource
+  //     fetchUserPermissionsFromFHIR(user.user_id);
+  //   }
+    
+  //   setPermissionDialogOpen(true);
+  // };
+
+  // const fetchUserPermissionsFromFHIR = async (userId: string) => {
+  //   try {
+  //     const response = await fetch(
+  //       `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?identifier=${encodeURIComponent(userId)}`, 
+  //       {
+  //         headers: {
+  //           Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //         },
+  //       }
+  //     );
+      
+  //     if (!response.ok) throw new Error('Failed to fetch practitioner');
+      
+  //     const data = await response.json();
+  //     const practitioner = data.entry?.[0]?.resource;
+      
+  //     if (practitioner && practitioner.extension) {
+  //       const permissionExtension = practitioner.extension.find(
+  //         (ext: any) => ext.url === "http://example.org/fhir/StructureDefinition/permissions"
+  //       );
+        
+  //       if (permissionExtension && permissionExtension.valueString) {
+  //         setUserPermissions(JSON.parse(permissionExtension.valueString));
+  //         return;
+  //       }
+  //     }
+      
+  //     // If no practitioner or permissions found, use defaults
+  //     setUserPermissions(defaultModulePermissions);
+  //   } catch (error) {
+  //     console.error('Error fetching permissions:', error);
+  //     setUserPermissions(defaultModulePermissions);
+  //   }
+  // };
+
+  const handlePermissionChange = (moduleName: string, permissionType: string, value: boolean) => {
+    setUserPermissions(prev => ({
+      ...prev,
+      [moduleName]: {
+        ...prev[moduleName],
+        [permissionType]: value
+      }
+    }));
+  };
+
+  // const handleSavePermissions = async () => {
+  //   if (!selectedUser) return;
+
+  //   try {
+  //     // 1. Update permissions in Auth0 app_metadata
+  //     const auth0Response = await fetch(`${import.meta.env.VITE_AUTH0API_URL as string}/update-metadata/${encodeURIComponent(selectedUser.user_id)}`, {
+  //       method: 'PATCH',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         permissions: userPermissions
+  //       }),
+  //     });
+
+  //     if (!auth0Response.ok) {
+  //       throw new Error('Failed to update permissions in Auth0');
+  //     }
+
+  //     // 2. Update permissions in FHIR Practitioner resource
+  //     const fhirResponse = await fetch(
+  //       `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?identifier=${encodeURIComponent(selectedUser.user_id)}`, 
+  //       {
+  //         headers: {
+  //           Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //         },
+  //       }
+  //     );
+      
+  //     if (!fhirResponse.ok) throw new Error('Failed to fetch practitioner for update');
+      
+  //     const data = await fhirResponse.json();
+  //     const practitioner = data.entry?.[0]?.resource;
+      
+  //     if (practitioner) {
+  //       // Update the extension with new permissions
+  //       const updatedPractitioner = {
+  //         ...practitioner,
+  //         extension: [
+  //           ...(practitioner.extension || []).filter(
+  //             (ext: any) => ext.url !== "http://example.org/fhir/StructureDefinition/permissions"
+  //           ),
+  //           {
+  //             url: "http://example.org/fhir/StructureDefinition/permissions",
+  //             valueString: JSON.stringify(userPermissions)
+  //           }
+  //         ]
+  //       };
+        
+  //       const updateResponse = await fetch(
+  //         `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner/${practitioner.id}`, 
+  //         {
+  //           method: 'PUT',
+  //           headers: {
+  //             'Content-Type': 'application/fhir+json',
+  //             Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //           },
+  //           body: JSON.stringify(updatedPractitioner),
+  //         }
+  //       );
+        
+  //       if (!updateResponse.ok) {
+  //         throw new Error('Failed to update permissions in FHIR');
+  //       }
+  //     }
+
+  //     handleSnackbarOpen('Permissions updated successfully', 'success');
+  //     setPermissionDialogOpen(false);
+  //     fetchUsers(); // Refresh user list to show updated permissions
+  //   } catch (error) {
+  //     console.error('Error updating permissions:', error);
+  //     handleSnackbarOpen('Failed to update permissions', 'error');
+  //   }
+  // };
+  const handleSavePermissions = async () => {
+    if (!selectedUser) return;
+  
+    try {
+      // 1. Search for practitioner by identifier (Auth0 user ID)
+      const searchResponse = await fetch(
+        `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?name=${selectedUser?.name}`, 
+        {
+          headers: {
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+          },
+        }
+      );
+      
+      if (!searchResponse.ok) throw new Error('Failed to search practitioner');
+      
+      const searchData = await searchResponse.json();
+      
+      // Handle multiple practitioners - use the first one or most recent
+      let practitioner = null;
+      if (searchData.entry && searchData.entry.length > 0) {
+        // Sort by lastUpdated to get the most recent one
+        const sortedEntries = searchData.entry.sort((a: any, b: any) => {
+          const dateA = new Date(a.resource.meta?.lastUpdated || 0);
+          const dateB = new Date(b.resource.meta?.lastUpdated || 0);
+          return dateB.getTime() - dateA.getTime();
+        });
+        
+        practitioner = sortedEntries[0].resource;
+      }
+  
+      if (practitioner) {
+        // 2. UPDATE existing practitioner
+        const updatedPractitioner = {
+          ...practitioner,
+          extension: [
+            ...(practitioner.extension || []).filter(
+              (ext: any) => ext.url !== "http://example.org/fhir/StructureDefinition/permissions"
+            ),
+            {
+              url: "http://example.org/fhir/StructureDefinition/permissions",
+              valueString: JSON.stringify(userPermissions)
+            }
+          ]
+        };
+        
+        const updateResponse = await fetch(
+          `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner/${practitioner.id}`, 
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/fhir+json',
+              Authorization: "Basic " + btoa("fhiruser:change-password"),
+            },
+            body: JSON.stringify(updatedPractitioner),
+          }
+        );
+        
+        if (!updateResponse.ok) {
+          throw new Error('Failed to update permissions in FHIR');
+        }
+      } else {
+        // 3. CREATE new practitioner only if truly doesn't exist
+        const newPractitioner = {
+          resourceType: "Practitioner",
+          identifier: [
+            {
+              system: "http://auth0.com/id",
+              value: selectedUser.user_id,
+            },
+          ],
+          name: [
+            {
+              use: "official",
+              text: selectedUser.name || selectedUser.email,
+              given: [selectedUser.name || selectedUser.email],
+            },
+          ],
+          telecom: [
+            {
+              system: "email",
+              value: selectedUser.email,
+              use: "work",
+            },
+          ],
+          extension: [
+            {
+              url: "http://example.org/fhir/StructureDefinition/permissions",
+              valueString: JSON.stringify(userPermissions)
+            }
+          ],
+          active: true,
+        };
+        
+        const createResponse = await fetch(
+          `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner`, 
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/fhir+json',
+              Authorization: "Basic " + btoa("fhiruser:change-password"),
+            },
+            body: JSON.stringify(newPractitioner),
+          }
+        );
+        
+        if (!createResponse.ok) {
+          throw new Error('Failed to create practitioner');
+        }
+      }
+  
+      handleSnackbarOpen('Permissions updated successfully', 'success');
+      setPermissionDialogOpen(false);
+      
+    } catch (error) {
+      console.error('Error updating permissions:', error);
+      handleSnackbarOpen('Failed to update permissions: ' + error.message, 'error');
+    }
+  };
+  
+  // FIXED: Enhanced permission fetching with better search
+  const fetchUserPermissionsFromFHIR = async (user: any) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?name=${selectedUser?.name}`, 
+        {
+          headers: {
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+          },
+        }
+      );
+      
+      if (!response.ok) throw new Error('Failed to fetch practitioner');
+      
+      const data = await response.json();
+      
+      // Handle multiple practitioners - use the first one or most recent
+      let practitioner = null;
+      if (data.entry && data.entry.length > 0) {
+        // Sort by lastUpdated to get the most recent one
+        const sortedEntries = data.entry.sort((a: any, b: any) => {
+          const dateA = new Date(a.resource.meta?.lastUpdated || 0);
+          const dateB = new Date(b.resource.meta?.lastUpdated || 0);
+          return dateB.getTime() - dateA.getTime();
+        });
+        
+        practitioner = sortedEntries[0].resource;
+      }
+  
+      if (practitioner && practitioner.extension) {
+        const permissionExtension = practitioner.extension.find(
+          (ext: any) => ext.url === "http://example.org/fhir/StructureDefinition/permissions"
+        );
+        
+        if (permissionExtension && permissionExtension.valueString) {
+          const permissions = JSON.parse(permissionExtension.valueString);
+          setUserPermissions(permissions);
+          return;
+        }
+      }
+      
+      // If no permissions found, use defaults
+      setUserPermissions(defaultModulePermissions);
+    } catch (error) {
+      console.error('Error fetching permissions:', error);
+      setUserPermissions(defaultModulePermissions);
+    }
+  };
+  
+  // Also update the dialog opening to reset permissions properly
+  // const handleOpenPermissionDialog = async (user: User) => {
+  //   setSelectedUser(user);
+  //   setPermissionDialogOpen(true);
+    
+  //   // Reset to defaults first, then load from FHIR
+  //   setUserPermissions(defaultModulePermissions);
+  //   await fetchUserPermissionsFromFHIR(user.user_id);
+  // };
+
+  const debugSearchResults = async (user: any) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?name=${selectedUser?.name}`, 
+        {
+          headers: {
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+          },
+        }
+      );
+      
+      const data = await response.json();
+      console.log('Search results:', data);
+      console.log('Entries:', data.entry);
+      
+      if (data.entry && data.entry.length > 0) {
+        console.log('First entry:', data.entry[0]);
+        console.log('Practitioner resource:', data.entry[0].resource);
+        console.log('Extensions:', data.entry[0].resource?.extension);
+      }
+    } catch (error) {
+      console.error('Debug error:', error);
+    }
+  };
+  
+  // Call this in your permission dialog opening
+  const handleOpenPermissionDialog = (user: User) => {
+    setSelectedUser(user);
+    debugSearchResults(user.user_id); // Temporary debug
+    fetchUserPermissionsFromFHIR(user.user_id);
+    setPermissionDialogOpen(true);
+  };
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
@@ -264,190 +626,299 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     });
   };
 
-  // const fetchPractitionerDetails = async (userId: string) => {
-  //   try {
-  //     const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Practitioner?identifier=auth0|${encodeURIComponent(userId)}`, {
-  //       headers: {
-  //         Authorization: "Basic " + btoa("fhiruser:change-password"),
-  //       },
-  //     });
-      
-  //     if (!response.ok) throw new Error('Failed to fetch practitioner');
-      
-  //     const data = await response.json();
-  //     return data.entry?.[0]?.resource || null;
-  //   } catch (error) {
-  //     console.error('Error fetching practitioner:', error);
-  //     return null;
-  //   }
-  // };
+  // const tabConfig = [
+  //   { label: "User Directory", icon: <PeopleIcon /> },
+  //   { label: "User Groups & Permission", icon: <HotelIcon /> },
+  //   { label: "Registration Request", icon: <ManageAccountsIcon /> },
+  // ];
+
+  // Permission Dialog Component
+  const PermissionDialog = () => (
+    <Dialog 
+      open={permissionDialogOpen} 
+      onClose={() => setPermissionDialogOpen(false)}
+      maxWidth="md"
+      PaperProps={{
+        sx: {
+          backgroundColor: '#FFFFFF', // white background
+          borderRadius: 3,
+          color: '#000000', // all text color black by default
+        },
+      }}
+      fullWidth
+    >
+      <DialogTitle sx={{ fontWeight: 500, pb: 1, color: '#000000' }}>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <LockIcon />
+          <Typography variant="h6">Module Access - {selectedUser?.name || selectedUser?.email}</Typography>
+        </Stack>
+      </DialogTitle>
+      <DialogContent>
+        <Box sx={{ mt: 2 }}>
+          <TableContainer component={Paper} sx={{ backgroundColor: '#FFFFFF'}}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: '#868E961F' }}>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Module Name</TableCell>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Create</TableCell>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>View</TableCell>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Edit</TableCell>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Delete</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {Object.entries(userPermissions).map(([moduleName, permissions]) => (
+                  <TableRow key={moduleName} hover sx={{ backgroundColor: '#FFF' }}>
+                    <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>{moduleName}</TableCell>
+                    <TableCell>
+                    <Switch
+  checked={permissions.create}
+  onChange={(e) =>
+    handlePermissionChange(moduleName, 'create', e.target.checked)
+  }
+  sx={{
+ 
+    '& .MuiSwitch-track': {
+      backgroundColor: 'grey', // track color when unchecked
+    },
+  }}
+/>
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                       sx={{
+                         '& .MuiSwitch-track': {
+                          backgroundColor: 'grey', // track color when unchecked
+                        },
+                      }}
+                        checked={permissions.view}
+                        onChange={(e) => handlePermissionChange(moduleName, 'view', e.target.checked)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        sx={{
+                           '& .MuiSwitch-track': {
+                            backgroundColor: 'grey', // track color when unchecked
+                          },
+                        }}
+                        checked={permissions.edit}
+                        onChange={(e) => handlePermissionChange(moduleName, 'edit', e.target.checked)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                         sx={{
+                           '& .MuiSwitch-track': {
+                            backgroundColor: 'grey', // track color when unchecked
+                          },
+                        }}
+                        checked={permissions.delete}
+                        onChange={(e) => handlePermissionChange(moduleName, 'delete', e.target.checked)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'space-between'}}>
+        <Button onClick={() => setPermissionDialogOpen(false)}  variant="outlined"
+      sx={{
+        textTransform: 'none',
+        borderColor: '#D0D5DD',
+        color: '#344054',
+        fontWeight: 500,
+        backgroundColor: '#FFFFFF',
+        '&:hover': {
+          backgroundColor: '#F9FAFB',
+        },
+      }}>Cancel</Button>
+        <Button onClick={handleSavePermissions} variant="contained"  sx={{
+    backgroundColor: '#228BE6',
+    color: '#FFFFFF',
+    '&:hover': {
+      backgroundColor: '#228BE6',
+    color: '#FFFFFF',
+    },
+    '&.Mui-disabled': {
+      backgroundColor: '#228BE61A',
+      color: 'grey',
+      opacity: 1, // prevents dimming
+    },
+  }}>Save</Button>
+      </DialogActions>
+    </Dialog>
+  );
 
   return (
     <div>
-      
-        <Box sx={{ p: 1 }}>
-          
-          <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ mt:1,mb: 1, backgroundColor: ""}}
-      >
-         <Typography
-    variant={isMobile ? "h6" : "h5"}
-    sx={{ fontWeight: "bold"}}
-  >
-     Users
-  </Typography>
-       
-            <Button
+      <Box sx={{ p: 1 }}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ mt: 1, mb: 1, backgroundColor: "" }}
+        >
+          <Typography variant={isMobile ? "h6" : "h5"} sx={{ fontWeight: "bold" }}>
+            Users
+          </Typography>
+          <Button
             variant="outlined"
             startIcon={<AddIcon />}
             onClick={() => setOpenDialog(true)}
             sx={{ backgroundColor: "#228BE61A", color: "#228BE6" }}
           >
-             Add User
+            Add User
           </Button>
-      </Stack>
-      <Box sx={{ mt: 2,p:2,backgroundColor:'#FFFFFF' }}>
-
-                               
-{loadingUser ? (
-    <Box >
-        <Skeleton variant="rectangular" width="100%" height={60} />
-        <Skeleton variant="rectangular" width="100%" height={60} sx={{ mt: 1 }} />
-    </Box>
-) : (
-    <Box sx={{  borderRadius: 1 }}>
-    <TableContainer component={Paper} sx={{ backgroundColor: '#FFFFFF' }}>
-            <Table>
-              <TableHead>
-              <TableRow sx={{
-                     
-                     backgroundColor: '#868E961F'
-                   }}>
-                  <TableCell sx={{color:'black', fontWeight: 'bold' }}>User Name</TableCell>
-                  <TableCell sx={{color:'black', fontWeight: 'bold' }}>User ID</TableCell>
-                  <TableCell sx={{color:'black', fontWeight: 'bold' }}>Role</TableCell>
-                  <TableCell sx={{ color:'black',fontWeight: 'bold' }}>Created Date</TableCell>
-                 
-                  <TableCell sx={{color:'black', fontWeight: 'bold' }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center">Loading users...</TableCell>
-                  </TableRow>
-                ) : userData.length > 0 ? (
-                  userData.map((user) => (
-                    <TableRow key={user.user_id} hover sx={{
-                     
-                      backgroundColor:'#FFF'
-                    }}>
-                      <TableCell sx={{color:'black'}}>
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <Avatar sx={{ 
-                            width: 32, 
-                            height: 32, 
-                            bgcolor: darkTheme ? '#124D81' : '#868E961F',
-                            fontSize: '0.875rem'
-                          }}>
-                            {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
-                          </Avatar>
-                          <Typography>{user.name || 'N/A'}</Typography>
-                        </Stack>
-                      </TableCell>
-                      <TableCell sx={{color:'black'}}>{user.email || 'N/A'}</TableCell>
-                      <TableCell sx={{color:'black'}}>
-                        {user.app_metadata?.role || 'N/A'}
-                      </TableCell>
-                      <TableCell sx={{color:'black'}}>{formatDate(user.created_at)}</TableCell>
-                     
-                      <TableCell sx={{color:'black'}}>
-                        <Stack direction="row" spacing={1}>
-                          <Tooltip title="Edit">
-                            <IconButton
-                              size="small"
-                              sx={{color:'black'}}
-                              onClick={() => {
-                                setSelectedUser(user);
-                                setNewUser({
-                                  email: user.email || '',
-                                  username: user.name || '',
-                                  password: '',
-                                  role: user.app_metadata?.role || 'Hospital Technician',
-                                  organization: userOrganization,
-                                });
-                                setEditDialogOpen(true);
-                              }}
-                            >
-                              <EditIcon fontSize="small"/>
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete">
-                            <IconButton
-                              size="small"
-                              sx={{color:'black'}}
-                              onClick={() => {
-                                setSelectedUser(user);
-                                setDeleteDialogOpen(true);
-                              }}
-                            >
-                              <DeleteIcon fontSize="small"  />
-                            </IconButton>
-                          </Tooltip>
-                        </Stack>
-                      </TableCell>
-                      {/* <TableCell>
-  {user.app_metadata?.role === 'Hospital Clinician' ? (
-    <Button 
-      variant="outlined" 
-      size="small"
-      onClick={async () => {
-        const practitioner = await fetchPractitionerDetails(user.user_id);
-        if (practitioner) {
-          // Here you would implement your patient selection logic
-          // For example, open a dialog to select a patient
-          const patientId = prompt("Enter Patient ID to assign:");
-          if (patientId) {
-            try {
-              await assignPatientToPractitioner(practitioner.id, patientId);
-              handleSnackbarOpen('Patient assigned successfully', 'success');
-            } catch (error) {
-              handleSnackbarOpen(error.message, 'error');
-            }
-          }
-        } else {
-          handleSnackbarOpen('Practitioner record not found', 'error');
-        }
-      }}
-    >
-      Assign Patient
-    </Button>
-  ) : (
-    'No patients yet'
-  )}
-</TableCell> */}
+        </Stack>
+        {/* <Box sx={{ borderColor: "divider", border: '0.1px solid #DEE2E6' }}>
+          <Tabs
+            value={selectedIndex}
+            onChange={handleTabChange}
+            textColor="secondary"
+            indicatorColor="primary"
+            variant="fullWidth"
+            scrollButtons
+            allowScrollButtonsMobile
+          >
+            {tabConfig.map((tab, index) => (
+              <Tab
+                key={index}
+                icon={
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: isMobile ? "column" : "row",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: 1,
+                      width: "100%",
+                    }}
+                  >
+                    {tab.icon}
+                    {!isMobile && <Typography variant="body2">{tab.label}</Typography>}
+                  </Box>
+                }
+                sx={{
+                  textTransform: "none",
+                  fontWeight: "bold",
+                  minWidth: isMobile ? 58 : 120,
+                  color: "black",
+                  padding: isMobile ? 1 : 2,
+                }}
+              />
+            ))}
+          </Tabs>
+        </Box> */}
+        
+        <Box sx={{ mt: 2, p: 2, backgroundColor: '#FFFFFF' }}>
+          {loadingUser ? (
+            <Box>
+              <Skeleton variant="rectangular" width="100%" height={60} />
+              <Skeleton variant="rectangular" width="100%" height={60} sx={{ mt: 1 }} />
+            </Box>
+          ) : (
+            <Box sx={{ borderRadius: 1 }}>
+              <TableContainer component={Paper} sx={{ backgroundColor: '#FFFFFF' }}>
+                <Table>
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: '#868E961F' }}>
+                      <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>User Name</TableCell>
+                      <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>User ID</TableCell>
+                      <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Role</TableCell>
+                      <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Created Date</TableCell>
+                      <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Actions</TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center">No users found</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-  </Box>
-)}
-
-
-</Box>
-          
-
-          {/* Add User Dialog */}
-          <Dialog
+                  </TableHead>
+                  <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} align="center">Loading users...</TableCell>
+                      </TableRow>
+                    ) : userData.length > 0 ? (
+                      userData.map((user) => (
+                        <TableRow key={user.user_id} hover sx={{ backgroundColor: '#FFF' }}>
+                          <TableCell sx={{ color: 'black' }}>
+                            <Stack direction="row" alignItems="center" spacing={1}>
+                              <Avatar sx={{ 
+                                width: 32, 
+                                height: 32, 
+                                bgcolor: darkTheme ? '#124D81' : '#868E961F',
+                                fontSize: '0.875rem'
+                              }}>
+                                {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                              </Avatar>
+                              <Typography>{user.name || 'N/A'}</Typography>
+                            </Stack>
+                          </TableCell>
+                          <TableCell sx={{ color: 'black' }}>{user.email || 'N/A'}</TableCell>
+                          <TableCell sx={{ color: 'black' }}>
+                            {user.app_metadata?.role || 'N/A'}
+                          </TableCell>
+                          <TableCell sx={{ color: 'black' }}>{formatDate(user.created_at)}</TableCell>
+                          <TableCell sx={{ color: 'black' }}>
+                            <Stack direction="row" spacing={1}>
+                              <Tooltip title="Edit">
+                                <IconButton
+                                  size="small"
+                                  sx={{ color: 'black' }}
+                                  onClick={() => {
+                                    setSelectedUser(user);
+                                    setNewUser({
+                                      email: user.email || '',
+                                      username: user.name || '',
+                                      password: '',
+                                      role: user.app_metadata?.role || 'Hospital Technician',
+                                      organization: userOrganization,
+                                    });
+                                    setEditDialogOpen(true);
+                                  }}
+                                >
+                                  <EditIcon fontSize="small"/>
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Permissions">
+                                <IconButton
+                                  size="small"
+                                  sx={{ color: 'black' }}
+                                  onClick={() => handleOpenPermissionDialog(user)}
+                                >
+                                  <LockIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete">
+                                <IconButton
+                                  size="small"
+                                  sx={{ color: 'black' }}
+                                  onClick={() => {
+                                    setSelectedUser(user);
+                                    setDeleteDialogOpen(true);
+                                  }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </Stack>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} align="center">No users found</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          )}
+        </Box>
+      </Box>
+           {/* Add User Dialog */}
+           <Dialog
   open={openDialog}
   onClose={() => setOpenDialog(false)}
   fullWidth
@@ -592,7 +1063,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 </Button>
 
   </DialogActions>
-</Dialog>
+          </Dialog>
 
 
           {/* Edit User Dialog */}
@@ -692,7 +1163,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
       Update
     </Button>
   </DialogActions>
-</Dialog>
+          </Dialog>
 
           {/* Delete Confirmation Dialog */}
           <Dialog
@@ -751,10 +1222,9 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
       Delete
     </Button>
   </DialogActions>
-</Dialog>
-
-        </Box>
-     
+    </Dialog>
+      {/* Permission Dialog */}
+      <PermissionDialog />
 
       <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
         <MuiAlert
@@ -769,4 +1239,3 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     </div>
   );
 };
-

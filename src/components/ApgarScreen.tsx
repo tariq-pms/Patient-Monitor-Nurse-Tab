@@ -1,5 +1,6 @@
   import React, { useEffect, useState } from "react";
   import { Box, Typography, Button,  Paper,  Table, TableCell, TableBody, TableHead, TableRow, TableContainer, Snackbar, Alert } from "@mui/material";
+import { ProtectedModule } from "./ProtectedModule";
 
   interface Procedure {
     resourceType: string;
@@ -51,6 +52,7 @@
     patient_name: string;
     patient_id: string;
     patient_resource_id: string;
+    UserRole: string;
   
   }
   // export const DeviceInService: React.FC<DeviceInServiceProps> = ({
@@ -160,7 +162,7 @@
           {
             actor: {
               reference: "Practitioner/67890",
-              display: "Dr. Jane Smith",
+              display: props.UserRole,
             },
             function: {
               coding: [
@@ -245,9 +247,7 @@
         setLoading(false);
       }
     };
-    
-    
-    
+ 
    // Move fetchProcedureHistory to component scope
 const fetchProcedureHistory = async (id: string) => {
   if (!id) {
@@ -303,29 +303,13 @@ useEffect(() => {
     
     return (
       <>
+      <ProtectedModule module="Assessments" action="create">
   <Box sx={{ 
 
   borderRadius: '25px', 
  
 }}>
-  {/* Header */}
-  {/* <Box sx={{ 
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 2,
-    borderBottom: "1px solid #DBE2F2"
-  }}>
-    <Typography variant="h5" sx={{ color: "#0F3B61", fontWeight: 'bold' }}>
-      APGAR
-    </Typography>
-    
-  </Box> */}
-
-  {/* Score Columns Header */}
-  
-
-  {/* Categories */}
+ 
   {[
     { letter: 'A', title: 'Activity', options: ['Absent', 'Flexed Limbs', 'Active'] },
     { letter: 'P', title: 'Pulse', options: ['Absent', 'Below 100 BPM', 'Over 100 BPM'] },
@@ -450,8 +434,8 @@ useEffect(() => {
       </Button>
     </Box>
   </Box>
-</Box>
-      
+</Box></ProtectedModule>
+<ProtectedModule module="Assessments" action="view">
       <Box marginTop={5}>
     {loading ? (
       <Typography>Loading...</Typography>
@@ -524,6 +508,7 @@ useEffect(() => {
       <Typography justifyContent={"center"} align="center">No Data available.</Typography>
     )}
   </Box>
+  </ProtectedModule>
   <Snackbar
       open={snackbarOpen}
       autoHideDuration={6000}
@@ -537,9 +522,4 @@ useEffect(() => {
       </>
     );
   };
-//   <Snackbar open={snack} autoHideDuration={5000} onClose={handleClose}>
-//   <Alert onClose={handleClose} variant="filled" severity={snackSucc ? 'success':'error'}>
-//       {snackSucc && "Operation Completed Successfully"}
-//       {!snackSucc && "Operation Failed"}
-//   </Alert>
-// </Snackbar>
+

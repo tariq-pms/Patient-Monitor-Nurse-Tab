@@ -12,6 +12,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { DeviceManagement } from "../components/DeviceManagement";
 import { Patient } from "../components/Patient";
 import { UserList } from "../components/UserList";
+import { DeviceManagement1 } from "../components/DeviceManagement1";
 
 interface AdministrationPageProps {
   openDialog: boolean;
@@ -26,7 +27,7 @@ const tabConfig = [
   { label: "Rooms & Beds", icon: <HotelIcon /> },
   { label: "Users", icon: <ManageAccountsIcon /> },
   { label: "Devices", icon: <DevicesIcon /> },
-  { label: "Reports", icon: <AssessmentIcon /> },
+
 ];
 
 export const Administration: FC<AdministrationPageProps> = ({
@@ -134,9 +135,8 @@ export const Administration: FC<AdministrationPageProps> = ({
             case 2:
               return <UserList userOrganization={userOrganization} darkTheme={false} />;
             case 3:
-              return <Typography>Device Management Component</Typography>;
-            case 4:
-              return <Typography>Reports Component</Typography>;
+              return <DeviceManagement1 userOrganization={userOrganization} darkTheme={false} />;
+           
             default:
               return (
                 <Box sx={{ textAlign: "center", mt: 4 }}>

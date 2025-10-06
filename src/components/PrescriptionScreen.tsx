@@ -1,14 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box, Typography, TextField, Button,Grid,Divider,Paper,Autocomplete,MenuItem,
-  Select,
- 
-  FormControl,
-  Snackbar,
-  Alert,
-  Stack,
-
-} from "@mui/material";
+import {Box, Typography, TextField, Button,Grid,Divider,Paper,Autocomplete,MenuItem,Select,  FormControl,Snackbar, Alert, Stack} from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPrescription } from "@fortawesome/free-solid-svg-icons";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
@@ -19,7 +10,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import ClearIcon from '@mui/icons-material/Clear';
 import { addHours } from "date-fns";
 import  DrugCalculator  from "../components/DrugCalculator";
-
+import { ProtectedModule } from '../components/ProtectedModule';
 interface PrescriptionScreenProps {
 
   patient_name: string;
@@ -1225,10 +1216,13 @@ const calculateDuration = (startDate: string, endDate: string): number => {
   
   
   return (
-    <Box sx={{  borderRadius: "25px", padding: 2 }}>
+    <Box sx={{  borderRadius: "25px", }}>
     
-    {props.UserRole !== "NICU Nurse" && (
-      <><DrugCalculator /><Box sx={{ padding: 3, borderRadius: 5, backgroundColor: "#FFFFFF" }}>
+    {/* {props.UserRole !== "NICU Nurse" && ( */}
+    <ProtectedModule module="Medications" action="create">
+      
+      {/* <DrugCalculator /> */}
+      <Box sx={{ padding: 3, borderRadius: 5, backgroundColor: "#FFFFFF" }}>
           <Typography variant="h6" sx={{ color: "#0F3B61", marginBottom: 3 }}>New Prescription</Typography>
 
           {/* Drug Name with Autocomplete */}
@@ -1523,15 +1517,20 @@ const calculateDuration = (startDate: string, endDate: string): number => {
               </Button>
             </Box>
           </Box>
-        </Box></>)}
+        </Box>
+        
+        </ProtectedModule>
+        {/* )} */}
     {/* nurse view */}
-    
+    <ProtectedModule module="Medications" action="edit"> 
   <Box >
   <Grid container alignItems="center" justifyContent="space-between" >
     <Typography variant="h6" sx={{ color: "#0F3B61" }} gutterBottom>
       Administer
     </Typography>
   </Grid>
+  
+
   <Divider />
   <Box sx={{ padding: 2, borderRadius: 5}}>
     {loading ? (
@@ -1680,9 +1679,9 @@ const calculateDuration = (startDate: string, endDate: string): number => {
     )}
   </Box>
 </Box>
-    
+</ProtectedModule>
       {/* Medications  adding */}
-     
+      <ProtectedModule module="Medications" action="view"> 
       <Box marginTop={5}>
      
           <Typography variant="h6" sx={{ color: "#0F3B61" }} gutterBottom>
@@ -1985,7 +1984,7 @@ const calculateDuration = (startDate: string, endDate: string): number => {
 </TableContainer> */}
 
       </Box>
-    
+      </ProtectedModule>
       <Snackbar
       open={snackbarOpen}
       autoHideDuration={6000}

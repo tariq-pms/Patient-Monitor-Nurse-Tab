@@ -108,9 +108,8 @@ app.post('/calculate', (req, res) => {
   });
 });
 
-// app.listen(PORT, () => {
-//   console.log(`🚀 Drug calculator API running on http://localhost:${PORT}`);
-// });
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Drug calculator API running on http://0.0.0.0:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`🚀 Drug calculator API running on http://localhost:${PORT}`);
 });
+ 
+

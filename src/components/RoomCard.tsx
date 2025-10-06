@@ -1,4 +1,4 @@
-import { Alert, Button, Dialog, DialogActions,Menu, DialogContent, DialogContentText, DialogTitle, Select, Snackbar, Stack, Typography, MenuItem, Divider, TextField, Skeleton, ListItemText, ListItemButton, ListItem, List, Paper, TableContainer, TableRow, TableCell, TableHead, Table, TableBody, Chip, useTheme, useMediaQuery,} from '@mui/material'
+import { Alert, Button, Dialog, DialogActions,Menu, DialogContent, DialogContentText, DialogTitle, Select, Snackbar, Stack, Typography, MenuItem, Divider, TextField, Skeleton, ListItemText, ListItemButton, ListItem, List, Paper, TableContainer, TableRow, TableCell, TableHead, Table, TableBody, Chip, useTheme, useMediaQuery, InputAdornment, Tab, Tabs,} from '@mui/material'
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -11,7 +11,8 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import HotelIcon from '@mui/icons-material/Hotel';
-import { Edit } from '@mui/icons-material'
+import { Edit, EditAttributesSharp, EditCalendarOutlined, EditNote } from '@mui/icons-material'
+
 export interface roomData {
     roomName: string;
     roomId: string;
@@ -24,14 +25,16 @@ export interface roomData {
     roomType?: string;
 }
 interface BedData {
-    id: string;
-    name: string;
-    status: string;
-    patientName?: string;
-    patientId?: string;
-    addedDate?: string;
-    type?: string;
-  }
+  id: string;
+  name: string;
+  status: string;
+  type: string;
+  patientName?: string;
+  patientId?: string;
+  addedDate?: string;
+  devices?: { id: string; name: string }[];
+}
+
 interface Patient {
     resourceType: string;
     id: string;
@@ -54,7 +57,6 @@ interface Patient {
         reference: string;
     };
 }
-
 
 export const RoomCard: FC<roomData> = (props) => {
     const [snackSucc, setSnackSucc] = useState(false)
@@ -119,16 +121,20 @@ export const RoomCard: FC<roomData> = (props) => {
             } 
         }
     }])
+    const [patientList, setPatientList] = useState<Patient[]>([]);
+
     const [beds, setBeds] = useState<BedData[]>([])
     const [loadingBeds, setLoadingBeds] = useState(true)
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    const [open, setOpen] = useState(false)
+    const [selectedBedId, setSelectedBedId] = useState<string | null>(null);
+
     const [deviceChanged, setDeviceChanged] = useState(false)
     useEffect(() => {setDeviceChanged(!deviceChanged)},[props.deviceChangeToggle])
     const [renameRoom, setRenameRoom] = useState(false)
+
     useEffect(() => {
-        fetch(` ${import.meta.env.VITE_FHIRAPI_URL as string}/Device?_count=40`, {
+        fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Device?_count=50`, {
           credentials: "omit",
           headers: {
             Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -140,11 +146,25 @@ export const RoomCard: FC<roomData> = (props) => {
           setDeviceList(data.entry)
         }})
     },[deviceChanged])
+    useEffect(() => {
+      fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Patient?_count=100`, {
+        headers: {
+          Authorization: "Basic " + btoa("fhiruser:change-password"),
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.entry) {
+            setPatientList(data.entry.map((e: any) => e.resource));
+          }
+        })
+        .catch((err) => console.error("Error fetching patients:", err));
+    }, []);
+    
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const handleClose1 = () => {
-        setAnchorEl(null);
-    };
-    const open1 = Boolean(anchorEl);
+   
+    const open = Boolean(anchorEl);
+    
     const addNewBed = (bedName: string) => {
         const data = {
             "resourceType": "Location",
@@ -188,62 +208,135 @@ export const RoomCard: FC<roomData> = (props) => {
             }
         })
     }
+
+    // const fetchPatientAssignments = async (bedId: string) => {
+    //   try {
+    //     const url = `${import.meta.env.VITE_FHIRAPI_URL}/Patient?` +
+    //       `_has:Patient.extension:url=http://hl7.org/fhir/StructureDefinition/patient-location` +
+    //       `&_has:Patient.extension:valueReference=Location/${bedId}`;
+    
+    //     const response = await fetch(url, {
+    //       headers: {
+    //         Authorization: "Basic " + btoa("fhiruser:change-password"),
+    //       },
+    //     });
+    
+    //     if (!response.ok) throw new Error("Failed to fetch patients");
+    //     const data = await response.json();
+    
+    //     if (!data.entry || data.entry.length === 0) return null;
+    
+    //     const patient = data.entry[0].resource;
+    
+    //     // Format patient name
+    //     const name =
+    //       patient.name?.[0]?.text ||
+    //       `${patient.name?.[0]?.given?.[0] || "Unknown"} ${patient.name?.[0]?.family || ""}`.trim() ||
+    //       patient.identifier?.[0]?.value ||
+    //       "Unnamed";
+    
+    //     return {
+    //       name,
+    //       id: patient.id,
+    //       addedDate: patient.meta?.lastUpdated
+    //         ? new Date(patient.meta.lastUpdated).toLocaleDateString()
+    //         : "Unknown date",
+    //     };
+    //   } catch (error) {
+    //     console.error("Error fetching patient assignment:", error);
+    //     return null;
+    //   }
+    // };
+    
     const fetchPatientAssignments = async (bedId: string) => {
-        try {
-          // Fetch active encounters for this location (bed)
-          const response = await fetch(
-            `${import.meta.env.VITE_FHIRAPI_URL}/Encounter?location=${bedId}&status=in-progress`,
-            {
-              headers: {
-                Authorization: "Basic " + btoa("fhiruser:change-password"),
-              },
-            }
-          );
-      
-          if (!response.ok) throw new Error("Failed to fetch encounters");
-      
-          const data = await response.json();
-          
-          if (!data.entry || data.entry.length === 0) return null;
-      
-          // Get the most recent encounter
-          const latestEncounter = data.entry[0].resource;
-          
-          // Extract patient reference
-          const patientRef = latestEncounter.subject?.reference;
-          if (!patientRef) return null;
-      
-          // Fetch patient details
-          const patientId = patientRef.split('/')[1];
-          const patientResponse = await fetch(
-            `${import.meta.env.VITE_FHIRAPI_URL}/Patient/${patientId}`,
-            {
-              headers: {
-                Authorization: "Basic " + btoa("fhiruser:change-password"),
-              },
-            }
-          );
-      
-          if (!patientResponse.ok) throw new Error("Failed to fetch patient");
-      
-          const patient = await patientResponse.json();
-          
-          // Format patient name
-          const name = patient.name?.[0]?.text || 
-                      `${patient.name?.[0]?.given?.[0] || 'Unknown'} ${patient.name?.[0]?.family || ''}`.trim();
-          
-          return {
-            name,
-            id: patient.id,
-            addedDate: latestEncounter.period?.start 
-              ? new Date(latestEncounter.period.start).toLocaleDateString() 
-              : 'Unknown date'
-          };
-        } catch (error) {
-          console.error("Error fetching patient assignment:", error);
-          return null;
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_FHIRAPI_URL}/Encounter?location=Location/${bedId}&status=in-progress&_include=Encounter:subject`,
+          {
+            headers: {
+              Authorization: "Basic " + btoa("fhiruser:change-password"),
+            },
+          }
+        );
+    
+        if (!response.ok) throw new Error("Failed to fetch encounter");
+    
+        const data = await response.json();
+        if (!data.entry || data.entry.length === 0) return null;
+    
+        const encounter = data.entry.find(
+          (e: any) => e.resource.resourceType === "Encounter"
+        )?.resource;
+        const patient = data.entry.find(
+          (e: any) => e.resource.resourceType === "Patient"
+        )?.resource;
+    
+        if (!patient) return null;
+    
+        // ✅ Patient display name from extension
+        let patientName = "Unknown";
+        const maidenNameExt = patient.extension?.find(
+          (ext: any) =>
+            ext.url ===
+            "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName"
+        );
+        if (maidenNameExt?.valueString) {
+          patientName = maidenNameExt.valueString;
+        } else if (patient.name && patient.name.length > 0) {
+          patientName =
+            patient.name[0].text ||
+            `${patient.name[0].given?.[0] || ""} ${patient.name[0].family || ""}`.trim();
         }
-      };
+    
+        // ✅ Patient ID from identifier
+        const patientId =
+          patient.identifier?.[0]?.value || patient.id || "Unknown-ID";
+    
+        return {
+          name: patientName,
+          id: patientId,
+          addedDate: encounter?.period?.start
+            ? new Date(encounter.period.start).toLocaleDateString()
+            : "Unknown date",
+        };
+      } catch (error) {
+        console.error("Error fetching patient assignment:", error);
+        return null;
+      }
+    };
+    
+    
+    const fetchDeviceAssignments = async (bedId: string) => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_FHIRAPI_URL}/Device?location=Location/${bedId}`,
+          {
+            headers: {
+              Authorization: "Basic " + btoa("fhiruser:change-password"),
+            },
+          }
+        );
+        const data = await res.json();
+        console.log("device name",data);
+        
+        if (data.entry) {
+          return data.entry.map((d: any) => ({
+            // id: d.resource.id,
+            id:d.resource.serialNumber,
+            name:
+              d.resource.identifier[1].value ||
+             
+              `Device-${d.resource.id}`,
+          }));
+        }
+        return [];
+      } catch (err) {
+        console.error("Error fetching devices:", err);
+        return [];
+      }
+    };
+    
+      
       useEffect(() => {
         setLoadingBeds(true);
         fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?partof=${props.roomId}`, {
@@ -262,21 +355,24 @@ export const RoomCard: FC<roomData> = (props) => {
                 status: bed.resource.status,
                 type: bed.resource.physicalType?.coding?.[0]?.display || '-'
               }));
-      
-              // Then fetch patient assignments for each bed
-              const bedsWithPatients = await Promise.all(
+              
+              const bedsWithPatientsAndDevices = await Promise.all(
                 bedData.map(async (bed: BedData) => {
                   const assignment = await fetchPatientAssignments(bed.id);
+                  const devices = await fetchDeviceAssignments(bed.id);
+              
                   return {
                     ...bed,
                     patientName: assignment?.name || '-',
                     patientId: assignment?.id || '',
-                    addedDate: assignment?.addedDate || '-'
+                    addedDate: assignment?.addedDate || '-',
+                    devices: devices,
                   };
                 })
               );
-      
-              setBeds(bedsWithPatients);
+              
+              setBeds(bedsWithPatientsAndDevices);
+              
             }
             setLoadingBeds(false);
           })
@@ -285,6 +381,7 @@ export const RoomCard: FC<roomData> = (props) => {
             setLoadingBeds(false);
           });
       }, [props.roomId, props.deviceChangeToggle]);
+      
    
     const renameButton = ( x: string ) => {
         let data = {
@@ -568,6 +665,63 @@ const removeButton = (index: number) => {
         setSnackSucc(false);
     });
 };
+// const handleSave = async () => {
+//   try {
+//     if (!selectedPatient || !selectedDevice) {
+//       alert("Please select both Patient and Device");
+//       return;
+//     }
+
+//     const bedId = selectedBedId; // or props.bedId if you pass bed separately
+
+//     // --- Update Device with Location (Bed) ---
+//     const updatedDevice = {
+//       ...selectedDevice,
+//       resourceType: "Device",   // ✅ ensure resourceType is present
+//       location: { reference: `Location/${bedId}` },
+//     };
+
+//     await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Device/${selectedDevice.id}`, {
+//       method: "PUT",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: "Basic " + btoa("fhiruser:change-password"),
+//       },
+//       body: JSON.stringify(updatedDevice),
+//     });
+
+//     // --- Update Patient with Location Extension ---
+//     const updatedPatient = {
+//       ...selectedPatient,
+//       resourceType: "Patient",  // ✅ ensure resourceType is present
+//       extension: [
+//         ...(selectedPatient.extension || []).filter(
+//           (ext: any) =>
+//             ext.url !== "http://hl7.org/fhir/StructureDefinition/patient-location"
+//         ),
+//         {
+//           url: "http://hl7.org/fhir/StructureDefinition/patient-location",
+//           valueReference: { reference: `Location/${bedId}` },
+//         },
+//       ],
+//     };
+
+//     await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Patient/${selectedPatient.id}`, {
+//       method: "PUT",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: "Basic " + btoa("fhiruser:change-password"),
+//       },
+//       body: JSON.stringify(updatedPatient),
+//     });
+
+//     alert("Bed successfully linked with patient and device ✅");
+//     props.onSave?.(); // optional callback if you want to refresh
+//   } catch (error) {
+//     console.error("Error saving bed mapping:", error);
+//     alert("Failed to save mapping ❌");
+//   }
+// };
 
 
 // const addButton = (index: any) => {
@@ -721,10 +875,72 @@ const removeButton = (index: number) => {
     //       });
     //   };
 
-
+    const handleSave = async () => {
+      try {
+        if (!selectedPatient || !selectedDevice) {
+          alert("Please select both Patient and Device");
+          return;
+        }
+    
+        const bedId = selectedBedId; // or props.bedId if passed separately
+    
+        // --- Update Device with Location (Bed) ---
+        const updatedDevice = {
+          ...selectedDevice,
+          resourceType: "Device", // ✅ ensure resourceType is present
+          location: { reference: `Location/${bedId}` },
+        };
+    
+        await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Device/${selectedDevice.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+          },
+          body: JSON.stringify(updatedDevice),
+        });
+    
+        // --- Create Encounter linking Patient to Bed ---
+        const encounter = {
+          resourceType: "Encounter",
+          status: "in-progress",
+          class: {
+            system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+            code: "IMP", // Inpatient encounter
+          },
+          subject: { reference: `Patient/${selectedPatient.id}` },
+          location: [
+            {
+              location: { reference: `Location/${bedId}` },
+              status: "active",
+            },
+          ],
+          period: {
+            start: new Date().toISOString(),
+          },
+        };
+    
+        await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Encounter`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+          },
+          body: JSON.stringify(encounter),
+        });
+    
+        alert("Bed successfully linked with patient and device ✅");
+        props.onSave?.(); // optional callback to refresh
+      } catch (error) {
+        console.error("Error saving bed mapping:", error);
+        alert("Failed to save mapping ❌");
+      }
+    };
+    
 
     const [deleteDevice, setDeleteDevice] = useState(false)
     const [deleteRoom, setDeleteRoom] = useState(false)
+
     const removeRoomButton = () => {
         console.log("Called")
         fetch(` ${import.meta.env.VITE_FHIRAPI_URL as string}/Location/${props.roomId}`, {
@@ -808,112 +1024,113 @@ const removeButton = (index: number) => {
         
         )
     }
-    const removeFromRoom = () => {
-        return (
-            <Dialog
-            open={deleteDevice}
-            onClose={() => setDeleteDevice(false)}
-            aria-labelledby="responsive-dialog-title"
-            PaperProps={{style:{borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)' , minWidth:'400px', minHeight:'200px'}}}
-        >
-            <DialogTitle sx={{textAlign:"center", fontWeight:'bold', paddingTop:'6%'}}>
-            {`Remove device from ${props.roomName}`}
-            </DialogTitle>
-            <DialogContent dividers sx={{ borderColor: '#ccc',display:'flex',flexWrap: "wrap",textAlign:"center", marginBottom:'auto' }}>
-            <Stack width={'100%'} display={'flex'} direction={'row'} flexWrap={'wrap'}
-                >
-                {deviceList.map((device, index) => {
-                        if(device?.resource?.location?.reference.split("/")[1] == props.roomId){
-                            return(
-                                <Button onClick={() => {setMiniDialog(true); setSelectedDevice(index)}} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:'white', border:'0.1px solid #282828',margin:'5px'}}>                                   
-                                    <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
-                                 {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}
-                                </Typography>
-                                </Button>
-                            )
-                        }
-                })}
-                </Stack>
-            </DialogContent>
-            <DialogActions>
-            </DialogActions>
-            <Dialog
-                open={miniDialog}
-                onClose={() => setMiniDialog(false)}
-                PaperProps={{style:{ minWidth:'500px',
-                 backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', height:'20%', justifyContent:'center', textAlign:'center'}}}
-            >
-                <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', padding:'5%'}}>
-                {`Remove device`}
-                </DialogTitle>
-                <DialogContent  dividers sx={{ borderColor: '#ccc'}}><i>{`${deviceList[selectedDevice].resource.identifier[0].value} `}</i>{`from room `}<i>{`${props.roomName}`}?</i></DialogContent>
-                <DialogActions sx={{paddingBottom:'5%'}}>
-                    <Stack direction={'row'} width={'100%'} justifyContent={'space-around'}>
-                    <Box onClick={() => {setMiniDialog(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomNoButton text="Cancel"></CustomNoButton></Box>
-                    <Box onClick={() => {removeButton(selectedDevice); setMiniDialog(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomOkButton text="Confirm"></CustomOkButton></Box>
-                    </Stack>
-                </DialogActions>
-            </Dialog>
-        </Dialog>
-        )
-    }
+    // const removeFromRoom = () => {
+    //     return (
+    //         <Dialog
+    //         open={deleteDevice}
+    //         onClose={() => setDeleteDevice(false)}
+    //         aria-labelledby="responsive-dialog-title"
+    //         PaperProps={{style:{borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)' , minWidth:'400px', minHeight:'200px'}}}
+    //     >
+    //         <DialogTitle sx={{textAlign:"center", fontWeight:'bold', paddingTop:'6%'}}>
+    //         {`Remove device from ${props.roomName}`}
+    //         </DialogTitle>
+    //         <DialogContent dividers sx={{ borderColor: '#ccc',display:'flex',flexWrap: "wrap",textAlign:"center", marginBottom:'auto' }}>
+    //         <Stack width={'100%'} display={'flex'} direction={'row'} flexWrap={'wrap'}
+    //             >
+    //             {deviceList.map((device, index) => {
+    //                     if(device?.resource?.location?.reference.split("/")[1] == props.roomId){
+    //                         return(
+    //                             <Button onClick={() => {setMiniDialog(true); setSelectedDevice(index)}} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:'white', border:'0.1px solid #282828',margin:'5px'}}>                                   
+    //                                 <Typography variant="subtitle1" component={"h2"} sx={{marginRight:'auto', marginTop:'auto', marginBottom:'auto'}}>
+    //                              {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}
+    //                             </Typography>
+    //                             </Button>
+    //                         )
+    //                     }
+    //             })}
+    //             </Stack>
+    //         </DialogContent>
+    //         <DialogActions>
+    //         </DialogActions>
+    //         <Dialog
+    //             open={miniDialog}
+    //             onClose={() => setMiniDialog(false)}
+    //             PaperProps={{style:{ minWidth:'500px',
+    //              backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', height:'20%', justifyContent:'center', textAlign:'center'}}}
+    //         >
+    //             <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', padding:'5%'}}>
+    //             {`Remove device`}
+    //             </DialogTitle>
+    //             <DialogContent  dividers sx={{ borderColor: '#ccc'}}><i>{`${deviceList[selectedDevice].resource.identifier[0].value} `}</i>{`from room `}<i>{`${props.roomName}`}?</i></DialogContent>
+    //             <DialogActions sx={{paddingBottom:'5%'}}>
+    //                 <Stack direction={'row'} width={'100%'} justifyContent={'space-around'}>
+    //                 <Box onClick={() => {setMiniDialog(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomNoButton text="Cancel"></CustomNoButton></Box>
+    //                 <Box onClick={() => {removeButton(selectedDevice); setMiniDialog(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomOkButton text="Confirm"></CustomOkButton></Box>
+    //                 </Stack>
+    //             </DialogActions>
+    //         </Dialog>
+    //     </Dialog>
+    //     )
+    // }
     const [miniDialog, setMiniDialog] = useState(false)
-    const [selectedDevice, setSelectedDevice] = useState(Number)
+    const [selectedDevice, setSelectedDevice] = useState<any>(null)
+    const [selectedPatient, setSelectedPatient] = useState<any>(null);
     
-    
-    const addToRoom = () => {
+//     const addToRoom = () => {
        
-        return (
-            <Dialog
-            open={open}
-            onClose={() => setOpen(false)}
-            scroll='paper'
-            PaperProps={{style:{borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage: props.darkTheme?'linear-gradient(to bottom, #111522, #111522, #111522)':'linear-gradient(to bottom,  #FFFFFF,  #FFFFFF,  #FFFFFF)', minWidth:'400px', minHeight:'200px'}}} // borderRadius:'3%', boxShadow: `0px 0px 20px 10px #7B7B7B`, border:'1px solid #7B7B7B
- >
-            <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', padding:'9%'}} color={props.darkTheme?'white':'#2F3D4A'}>
-            {`Add device to ${props.roomName}`}
+//         return (
+//             <Dialog
+//             open={open}
+//             onClose={() => setOpen(false)}
+//             scroll='paper'
+//             PaperProps={{style:{borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', backgroundImage: props.darkTheme?'linear-gradient(to bottom, #111522, #111522, #111522)':'linear-gradient(to bottom,  #FFFFFF,  #FFFFFF,  #FFFFFF)', minWidth:'400px', minHeight:'200px'}}} // borderRadius:'3%', boxShadow: `0px 0px 20px 10px #7B7B7B`, border:'1px solid #7B7B7B
+//  >
+//             <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', padding:'9%'}} color={props.darkTheme?'white':'#2F3D4A'}>
+//             {`Add device to ${props.roomName}`}
             
-            </DialogTitle>
-            <DialogContent  dividers  sx={{borderColor: '#ccc',display:'flex',flexWrap: "wrap",textAlign:"center", marginBottom:'auto', paddingBottom:'9%'}} >
-                <Stack width={'100%'} display={'flex'} direction={'row'} flexWrap={'wrap'}
-                >
-                {deviceList.map((device, index) => {
-                     if(device?.resource?.owner?.reference === `Organization/${props.userOrganization}` && device?.resource?.location?.reference.split("/")[1] != props.roomId){
-                        //changed if(device?.resource?.location?.reference.split("/")[1] != props.roomId){
-                            return(
-                                    <Button onClick={() => {setMiniDialog(true); setSelectedDevice(index)}} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:props.darkTheme?'white':'#2F3D4A', border:'0.1px solid #282828',margin:'5px'}}>
-                                        <Typography variant="subtitle2" component={"h2"}>
-                                         {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}
-                                         {/* changed the identifier to display the device name and mac address */}
-                                        </Typography>
-                                    </Button>
-                            )
-                }
-                    })}
+//             </DialogTitle>
+//             <DialogContent  dividers  sx={{borderColor: '#ccc',display:'flex',flexWrap: "wrap",textAlign:"center", marginBottom:'auto', paddingBottom:'9%'}} >
+//                 <Stack width={'100%'} display={'flex'} direction={'row'} flexWrap={'wrap'}
+//                 >
+//                 {deviceList.map((device, index) => {
+//                      if(device?.resource?.owner?.reference === `Organization/${props.userOrganization}` && device?.resource?.location?.reference.split("/")[1] != props.roomId){
+//                         //changed if(device?.resource?.location?.reference.split("/")[1] != props.roomId){
+//                             return(
+//                                     <Button onClick={() => {setMiniDialog(true); setSelectedDevice(index)}} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:props.darkTheme?'white':'#2F3D4A', border:'0.1px solid #282828',margin:'5px'}}>
+//                                         <Typography variant="subtitle2" component={"h2"}>
+//                                          {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}
+//                                          {/* changed the identifier to display the device name and mac address */}
+//                                         </Typography>
+//                                     </Button>
+//                             )
+//                 }
+//                     })}
         
 
-                </Stack>
-            </DialogContent>
-            <Dialog
-                open={miniDialog}
-                onClose={() => setMiniDialog(false)}
-                PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', height:'20%', justifyContent:'center', textAlign:'center'}}}>
-                <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', paddingBottom:'9%'}}>
-                    {`Shift device `}<i>{`${deviceList[selectedDevice].resource.identifier[0].value} `}</i>{`to room `}<i>{`${props.roomName}`}?</i>
-                </DialogTitle>
-                <DialogActions sx={{paddingBottom:'5%'}}>
-                    <Stack direction={'row'} width={'100%'} justifyContent={'space-around'}>    
-                    <Box onClick={() => {setMiniDialog(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomNoButton text="Cancel"></CustomNoButton></Box>
-                    <Box onClick={() => {addButton(selectedDevice); setMiniDialog(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomOkButton text="Confirm"></CustomOkButton></Box>
-                    </Stack>
+//                 </Stack>
+//             </DialogContent>
+//             <Dialog
+//                 open={miniDialog}
+//                 onClose={() => setMiniDialog(false)}
+//                 PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #111522, #111522, #111522)', borderRadius:'25px', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', height:'20%', justifyContent:'center', textAlign:'center'}}}>
+//                 <DialogTitle id="responsive-dialog-title" sx={{textAlign:"center", fontWeight:'bold', paddingBottom:'9%'}}>
+//                     {`Shift device `}<i>{`${deviceList[selectedDevice].resource.identifier[0].value} `}</i>{`to room `}<i>{`${props.roomName}`}?</i>
+//                 </DialogTitle>
+//                 <DialogActions sx={{paddingBottom:'5%'}}>
+//                     <Stack direction={'row'} width={'100%'} justifyContent={'space-around'}>    
+//                     <Box onClick={() => {setMiniDialog(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomNoButton text="Cancel"></CustomNoButton></Box>
+//                     <Box onClick={() => {addButton(selectedDevice); setMiniDialog(false)}} sx={{minWidth:'90px', minHeight:'45px'}}><CustomOkButton text="Confirm"></CustomOkButton></Box>
+//                     </Stack>
                     
-                </DialogActions>
-            </Dialog>
-        </Dialog>
+//                 </DialogActions>
+//             </Dialog>
+//         </Dialog>
         
-        )
-  }
+//         )
+//   }
   const [loading, setLoading] = useState(true);
+  
   useEffect(() => {
       const timer = setTimeout(() => {
         setLoading(false);
@@ -923,81 +1140,85 @@ const removeButton = (index: number) => {
     }, []);
    
     const [bedDialogOpen, setBedDialogOpen] = useState(false);
-const [selectedBed, setSelectedBed] = useState<any>(null);
-    const handleAddBedSubmit = () => {
-        if (newBedName.trim()) {
-            addNewBed(newBedName)
-            setAddBedDialogOpen(false)
-            setNewBedName("")
-        }
-    }
-    const handleDischargePatient = async (bedId: string, patientId: string) => {
-        if (!patientId || patientId === '') return;
+// const [selectedBed, setSelectedBed] = useState<any>(null);
+
+const handleAddBedSubmit = () => {
+  if (newBedName.trim()) {
+    const fullBedName = `${props.roomName} - ${newBedName.trim()}`;
+    addNewBed(fullBedName);
+    setAddBedDialogOpen(false);
+    setNewBedName("");
+  }
+};
+
+// const handleDischargePatient = async (bedId: string, patientId: string) => {
+//     if (!patientId || patientId === '') return;
       
-        try {
-          // Find and update the active encounter
-          const encountersResponse = await fetch(
-            `${import.meta.env.VITE_FHIRAPI_URL}/Encounter?location=${bedId}&status=in-progress&subject=Patient/${patientId}`,
-            {
-              headers: {
-                Authorization: "Basic " + btoa("fhiruser:change-password"),
-              },
-            }
-          );
+//       try {
+//           // Find and update the active encounter
+//           const encountersResponse = await fetch(
+//             `${import.meta.env.VITE_FHIRAPI_URL}/Encounter?location=${bedId}&status=in-progress&subject=Patient/${patientId}`,
+//             {
+//               headers: {
+//                 Authorization: "Basic " + btoa("fhiruser:change-password"),
+//               },
+//             }
+//           );
       
-          if (!encountersResponse.ok) throw new Error("Failed to fetch encounters");
+//           if (!encountersResponse.ok) throw new Error("Failed to fetch encounters");
       
-          const encountersData = await encountersResponse.json();
+//           const encountersData = await encountersResponse.json();
           
-          if (!encountersData.entry || encountersData.entry.length === 0) {
-            throw new Error("No active encounter found");
-          }
+//           if (!encountersData.entry || encountersData.entry.length === 0) {
+//             throw new Error("No active encounter found");
+//           }
       
-          const encounter = encountersData.entry[0].resource;
+//           const encounter = encountersData.entry[0].resource;
           
-          // Update encounter status to finished
-          const updatedEncounter = {
-            ...encounter,
-            status: "finished",
-            period: {
-              ...encounter.period,
-              end: new Date().toISOString()
-            }
-          };
+//           // Update encounter status to finished
+//           const updatedEncounter = {
+//             ...encounter,
+//             status: "finished",
+//             period: {
+//               ...encounter.period,
+//               end: new Date().toISOString()
+//             }
+//           };
       
-          const updateResponse = await fetch(
-            `${import.meta.env.VITE_FHIRAPI_URL}/Encounter/${encounter.id}`,
-            {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/fhir+json",
-                Authorization: "Basic " + btoa("fhiruser:change-password"),
-              },
-              body: JSON.stringify(updatedEncounter)
-            }
-          );
+//           const updateResponse = await fetch(
+//             `${import.meta.env.VITE_FHIRAPI_URL}/Encounter/${encounter.id}`,
+//             {
+//               method: "PUT",
+//               headers: {
+//                 "Content-Type": "application/fhir+json",
+//                 Authorization: "Basic " + btoa("fhiruser:change-password"),
+//               },
+//               body: JSON.stringify(updatedEncounter)
+//             }
+//           );
       
-          if (!updateResponse.ok) throw new Error("Failed to update encounter");
+//           if (!updateResponse.ok) throw new Error("Failed to update encounter");
       
-          // Refresh bed data
-          setBeds(prev => prev.map(bed => 
-            bed.id === bedId 
-              ? { ...bed, patientName: '-', patientId: '', addedDate: '-' } 
-              : bed
-          ));
+//           // Refresh bed data
+//           setBeds(prev => prev.map(bed => 
+//             bed.id === bedId 
+//               ? { ...bed, patientName: '-', patientId: '', addedDate: '-' } 
+//               : bed
+//           ));
       
-          // Show success message
-          // You can use your existing snackbar system here
-          console.log("Patient discharged successfully");
-        } catch (error) {
-          console.error("Error discharging patient:", error);
-          // Show error message
-        }
-      };
-    const handleBedClick = (bed: any) => {
-        setSelectedBed(bed);
-        setBedDialogOpen(true);
-    };
+//           // Show success message
+//           // You can use your existing snackbar system here
+//           console.log("Patient discharged successfully");
+//         } catch (error) {
+//           console.error("Error discharging patient:", error);
+//           // Show error message
+//         }
+//       };
+  const [open1, setOpen] = useState(false);
+  const [tab, setTab] = useState(0);
+  const handleOpen = () => setOpen(true);
+  const handleClose1 = () => setOpen(false);
+
   return (
       <Box>
         {/* {loading ? (
@@ -1148,7 +1369,7 @@ const [selectedBed, setSelectedBed] = useState<any>(null);
               >
                 <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Beds</strong></TableCell>
                 <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Patient</strong></TableCell>
-                <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Added date</strong></TableCell>
+                <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Device</strong></TableCell>
                 <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Type</strong></TableCell>
                 <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Status</strong></TableCell>
                 <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Actions</strong></TableCell>
@@ -1165,37 +1386,56 @@ const [selectedBed, setSelectedBed] = useState<any>(null);
                       cursor: 'pointer',
                       backgroundColor: props.darkTheme ? '#333' : '#FFF',
                     }}
-                    onClick={() => handleBedClick(bed)}
+                   
                   >
                     <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>{bed.name}</TableCell>
       
                     <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>
-                      {bed.patientName !== '-' ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography component="span">
-                            {bed.patientName}
-                            {bed.patientId && (
-                              <Typography
-                                component="span"
-                                variant="caption"
-                                sx={{
-                                  ml: 1,
-                                  color: props.darkTheme ? '#AAA' : '#666',
-                                }}
-                              >
-                                (ID: {bed.patientId})
-                              </Typography>
-                            )}
-                          </Typography>
-                        </Box>
-                      ) : (
-                        '-'
-                      )}
+                  {bed.patientName && bed.patientName !== '-' ? (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+               <Chip
+               label={
+                bed.patientId
+                   ? `${bed.patientName} (ID: ${bed.patientId})`
+                  : bed.patientName
+                  }
+                 size="small"
+                color="primary"
+                variant="outlined"
+        sx={{
+          maxWidth: 200,
+          textOverflow: 'ellipsis',
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+        }}
+      />
+    </Box>
+  ) : (
+    <Typography variant="body2" sx={{ color: 'grey.500' }}>
+      Empty
+    </Typography>
+  )}
                     </TableCell>
-      
-                    <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>{bed.addedDate}</TableCell>
+
+
+                    <TableCell>
+        {bed.devices && bed.devices.length > 0 ? (
+          bed.devices.map((device) => (
+            <Chip
+              key={device.id}
+              label={`${device.name} (S.No: ${device.id})`}
+              size="small"
+              color="info"
+              sx={{ mr: 0.5 }}
+            />
+          ))
+        ) : (
+          "Empty"
+        )}
+      </TableCell>
+                    {/* <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>{bed.addedDate}</TableCell> */}
                     <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>{bed.type}</TableCell>
-      
+                    
                     <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>
                       <Chip
                         label={bed.status}
@@ -1209,19 +1449,19 @@ const [selectedBed, setSelectedBed] = useState<any>(null);
                         }
                       />
                     </TableCell>
-      
-                    <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>
-                      {bed.patientName !== '-' && (
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDischargePatient(bed.id, bed.patientId);
-                          }}
-                        >
-                          {/* Add Icon here if needed */}
-                        </IconButton>
-                      )}
+                   
+                    <TableCell >
+                      {/* {bed.patientName !== '-' && ( */}
+                      <IconButton
+  sx={{ color: props.darkTheme ? "white" : "grey" }}
+  onClick={() => {
+    setSelectedBedId(bed.id);  // ✅ store bed resource id
+    handleOpen();              // open the dialog
+  }}
+>
+        <EditNote />
+      </IconButton>
+                      {/* )} */}
                     </TableCell>
                   </TableRow>
                 ))
@@ -1245,7 +1485,164 @@ const [selectedBed, setSelectedBed] = useState<any>(null);
     )}
 
     {/* Bed Dialog - Add this where appropriate in your component */}
-    <Dialog
+   
+</Box>
+             
+              </CardContent>
+              
+              
+              <Dialog
+        open={open1}
+        onClose={handleClose1}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Bed Configuration</DialogTitle>
+        <DialogContent>
+        <Box
+  sx={{
+    border: "1px dashed grey",
+    borderRadius: 2,
+    p: 2,
+    mb: 2,
+    textAlign: "center",
+  }}
+>
+  {selectedPatient ? (
+    <Typography>
+      {selectedPatient.name?.[0]?.text ||
+        `${selectedPatient.identifier?.[0]?.value || ""} ${selectedPatient.identifier?.[1]?.value || ""}`}
+    </Typography>
+  ) : (
+    <Typography>No Patient Added</Typography>
+  )}
+</Box>
+
+
+<Box
+  sx={{
+    border: "1px dashed grey",
+    borderRadius: 2,
+    p: 2,
+    mb: 2,
+    textAlign: "center",
+  }}
+>
+{selectedDevice ? (
+  <Typography>
+    {
+     selectedDevice.identifier?.[2]?.value ||
+     selectedDevice.identifier?.[0]?.value ||
+     selectedDevice.id}
+  </Typography>
+) : (
+  <Typography>No Devices Linked</Typography>
+)}
+
+</Box>
+
+          {/* Tabs for Patients / Devices */}
+          <Tabs
+            value={tab}
+            onChange={(_, newValue) => setTab(newValue)}
+            centered
+          >
+            <Tab label="Patients" />
+            <Tab label="Devices" />
+          </Tabs>
+
+          {/* Example Tab Content */}
+          {tab === 0 && (
+           <Box sx={{ mt: 2 }}>
+           {patientList
+             .filter(
+               (patient) =>
+                 patient.managingOrganization?.reference === `Organization/${props.userOrganization}` &&
+                 patient.extension?.find(
+                   (ext: any) =>
+                     ext.url === "http://hl7.org/fhir/StructureDefinition/patient-location" &&
+                     ext.valueReference?.reference.split("/")[1] !== props.roomId
+                 )
+             )
+             .map((patient, index) => (
+              <Button
+              key={patient.id}
+              onClick={() => {
+                setSelectedPatient(patient);   // ✅ store clicked patient
+                setMiniDialog(true);
+                setSelectedDevice(index);
+              }}
+              sx={{
+                width: "48%",
+                height: "60px",
+                justifyContent: "center",
+                textAlign: "center",
+                color: props.darkTheme ? "white" : "#2F3D4A",
+                backgroundColor: props.darkTheme ? "#2F3D4A" : "white",
+                border: "0.1px solid #282828",
+                margin: "5px",
+              }}
+            >
+              <Typography variant="subtitle2" component="h2">
+                {patient.name?.[0]?.text ||
+                  `${patient.identifier?.[0]?.value || ""} ${patient.identifier?.[1]?.value || ""}`}
+              </Typography>
+            </Button>
+            
+             ))}
+         </Box>
+          )}
+          {tab === 1 && (
+            <Box sx={{ mt: 2 }}>
+                <Stack width={'100%'} display={'flex'} direction={'row'} flexWrap={'wrap'}
+                >
+                {deviceList.map((device, index) => {
+                     if(device?.resource?.owner?.reference === `Organization/${props.userOrganization}` && device?.resource?.location?.reference.split("/")[1] != props.roomId){
+                        //changed if(device?.resource?.location?.reference.split("/")[1] != props.roomId){
+                            return(
+                                    <Button onClick={() => { 
+                                      setMiniDialog(true); 
+                                      setSelectedDevice(device.resource);   // ✅ save resource object
+                                    }} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:props.darkTheme?'white':'#2F3D4A',backgroundColor:props.darkTheme?'#2F3D4A':'white', border:'0.1px solid #282828',margin:'5px'}}>
+                                        <Typography variant="subtitle2" component={"h2"}>
+                                         {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}
+                                         {/* changed the identifier to display the device name and mac address */}
+                                        </Typography>
+                                    </Button>
+                            )
+                }
+                    })}
+        
+
+                </Stack>
+            </Box>
+          )}
+
+          {/* Action Buttons */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              mt: 3
+            }}
+          >
+            <Button variant="outlined" onClick={() => console.log("Reset")}>
+              Reset
+            </Button>
+            <Button
+           
+  variant="contained"
+  onClick= {() => {
+    handleSave()
+  } }
+>
+  Save Changes
+</Button>
+
+          </Box>
+        </DialogContent>
+              </Dialog>
+              <Dialog
         open={bedDialogOpen}
         onClose={() => setBedDialogOpen(false)}
         fullWidth
@@ -1275,9 +1672,7 @@ const [selectedBed, setSelectedBed] = useState<any>(null);
             <Button onClick={() => setBedDialogOpen(false)}>Close</Button>
         </DialogActions>
     </Dialog>
-</Box>
-             
-              </CardContent>
+
               <Dialog
   open={addBedDialogOpen}
   onClose={() => setAddBedDialogOpen(false)}
@@ -1298,28 +1693,31 @@ Add New Bed
   <DialogContent dividers sx={{ borderColor: '#ccc' }}>
 
   <TextField
-      autoFocus
-      margin="dense"
-      id="bed-name"
-      label="Bed Name"
-      type="text"
-      fullWidth
-      variant="outlined"
-      value={newBedName}
-      onChange={(e) => setNewBedName(e.target.value)}
-     
-      InputProps={{
-        sx: {
-          backgroundColor: '#F5F5F5',
-          borderRadius: 1,
-          color: '#000000',
-        },
-      }}
-      InputLabelProps={{ sx: { color: '#000000' } }}
-    />
-   
+  autoFocus
+  margin="dense"
+  id="bed-name"
+  label="Bed Name"
+  type="text"
+  fullWidth
+  variant="outlined"
+  value={newBedName}
+  onChange={(e) => setNewBedName(e.target.value)}
+  InputProps={{
+    startAdornment: (
+      <InputAdornment position="start" sx={{ color: '#9e9e9e' }}>
+        {props.roomName} -
+      </InputAdornment>
+    ),
+    sx: {
+      backgroundColor: '#F5F5F5',
+      borderRadius: 1,
+      color: '#000000',
+    },
+  }}
+  InputLabelProps={{ sx: { color: '#000000' } }}
+/>
 
-  
+
   </DialogContent>
 
   <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'space-between' }}>
@@ -1363,8 +1761,8 @@ Add New Bed
 
              
 
-              {addToRoom()}
-              {removeFromRoom()}
+              {/* {addToRoom()} */}
+              {/* {removeFromRoom()} */}
               {removeRoom()}
               {renameRoomButton()}
               <Snackbar open={snack} autoHideDuration={5000} onClose={handleClose}>
@@ -1377,9 +1775,7 @@ Add New Bed
             </Box>
             {/* )} */}
              </Box>
-   
-  
-  )
+   )
 }
 
 // import { 

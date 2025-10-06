@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, TextField, Button, Select, MenuItem, Snackbar, Alert, Card, CardContent } from '@mui/material';
 import MicIcon from '@mui/icons-material/Mic';
+import { ProtectedModule } from './ProtectedModule';
 
 interface NotesProps {
 
@@ -240,7 +241,8 @@ const recognition = new SpeechRecognition();
   {/* Notes Input Section (same as before) */}
   {/* Notes Section - Only shows when showNotes is true */}
   {/* {showNotes && ( */}
-  {props.UserRole !== "NICU Nurse" &&  (
+  {/* {props.UserRole !== "NICU Nurse" &&  ( */}
+  <ProtectedModule module="Clinical Notes" action="create">
     <Box sx={{ padding: 3, borderRadius: 5, backgroundColor: '#FFFFFF', marginBottom: 3 }}>
       <Box display="flex" justifyContent="center" alignItems="center">
         <Typography variant="h6" sx={{ color: '#0F3B61' }}>Notes</Typography>
@@ -390,9 +392,11 @@ const recognition = new SpeechRecognition();
 </Box>
 
     </Box>
-  )}
+    </ProtectedModule>
+   {/* )} */}
 
   {/* Previous Notes Section with Filtering */}
+  <ProtectedModule module="Clinical Notes" action="view">
   <Box >
     <Box sx={{ 
       display: 'flex', 
@@ -570,7 +574,7 @@ const recognition = new SpeechRecognition();
       </Typography>
     )}
   </Box>
-
+  </ProtectedModule>
   <Snackbar
     open={snackbarOpen}
     autoHideDuration={6000}

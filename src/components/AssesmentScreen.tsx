@@ -2,15 +2,17 @@ import { useState } from 'react';
 import { Box, Tabs, Tab } from '@mui/material';
 import { ApgarScreen} from './ApgarScreen';
 import {BallardScore} from './BallardScore';
+import { DowneScore } from './DowneScore';
  // Create this if needed
 
 interface AssessmentsProps {
   patient_name: string;
   patient_id: string;
   patient_resource_id: string;
+  UserRole: string;
 }
 
-export const  Assessments = ({ patient_name, patient_id, patient_resource_id }: AssessmentsProps) => {
+export const  Assessments = ({ patient_name, patient_id, patient_resource_id ,UserRole}: AssessmentsProps) => {
   const [activeTab, setActiveTab] = useState(0);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -24,6 +26,7 @@ export const  Assessments = ({ patient_name, patient_id, patient_resource_id }: 
   value={activeTab} 
   onChange={handleTabChange}
   sx={{ color: '#228BE6',
+    borderBottom: "1px solid #DBE2F2",
     '& .MuiTabs-indicator': {
       backgroundColor: '#124D81',
     },
@@ -36,8 +39,9 @@ export const  Assessments = ({ patient_name, patient_id, patient_resource_id }: 
     },
   }}
 >
-  <Tab label="APGAR" />
+  <Tab label="APGAR Score" />
   <Tab label="Ballard Score" />
+  <Tab label="Downe Score" />
 
 </Tabs>
       </Box>
@@ -48,6 +52,7 @@ export const  Assessments = ({ patient_name, patient_id, patient_resource_id }: 
             patient_name={patient_name} 
             patient_id={patient_id} 
             patient_resource_id={patient_resource_id} 
+            UserRole={UserRole}
           />
         )}
         {activeTab === 1 && (
@@ -55,9 +60,17 @@ export const  Assessments = ({ patient_name, patient_id, patient_resource_id }: 
             patient_name={patient_name} 
             patient_id={patient_id} 
             patient_resource_id={patient_resource_id} 
+            UserRole={UserRole}
           />
         )}
-      
+        {activeTab === 2 && (
+          <DowneScore 
+            patient_name={patient_name} 
+            patient_id={patient_id} 
+            patient_resource_id={patient_resource_id} 
+            UserRole={UserRole}
+          />
+        )}
       </Box>
     </Box>
   );

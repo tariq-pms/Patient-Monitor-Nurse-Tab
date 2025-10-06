@@ -10,6 +10,7 @@ import { UserInfo } from "./pages/UserInfo";
 import { useEffect, useState } from "react";
 import "@fontsource/noto-sans";
 import { PatientMonitor } from "./pages/PatientMonitor";
+import { NurseMonitor } from "./pages/NurseMonitor";
 
 import { AdminPage } from "./pages/AdminPage";
 import { Organization } from "./pages/Organization";
@@ -21,7 +22,7 @@ import { NotificationProvider } from "./contexts/NotificationContext";
 import {PatientDetailView } from "./pages/PatientDetails";
 import { Administration } from "./pages/Administration";
 import { ModuleProvider } from './contexts/ModuleContext';
-
+import { PermissionProvider } from './contexts/PermissionContext';
 const theme = createTheme({
     typography: {
         allVariants: {
@@ -41,7 +42,7 @@ const theme = createTheme({
 });
 
 function App() {
-    const { isLoading, getIdTokenClaims, isAuthenticated } = useAuth0();
+    const { user,isLoading, getIdTokenClaims, isAuthenticated } = useAuth0();
     const [currentRoom, setCurrentRoom] = useState("");
     const [roomAltered, setRoomAltered] = useState(false);
     const [UserOrganization, setUserOrganization] = useState("");
@@ -61,8 +62,8 @@ function App() {
                 .then((res) => {
                     console.log('fetched res in app', res);
                     setUserOrganization(res?.organization);
-                    setUserRole(res?.role);
-                    // setUserRole(res?.nickname || "");
+                    //setUserRole(res?.role);
+                    setUserRole(res?.name || "");
 
                     console.log('fetched UserRole',res?.role);
                     console.log('searchQuery',searchQuery);
@@ -104,19 +105,20 @@ function App() {
             </Backdrop>
             <Header darkTheme={darkTheme} setSearchQuery={setSearchQuery} toggleDarkTheme={toggleDarkTheme} roomAltered={roomAltered} currentRoom={currentRoom} roomChange={roomChange} onToggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} onAddClick={handleOpenDialog} userOrganization={""}               />
             <DeviceProvider>
-            <ModuleProvider>
+            <PermissionProvider>
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/user" element={<UserInfo />} />
                     <Route path="/rooms" element={<Rooms roomModified={roomModified} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
                     <Route path="/patient-monitor" element={<PatientMonitor currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
+                    <Route path="/nurse-monitor" element={<NurseMonitor currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
                     {/* <Route path="/all-patient" element={<AllPatient searchQuery={searchQuery} currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} /> */}
                     <Route path="/admin" element={<AdminPage userOrganization={UserOrganization} darkTheme={darkTheme} />} />
                     <Route path="/administration" element={<Administration isSidebarCollapsed={isSidebarCollapsed} openDialog={openDialog} userOrganization={UserOrganization} darkTheme={darkTheme} onCloseDialog={handleCloseDialog}/>} />
                     <Route path="/organization" element={<Organization darkTheme={darkTheme} userOrganization={UserOrganization}/>} /> 
                      <Route path="/patient/:id" element={<PatientDetailView  isSidebarCollapsed={isSidebarCollapsed} key={""} newData={false}   patient_id={""} device={[]} patient_resource_id={""} observation_resource={[]} communication_resource={[]} patient_name={""} darkTheme={false} UserRole ={UserRole}selectedIcon={""} />} />
                 </Routes>
-                </ModuleProvider>
+                </PermissionProvider>
             </DeviceProvider>
 
             </NotificationProvider>

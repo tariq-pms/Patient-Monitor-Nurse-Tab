@@ -714,10 +714,13 @@ export const DeviceManagement: FC<roomdata> = (props) => {
     const handleTabChange = (_event: any, newValue: SetStateAction<number>) => {
       setSelectedTab(newValue);
   };
+
+  
+
   useEffect(() => {
     console.log("In Room Page:", props.userOrganization);
     
-    fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?organization=${props.userOrganization}`, {
+    fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?organization=${props.userOrganization}&_count=100`, {
       credentials: "omit",
       headers: {
         Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -959,13 +962,13 @@ export const DeviceManagement: FC<roomdata> = (props) => {
     };
 
    return (
-  <Box sx={{ p: isMobile ? 1 : 2 }}>
+  <Box sx={{ p:1}}>
     {/* Header Section */}
     <Stack
         direction="row"
         justifyContent="space-between"
         alignItems="center"
-        sx={{ mt:1,mb: 1, backgroundColor: ""}}
+        sx={{ mt:1,mb: 0, backgroundColor: ""}}
       >
          <Typography
     variant={isMobile ? "h6" : "h5"}

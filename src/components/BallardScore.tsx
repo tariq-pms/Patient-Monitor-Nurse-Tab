@@ -35,6 +35,7 @@ import heeltoear2 from '../assets/HeeltoEar2.png';
 import heeltoear3 from '../assets/HeeltoEar3.png';
 import heeltoear4 from '../assets/HeeltoEar4.png';
 import heeltoear5 from '../assets/HeeltoEar5.png';
+import { ProtectedModule } from "./ProtectedModule";
 interface Procedure {
   resourceType: string;
   id?: string; // Optional ID field
@@ -75,6 +76,7 @@ interface BallardScoreProps {
   patient_name: string;
   patient_id: string;
   patient_resource_id: string;
+  UserRole: string;
  
 }
 //export const BallardScore = () => {
@@ -413,7 +415,7 @@ const handleSave = async () => {
       {
         actor: {
           reference: "Practitioner/67890",
-          display: "Dr. Jane Smith",
+          display: props.UserRole,
         },
         function: {
           coding: [
@@ -542,7 +544,8 @@ useEffect(() => {
  
 return (
     <>
-    <Box sx={{ borderRadius: "25px", padding: 2 }}>
+   <ProtectedModule module="Assessments" action="create">
+    <Box sx={{ borderRadius: "25px",  padding: 2 }}>
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", }}>
         {/* <Typography variant="h5" sx={{ color: "#0F3B61" }}>
           Ballard Score
@@ -684,7 +687,8 @@ return (
         }}>Submit</Button>
         </Stack>
       </Box>
-    </Box>
+    </Box> </ProtectedModule>
+    <ProtectedModule module="Assessments" action="create">
     <Box marginTop={5}>
     {loading ? (
       <Typography>Loading...</Typography>
@@ -747,7 +751,7 @@ return (
     ) : (
       <Typography>No Data available.</Typography>
     )}
-  </Box>
+  </Box> </ProtectedModule>
   <Snackbar
       open={snackbarOpen}
       autoHideDuration={6000}
