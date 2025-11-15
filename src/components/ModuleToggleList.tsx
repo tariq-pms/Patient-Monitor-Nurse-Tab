@@ -19,7 +19,7 @@ const MODULE_OPTIONS = [
   'Nurse task list'
 ];
 
-export const ModuleToggleList: React.FC<ModuleToggleListProps> = ({ organizationId ,onModulesUpdated}) => {
+export const ModuleToggleList: React.FC<ModuleToggleListProps> = ({ organizationId }) => {
   const [modules, setModules] = useState<{name: string, enabled: boolean}[]>([]);
   const [loading, setLoading] = useState(true);
 

@@ -497,6 +497,7 @@ const handleSave = async () => {
     }
   } catch (error) {
   console.error("Error saving Procedure resource:", error);
+  
   setSnackbarMessage("An error occurred while saving the procedure.");
   setSnackbarSeverity("error");
   setSnackbarOpen(true);
@@ -504,6 +505,9 @@ const handleSave = async () => {
     setLoading(false);
   }
 };
+
+
+
 const fetchProcedureHistory = async (id: string) => {
   if (!id) return;
 

@@ -1,18 +1,18 @@
-import { Box, Typography, Tabs, Tab, useMediaQuery, Stack, Button, Snackbar } from "@mui/material";
+import { Box, Typography, Tabs, Tab, useMediaQuery, Stack, Button } from "@mui/material";
 import { FC, useState } from "react";
 import { useTheme } from "@mui/material/styles";
 import PeopleIcon from "@mui/icons-material/People";
 import HotelIcon from "@mui/icons-material/Hotel";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import DevicesIcon from "@mui/icons-material/Devices";
-import AssessmentIcon from "@mui/icons-material/Assessment";
 import { useAuth0 } from '@auth0/auth0-react';
 import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { DeviceManagement } from "../components/DeviceManagement";
 import { Patient } from "../components/Patient";
 import { UserList } from "../components/UserList";
-import { DeviceManagement1 } from "../components/DeviceManagement1";
+import { Rooms } from "./Rooms";
+
 
 interface AdministrationPageProps {
   openDialog: boolean;
@@ -127,15 +127,14 @@ export const Administration: FC<AdministrationPageProps> = ({
                 <Patient
                   userOrganization={userOrganization}
                   openDialog={openDialog}
-                  onCloseDialog={onCloseDialog}
-                />
+                  onCloseDialog={onCloseDialog} darkTheme={false}                />
               );
             case 1:
               return <DeviceManagement userOrganization={userOrganization} darkTheme={false} />;
             case 2:
               return <UserList userOrganization={userOrganization} darkTheme={false} />;
             case 3:
-              return <DeviceManagement1 userOrganization={userOrganization} darkTheme={false} />;
+              return <Rooms userOrganization={userOrganization} darkTheme={false}  />;
            
             default:
               return (

@@ -58,7 +58,10 @@ export const SidebarOg: FC<SidebarProps> = ({
     { id: 'diagnostics', label: "Diagnostics", icon: faDroplet, fhirModuleName: "Diagnostics" },
     { id: 'treatment', label: "Treatment", icon: faHeartCircleBolt, fhirModuleName: "Patients Clinical List" }, // Changed to Patients Clinical List
     { id: 'notes', label: "Notes", icon: faFile, fhirModuleName: "Clinical Notes" },
-    { id: 'assessments', label: "Assessments", icon: faClipboardCheck, fhirModuleName: "Assessments" },   
+    { id: 'assessments', label: "Assessments", icon: faClipboardCheck, fhirModuleName: "Assessments" }, 
+    { id: 'growthchart', label: "Growth Chart", icon: faBaby, fhirModuleName: "Diagnostics" },
+
+  
   ];
 
   const nicuNurseItems: MenuItem[] = [
@@ -66,7 +69,7 @@ export const SidebarOg: FC<SidebarProps> = ({
   ];
 
   const otherRoleItems: MenuItem[] = [
-    { id: 'babyprofile', label: "Baby Profile", icon: faBaby, fhirModuleName: "Patient Birth Details" },
+   
     { id: 'alarms', label: "Monitoring & Alarm", icon: faBell, fhirModuleName: "Vitals & Trends" },
   ];
 
@@ -131,11 +134,11 @@ export const SidebarOg: FC<SidebarProps> = ({
       }}
     >
       {/* Debug info - remove in production */}
-      {!loading && (
+      {/* {!loading && (
         <Box sx={{ p: 1, fontSize: '10px', color: 'gray', textAlign: 'center' }}>
           Permissions loaded: {Object.keys(permissions).length} modules
         </Box>
-      )}
+      )} */}
 
       <List sx={{ width: "100%", padding: 0 }}>
         {filteredMenuItems.length === 0 && !loading ? (

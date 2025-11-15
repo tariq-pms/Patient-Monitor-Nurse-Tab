@@ -1,13 +1,12 @@
 import { useState, useEffect, FC } from 'react';
 import Box from '@mui/material/Box';
-import { RoomCard } from '../components/RoomCard';
-import { Alert, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Snackbar, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Alert,  Dialog, DialogActions, DialogContent, DialogTitle,  Snackbar, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { CustomOkButton } from '../components/CustomOkButton';
 import { CustomNoButton } from '../components/CustomNoButton';
+import { RoomCard1 } from '../components/RoomCard1';
 
 export interface roomdata {
-  roomModified: Function;
+//   roomModified: Function;
   userOrganization: string;
   darkTheme: boolean;
 }
@@ -47,8 +46,6 @@ export const Rooms: FC<roomdata> = (props) => {
    
     const [rooms, setRooms] = useState<FhirLocation[]>([]);
     const [roomAddedRemoved, setRoomAddedRemoved] = useState(false);
-    const [controlBorder, setControlBorder] = useState('grey');
-    const [controlOpacity, setOpacity] = useState("0.8");
     const [addnewbutton, setAddNewButton] = useState(false);
     const [newRoomName, setNewRoomName] = useState("");
     const [snackSucc, setSnackSucc] = useState(false);
@@ -66,7 +63,7 @@ export const Rooms: FC<roomdata> = (props) => {
       .then((response) => response.json())
       .then((data) => {
         if(data.entry) {
-          props.roomModified();
+        //   props.roomModified();
           
           // Filter to get only rooms (locations that are not beds)
           const filteredRooms = data.entry.filter((entry: any) => {
@@ -86,7 +83,7 @@ export const Rooms: FC<roomdata> = (props) => {
       });
     }, [roomAddedRemoved, props.userOrganization]);
 
-    const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    const handleClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
         if (reason === 'clickaway') return;
         setSnack(false);
     };
@@ -188,7 +185,7 @@ export const Rooms: FC<roomdata> = (props) => {
     const roomBoxes = rooms.map((room) => {
         const roomName = room.resource.identifier?.[0]?.value || room.resource.name || 'Unnamed Room';
         return (
-            <RoomCard 
+            <RoomCard1
                 key={room.resource.id}
                 deviceChangeToggle={vvtemp} 
                 deviceChange={() => setVvtemp(!vvtemp)} 
@@ -206,7 +203,7 @@ export const Rooms: FC<roomdata> = (props) => {
             <div>
                 <Stack width={'100%'} direction={'row'} paddingTop={'2%'} justifyContent={'center'} textAlign={'center'}>
                     <Typography variant='h5' color={darkTheme ? 'white' : '#124D81'}>
-                        Rooms & Device Settings
+                        Device Settings
                     </Typography>
                 </Stack>
                 
@@ -224,7 +221,7 @@ export const Rooms: FC<roomdata> = (props) => {
                             <Typography>No rooms found</Typography>
                         )}
                         
-                        <Box 
+                        {/* <Box 
                             width={"350px"} 
                             minHeight={'300px'} 
                             maxHeight={'300px'} 
@@ -258,7 +255,7 @@ export const Rooms: FC<roomdata> = (props) => {
                                     </Stack>
                                 </Card>
                             </Paper>
-                        </Box>
+                        </Box> */}
                     </Box>
                     
                     <Snackbar open={snack} autoHideDuration={5000} onClose={handleClose}>

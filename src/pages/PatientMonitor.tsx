@@ -8,6 +8,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import { NurseTaskList } from '../components/NurseTaskList';
 
 type PatientMonitorProps = {
   userOrganization: string;
@@ -34,6 +35,7 @@ type Patient = {
     system: string;
     value: string;
   }[];
+  birthDate:string,
   managingOrganization: {
     reference: string;
   };
@@ -341,12 +343,14 @@ interface State {
   // const handleOpenDialog = () => setOpenDialog(true);
   const handleCloseDialog = () => setOpenDialog(false);
 
-  const containerStyles = {
+  // const containerStyles = {
     
-    justifyContent: 'center',
-    alignItems: 'center',
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
     
-  };
+  // };
+  
+  
   const tabConfig = [
     { label: "My Tasks", icon: <AssignmentIcon /> },
     { label: "Patients", icon: <EmojiEmotionsIcon /> },
@@ -404,6 +408,27 @@ value={selectedIndex}
           switch (selectedIndex) {
             // case 0:
             //   return <Typography>My Tasks will Come Here</Typography>;
+            case 0:
+                return (
+                  <Box >
+                 {patientList.map(patient => (
+              <NurseTaskList
+                key={String(patient.id)}
+                patient_resource_id={String(patient.id)}
+                patient_name={String(patient.extension[0]?.valueString)}
+                gestational_age={String(patient.extension[1]?.valueString)}
+                birthDate={String(patient.birthDate)}
+                patient_id={String(patient.identifier[0]?.value)}
+                device={parentDevice[String(patient.id)]}
+         
+                darkTheme={darkTheme}
+                // selectedIcon={selectedIcon}
+                onClick={() => handlePatientCardClick(patient)}
+              />
+            ))}
+                </Box>
+                
+              )
             case 1:
                 return (
                   <Box >
@@ -411,8 +436,10 @@ value={selectedIndex}
               <PatientCard
                 key={String(patient.id)}
                 patient_resource_id={String(patient.id)}
-                patient_name={String(patient.extension[0].valueString)}
-                patient_id={String(patient.identifier[0].value)}
+                patient_name={String(patient.extension[0]?.valueString)}
+                gestational_age={String(patient.extension[1]?.valueString)}
+                birthDate={String(patient.birthDate)}
+                patient_id={String(patient.identifier[0]?.value)}
                 device={parentDevice[String(patient.id)]}
                 observation_resource={parentObs[String(patient.id)]}
                 communication_resource={parentComm[String(patient.id)]}
@@ -477,7 +504,7 @@ value={selectedIndex}
       {!isAuthenticated && !isLoading && (
         <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
           <img src={pmsLogo} alt="Phoenix" style={{ maxWidth: '50%', height: 'auto', marginLeft: 'auto', marginRight: 'auto' }} />
-          <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography>
+          <Typography variant='h3' color={'#1864AB'} fontWeight={'50'}>NeoLife Sentinel</Typography>
           <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
           <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
             <Button variant='outlined' sx={{ width: '200px', height: '50px', borderRadius: '100px' }} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>

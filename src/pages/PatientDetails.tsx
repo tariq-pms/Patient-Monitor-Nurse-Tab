@@ -12,6 +12,7 @@ import { Trends1 } from "../components/Trends1";
 import { Notes } from "../components/Notes";
 import { Treatment } from "../components/Treatment";
 import { Dashboard } from '../components/Dashboard';
+import { GrowthChart } from '../components/GrowthChart';
 import { usePermissions } from '../contexts/PermissionContext';
 import { ProtectedModule } from '../components/ProtectedModule'; // ADD THIS IMPORT
 
@@ -19,6 +20,8 @@ export interface PatientDetails {
   newData: boolean;
   key: string;
   patient_id: string;
+  gestational_age:string;
+  birthDate:string;
   device: {
     "resourceType": string;
     "id": string;
@@ -135,13 +138,14 @@ export interface PatientDetails {
   darkTheme:boolean;
   UserRole:string;
   selectedIcon:string;
-  isSidebarCollapsed:boolean
+  isSidebarCollapsed:boolean;
+  userOrganization: string;
 }
 
 export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
   const [selectedMenuItemId, setSelectedMenuItemId] = useState('overview');
   const location = useLocation();
-  const { patientName, patientId, patientResourceId } = location.state || {};
+  const { patientName, patientId, patientResourceId,gestationAge,birthDate } = location.state || {};
   
   // ADD PERMISSION HOOK
   const { canViewModule, loading } = usePermissions();
@@ -156,7 +160,8 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
       'feeds': 'Vitals & Trends',
       'trends': 'Vitals & Trends',
       'treatment': 'Patients Clinical List',
-      'assessments': 'Assessments'
+      'assessments': 'Assessments',
+      'growthchart':'Diagnostics'
     };
     
     const moduleName = moduleMap[id];
@@ -176,7 +181,19 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
 
   return (
     <>
-      <Box sx={{ backgroundColor: '#FFFFFFCC', padding: 1, alignItems: "center", mb: 2 }}>
+     <Box
+  sx={{
+    position: "sticky",    
+    top: 0,                 
+    zIndex: 1000,           
+    backgroundColor: "#FFFFFFCC", 
+    backdropFilter: "blur(8px)",  
+    padding: 1,
+    alignItems: "center",
+    mb: 2,
+    borderBottom: "1px solid #E0E0E0", 
+  }}
+>
         <Box sx={{ display: "flex", padding: 1, justifyContent: "space-between", backgroundColor: '#FFFFFFCC', alignItems: "center" }}>
           <Stack paddingRight={1} paddingLeft={1} sx={{ backgroundColor: "#5E84CC1A", borderRadius: 2 }}>
             <Typography variant="h6" sx={{ color: "#124D81" }}>
@@ -205,7 +222,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
               GA: 
             </Typography>
             <Typography variant="subtitle1" style={{ color: "#124D81", fontWeight: 600 }}>
-              22 W 7 D
+             {gestationAge}
             </Typography>
           </Stack>
    
@@ -214,7 +231,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
               D.O.B:
             </Typography>
             <Typography variant="subtitle1" style={{ color: "#124D81", fontWeight: 600 }}>
-              11/09/2024
+              {birthDate}
             </Typography>
           </Stack>
         </Box>
@@ -223,12 +240,24 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
       {/* Main page */}
       <Box sx={{ display: "flex" }}>
         {/* Sidebar - Updated to handle permissions */}
-        <SidebarOg 
-          isSidebarCollapsed={props.isSidebarCollapsed} 
-          selectedId={selectedMenuItemId} 
-          onIconClick={handleItemClick} 
-          UserRole={props.UserRole} 
-        />
+        <Box
+  sx={{
+    position: "sticky",
+    top: 0,
+    alignSelf: "flex-start",
+    height: "100vh",
+   
+  
+    backgroundColor: "#FFFFFF", // adjust for dark mode if needed
+  }}
+>
+  <SidebarOg 
+    isSidebarCollapsed={props.isSidebarCollapsed} 
+    selectedId={selectedMenuItemId} 
+    onIconClick={handleItemClick} 
+    UserRole={props.UserRole} 
+  />
+</Box>
         
         {/* Main Content with Permission Protection */}
         <Box sx={{ flexGrow: 1 }}>
@@ -241,6 +270,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
                 patientId={patientId || ""} 
                 deviceId={""} 
                 observationId={""} 
+                patient_resource_id={patientResourceId} 
               />
             </ProtectedModule>
           )}
@@ -249,12 +279,15 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
           {selectedMenuItemId === 'diagnostics' && (
             <ProtectedModule module="Diagnostics">
               <Dashboard 
-                patient_name={patientName} 
-                patient_id={patientId} 
-                patient_resource_id={patientResourceId} 
+            
                 UserRole={props.UserRole} 
                 onClose={() => {}} 
                 patient={""}  
+                patient_resource_id={patientResourceId}  
+                  patient_name={patientName} 
+                  patient_id={patientId}
+                  birth_date={birthDate}
+                  gestational_age= {gestationAge}
               />
             </ProtectedModule>
           )}
@@ -264,10 +297,14 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
             <ProtectedModule module="Medications">
               <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
                 <PrescriptionScreen 
-                  patient_name={patientName} 
-                  patient_id={patientId} 
+              
                   UserRole={props.UserRole} 
-                  patient_resource_id={patientResourceId}
+                  patient_resource_id={patientResourceId}  
+                  patient_name={patientName} 
+                  patient_id={patientId}
+                  birth_date={birthDate}
+                  gestational_age= {gestationAge}
+                  
                 />
               </Box>
             </ProtectedModule>
@@ -279,9 +316,11 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
               <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
                 <Notes 
                   UserRole={props.UserRole} 
+                  patient_resource_id={patientResourceId}  
                   patient_name={patientName} 
-                  patient_id={patientId} 
-                  patient_resource_id={patientResourceId} 
+                  patient_id={patientId}
+                  birth_date={birthDate}
+                  gestational_age= {gestationAge} 
                 />
               </Box>
             </ProtectedModule>
@@ -303,20 +342,12 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
                 <Trends1 
                   device_id={""} 
                   patient_resource_id={patientResourceId}  
+                  patient_name={patientName} 
+                  patient_id={patientId}
+                  birth_date={birthDate}
+                  gestational_age= {gestationAge}
                   device_resource_id={""} 
-                  observation_resource={{
-                    resourceType: "",
-                    id: "",
-                    effectiveDateTime: "",
-                    meta: { versionId: "", lastUpdated: "" },
-                    identifier: [],
-                    status: "",
-                    category: [],
-                    code: { coding: [], text: "" },
-                    subject: { reference: "" },
-                    device: { reference: "" },
-                    component: []
-                  }} 
+                  userOrganization={props.userOrganization}
                   darkTheme={false} 
                   selectedIcon={""}  
                 />
@@ -342,26 +373,44 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
             <ProtectedModule module="Assessments">
               <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
                 <Assessments 
+                  userOrganization={props.userOrganization}
                   UserRole={props.UserRole} 
+                  patient_resource_id={patientResourceId}  
                   patient_name={patientName} 
-                  patient_id={patientId} 
-                  patient_resource_id={patientResourceId}
+                  patient_id={patientId}
+                  birth_date={birthDate}
+                  gestational_age= {gestationAge}
                 />
               </Box>
             </ProtectedModule>
           )}
+
+{selectedMenuItemId === 'growthchart' && (
+  <ProtectedModule module="Diagnostics">
+    <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
+      <GrowthChart
+        patient_resource_id={patientResourceId}  
+        patient_name={patientName} 
+        patient_id={patientId}
+        birth_date={birthDate}
+        gestational_age= {gestationAge} 
+        userOrganization={props.userOrganization}
+      />
+    </Box>
+  </ProtectedModule>
+)}
+
 
           {/* Default view */}
           {!selectedMenuItemId && (
             <ProtectedModule module="Patients Overview">
               <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
                 <PatientOverview 
-                  darkTheme={false} 
-                  patientName={patientName || ""} 
-                  patientId={patientId || ""} 
-                  observationId={""} 
-                  deviceId={""}
-                />
+                  darkTheme={false}
+                  patientName={patientName || ""}
+                  patientId={patientId || ""}
+                  observationId={""}
+                  deviceId={""} patient_resource_id={""}                />
               </Box>
             </ProtectedModule>
           )}

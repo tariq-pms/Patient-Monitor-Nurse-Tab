@@ -1,24 +1,22 @@
 import React, { FC, useEffect, useState } from 'react';
-import {AppBar, Divider,FormControl,IconButton,Switch,Menu,MenuItem,Select,SelectChangeEvent, Stack, useMediaQuery, useTheme} from '@mui/material';
+import {AppBar, Divider,IconButton,Switch,Menu, Stack, useMediaQuery, useTheme} from '@mui/material';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
-import SettingsIcon from '@mui/icons-material/Settings';
+
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Button from '@mui/material/Button';
 import { useNavigate,useLocation } from 'react-router-dom';
 import pmsLogo from '../assets/image 135.png';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography } from '@material-ui/core';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
-import DehazeIcon from '@mui/icons-material/Dehaze';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleDoubleLeft, faAngleDoubleRight } from '@fortawesome/free-solid-svg-icons';
 
 
 export interface HeaderProps {
   currentRoom: string;
   roomChange: (roomId: string) => void;
-  roomAltered: boolean;
+  // roomAltered: boolean;
   userOrganization: string;
   // darkTheme: boolean;
   // toggleDarkTheme: () => void;
@@ -40,9 +38,6 @@ export const Header: FC<HeaderProps> = (props) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const {user, isLoading, isAuthenticated, logout, getIdTokenClaims} = useAuth0();
-
-
-
   const[UserRole, setUserRole] = useState("");
   const[UserOrganization, setUserOrganization] = useState("");
  
@@ -69,20 +64,7 @@ export const Header: FC<HeaderProps> = (props) => {
     },
   ]);
 
-  const [room, setRoom] = useState(temproom.length > 0 ? String(temproom[0].resource.name) : '');
- const handleSetRoom = (event: SelectChangeEvent) => {
-    setRoom(event.target.value);
-    props.roomChange(
-      temproom[
-        temproom.findIndex(
-          (item) => item.resource.name.toString() === String(event.target.value)
-        )
-      ].resource.id
-    );
-  };
  
- 
- const [prevRoom, setPrevRoom] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -95,6 +77,9 @@ export const Header: FC<HeaderProps> = (props) => {
     getIdTokenClaims()
     .then((res) => {
       console.log('Role:', res);
+      console.log('notHome:', notHome);
+      console.log('temproom:', temproom);
+
       setUserRole(res?.role);
       setUserOrganization(res?.organization);
        console.log("organization is here",UserOrganization )
@@ -146,18 +131,12 @@ const handleBackButtonClick = () => {
 
   if (UserRole === 'Hospital Technician') {
       navigate('/patient-monitor');
-  } else if (UserRole === 'Service') {
-      navigate('/service');
   } else {
       navigate('/patient-monitor');
   }
 
-  setRoom(prevRoom || props.currentRoom); 
+  
 };
-
-
-
-
 
   return (
    <Box sx={{ flexGrow: 1 }}>
@@ -166,7 +145,7 @@ const handleBackButtonClick = () => {
           {!isLoading && isAuthenticated && (
             <>
               <div style={{ marginRight: 'auto' }}>
-              <Box sx={{ cursor: 'pointer',width:'55%',maxWidth: '55%', display:'flex'}}>
+              <Box sx={{ width:'55%',maxWidth: '55%', display:'flex'}}>
                  {/* Sidebar Toggle */}
           {/* <IconButton 
             onClick={props.onToggleSidebar} 
@@ -183,14 +162,18 @@ const handleBackButtonClick = () => {
           </IconButton> */}
 
           {/* Logo */}
+          <IconButton    onClick={handleBackButtonClick}   sx={{height:'40px',  cursor: 'pointer'}}>
+              <ArrowBackIcon style={{color: darkTheme ? 'white' : '#124D81' }} />       
+        {/* < DehazeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} /> */}
+       
+      </IconButton>
           <Box 
             sx={{ 
               display: 'flex', 
               flexDirection: 'column',
-              cursor: 'pointer',
               minWidth: isMobile ? '80px' : '120px'
             }}
-            onClick={handleBackButtonClick}
+            
           >
             <img 
               src={pmsLogo} // Replace with your logo path

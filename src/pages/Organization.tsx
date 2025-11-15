@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import {
-  Alert,
   Box,
   Button,
   Dialog,
@@ -16,7 +15,6 @@ import {
   Select,
   Snackbar,
   Stack,
-  Switch,
   Tab,
   Table,
   TableBody,
@@ -35,6 +33,7 @@ import MuiAlert from '@mui/material/Alert';
 import { Sidebar1 } from '../components/Sidebar1';
 import pmsLogo from '../assets/phx_logo.png';
 import {ModuleToggleList } from '../components/ModuleToggleList';
+import { OrganizationCard } from '../components/OrganizationCard';
 
 // Type Definitions
 interface Organization {
@@ -55,24 +54,15 @@ interface Organization {
   }>;
 }
 
-interface User {
-  email: string;
-  username: string;
-  role: string;
-  organization: string;
-}
+
 
 interface OrganizationProps {
   userOrganization: string;
   darkTheme: boolean;
 }
 
-interface OrganizationModule {
-  name: string;
-  enabled: boolean;
-}
 
-export const Organization : React.FC<OrganizationProps> = ({ userOrganization, darkTheme }) => {
+export const Organization : React.FC<OrganizationProps> = ({ userOrganization }) => {
   // State Hooks
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
@@ -86,8 +76,10 @@ export const Organization : React.FC<OrganizationProps> = ({ userOrganization, d
   const [newOrganization, setNewOrganization] = useState({
     name: '',
     location: '',
-    contact: ''
+    contact: '',
+    logo: '' // base64 logo string
   });
+  
   const [newUser, setNewUser] = useState({
     email: '',
     username: '',
@@ -105,21 +97,7 @@ export const Organization : React.FC<OrganizationProps> = ({ userOrganization, d
 
   const { isAuthenticated, loginWithRedirect } = useAuth0();
 
-  // Constants
-  // const MODULES: Module[] = [
-  //   { name: 'Real-Time Vitals & Trends', active: true },
-  //   { name: 'Prescription & Drug Administration', active: false },
-  //   { name: 'Nutrition & Feeds', active: true },
-  //   { name: 'Assessments', active: true },
-  //   { name: 'Diagnostics, Labs & Imaging', active: true },
-  //   { name: 'Diagnosis, Treatment & Care plan', active: true },
-  //   { name: 'Patient Profile & Birth Data', active: true },
-  //   { name: 'Clinical Notes', active: true },
-  //   { name: 'Alarm Logs', active: true },
-  //   { name: 'Nurse task list', active: true },
-  // ];
-
-  // Helper Functions
+ 
   const formatDate = (dateString?: string): string => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
@@ -155,32 +133,109 @@ export const Organization : React.FC<OrganizationProps> = ({ userOrganization, d
 
   const addOrganization = async () => {
     try {
-      const data = {
+      let binaryId: string | null = null;
+  
+      // ✅ STEP 1: Upload logo as Binary (if available)
+      if (newOrganization.logo) {
+        const base64Data = newOrganization.logo.split(",")[1]; // remove data:image/png;base64,
+  
+        const binaryResponse = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Binary`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+          },
+          body: JSON.stringify({
+            resourceType: "Binary",
+            contentType: "image/png",
+            data: base64Data,
+          }),
+        });
+  
+        console.log("🧾 Binary upload status:", binaryResponse.status);
+        console.log("📬 Binary response headers:", Array.from(binaryResponse.headers.entries()));
+  
+        if (!binaryResponse.ok) throw new Error("Failed to upload logo");
+  
+        // Try to read the response safely
+        const text = await binaryResponse.text();
+        if (text) {
+          try {
+            const binaryData = JSON.parse(text);
+            binaryId = binaryData.id;
+          } catch {
+            console.warn("⚠️ Binary response not valid JSON");
+          }
+        }
+  
+        // Fallback 1: Try Location header
+        if (!binaryId) {
+          const location = binaryResponse.headers.get("Location");
+          if (location) {
+            const match = location.match(/Binary\/([^/]+)/);
+            binaryId = match ? match[1] : null;
+          }
+        }
+  
+        // Fallback 2: Fetch latest Binary if no ID found
+        if (!binaryId) {
+          console.log("⚠️ No Binary ID found, fetching latest Binary...");
+          const searchResponse = await fetch(
+            `${import.meta.env.VITE_FHIRAPI_URL}/Binary?_sort=-_lastUpdated&_count=1`,
+            {
+              headers: {
+                Authorization: "Basic " + btoa("fhiruser:change-password"),
+              },
+            }
+          );
+          const searchData = await searchResponse.json();
+          binaryId = searchData.entry?.[0]?.resource?.id || null;
+        }
+  
+        if (!binaryId) throw new Error("Binary uploaded, but no ID returned");
+  
+        console.log("✅ Uploaded logo Binary ID:", binaryId);
+      }
+  
+      // ✅ STEP 2: Create Organization resource with Binary reference
+      const orgData: any = {
         resourceType: "Organization",
         name: newOrganization.name,
         address: [{ use: "work", line: [newOrganization.location] }],
         telecom: [{ system: "phone", value: newOrganization.contact }],
       };
-
+  
+      if (binaryId) {
+        orgData.extension = [
+          {
+            url: "http://example.org/fhir/StructureDefinition/organization-logo",
+            valueReference: {
+              reference: `Binary/${binaryId}`,
+            },
+          },
+        ];
+      }
+  
       const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Organization`, {
         method: "POST",
-        body: JSON.stringify(data),
+        body: JSON.stringify(orgData),
         headers: {
           "Content-Type": "application/json",
           Authorization: "Basic " + btoa("fhiruser:change-password"),
         },
       });
-
+  
       if (!response.ok) throw new Error("Failed to add organization");
-
+  
       await fetchOrganizations();
-      showSnackbar('Organization added successfully', 'success');
+      showSnackbar("Organization added successfully", "success");
       setOpenOrgDialog(false);
     } catch (error) {
-      console.error("Error:", error);
-      showSnackbar('Failed to add organization', 'error');
+      console.error("Error adding organization:", error);
+      showSnackbar("Failed to add organization", "error");
     }
   };
+  
 
   const addUser = async () => {
     try {
@@ -202,10 +257,14 @@ export const Organization : React.FC<OrganizationProps> = ({ userOrganization, d
 
       showSnackbar('User created successfully', 'success');
       setOpenUserDialog(false);
-    } catch (error) {
+    } 
+    
+    
+    catch (error) {
       console.error('Error:', error);
       showSnackbar(error instanceof Error ? error.message : 'Failed to create user', 'error');
     }
+    
   };
 
   // Effects
@@ -352,23 +411,30 @@ export const Organization : React.FC<OrganizationProps> = ({ userOrganization, d
       {activeTab === "Modules" && selectedOrganization && (
   <ModuleToggleList 
     organizationId={selectedOrganization.id}
-    onModulesUpdated={(updatedModules) => {
+    onModulesUpdated={() => {
       // Handle the update in parent component if needed
     }}
+
+    
   />
 )}
+ {activeTab === "Devices" && selectedOrganization && (
+  <OrganizationCard key={selectedOrganization.id} organizationData={selectedOrganization} OrganizationId={''} OrganizationName={''} deviceChange={function (): void {
+    throw new Error('Function not implemented.');
+  } } />
+  )}
       </Box>
     </Box>
   );
 
   const renderAuthPrompt = () => (
-    <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'}>
+    <Stack width={'100%'} marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'}>
       <img 
         src={pmsLogo} 
         alt="Phoenix" 
         style={{ maxWidth: '20%', height: 'auto', margin: '0 auto' }} 
       />
-      <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography>
+      <Typography variant='h3' color={'#0CB0D3'} fontWeight={'50'}>NeoLife Sentinel</Typography>
       <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
       <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
         <Button 
@@ -395,7 +461,7 @@ export const Organization : React.FC<OrganizationProps> = ({ userOrganization, d
     <Box sx={{ display: "flex", gap: 2 }}>
        {isAuthenticated ? (
       <>
-      <Sidebar1 onIconClick={undefined} isSidebarCollapsed={false} selectedIndex={null} /><Box width={'100%'} sx={{ p: 2 }}>
+      <Sidebar1   onIconClick={() => {}}  selectedIndex={null} /><Box width={'100%'} sx={{ p: 2 }}>
           {!selectedOrganization ? renderOrganizationList() : renderOrganizationDetail()}
 
           {/* Add Organization Dialog */}
@@ -408,23 +474,65 @@ export const Organization : React.FC<OrganizationProps> = ({ userOrganization, d
               Organisation Details
             </DialogTitle>
             <DialogContent>
-              <Stack spacing={2} mt={1}>
-                {[
-                  { label: 'Name', value: newOrganization.name, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setNewOrganization(prev => ({ ...prev, name: e.target.value })) },
-                  { label: 'Location', value: newOrganization.location, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setNewOrganization(prev => ({ ...prev, location: e.target.value })) },
-                  { label: 'Contact Number', value: newOrganization.contact, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setNewOrganization(prev => ({ ...prev, contact: e.target.value })) }
-                ].map((field, index) => (
-                  <TextField
-                    key={index}
-                    label={field.label}
-                    variant="outlined"
-                    value={field.value}
-                    onChange={field.onChange}
-                    fullWidth
-                    InputLabelProps={{ sx: { color: '#000000' } }}
-                    InputProps={{ sx: { backgroundColor: '#F3F6F8', color: '#000000', borderRadius: '8px' } }} />
-                ))}
-              </Stack>
+            <Stack spacing={2} mt={1}>
+  {[
+    { label: 'Name', value: newOrganization.name, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setNewOrganization(prev => ({ ...prev, name: e.target.value })) },
+    { label: 'Location', value: newOrganization.location, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setNewOrganization(prev => ({ ...prev, location: e.target.value })) },
+    { label: 'Contact Number', value: newOrganization.contact, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setNewOrganization(prev => ({ ...prev, contact: e.target.value })) }
+  ].map((field, index) => (
+    <TextField
+      key={index}
+      label={field.label}
+      variant="outlined"
+      value={field.value}
+      onChange={field.onChange}
+      fullWidth
+      InputLabelProps={{ sx: { color: '#000000' } }}
+      InputProps={{ sx: { backgroundColor: '#F3F6F8', color: '#000000', borderRadius: '8px' } }} />
+  ))}
+
+  {/* Add Logo Upload */}
+  <Button
+  variant="contained"
+  component="label"
+  sx={{
+    backgroundColor: '#007BFF',
+    color: 'white',
+    '&:hover': { backgroundColor: '#0069d9' }
+  }}
+>
+  Upload Logo (PNG)
+  <input
+    type="file"
+    hidden
+    accept="image/png"
+    onChange={(e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          setNewOrganization(prev => ({
+            ...prev,
+            logo: reader.result as string
+          }));
+        };
+        reader.readAsDataURL(file);
+      }
+    }}
+  />
+</Button>
+
+{newOrganization.logo && (
+  <Box sx={{ mt: 1 }}>
+    <img
+      src={newOrganization.logo}
+      alt="Preview"
+      style={{ width: 100, height: 100, borderRadius: 10 }}
+    />
+  </Box>
+)}
+</Stack>
+
             </DialogContent>
             <DialogActions sx={{ mt: 2 }}>
               <Button

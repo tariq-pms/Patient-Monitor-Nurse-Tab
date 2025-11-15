@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -14,10 +14,20 @@ import {
   TableContainer,
   Paper,
   Stack,
+  TableHead,
+  Chip,
+  CircularProgress,
+  Skeleton,
 
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowTrendUp, faCapsules, faChevronRight, faClock, faDroplet, faHeartPulse, faLungs, faPrescription, faTemperatureHalf } from "@fortawesome/free-solid-svg-icons";
+import { faArrowTrendUp,  faChevronRight,  faPrescription } from "@fortawesome/free-solid-svg-icons";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import OpacityIcon from "@mui/icons-material/Opacity";
+import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat";
+import BoltIcon from "@mui/icons-material/Bolt";
+
+
 interface PatientOverviewProps {
    
     darkTheme: boolean;
@@ -25,10 +35,32 @@ interface PatientOverviewProps {
     patientId: string;
     deviceId:string;
     observationId:string;
+    patient_resource_id: string;
+  }
+  interface Medication {
+    id: string;
+    name: string;
+    startDate: string;
+    endDate: string;
+    frequency: string;
+    frequency1?: string; // optional, if some don't have it
+    route: string;
+    orderType: string;
+    totalDoses: number;
+    administeredCount: number;
+    dosageInstruction?: {
+      doseAndRate?: {
+        doseQuantity?: {
+          value?: number;
+          unit?: string;
+        };
+      }[];
+    }[];
+    use: string;
   }
   //export const DeviceInService: React.FC<DeviceInServiceProps> = ({
-export const PatientOverview : React.FC<PatientOverviewProps> = () => {
-
+export const PatientOverview : React.FC<PatientOverviewProps> = (props) => {
+  const [isLoadingReports, setIsLoadingReports] = useState(false);
     // const realtimeDataDisplay = () => {
     //     // if(props.newData){
     //         return (
@@ -187,11 +219,284 @@ const patientData = {
     treatment: ["Phototherapy", "Blood Transfusion x 1", "IV Therapy"],
     assessment: "BiND Score - 5",
   };
-  const medications = [
-    { name: "Apnical/Caffeine citrate", dose: "12.5 mg", frequency: "Q36H", route: "IV", time: "12:30 PM", isCritical: true },
-    { name: "Rosicillin/Ampicillin", dose: "8 mg", frequency: "Q36H", route: "IV", time: "10:00 AM" },
-    { name: "Rosicillin/Ampicillin", dose: "8 mg", frequency: "Q36H", route: "IV", time: "10:00 AM" },
-  ];
+
+  const [latestManual, setLatestManual] = useState<any | null>(null);
+  const [manualTrends, setManualTrends] = useState<any[]>([]);
+  const [prescriptionHistory, setPrescriptionHistory] = useState<Medication[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [savedReports, setSavedReports] = useState<any[]>([]);
+  const [statusFilter] = useState<"all" | "ongoing" | "completed">("all");
+
+  // const filteredMedications1 = prescriptionHistory.filter(
+  //   (med) => med.administeredCount < med.totalDoses
+  // );
+  
+  const calculateIntervals = (startDate: string | number | Date, endDate: string | number | Date, frequencyInHours: number) => {
+    const intervals = [];
+    let currentDate = new Date(startDate);
+  
+    while (currentDate <= new Date(endDate)) {
+      intervals.push(new Date(currentDate)); // Add the current date to the intervals array
+      currentDate.setHours(currentDate.getHours() + frequencyInHours); // Increment by the frequency
+    }
+    return intervals;
+    
+    
+  }; 
+
+  async function fetchManualTrends(patientId: string, timeframeHours = 24) {
+    console.log("📥 Fetching MANUAL observations for patient:", patientId);
+  
+    try {
+      // Step 1: Find the latest Observation ID
+      const searchUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Observation?subject=Patient/${patientId}&category=vital-signs&_sort=-date&_count=1`;
+      const searchResponse = await fetch(searchUrl, {
+        headers: {
+          Authorization: "Basic " + btoa("fhiruser:change-password"),
+          Accept: "application/fhir+json",
+        },
+      });
+  
+      const searchResult = await searchResponse.json();
+      if (!searchResult.entry?.length) return [];
+  
+      const observationId = searchResult.entry[0].resource.id;
+  
+      // Step 2: Calculate `_since` based on timeframe
+      const sinceDate = new Date(Date.now() - timeframeHours * 60 * 60 * 1000).toISOString();
+  
+      // Step 3: Fetch observation history (filtered)
+      const historyUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Observation/${observationId}/_history?_since=${sinceDate}&_count=50`;
+      console.log("📜 Fetching filtered observation history:", historyUrl);
+  
+      const historyResponse = await fetch(historyUrl, {
+        headers: {
+          Authorization: "Basic " + btoa("fhiruser:change-password"),
+          Accept: "application/fhir+json",
+        },
+      });
+  
+      const bundle = await historyResponse.json();
+  
+      // Step 4: Parse data
+      const parsed = bundle.entry?.map((entry: any) => {
+        const obs = entry.resource;
+        const time = obs.effectiveDateTime;
+        const values: Record<string, number> = {};
+        obs.component?.forEach((component: any) => {
+          const label = component.code?.coding?.[0]?.display;
+          const value = component.valueQuantity?.value;
+          if (label && value !== undefined) values[label] = value;
+        });
+        return { time, ...values };
+      }) || [];
+      console.log("🧩 Parsed manual data:", parsed);
+      return parsed.reverse();
+    } catch (error) {
+      console.error("❌ Error fetching manual trends:", error);
+      return [];
+    }
+  }
+
+  useEffect(() => {
+    const loadManualTrends = async () => {
+      const data = await fetchManualTrends(props.patient_resource_id);
+      setManualTrends(data);
+  
+      // ✅ Get the last element (latest)
+      if (data.length > 0) {
+        setLatestManual(data[data.length - 1]);
+        console.log("🆕 Latest Manual:", data[data.length - 1]);
+        console.log("🆕 Manual Trends:",manualTrends);
+      } else {
+        setLatestManual(null);
+      }
+    };
+  
+    loadManualTrends();
+  }, [props.patient_resource_id]);
+
+  const fetchPatientReports = async () => {
+  setIsLoadingReports(true);
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_FHIRAPI_URL}/DiagnosticReport?subject=Patient/${props.patient_resource_id}`,
+      {
+        headers: {
+          Authorization: "Basic " + btoa("fhiruser:change-password"),
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch reports: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const reports = data.entry || [];
+
+    // 🧠 Sort by effectiveDateTime (or issued) descending
+    reports.sort((a: any, b: any) => {
+      const dateA =
+        new Date(a.resource.effectiveDateTime || a.resource.issued).getTime() || 0;
+      const dateB =
+        new Date(b.resource.effectiveDateTime || b.resource.issued).getTime() || 0;
+      return dateB - dateA;
+    });
+
+    // 🩹 Keep only the latest report
+    setSavedReports(reports.length > 0 ? [reports[0]] : []);
+  } catch (err) {
+    console.error("Error fetching reports:", err);
+  } finally {
+    setIsLoadingReports(false);
+  }
+};
+
+  const parseConclusionToTable = (conclusion: string) => {
+    const lines = conclusion.split('\n');
+    return lines.map(line => {
+      // Extract components from each line
+      const testMatch = line.match(/^(.+?):/);
+      const resultMatch = line.match(/:\s*(.+?)\s*(\(|\[|$)/);
+      const refMatch = line.match(/\(Ref:\s*(.+?)\)/);
+      const statusMatch = line.match(/\[(.+?)\]$/);
+  
+      return {
+        test: testMatch ? testMatch[1].trim() : 'Unknown',
+        result: resultMatch ? resultMatch[1].trim() : '',
+        referenceRange: refMatch ? refMatch[1].trim() : undefined,
+        status: statusMatch ? statusMatch[1].trim() : undefined,
+      };
+    });
+  };
+
+  useEffect(() => {
+    fetchPatientReports();
+  }, [props.patient_resource_id]);
+
+  const ReportViewer = ({ report }: { report: any }) => {
+    const tests = parseConclusionToTable(report.resource.conclusion);
+  
+    return (
+      <Box sx={{backgroundColor:'#FFFFFF',borderRadius:'20px'}}>
+        <Stack direction={'row'} justifyContent={'space-between'}>
+        <Typography color={'#9BA1AE'} variant="subtitle1">Lab Results</Typography>
+        <Typography color={'#9BA1AE'} variant="caption" gutterBottom>
+          Last Updated:({new Date(report.resource.effectiveDateTime).toLocaleString()})
+        </Typography>
+        </Stack>
+        
+        
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow sx={{backgroundColor:'grey'}}>
+                <TableCell>Test</TableCell>
+                <TableCell >Result</TableCell>
+             
+                <TableCell >Status</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {tests.map((test, index) => (
+                <TableRow key={index}>
+                  <TableCell sx={{color:'#124D81'}}>{test.test}</TableCell>
+                  <TableCell sx={{color:'#124D81'}}>{test.result}</TableCell>
+                  {/* <TableCell sx={{color:'black'}}>{test.referenceRange || 'N/A'}</TableCell> */}
+                  <TableCell sx={{color:'#124D81'}}>
+                    <Chip
+                      label={test.status || 'Unknown'}
+                      color={test.status === 'Normal' ? 'success' : 'error'}
+                      size="small"
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    );
+  };
+  const fetchPrescription = async () => {
+    setLoading(true);
+    try {
+      const searchUrl = `${import.meta.env.VITE_FHIRAPI_URL}/MedicationRequest?subject=Patient/${props.patient_resource_id}`;
+      const response = await fetch(searchUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Basic " + btoa("fhiruser:change-password"),
+        },
+      });
+  
+      if (response.ok) {
+        const searchData = await response.json();
+        console.log("Fetched Medication:", searchData);
+  
+        if (searchData?.entry && searchData.entry.length > 0) {
+          const medicationData = searchData.entry.map((entry: { resource: any; }) => {
+            const medication = entry.resource;
+  
+            // Extract total doses and administered count from extensions
+            const totalDosesExtension = medication.extension?.find(
+              (ext: { url: string; }) => ext.url === "http://example.org/fhir/StructureDefinition/totalDoses"
+            );
+            const administeredCountExtension = medication.extension?.find(
+              (ext: { url: string; }) => ext.url === "http://example.org/fhir/StructureDefinition/administeredCount"
+            );
+  
+            const totalDoses = totalDosesExtension?.valueInteger || 0;
+            const administeredCount = administeredCountExtension?.valueInteger || 0;
+  
+            // Get frequency and start/end dates
+            const frequency = medication.dosageInstruction?.[0]?.timing?.repeat?.frequency || "N/A";
+            const startDate = medication.dispenseRequest?.validityPeriod?.start || "N/A";
+            const endDate = medication.dispenseRequest?.validityPeriod?.end || "N/A";
+  
+            // Calculate intervals
+            let frequencyInHours = frequency;
+            const intervals = calculateIntervals(startDate, endDate, frequencyInHours);
+  
+            return {
+              id: medication.id, // Medication ID
+              name: medication.medicationCodeableConcept.text,
+              frequency,
+              frequency1: medication.dosageInstruction?.[0]?.text || "N/A",
+              route: medication.dosageInstruction?.[0]?.route?.coding?.[0]?.display || "N/A",
+              startDate,
+              endDate,
+              use: medication.reasonCode?.[0]?.text || "N/A",
+              additionalNote: medication.note?.[0]?.text || "N/A",
+              isCritical: false,
+              intervals,
+              totalDoses, // Include total doses
+              administeredCount, // Include administered count
+            };
+          });
+  
+          setPrescriptionHistory(medicationData);
+          console.log("PrescriptionHistory",medicationData);
+        }
+      } else {
+        console.error("Failed to fetch MedicationRequest resource.");
+      }
+    } catch (error) {
+      console.error("Error fetching MedicationRequest:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const calculateDuration = (startDate: string, endDate: string): number => {
+    if (!startDate || !endDate) return 0;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+  
+ 
 
   const fluidData = {
     totalFluid: 450,
@@ -213,218 +518,405 @@ const patientData = {
     { label: "Vitamin A", value: -120 },
   ];
 
+  useEffect(() => {
+    fetchPrescription();
+   //Fetch Procedure on component mount or when `patient_resource_id` changes
+  }, [props.patient_resource_id]);
+  const getIntervalHours = (frequencyString: string | undefined): number => {
+    if (!frequencyString) return 0;
+  
+    const lower = frequencyString.toLowerCase();
+  
+    if (lower.includes("6")) return 6;
+    if (lower.includes("8")) return 8;
+    if (lower.includes("12")) return 12;
+    if (lower.includes("24")) return 24;
+    if (lower.includes("once daily")) return 24;
+    if (lower.includes("twice daily")) return 12;
+    if (lower.includes("thrice daily")) return 8;
+  
+    return 0; // default fallback
+  };
+  const getNextDoseTime = (med: any) => {
+    const start = new Date(med.startDate);
+    const intervalHours = getIntervalHours(med.frequency1);
+    if (!intervalHours) return null;
+  
+    // Calculate next dose after last administered dose
+    const nextTime = new Date(start);
+    nextTime.setHours(start.getHours() + intervalHours * med.administeredCount);
+    return nextTime;
+  };
+  const filteredMedications = prescriptionHistory.filter((med) => {
+    const now = new Date();
+    const start = new Date(med.startDate);
+    const end = new Date(med.endDate);
+    const nextDose = getNextDoseTime(med);
+  
+    const isCompleted = med.administeredCount >= med.totalDoses;
+    const isBeforeStart = now < start;
+    // const isAfterEnd = now > end;
+    const isMissed = nextDose && now > nextDose && !isCompleted;
+    const isOngoing = !isCompleted && now >= start && now <= end && !isMissed;
+    const isUpcoming = isBeforeStart && !isCompleted;
+  
+    if (statusFilter === "all") return true;
+    if (statusFilter === "completed") return isCompleted;
+    if (statusFilter === "ongoing") return isOngoing || isUpcoming || isMissed;
+    return false;
+  });
+
   return (
    
     <Box sx={{ flexGrow: 1, overflowY: "auto",mr:1,ml:1 }}>
         {/* Header */}
-        <Box sx={{ display: "flex", justifyContent: "space-around",backgroundColor: "#FFFFFF", alignItems: "center",borderRadius:3, mb: 2 }}>
-          <Stack direction="row" >
-                  <Typography variant="h4" sx={{ color: "#124D81" }}>
-                  <FontAwesomeIcon
-                            icon={faHeartPulse}
-                           style={{
-                             
-                              color: "red",
-                             
-                             }}
-                          />  55
-                  </Typography>
-                </Stack>
-                <Stack direction="row"  style={{padding:'1%'}}>
-                  <Typography variant="h4" sx={{  color: "#124D81"}}>
-                  <FontAwesomeIcon
-                            icon={faTemperatureHalf}
-                           style={{
-                             
-                              color: "#FF9D61",
-                             
-                             }}
-                          />  99
-                  </Typography>
-                </Stack>
-                <Stack direction="row" style={{padding:'1%'}} >
-                
-                <Typography variant="h4" sx={{  color: "#124D81" }}>
-                <FontAwesomeIcon icon={faDroplet} style={{ color: "#0CB0D3" }}/>  111
-                  </Typography>
-                </Stack>
-             
-      
-              {/* Weight and Gestation Age */}
-             
-               
-                <Stack direction="row"style={{padding:'1%'}}>
-                
-                <Typography variant="h4" sx={{ color: "#124D81"}}>
-                <FontAwesomeIcon
-                            icon={faLungs}
-                           style={{
-                             
-                              color: "#EACB1C",
-                             
-                             }}
-                          /> 98
-                  </Typography>
-                </Stack>
-                <Stack direction="row"  >
-                
-                <IconButton
+     
+        <Stack
+  direction="row"
+  alignItems="center"
+  justifyContent="space-evenly"
   sx={{
-    width:'100%',
-    height:'100%',
-    backgroundColor: "#F2FBFF", // Light blue background
-    color: "#124D81", // Text/icon color
-    border: "1px solid #E0E0E0", // Grey border
-    borderRadius: "8px", // Slightly rounded edges
-   // Spacing inside the button
-     // Subtle shadow effect
-    "&:hover": {
-      backgroundColor: "#E0F7FF", // Lighter shade on hover
-    },
-  }}
-><FontAwesomeIcon
-                            icon={faArrowTrendUp}
-                           style={{
-                             
-                              color: "#124D81",
-                             
-                             }}
-                          /> </IconButton>  
-                
-                 
-                </Stack>
-             
-         
-        </Box>
-     <Box sx={{ backgroundColor: "#FFFFFF", mb: 2, borderRadius: 3,  }}>
-    <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: 1,
-          borderBottom: "1px solid #E0E0E0",
-        }}
-      >
-        <Typography variant="subtitle1" sx={{ fontWeight: "bold", color: "#9BA1AE" }}>
-        <FontAwesomeIcon
-                            icon={faCapsules}
-                           style={{
-                              
-                              color: "#9BA1AE",
-                             
-                             }}
-                          /> Medications
-        </Typography>
-        <IconButton
-  sx={{
-    backgroundColor: "#F2FBFF", // Light blue background
-    color: "#124D81", // Text/icon color
-    border: "1px solid #E0E0E0", // Grey border
-    borderRadius:3, // Slightly rounded edges
-    padding: "12px", // Spacing inside the button
-     // Subtle shadow effect
-    "&:hover": {
-      backgroundColor: "#E0F7FF", // Lighter shade on hover
-    },
+    backgroundColor: "#FFFFFF",
+    borderRadius: 3,
+    minHeight: "80px",
+    padding: 2,
   }}
 >
-  <FontAwesomeIcon
-    icon={faPrescription}
-    style={{
-      fontSize: "1.5rem", // Adjust the size of the icon
-      color: "#124D81", // Icon color
-    }}
-  />
-</IconButton>
+  {loading ? (
+    // ============================
+    // ⭐ SKELETON LOADING STATE ⭐
+    // ============================
+    <Grid container spacing={3} justifyContent="space-between">
+      <Grid item xs={3}>
+        <Skeleton variant="rounded" height={40} />
+      </Grid>
+      <Grid item xs={3}>
+        <Skeleton variant="rounded" height={40} />
+      </Grid>
+      <Grid item xs={3}>
+        <Skeleton variant="rounded" height={40} />
+      </Grid>
+      <Grid item xs={3}>
+        <Skeleton variant="rounded" height={40} />
+      </Grid>
+    </Grid>
+  ) : (
+    // ============================
+    // ⭐ ACTUAL DATA UI ⭐
+    // ============================
+    <>
+      {/* -- your entire original component, unchanged -- */}
+      {latestManual && (
+        <Box sx={{ flex: "0 0 25%", ml: 2 }}>
+          <Typography
+            variant="subtitle2"
+            sx={{
+              fontWeight: "bold",
+              color: "#333",
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            Last Update:
+            <span style={{ fontWeight: "normal", color: "#555" }}>
+              {new Date(latestManual.time).toLocaleString([], {})}
+            </span>
+          </Typography>
+        </Box>
+      )}
 
+      <Box
+        sx={{
+          flex: latestManual ? "0 0 70%" : "1",
+          display: "flex",
+          justifyContent: latestManual ? "space-between" : "center",
+          alignItems: "center",
+          gap: 3,
+        }}
+      >
+        {latestManual ? (
+          <>
+            {(latestManual["Pulse Rate"] || latestManual["Heart Rate"]) && (
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <FavoriteIcon sx={{ color: "#E91E63", fontSize: "30px" }} />
+                <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                  {latestManual["Pulse Rate"] ??
+                    latestManual["Heart Rate"]}
+                </Typography>
+              </Stack>
+            )}
+
+            {latestManual["SpO2"] && (
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <OpacityIcon sx={{ color: "#03A9F4", fontSize: "30px" }} />
+                <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                  {latestManual["SpO2"]}
+                </Typography>
+              </Stack>
+            )}
+
+            {(latestManual["Temperature"] ||
+              latestManual["Core Temperature"] ||
+              latestManual["Skin Temperature"]) && (
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <DeviceThermostatIcon
+                  sx={{ color: "#FF9800", fontSize: "30px" }}
+                />
+                <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                  {latestManual["Temperature"] ??
+                    latestManual["Core Temperature"] ??
+                    latestManual["Skin Temperature"]}
+                </Typography>
+              </Stack>
+            )}
+
+            {latestManual["Respiratory Rate"] && (
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <BoltIcon sx={{ color: "#FFEB3B", fontSize: "30px" }} />
+                <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                  {latestManual["Respiratory Rate"]}
+                </Typography>
+              </Stack>
+            )}
+
+            <IconButton
+              sx={{
+                backgroundColor: "#F2FBFF",
+                color: "#124D81",
+                border: "1px solid #E0E0E0",
+                borderRadius: "8px",
+                "&:hover": { backgroundColor: "#E0F7FF" },
+              }}
+            >
+              <FontAwesomeIcon icon={faArrowTrendUp} color="#124D81" />
+            </IconButton>
+          </>
+        ) : (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              width: "100%",
+              height: "100%",
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{
+                color: "#9BA1AE",
+                fontWeight: 500,
+                textAlign: "center",
+              }}
+            >
+              No Data Available
+            </Typography>
+          </Box>
+        )}
       </Box>
-<Box sx={{ padding: 2 }}>
-  <TableContainer
-    component={Paper}
-    elevation={0}
+    </>
+  )}
+</Stack>
+
+
+
+<Box
+  sx={{
+    borderRadius: "15px",
+    padding: "16px 20px",
+    mt: 3,
+    backgroundColor: "#FFFFFF",
+  }}
+>
+  {/* 🔹 Header */}
+  <Stack
+  direction="row"
+  justifyContent="space-between"
+  alignItems="center"
+  sx={{
+    borderBottom: "2px solid #E6EAF0",
+   
+   
+  }}
+>
+  {/* 🩺 Title */}
+  <Typography
+    variant="h6"
     sx={{
-      backgroundColor: "#FFFFFF",
-      borderRadius: 3,
-      boxShadow: "0px 1px 4px rgba(0, 0, 0, 0.1)",
+      fontWeight: 700,
+      color: "#124D81",
     }}
   >
-    <Table
+    Medication
+  </Typography>
+
+  {/* 📈 Trend Icon */}
+  <IconButton
+    sx={{
+      mb:1,
+      backgroundColor: "#F2FBFF",
+      color: "#124D81",
+      border: "1px solid #E0E0E0",
+      borderRadius: "8px",
+      "&:hover": { backgroundColor: "#E0F7FF" },
+    }}
+  >
+    <FontAwesomeIcon
+      icon={faPrescription}
+      style={{
+        color: "#124D81",
+      }}
+    />
+  </IconButton>
+</Stack>
+
+
+
+ {/* 🔹 Content */}
+{filteredMedications.length === 0 ? (
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      minHeight: "100px",
+    }}
+  >
+    <Typography
+      variant="body1"
       sx={{
-        "& .MuiTableCell-root": {
-          borderBottom: "none", // Remove default row border
-        },
-        "& .MuiTableRow-root:not(:last-child)": {
-          borderBottom: "1px solid #E0E0E0", // Row border color
+        color: "#A7B3CD",
+        fontWeight: 500,
+        textAlign: "center",
+      }}
+    >
+      No active prescriptions.
+    </Typography>
+  </Box>
+) : (
+  filteredMedications.map((medication, index) => (
+    <Box
+      key={index}
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "1.5fr 1fr 1fr 1fr 1.2fr 0.8fr",
+        alignItems: "center",
+        
+        padding: "10px",
+        borderBottom: "1px solid #E6EAF0",
+        backgroundColor: "#FFFFFF",
+        "&:hover": {
+          backgroundColor: "#F9FBFF",
+          cursor: "pointer",
         },
       }}
     >
-      <TableBody>
-        {medications.map((medication, index) => (
-          <TableRow
-            key={index}
-            sx={{"&:before": { content: '""', display: "block", width: "4px", height: "100%",  backgroundColor: medication.isCritical  ? "#FF5A5F"  : medication.isCritical ? "#FFD700"  : "#4CAF50", position: "absolute",  left: 0,  top: 0, },  position: "relative",  backgroundColor: medication.isCritical ? "#FFF7F7" : "inherit",  }} >
-            {/* Medication Name */}
-            <TableCell sx={{ color: medication.isCritical ? "red" : "#124D81" }}>
-              {medication.name}
-            </TableCell>
+      {/* 💊 Drug name & icon */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <FontAwesomeIcon icon={faPrescription} style={{ color: "#228BE6" }} />
+        <Box>
+          <Typography
+            sx={{
+              color: "#124D81",
+              fontWeight: 600,
+              fontSize: "0.95rem",
+            }}
+          >
+            {medication.name}
+          </Typography>
+          <Typography
+            sx={{
+              color: "#A7B3CD",
+              fontSize: "0.75rem",
+              fontWeight: 500,
+            }}
+          >
+            {medication?.orderType || "Regular"}
+          </Typography>
+        </Box>
+      </Box>
 
-            {/* Dose */}
-            <TableCell
-              style={{ color: "#124D81" }}
-              align="center"
-            >
-              {medication.dose}
-            </TableCell>
+      {/* 💧 Dose */}
+      <Typography sx={{ color: "#495057" }}>
+        {medication.frequency1}
+      </Typography>
 
-            {/* Frequency */}
-            <TableCell style={{ color: "#124D81" }} align="center">
-              <FontAwesomeIcon
-                icon={faClock}
-                style={{
-                  marginRight: "6px",
-                  color: "#A7B3CD",
-                }}
-              />
-              {medication.frequency}
-            </TableCell>
+      {/* 🚑 Route */}
+      <Typography sx={{ color: "#495057" }}>
+        {medication.route}
+      </Typography>
 
-            {/* Route */}
-            <TableCell align="center">
-              <Typography color="#A7B3CD">
-                Route:{" "}
-                <Typography
-                  component="span"
-                  color="#124D81"
-                  fontWeight="bold"
-                >
-                  {medication.route}
-                </Typography>
-              </Typography>
-            </TableCell>
+      {/* 🕒 Duration */}
+      <Typography sx={{ color: "#495057" }}>
+        {calculateDuration(medication.startDate, medication.endDate)} days
+      </Typography>
+      {/* 🧾 Status */}
+      <Box>
+        {medication.administeredCount < medication.totalDoses ? (
+          <Typography
+            sx={{
+              backgroundColor: "#E7F3FF",
+              color: "#228BE6",
+              borderRadius: "8px",
+              padding: "2px 8px",
+              fontSize: "0.75rem",
+              fontWeight: 600,
+              display: "inline-block",
+              textAlign: "center",
+            }}
+          >
+            Ongoing
+          </Typography>
+        ) : (
+          <Typography
+            sx={{
+              backgroundColor: "#E6F4EA",
+              color: "#2EB67D",
+              borderRadius: "8px",
+              padding: "2px 8px",
+              fontSize: "0.75rem",
+              fontWeight: 600,
+              display: "inline-block",
+              textAlign: "center",
+            }}
+          >
+            Completed
+          </Typography>
+        )}
+      </Box>
+      {/* 📅 Started at */}
+      <Box>
+        <Typography
+        variant="caption"
+          sx={{
+            color: "#6c757d",
+            
+          }}
+        >
+          Started at:
+        </Typography>
+        <Typography
+         variant="subtitle2"
+          sx={{
+            color: "#495057",
+           
+          }}
+        >
+          {new Date(medication.startDate).toLocaleString()}
+        </Typography>
+      </Box>
 
-            {/* Time */}
-            <TableCell
-              style={{
-                color: medication.isCritical ? "red" : "#124D81",
-                fontWeight: medication.isCritical ? "bold" : "normal",
-              }}
-              align="center"
-            >
-              {medication.time}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  </TableContainer>
+      
+    </Box>
+  ))
+)}
+
 </Box>
 
-
-    </Box>
 {/* Feeds */}
      {/* Fluid Summary Section */}
-     <Box sx={{ backgroundColor: "#FFFFFF", mb: 2, borderRadius: 3,  }}>
+     <Box sx={{ backgroundColor: "#FFFFFF", mb: 2,mt: 2, borderRadius: 3,  }}>
         <Grid style={{padding:15}} container alignItems="center" >
           {/* Fluid Overview */}
           <Grid item xs={7} style={{backgroundColor:'#DBFFD9',borderTopLeftRadius:6,borderBottomLeftRadius:6}}>
@@ -499,7 +991,7 @@ const patientData = {
         <Box width="100%" sx={{ display: "flex",justifyContent: "space-around",  }}>
 <Button sx={{ backgroundColor:'#F2FBFF', color:'#124D81  ', flex: "1 1 50%", maxWidth: "50%", }} > Current</Button>
   <Button sx={{backgroundColor:'#F2F4FB', color:'#9BA1AE', flex: "1 1 50%", maxWidth: "50%",}} >Last Feed </Button>
-</Box> </Box>
+      </Box> </Box>
 
  <Box sx={{ display: "flex", justifyContent: "space-around",backgroundColor:'#FFFFFF', alignItems: "center",borderRadius:3, mt: 2 }}>
          
@@ -532,8 +1024,20 @@ const patientData = {
 <Box sx={{ mt: 2,display:'flex',justifyContent:'space-between' }}>
         <Card sx={{backgroundColor:'#FFFFFF',width:'48%',borderRadius:3}}>
           <CardContent>
-            <Typography color={'#9BA1AE'} variant="subtitle1">Lab Results</Typography>
-         
+            
+            {isLoadingReports ? (
+    <Box display="flex" justifyContent="center" py={4}>
+      <CircularProgress />
+    </Box>
+  ) : savedReports.length === 0 ? (
+    <Typography variant="body1" color="Black" textAlign="center" py={2}>
+      No Lab Reports found
+    </Typography>
+  ) : (
+    savedReports.map((report, index) => (
+      <ReportViewer key={report.resource.id || index} report={report} />
+    ))
+  )}
           </CardContent>
         </Card>
         <Card sx={{backgroundColor:'#FFFFFF',width:'48%',borderRadius:3}}>
@@ -547,8 +1051,11 @@ const patientData = {
           </CardContent>
         </Card>
       </Box>
-       </Box>
+      
+    </Box>
+       
    
   );
+  
 };
 

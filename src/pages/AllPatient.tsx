@@ -365,17 +365,16 @@ export const AllPatient: React.FC< PatientMonitorProps> = ({ userOrganization, c
   const patientCards = filteredPatients.map(patient => {
     return (
       <PatientCard
-      patient_resource_id={String(patient.id)}
-      key={String(patient.id)}
-      patient_name={String(patient.extension[0].valueString)}
-      patient_id={String(patient.identifier[0].value)}
-      device={parentdevice[String(patient.id)]}
-      observation_resource={parentobs[String(patient.id)]}
-      communication_resource={parentcomm[String(patient.id)]}
-      darkTheme={darkTheme}
-      // selectedIcon={selectedIcon}
-      onClick={() => handlePatientCardClick(patient)} 
-    />
+        patient_resource_id={String(patient.id)}
+        key={String(patient.id)}
+        patient_name={String(patient.extension[0].valueString)}
+        patient_id={String(patient.identifier[0].value)}
+        device={parentdevice[String(patient.id)]}
+        observation_resource={parentobs[String(patient.id)]}
+        communication_resource={parentcomm[String(patient.id)]}
+        darkTheme={darkTheme}
+        // selectedIcon={selectedIcon}
+        onClick={() => handlePatientCardClick(patient)} gestational_age={''} birthDate={''}    />
   )});
   
   const filterPatients = (query: string) => {

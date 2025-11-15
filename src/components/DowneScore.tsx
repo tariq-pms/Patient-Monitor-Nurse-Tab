@@ -136,8 +136,66 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
     fetchProcedure(); // Fetch Procedure on component mount or when `patient_resource_id` changes
   }, [props.patient_resource_id]);
   
+ 
+  
+  
+   const fetchProcedureHistory = async () => {
+      if (!procedureResourceId) {
+        console.log("Procedure ID is not available.");
+        return; // Exit if procedureResourceId is not available
+      }
+  
+      setLoading(true); // Set loading state
+  
+      try {
+        const searchUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Procedure/${procedureResourceId}/_history?_count=10`;
+        const response = await fetch(searchUrl, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+          },
+        });
+  
+        if (response.ok) {
+          const searchData = await response.json();
+          console.log("Fetched Procedure History:", searchData);
+  
+          // Filter procedure history based on the Downe score
+          const filteredHistory = (searchData.entry || []).filter(
+            (entry: { resource: { code: { coding: any[]; text: string } } }) =>
+              entry.resource.code?.coding?.some(
+                (coding) =>
+                  coding.system === "http://snomed.info/sct" &&
+                  coding.code === "8480-9" &&
+                  coding.display === "Downe score"
+              ) && entry.resource.code.text === "Downe Score"
+          );
+  
+          console.log("Filtered Procedure History:", filteredHistory);
+          setProcedureHistory(filteredHistory); // Update the state with filtered history
+        } else {
+          console.error("Failed to fetch Procedure resource history.");
+        }
+      } catch (error) {
+        console.error("Error fetching Procedure history:", error);
+      } finally {
+        setLoading(false); // Hide loading state
+      }
+    };
+  
+  
+  useEffect(() => {
+   
+    // Trigger fetch when procedureResourceId changes
+    fetchProcedureHistory();
+  }, [procedureResourceId]); // Dependency array now depends on procedureResourceId
+  
   const handleSave = async () => {
     setLoading(true);
+  
+    // ⭐ Load latest procedure before saving (important!)
+    await fetchProcedure();  
   
     const procedureData: Procedure = {
       resourceType: "Procedure",
@@ -219,7 +277,6 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
         throw new Error(`Request failed: ${response.statusText}`);
       }
   
-      // Only parse JSON if the response has content
       const contentType = response.headers.get("content-type");
       let responseData = null;
       if (contentType && contentType.includes("application/json")) {
@@ -229,6 +286,10 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
       if (procedureResourceId) {
         console.log("Procedure updated successfully:", responseData);
         setSnackbarMessage("Procedure updated successfully!");
+  
+        // ⭐ Refresh after update (important!)
+        await fetchProcedureHistory();
+  
       } else {
         setProcedureResourceId(responseData?.id || null);
         console.log("Procedure saved successfully:", responseData);
@@ -237,6 +298,7 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
   
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
+  
     } catch (error) {
       console.error("Error saving Procedure resource:", error);
       setSnackbarMessage("An error occurred while saving the procedure.");
@@ -247,60 +309,6 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
     }
   };
   
-  
-  
-  
-  useEffect(() => {
-    const fetchProcedureHistory = async () => {
-      if (!procedureResourceId) {
-        console.log("Procedure ID is not available.");
-        return; // Exit if procedureResourceId is not available
-      }
-  
-      setLoading(true); // Set loading state
-  
-      try {
-        const searchUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Procedure/${procedureResourceId}/_history?_count=10`;
-        const response = await fetch(searchUrl, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Basic " + btoa("fhiruser:change-password"),
-          },
-        });
-  
-        if (response.ok) {
-          const searchData = await response.json();
-          console.log("Fetched Procedure History:", searchData);
-  
-          // Filter procedure history based on the Downe score
-          const filteredHistory = (searchData.entry || []).filter(
-            (entry: { resource: { code: { coding: any[]; text: string } } }) =>
-              entry.resource.code?.coding?.some(
-                (coding) =>
-                  coding.system === "http://snomed.info/sct" &&
-                  coding.code === "8480-9" &&
-                  coding.display === "Downe score"
-              ) && entry.resource.code.text === "Downe Score"
-          );
-  
-          console.log("Filtered Procedure History:", filteredHistory);
-          setProcedureHistory(filteredHistory); // Update the state with filtered history
-        } else {
-          console.error("Failed to fetch Procedure resource history.");
-        }
-      } catch (error) {
-        console.error("Error fetching Procedure history:", error);
-      } finally {
-        setLoading(false); // Hide loading state
-      }
-    };
-  
-    // Trigger fetch when procedureResourceId changes
-    fetchProcedureHistory();
-  }, [procedureResourceId]); // Dependency array now depends on procedureResourceId
-  
- 
   
   
   return (

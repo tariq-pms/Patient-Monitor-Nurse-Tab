@@ -1,0 +1,4679 @@
+[
+  {
+    "drug_name": "Amikacin",
+    "regimens": [
+     
+      {
+        "raw_text": "Weight based:800 g or less",
+        "dose_value": 16.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 48
+        },
+        "admin":60, 
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "weight_range_kg": {
+          "max_kg": 0.8
+        },
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 16, "max": 16},
+          "conc_range":{"min":2.5,"max":10}
+           },
+        "pna_range": {"min": 0, "max": 14}
+      },{
+        "raw_text": "Weight based:800 g or less",
+        "dose_value": 20.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 42
+        },
+        "admin":60, 
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "weight_range_kg": {
+          "max_kg": 0.8
+        },
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 16, "max": 16},
+          "conc_range":{"min":2.5,"max":10}
+           },
+        "pna_range": {"min": 14}
+      },
+     
+      {
+        "raw_text": "Weight based:801 to 1200 g",
+        "dose_value": 16.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 42
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "weight_range_kg": {
+          "min_kg": 0.801,
+          "max_kg": 1.2
+        },
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 16, "max": 16},
+          "conc_range":{"min":2.5,"max":10}
+           },
+           "pna_range": {"max": 14}
+      },
+      {
+        "raw_text": "Weight based:801 to 1200 g",
+        "dose_value": 20.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 36
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "weight_range_kg": {
+          "min_kg": 0.801,
+          "max_kg": 1.2
+        },
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 16, "max": 16},
+          "conc_range":{"min":2.5,"max":10}
+           },
+           "pna_range": {"min": 14}
+      },
+      
+      {
+        "raw_text": "Weight based:1201 to 2000 g",
+        "dose_value": 15.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 36
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "weight_range_kg": {
+          "min_kg": 1.201,
+          "max_kg": 2.0
+        },
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 15, "max": 15},
+          "conc_range":{"min":2.5,"max":10}
+           },
+           "pna_range": {"max": 14}
+      },
+      {
+        "raw_text": "Weight based:1201 to 2000 g",
+        "dose_value": 18.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 30
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "weight_range_kg": {
+          "min_kg": 1.201,
+          "max_kg": 2.0
+        },
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 15, "max": 15},
+          "conc_range":{"min":2.5,"max":10}
+           },
+           "pna_range": {"min": 14}
+      },
+      
+      {
+        "raw_text": "Weight based:2001 to 2800 g",
+        "dose_value": 15.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 36
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "weight_range_kg": {
+          "min_kg": 2.001,
+          "max_kg": 2.8
+        },
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 15, "max": 15},
+          "conc_range":{"min":2.5,"max":10}
+           },
+           "pna_range": {"max": 14}
+      },
+      {
+        "raw_text": "Weight based:2001 to 2800 g",
+        "dose_value": 18.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 24
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "weight_range_kg": {
+          "min_kg": 2.001,
+          "max_kg": 2.8
+        },
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 15, "max": 15},
+          "conc_range":{"min":2.5,"max":10}
+           },
+           "pna_range": {"min": 14}
+      },
+      
+      {
+        "raw_text": "Weight based:2800 g or greater",
+        "dose_value": 15.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 30
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "weight_range_kg": {
+          "min_kg": 2.8
+        },
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 15, "max": 15},
+          "conc_range":{"min":2.5,"max":10}
+           },
+           "pna_range": {"max": 14}
+      },
+      {
+        "raw_text": "Weight based:2800 g or greater",
+        "dose_value": 18.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 20
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "weight_range_kg": {
+          "min_kg": 2.8
+        },
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 15, "max": 15},
+          "conc_range":{"min":2.5,"max":10}
+           },
+           "pna_range": {"min": 14}
+      },
+       {
+        "raw_text": "Postmenstrual Age-based Dose",
+        "dose_value": 14.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 48
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 12, "max": 12},
+          "conc_range":{"min":2.5,"max":10}
+           },
+          "pma_range": {"max": 29},
+        "pna_range": {"min": 0, "max": 7}
+      },
+      {
+        "raw_text": "Postmenstrual Age-based Dose",
+        "dose_value": 12.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 36
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 12, "max": 12},
+          "conc_range":{"min":2.5,"max":10}
+           },
+          "pma_range": {"max": 29},
+        "pna_range": {"min": 8, "max": 28}
+      },
+      {
+        "raw_text": "Postmenstrual Age-based Dose",
+        "dose_value": 12.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 24
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 12, "max": 12},
+          "conc_range":{"min":2.5,"max":10}
+           },
+          "pma_range": {"max": 29},
+        "pna_range": {"min": 29}
+      },
+      {
+        "raw_text": "Postmenstrual Age-based Dose",
+        "dose_value": 12.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 36
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 12, "max": 12},
+          "conc_range":{"min":2.5,"max":10}
+           },
+          "pma_range": {"min":30, "max": 34},
+        "pna_range": {"min": 0, "max": 7}
+      },
+      {
+        "raw_text": "Postmenstrual Age-based Dose",
+        "dose_value": 12.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 24
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 12, "max": 12},
+          "conc_range":{"min":2.5,"max":10}
+           },
+          "pma_range": {"min":30},
+        "pna_range": {"min": 8}
+      },
+       {
+        "raw_text": "Plague",
+        "dose_value": 15.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 24
+        },
+        "admin":"IM",
+        "conc_value":250.0,
+        "conc_unit":"mg/mL",
+        "routes":"IM",
+        "per_time": null,
+        "constraints": {
+          "dose_range": {"min": 15, "max": 15},
+          "conc_range":{"min":250,"max":250}
+           },
+           "pna_range":{"max":7}
+      },
+      {
+        "raw_text": "Plague",
+        "dose_value": 17.5,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 24
+        },
+        "admin":"IM",
+        "conc_value":250.0,
+        "conc_unit":"mg/mL",
+        "routes":"IM",
+        "per_time": null,
+        "constraints": {
+          "dose_range": {"min": 15, "max": 15},
+          "conc_range":{"min":250,"max":250}
+           },
+           "pna_range":{"min":8}
+      },
+      {
+        "raw_text": "Plague",
+        "dose_value": 15.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 24
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 15, "max": 15},
+          "conc_range":{"min":2.5,"max":10}
+           },
+           "pna_range":{"max":7}
+      },
+      {
+        "raw_text": "Plague",
+        "dose_value": 17.5,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 24
+        },
+        "admin":60,
+        "conc_value":10.0,
+        "conc_unit":"mg/mL",
+        "routes":"IV",
+        "per_time": null,
+        "constraints": {
+          "admin_range": {"min": 20, "max": 120},
+          "dose_range": {"min": 15, "max": 15},
+          "conc_range":{"min":2.5,"max":10}
+           },
+           "pna_range":{"min":8}
+      }
+     
+     
+    ],
+    "other_info": {
+      "MEDICATION SAFETY": [
+        "Contraindications/Precautions",
+        "Precautions",
+        "Administration: In vitro mixing of aminoglycosides with beta-lactam antibiotics (penicillin or cephalosporins) may result in a significant mutual inactivation. A reduction in serum half- life or serum level may occur when an aminoglycoside or penicillin-type drug is administered by separate routes. Inactivation of the aminoglycoside is clinically significant only in patients with severely impaired renal function. Inactivation may continue in specimens of body fluids collected for assay, resulting in inaccurate aminoglycoside readings. Such specimens should be properly handled (assayed promptly, frozen or treated with betalactamase) [7] Gastrointestinal: Clostridium difficile associated diarrhea has been reported and ranged from mild diarrhea to fatal colitis; discontinue use if suspected [7].",
+        "Immunologic: Allergic-type reactions, including anaphylaxis and life-threatening or less severe asthmatic reactions, may occur in patients with sulfite sensitivity as preparation contains sodium metabisulfite [7].",
+        "Neurologic: Use caution in patients with myasthenia gravis or parkinsonism; muscle weakness may be aggravated [7].",
+        "Topical irrigation: Irreversible deafness, renal failure, and death due to neuromuscular blockade have been reported following irrigation of both small and large surgical fields with aminoglycoside preparations [7].",
+        "Adverse Effects",
+        "Transient and reversible renal tubular dysfunction may occur, resulting in increased urinary losses of sodium, calcium, and magnesium. Vestibular and auditory ototoxicity may occur. The addition of other nephrotoxic and/or ototoxic medications (eg, furosemide, vancomycin) may increase these adverse effects. Increased neuromuscular blockade (ie, neuromuscular weakness and respiratory failure) may occur when used with pancuronium or other neuromuscular blocking agents and in patients with hypermagnesemia.",
+        "Black Box Warning",
+        "Patients treated with parenteral aminoglycosides should be under close clinical observation because of the potential ototoxicity and nephrotoxicity associated with their use. Safety for treatment periods which are longer than 14 days has not been established.",
+        "Neurotoxicity, manifested as vestibular and permanent bilateral auditory ototoxicity, can occur in patients with preexisting renal damage and in patients with normal renal function treated at higher doses and/or for periods longer than those recommended. The risk of aminoglycoside-induced ototoxicity is greater in patients with renal damage. High frequency deafness usually occurs first and can be detected only by audiometric testing. Vertigo may occur and may be evidence of vestibular injury. Other manifestations of neurotoxicity may",
+        "include numbness, skin tingling, muscle twitching and convulsions . The risk of hearing loss due to aminoglycosides increases with the degree of exposure to either high peak or high trough serum concentrations . Patients developing cochlear damage may not have symptoms during therapy to warn them of developing eighth-nerve toxicity, and total or partial irreversible bilateral deafness may occur after the drug has been discontinued.",
+        "Aminoglycoside-induced ototoxicity is usually irreversible.",
+        "Aminoglycosides are potentially nephrotoxic. The risk of nephrotoxicity is greater in patients with impaired renal function and in those who receive high doses or prolonged therapy.",
+        "Neuromuscular blockade and respiratory paralysis have been reported following parenteral injection, topical instillation (as in orthopedic and abdominal irrigation or in local treatment of empyema), and following oral use of aminoglycosides. The possibility of these phenomena should be considered if aminoglycosides are administered by any route, especially in patients receiving anesthetics; neuromuscular blocking agents such as tubocurarine, succinylcholine, decamethonium; or in patients receiving massive transfusions of citrate-anticoagulated blood. If blockage occurs, calcium salts may reverse these phenomena, but mechanical respiratory assistance may be necessary.",
+        "Renal and eighth-nerve function should be closely monitored especially in patients with known or suspected renal impairment at the onset of therapy and also in those whose renal function is initially normal but who develop signs of renal dysfunction during therapy. Serum concentrations of amikacin should be monitored when feasible to assure adequate levels and to avoid potentially toxic levels and prolonged peak concentrations above 35 micrograms per mL. Urine should be examined for decreased specific gravity, increased excretion of proteins and the presence of cells or casts . Blood urea nitrogen, serum creatinine or creatinine clearance should be measured periodically. Serial audiograms should be obtained where feasible in patients old enough to be tested, particularly high risk patients . Evidence of ototoxicity (dizziness, vertigo, tinnitus , roaring in the ears and hearing loss) or nephrotoxicity requires discontinuation of the drug or dosage adjustment.",
+        "Concurrent and/or sequential systemic, oral or topical use of other neurotoxic or nephrotoxic products, particularly bacitracin, cisplatin, amphotericin B, cephaloridine, paromomycin, viomycin, polymyxin B, colistin, vancomycin, or other aminoglycosides should be avoided. Other factors that may increase risk of toxicity are advanced age and dehydration.",
+        "The concurrent use of amikacin with potent diuretics (ethacrynic acid or furosemide) should be avoided since diuretics by themselves may cause ototoxicity. In addition, when administered intravenously, diuretics may enhance aminoglycoside toxicity by altering antibiotic concentrations in serum and tissue [7].",
+        "Solution Compatibility",
+        "D5W, D10W, D20W, and NS.",
+        "Terminal Injection Site Compatibility",
+        "Acyclovir, aminophylline, amiodarone, aztreonam, caffeine citrate, calcium chloride, calcium gluconate, cefazolin, cefepime, cefotaxime, cefoxitin, ceftazidime, ceftriaxone, chloramphenicol, cimetidine, clindamycin, dexamethasone, enalaprilat, epinephrine, esmolol, fluconazole, furosemide, heparin (concentrations of 1 unit/mL or less), hydrocortisone succinate, hyaluronidase, linezolid, lorazepam, magnesium sulfate, metronidazole, midazolam, milrinone, morphine, nicardipine, penicillin g, pentobarbital, phenobarbital, potassium chloride, ranitidine, remifentanil, sodium bicarbonate, vancomycin, vitamin K1, and",
+        "Terminal Injection Site Incompatibility",
+        "Fat emulsion. Amphotericin B, ampicillin, azithromycin, heparin (concentrations greater than 1 unit/mL), imipenem/cilastatin, mezlocillin, nafcillin, oxacillin, phenytoin, propofol, thiopental, and ticarcillin/clavulanate.",
+        "Monitoring",
+        "Measure serum concentrations when treating for more than 48 hours. Obtain peak concentration 30 minutes after end of infusion, and trough concentration just prior to the next dose. When treating patients with serious infections or significantly changing fluid or renal status consider measuring the serum concentration 24 hours after a dose, and use the chart below for the suggested dosing interval. Blood samples obtained to monitor serum drug concentrations should be spun and refrigerated or frozen as soon as possible.",
+        "Therapeutic serum concentrations",
+        "Peak: 20 to 30 mcg/mL (or Cmax /MIC ratio greater than 8:1) (Draw 30 minutes after end of infusion, 1 hour after IM injection.) Trough: 2 to 5 mcg/mL"
+      ],
+      "MECHANISM OF ACTION/PHARMACOKINETICS": [
+        "Pharmacology",
+        "Mechanism of action: Amikacin, a semi-synthetic aminoglycoside [7] bactericidal antibiotic, inhibits normal protein synthesis in susceptible microorganisms [16]. Amikacin resists degradation by most aminoglycosides inactivating enzymes known to affect gentamicin, tobramycin, and kanamycin [7].",
+        "Pharmacokinetics",
+        "Volume of distribution: 0.833 L in 874 neonates (postnatal age 1 to 30; gestational age 24 to 43 weeks) [6]",
+        "Clearance: 0.493 L/hr in 874 neonates (postnatal age range, 1 to 30; gestational age range, 24 to 43 weeks). Coadministration of ibuprofen reduced clearance [6].",
+        "0.84 L/hr/70 kg at 28 weeks postmenstrual age (PMA), 1.23 L/hr/70 kg at 34 weeks PMA, and 1.56 L/hr/70 kg at 40 weeks PMA in a pharmacokinetic study of 715 neonates (PMA 24 to 43 weeks; weight 0.385 to 4.78 kg). Clearance was affected the most by size (66%), PMA (17%), and renal function (9%) [17].",
+        "Therapeutic Hypothermia for Asphyxia: Clearance was reduced by 40.6% in neonates with perinatal asphyxia treated with therapeutic hypothermia (PATH) compared with neonates without PATH in model-based approach pharmacokinetic study. Volume of distribution did not change [5]."
+      ],
+      "ABOUT": [
+        "Special Considerations/Preparation",
+        "Availability: 250 mg/mL in 2-mL and 4-mL vials [7]",
+        "For IV use, dilute with a compatible solution to a concentration of 2.5 to 10 mg/mL [7][8].",
+        "Stability: Solutions, 0.25 and 5 mg/mL, are stable for 24 hours at room temperature. Solutions stored for 60 days at 4 degrees C and then stored at 25 degrees C had utility times of 24 hours. At concentrations of 0.25 and 5 mg/mL, solutions frozen (-15 degrees C) for 30 days, thawed, and stored at 25 degrees C had utility times of 24 hours [7]",
+        "\u00a9 Copyright IBM Corporation 2020",
+        "NeoFax\u00ae Drug Monograph Summary - MICROMEDEX"
+      ]
+    }
+  },
+  {
+    "drug_name": "Colistin",
+    "regimens": [
+      {
+        "raw_text": "Gram-negative infections",
+        "dose_value": 5.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours":4
+        },
+        "conc_value":75,
+        "conc_unit":"mg/mL",
+        "per_time": "day",
+        "routes":"IM",
+        "admin":"IM",
+        "dose_per_day":4,
+        "constraints": {
+
+          "dose_range": {"min": 2.5, "max": 5},
+          "conc_range":{"min":75,"max":75},
+          "frequency_range":{"min":2,"max":4},
+          "dose_day_range":{"min":2,"max":4 }
+           }
+      },
+      {
+        "raw_text": "Gram-negative infections",
+        "dose_value": 5.0,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours":4
+        },
+        "dose_per_day":4,
+        "conc_value":75,
+        "conc_unit":"mg/mL",
+        "per_time": "day",
+        "routes":"IV",
+        "admin":60,
+        "constraints": {
+          
+          "dose_range": {"min": 2.5, "max": 5},
+          "conc_range":{"min":75,"max":75},
+          "frequency_range":{"min":2,"max":4}
+           },
+           "dose_day_range":{"min":2,"max":4 }
+      }
+    ],
+    "other_info": {
+      "MEDICATION SAFETY": [
+        "Contraindications/Precautions",
+        "Acute respiratory failure may result when reconstituted colistimethate solution for inhalation is not used promptly. After reconstitution, colistimethate is hydrolyzed to form active components, including polymyxin E1, which has shown to cause localized inflammation of the airway epithelia and eosinophilic infiltration when administered by inhalation [9] Bronchospasms may occur with inhalation of colistin; consider premedication with a bronchodilator [10][11].",
+        "Clostridium difficile-associated diarrhea (CDAD), including mild diarrhea to fatal colitis, has been reported and may occur more than 2 months after administration. If CDAD is",
+        "suspected or confirmed, discontinue any ongoing antibiotic therapy [1] Concomitant use of sodium cephalothin should be avoided [1]",
+        "Increased risk of neuromuscular blockade leading to apnea in patients with renal impairment. Dosage adjustment should be reduced in proportion to the extent of the impairment [1]",
+        "Respiratory arrest has been reported after IM administration [1] Reversible and dose-dependent nephrotoxicity may occur [1]",
+        "Transient neurological disturbances (eg, circumoral paresthesia or numbness, tingling or formication of the extremities, generalized pruritus, vertigo, dizziness, and slurring of speech), may occur and dosage adjustments may be necessary [1]",
+        "Adverse Effects",
+        "The most commonly reported adverse effects are gastrointestinal upset, slurred speech, dizziness, tingling of the extremities or tongue, itching, urticaria, rash, fever, respiratory distress, apnea, and nephrotoxicity [1].",
+        "Serum creatinine increased more than 0.5 mg/dL above baseline in 2 out of 18 neonates administered IV colistin [3].",
+        "Neither clinical nor laboratory adverse events were reported with aerosolized colistin in 8 neonates. Serum creatinine and blood urea nitrogen remained within normal limits 72 hours after completion of colistin therapy [5][6].",
+        "Solution Compatibility",
+        "NS, D5NS, D5 0.45%NS, D5W",
+        "Terminal Injection Site Compatibility",
+        "Aminophylline, atropine sulfate, calcium chloride, calcium gluconate, chloramphenicol sodium succinate, chlorothiazide sodium, chlorpheniramine maleate, chlorpromazine hydrochloride, clarithromycin, cloxacillin sodium, cyclophosphamide, dexamethasone sodium phosphate, digoxin, edetate calcium disodium, epinephrine hydrochloride, ergonovine maleate, erythromycin lactobionate, furosemide, gallamine triethiodide, gentamicin sulfate, heparin sodium, hydralazine hydrochloride, hydrocortisone sodium succinate, isoproterenol hydrochloride, kanamycin sulfate, lidocaine hydrochloride, lincomycin hydrochloride, mechlorethamine hydrochloride, mephentermine sulfate, metaraminol bitartrate, methohexital sodium, methyldopate hydrochloride, nalorphine hydrobromide, norepinephrine bitartrate, oxytocin, penicillin G potassium, penicillin G sodium, phenobarbital sodium, phentolamine mesylate, polymyxin B sulfate, potassium chloride, procainamide hydrochloride, prochlorperazine mesylate, promazine hydrochloride, promethazine hydrochloride, propranolol hydrochloride, streptomycin sulfate, succinylcholine chloride, trimetaphan camsylate, tubocurarine chloride.",
+        "Monitoring",
+        "Closely monitor for toxicity in pediatric patients [1]. Monitor urine output, BUN, and serum creatinine[8]."
+      ],
+      "MECHANISM OF ACTION/PHARMACOKINETICS": [
+        "Pharmacology",
+        "Microbiology",
+        "Colistimethate sodium is a surface active agent that is used to penetrate and disrupt the cell membrane of bacteria. It has demonstrated bactericidal activity against most strains of aerobic gram-negative microorganisms (Enterobacter aerogenes, Escherichia coli, Klebsiella pneumonia, and Pseudomonas aeruginosa) both in vitro and in clinical infections [1].",
+        "Pharmacokinetics",
+        "Higher serum levels were obtained at 10 minutes following IV administration compared with IM administration [1].",
+        "Half-life was 2 to 3 hours after administration (either IM or IV) in both the adult and pediatric populations, including premature infants [1]. The half-life was 2.6 hours in neonates (0 to 7 days) and 2.3 hours in infants 7 days or older [12].",
+        "Urine levels ranged, on average, from 270 mcg/mL at 2 hours to 15 mcg/mL at 8 hours following IV administration and 200 mcg/mL to 25 mcg/mL over a similar time period with IM administration [1].",
+        "IV Administration Within 6 hours of IV colistin base 5 mg/kg, the colistin concentration was less than 2 mcg/mL in all 7 neonates (median 38 weeks gestation and 13 days postnatal age) after a single IV colistin base dose of 5 mg/kg/day [2].",
+        "Nebulization Administration: After a single-dose of ultrasonic-nebulized colistin base 4 mg/kg in 6 neonates (median gestational age 39 weeks (32 to 39) and postnatal age 7 days (3 to 7)) with ventilator-associated pneumonia, 50% of tracheal aspirate concentrations of colistin were below 2 mcg/mL 24 hours after administration. The ratio of colistin plasma concentrations-to-tracheal aspirate was 0.038 (3.8%) [13][14].",
+        "The following were the pharmacokinetic parameters for colistin in the tracheal aspirate and plasma via nebulization and in the plasma via IV administration:",
+        "Pharmacodynamics",
+        "The ratio of AUC/MIC of colistin base is the most predictive of antibacterial activity [7]."
+      ],
+      "ABOUT": [
+        "Special Considerations/Preparation",
+        "Each vial containing colistimethate sodium (pentasodium colistin-methanesulfonate) is equivalent to 150 mg of colistin base activity [1]. Colistin base 1 mg is equivalent to 2.4 mg of colistimethate sodium. Colistimethate sodium is 12,500 international units/mg and colistin base is 30,000 international units/mg [15].",
+        "Store vials at controlled room temperature between 20 and 25 degrees C (68 and 77 degrees F), with excursions permitted between 15 and 30 degrees C (59 and 86 degrees F) [1].",
+        "Intravenous:",
+        "Reconstitute 150 mg (colistin base) vial with 2 mL sterile water for injection for a resulting concentration of 75 mg/mL colistin base; swirl gently to avoid frothing [1].",
+        "Once diluted with sterile water for injection, store solution up to 7 days, between 20 and 25 degrees C (68 and 77 degrees F) or refrigerated between 2 and 8 degrees C (36 and 46",
+        "degrees F) [1].",
+        "Colistimethate for continuous infusion should be mixed with NS, D5NS, D5W, D5-0.45%NaCl, D5-0.225%NaCl, LR, or 10% invert sugar solution and used within 24 hours [1].",
+        "Inhalation: Use immediately after mixed. Do not use after 24 hours. In solution, colistimethate undergoes spontaneous hydrolysis to form its 2 active components polymyxin E1 (colistin A), which is toxic to the lungs, and polymyxin E2 (colistin B). Use after 24 hours can result in increased colistin concentration and the potential for increased lung toxicity [9].",
+        "\u00a9 Copyright IBM Corporation 2020",
+        "NeoFax\u00ae Drug Monograph Summary - MICROMEDEX"
+      ]
+    }
+  },
+  {
+    "drug_name": "Meropenem",
+    "regimens": [
+      {
+        "raw_text":"Anthrax,cutaneous or systemic",
+        "dose_value": 13.3,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":20,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":1,"max":50},
+          "admin_range":{"min":30,"max":30}
+        },
+        "ga_range": { "min": 32, "max": 34},
+        "pna_range":{"max":7}
+
+      },
+      {
+        "raw_text":"Anthrax,cutaneous or systemic",
+        "dose_value": 20,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":20,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":1,"max":50},
+          "admin_range":{"min":30,"max":30}
+        },
+        "ga_range": { "min": 32, "max": 34},
+        "pna_range":{"min":8}
+
+      },
+      {
+        "raw_text":"Anthrax,cutaneous or systemic",
+        "dose_value": 20,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":20,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":1,"max":50},
+          "admin_range":{"min":30,"max":30}
+        },
+        "ga_range": { "min": 34}
+
+      },
+      {
+        "raw_text":"Meningitis,Bacterial",
+        "dose_value": 40,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 12
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":20,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":1,"max":50},
+          "admin_range":{"min":30,"max":30}
+        },
+        "ga_range": { "max": 32},
+        "pna_range":{"max":14}
+
+      },
+      {
+        "raw_text":"Meningitis,Bacterial",
+        "dose_value": 40,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":20,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":1,"max":50},
+          "admin_range":{"min":30,"max":30}
+        },
+        "ga_range": { "max": 32},
+        "pna_range":{"min":15}
+
+      },
+      {
+        "raw_text":"Meningitis,Bacterial",
+        "dose_value": 40,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":20,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":1,"max":50},
+          "admin_range":{"min":30,"max":30}
+        },
+        "ga_range": { "min": 33}
+
+      },
+      {
+        "raw_text":"TB,drug-resistant;3Kg or greater",
+        "dose_value": 20,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":20,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":1,"max":20},
+          "admin_range":{"min":30,"max":30},
+          "dose_range":{"min":20,"max":40}
+        }
+
+      },
+      {
+        "raw_text":"Usual dosage,non-meningitic infections",
+        "dose_value": 20,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 12
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":20,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":1,"max":50},
+          "admin_range":{"min":30,"max":30}
+        },
+        "ga_range": { "max": 32},
+        "pna_range":{"max":14}
+        
+
+      },
+      {
+        "raw_text":"Usual dosage,non-meningitic infections",
+        "dose_value": 20,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":20,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":1,"max":50},
+          "admin_range":{"min":30,"max":30}
+        },
+        "ga_range": { "max": 32},
+        "pna_range":{"min":15}
+        
+
+      },
+      {
+        "raw_text":"Usual dosage,non-meningitic infections",
+        "dose_value": 20,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":20,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":1,"max":50},
+          "admin_range":{"min":30,"max":30}
+        },
+        "ga_range": { "min": 33},
+        "pna_range":{"max":14}
+        
+
+      },
+      {
+        "raw_text":"Usual dosage,non-meningitic infections",
+        "dose_value": 30,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":20,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":1,"max":50},
+          "admin_range":{"min":30,"max":30}
+        },
+        "ga_range": { "min": 33},
+        "pna_range":{"min":15}
+        
+
+      }
+    ],
+    "other_info": {
+      "MEDICATION SAFETY": [
+        "Contraindications/Precautions",
+        "Contraindications",
+        "Contraindicated in patients with known hypersensitivity to carbapenems or previous anaphylactic reactions to beta-lactams. Serious and occasionally fatal hypersensitivity",
+        "(anaphylactic) reactions have been reported in patients receiving therapy with beta-lactams; these reactions are more likely to occur in those with a history of hypersensitivity to other beta-lactams or to multiple allergens. Before initiating therapy, obtain a detailed history of previous hypersensitivity reactions [19].",
+        "Precautions",
+        "Concomitant use: Coadministration with valproic acid or divalproex sodium is generally not recommended due to a reduction in valproic acid concentrations that may not respond to a dose increase. In patients with well-controlled seizures on valproic acid or divalproex sodium, antibiotics other than carbapenems are recommended, and if coadministration of meropenem is necessary, supplemental anticonvulsant therapy is recommended [19]",
+        "Dermatologic: Severe cutaneous adverse reactions, including Stevens-Johnson syndrome, toxic epidermal necrolysis, drug reaction with eosinophilia and systemic symptoms, erythema multiforme, and acute generalized exanthematous pustulosis have been reported; if signs",
+        "and symptoms appear, immediately withdraw therapy and consider an alternative [20]. Neurological:Seizures and other CNS adverse events have been reported with meropenem therapy; these occurred mainly in patients with CNS disorders (eg, brain lesions or history of seizures) or patients with bacterial meningitis and/or compromised renal function [19].",
+        "Adverse Effects",
+        "Diarrhea (4%), nausea/vomiting (1%) and rash (2%). May cause inflammation at the injection site. The use of carbapenem antibiotics can result in the development of cephalosporin resistance in Enterobacter, Pseudomonas, Serratia, Proteus, Citrobacter, and Acinetobacter species. The risks of pseudomembranous colitis and fungal infections are also increased.",
+        "Solution Compatibility",
+        "D5W, D10W, and NS.",
+        "Terminal Injection Site Compatibility",
+        "Aminophylline, atropine, caspofungin, cimetidine, dexamethasone, digoxin, dobutamine, dopamine, enalaprilat, fluconazole, furosemide, gentamicin, heparin, insulin, linezolid, metoclopramide, milrinone, morphine, norepinephrine, phenobarbital, potassium chloride, ranitidine, and vancomycin.",
+        "Terminal Injection Site Incompatibility",
+        "Acyclovir, amphotericin B, calcium gluconate, metronidazole, sodium bicarbonate,Linezolid and zidovudine.",
+        "Monitoring",
+        "Periodic CBC (for thrombocytosis and eosinophilia) and hepatic transaminases. Assess IV site for signs of inflammation."
+      ],
+      "MECHANISM OF ACTION/PHARMACOKINETICS": [
+        "Pharmacology",
+        "Mechanism of action: Meropenem is a broad-spectrum carbapenem antibiotic that penetrates well into the CSF and most body tissues. It exhibits time-dependent killing of gram-negative and gram-positive pathogens, and the goal of therapy is to keep free drug",
+        "concentrations above the MIC for at least 40% of the dosing interval. It is relatively stable to inactivation by human renal dehydropeptidase. [21].",
+        "Protein binding: Plasma protein binding is minimal.",
+        "Clearance: Directly related to renal function, and 70% of a dose is recovered intact in the urine. Measured renal clearance and the effect of probenecid demonstrate that both glomerular filtration and tubular secretion are involved in renal elimination.",
+        "Metabolism: Hepatic function does not affect pharmacokinetics [21].",
+        "Pharmacokinetic parameters in patients less than 3 months of age following treatment with combination antibacterial drug therapy: [2]",
+        "5/8/2020",
+        "(mcg/mL)",
+        "NeoFax\u00ae Drug Monograph Summary - MICROMEDEX",
+        "491",
+        "Cmin (mcg/mL)",
+        "T1/2 (hr)",
+        "5.36\t6.65\t4.84\t2.1\t5.65",
+        "3.82\t2.68\t2.33\t1.58\t2.68",
+        "Values were obtained from a population pharmacokinetic analysis of sparse data GA: gestational age; PNA: postnatal age",
+        "Merrem IV product information, 2014; AUC is from 0 to 24"
+      ],
+      "ABOUT": [
+        "Special Considerations/Preparation",
+        "Availability: Powder for injection in 500-mg, and 1000-mg vials.",
+        "Dilution and Stability",
+        "IV Bolus: 10 mL of compatible diluent (500-mg vial) or 20 mL (1000-mg vial) for IV bolus. When reconstituted with sterile water for injection up to 50 mg/mL, stable for up to 3 hours at room temperature or up to 13 hours when refrigerated (at or up to 5 degrees C) [7].",
+        "IV Infusion: Concentrations from 1 to 20 mg/mL, in NS, are stable for 1 hour at or up to 25 degrees C or 15 hours at or up to 5 degrees C. Concentrations from 1 to 20 mg/mL, in D5W, should be used immediately [7].",
+        "Some studies demonstrated longer stability times [12][13][14]",
+        "\u00a9 Copyright IBM Corporation 2020",
+        "2020/6/1\tNeoFax\u00ae Drug Monograph Summary - MICROMEDEX",
+        "NeoFax\u00ae Drug Monograph Summary - MICROMEDEX"
+      ]
+    }
+  },
+  {
+    "drug_name": "Linezolid",
+    "regimens": [
+      {
+        "raw_text":"Anthrax",
+        "dose_value": 10,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 12
+        },
+        "per_time": null,
+        "admin":60,
+        "conc_value":2,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":2,"max":2},
+          "admin_range":{"min":30,"max":120},
+          "dose_range":{"min":10,"max":10}
+        },
+        "ga_range":{"min":32},
+        "pna_range":{"max":7}
+
+      },
+      {
+        "raw_text":"Anthrax",
+        "dose_value": 10,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":60,
+        "conc_value":2,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":2,"max":2},
+          "admin_range":{"min":30,"max":120},
+          "dose_range":{"min":10,"max":10}
+        },
+        "ga_range":{"min":32},
+        "pna_range":{"min":8,"max":28}
+
+      },
+      {
+        "raw_text":"Anthrax",
+        "dose_value": 10,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 12
+        },
+        "per_time": null,
+        "admin":"Oral", 
+        "conc_value":20,
+        "routes":"Oral",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":20,"max":20},
+          "dose_range":{"min":10,"max":10}
+        }
+        ,
+        "ga_range":{"min":32},
+        "pna_range":{"max":7}
+      }, 
+      {
+        "raw_text":"Anthrax",
+        "dose_value": 10,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":"Oral", 
+        "conc_value":20,
+        "routes":"Oral",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":20,"max":20},
+          "dose_range":{"min":10,"max":10}
+        },
+        "ga_range":{"min":32},
+        "pna_range":{"min":7,"max":28}
+      },
+      {
+        "raw_text":"TB,drug-resistant;1 to less than 15 kg",
+        "dose_value": 15,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 24
+        },
+        "per_time": null,
+        "admin":"Oral",
+        "conc_value":20,
+        "routes":"Oral",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":20,"max":20},
+          
+          "dose_range":{"min":15,"max":15}
+        },
+      "weight_range":{"max":15}
+
+      },
+      {
+        "raw_text":"Usual dose",
+        "dose_value": 10,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 12
+        },
+        "per_time": null,
+        "admin":120,
+        "conc_value":2,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":2,"max":2},
+          "admin_range":{"min":30,"max":120},
+          "dose_range":{"min":10,"max":10}
+        },
+        "ga_range":{"max":34},
+        "pna_range":{"max":7}
+
+      },
+      
+      {
+        "raw_text":"Usual dose",
+        "dose_value": 10,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":120,
+        "conc_value":2,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":2,"max":2},
+          "admin_range":{"min":30,"max":120},
+          "dose_range":{"min":10,"max":10}
+        },
+        "ga_range":{"max":34},
+        "pna_range":{"min":7}
+
+      },
+      {
+        "raw_text":"Usual dose",
+        "dose_value": 10,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":120,
+        "conc_value":2,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":2,"max":2},
+          "admin_range":{"min":30,"max":120},
+          "dose_range":{"min":10,"max":10}
+        },
+        "ga_range":{"min":34}
+
+      },
+      {
+        "raw_text":"Usual dose",
+        "dose_value": 10,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 12
+        },
+        "per_time": null,
+        "admin":"Oral",
+        "conc_value":20,
+        "routes":"Oral",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":20,"max":20},
+          
+          "dose_range":{"min":10,"max":10}
+        },
+        "ga_range":{"max":34},
+        "pna_range":{"max":7}
+      },
+      
+      {
+        "raw_text":"Usual dose",
+        "dose_value": 10,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":"Oral",
+        "conc_value":20,
+        "routes":"Oral",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":20,"max":20},
+          
+          "dose_range":{"min":10,"max":10}
+        },
+        "ga_range":{"max":34},
+        "pna_range":{"min":7,"max":28}
+      },
+      {
+        "raw_text":"Usual dose",
+        "dose_value": 10,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":"Oral",
+        "conc_value":20,
+        "routes":"Oral",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":20,"max":20},
+          
+          "dose_range":{"min":10,"max":10}
+        },
+        "ga_range":{"min":34}
+      }
+    ],
+    "other_info": {
+      "USES": [
+        "Limited to treatment of infections, including endocarditis and ventriculitis, caused by gram positive organisms (e.g., MRSA, penicillin-resistant Strep. pneumoniae, and VRE) that are refractory to vancomycin and other antibiotics [4][5][6][2].",
+        "Do not use as empiric treatment or in any patient with infections caused by gram-negative organisms.",
+        "Anthrax: IV linezolid is recommended for neonates \u226532 weeks GA in systemic anthrax cases."
+      ],
+      "ADMINISTRATION": [
+        "IV: Intermittent IV infusion over 30 to 120 minutes. Supplied as ready-to-use infusion bags (2 mg/mL); no further dilution is necessary [1].",
+        "Oral: May administer without regard to feedings. Before oral suspension, gently invert bottle 3\u20135 times. Do not shake [1]."
+      ],
+      "MEDICATION SAFETY": [],
+      "CONTRAINDICATIONS/PRECAUTIONS": [
+        "Contraindicated in patients with carcinoid syndrome, uncontrolled hypertension, pheochromocytoma, thyrotoxicosis, or those on serotonergic/sympathomimetic/vasopressive/dopaminergic agents unless closely monitored [1].",
+        "Not recommended in pediatric patients with CNS infections due to variable CSF concentrations.",
+        "Myelosuppression, hypoglycemia (with insulin), serotonin syndrome, neuropathy, and seizures reported [1].",
+        "Lactic acidosis reported in neonates with prolonged therapy [7].",
+        "Use >28 days not evaluated in controlled clinical trials [1].",
+        "FDA alert: Higher mortality risk in patients with Gram-negative infections compared with vancomycin/oxacillin/dicloxacillin [FDA 2007]."
+      ],
+      "ADVERSE EFFECTS": [
+        "Elevated transaminases and diarrhea (\u22485%).",
+        "Thrombocytopenia and anemia (2\u20135%) [2][9].",
+        "Postmarketing: sideroblastic anemia, toxic epidermal necrolysis, Stevens-Johnson syndrome [10]."
+      ],
+      "COMPATIBILITY": [
+        "Solution compatibility: D5W, NS, Lactated Ringers.",
+        "Injection site compatibility: acyclovir, amikacin, aminophylline, ampicillin, aztreonam, calcium gluconate, caspofungin, cefazolin, cefoxitin, ceftazidime, ceftriaxone, cefuroxime, cimetidine, clindamycin, dexamethasone, digoxin, dobutamine, dopamine, enalaprilat, esmolol, famotidine, fentanyl, fluconazole, furosemide, ganciclovir, gentamicin, heparin, hydrocortisone succinate, imipenem/cilastatin, lidocaine, lorazepam, magnesium sulfate, meropenem, methylprednisolone, metoclopramide, metronidazole, mezlocillin, midazolam, morphine, naloxone, netilmicin, nicardipine, nitroglycerin, pentobarbital, phenobarbital, piperacillin, piperacillin-tazobactam, potassium chloride, propranolol, ranitidine, remifentanil, sodium bicarbonate, theophylline, ticarcillin, tobramycin, vancomycin, vecuronium, zidovudine.",
+        "Injection site incompatibility: amphotericin B, erythromycin lactobionate, phenytoin, trimethoprim/sulfamethoxazole."
+      ],
+      "MONITORING": [
+        "CBC weekly (especially >2 weeks therapy, myelosuppression, or concomitant myelosuppressive drugs).",
+        "Monitor lactate in prolonged therapy or hepatic/renal dysfunction [7].",
+        "Monitor for neuropathy (>28 days therapy), serotonin syndrome (if on serotonergic agents), and blood pressure (in hypertension, pheochromocytoma, thyrotoxicosis, etc.) [1].",
+        "Assess visual function in long-term use (\u22653 months)."
+      ],
+      "MECHANISM OF ACTION/PHARMACOKINETICS": [
+        "Oxazolidinone antibiotic; inhibits bacterial protein synthesis.",
+        "Usually bacteriostatic, bactericidal against S. pneumoniae, B. fragilis, C. perfringens.",
+        "Resistance: VRE and MRSA reported; outbreaks in ICUs.",
+        "Good penetration into osteoarticular tissues, synovial fluid, CSF (~70% plasma levels).",
+        "Oral bioavailability ~100%.",
+        "Metabolized by oxidation, no CYP induction.",
+        "Excretion: urine (30% unchanged drug).",
+        "Half-life: 2\u20133 hrs in most neonates; 5\u20136 hrs in preterm <1 week [1][18][19]."
+      ],
+      "ABOUT": [
+        "Linezolid IV: 2 mg/mL solution in single-use, ready-to-use 100\u2013300 mL bags.",
+        "Store at room temperature, do not freeze.",
+        "Oral suspension: reconstitute with 123 mL water \u2192 20 mg/mL, stable for 21 days at room temperature, protect from light [1]."
+      ]
+    }
+  },
+  {
+    "drug_name": "Piperacillin/Tazobactam",
+    "regimens": [
+      {
+        "raw_text":"Non-CNS Infections",
+        "dose_value": 100,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 12
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":40,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":12.5,"max":200},
+          "admin_range":{"min":30,"max":60},
+          "dose_range":{"min":10,"max":10}
+        }
+
+      },
+      {
+        "raw_text":"Non-CNS Infections",
+        "dose_value": 100,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 12
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":40,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":12.5,"max":200},
+          "admin_range":{"min":30,"max":60},
+          "dose_range":{"min":10,"max":10}
+        }
+
+      },
+      {
+        "raw_text": "Initial Dose",
+        "dose_value": 100.0,
+        "dose_unit": "mg/kg",
+         "frequency": {
+          "interval_hours": 12
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":40,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":12.5,"max":200},
+          "admin_range":{"min":30,"max":60},
+          "dose_range":{"min":10,"max":10}
+        },
+        "pma_range":{"max":29},
+        "pna_range":{"max":28}
+      },
+      {
+        "raw_text": "Initial Dose",
+        "dose_value": 100.0,
+        "dose_unit": "mg/kg",
+         "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":40,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":12.5,"max":200},
+          "admin_range":{"min":30,"max":60},
+          "dose_range":{"min":10,"max":10}
+        },
+        "pma_range":{"max":29},
+        "pna_range":{"min":29}
+      },
+      {
+        "raw_text": "Initial Dose",
+        "dose_value": 100.0,
+        "dose_unit": "mg/kg",
+         "frequency": {
+          "interval_hours": 12
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":40,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":12.5,"max":200},
+          "admin_range":{"min":30,"max":60},
+          "dose_range":{"min":10,"max":10}
+        },
+        "pma_range":{"min":30,"max":36},
+        "pna_range":{"max":14}
+      },
+      {
+        "raw_text": "Initial Dose",
+        "dose_value": 100.0,
+        "dose_unit": "mg/kg",
+         "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":40,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":12.5,"max":200},
+          "admin_range":{"min":30,"max":60},
+          "dose_range":{"min":10,"max":10}
+        },
+        "pma_range":{"min":30,"max":36},
+        "pna_range":{"min":29}
+      },
+      {
+        "raw_text": "Initial Dose",
+        "dose_value": 100.0,
+        "dose_unit": "mg/kg",
+         "frequency": {
+          "interval_hours": 12
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":40,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":12.5,"max":200},
+          "admin_range":{"min":30,"max":60},
+          "dose_range":{"min":10,"max":10}
+        },
+        "pma_range":{"min":37,"max":44},
+        "pna_range":{"max":7}
+      },
+      {
+        "raw_text": "Initial Dose",
+        "dose_value": 100.0,
+        "dose_unit": "mg/kg",
+         "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":40,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":12.5,"max":200},
+          "admin_range":{"min":30,"max":60},
+          "dose_range":{"min":10,"max":10}
+        },
+        "pma_range":{"min":37,"max":44},
+        "pna_range":{"min":8}
+      },
+      {
+        "raw_text": "Initial Dose",
+        "dose_value": 100.0,
+        "dose_unit": "mg/kg",
+         "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":30,
+        "conc_value":40,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":12.5,"max":200},
+          "admin_range":{"min":30,"max":60},
+          "dose_range":{"min":10,"max":10}
+        },
+        "pma_range":{"min":45}
+      }
+    ],
+    "other_info": {
+      "MEDICATION SAFETY": [
+        "Contraindications/Precautions",
+        "CONTRAINDICATIONS",
+        "Contraindicated in patients with a history of hypersensitivity reactions to any of the penicillins, cephalosporins, or beta-lactamase inhibitors [4].",
+        "PRECAUTIONS",
+        "Concomitant Use: Probenecid not recommended unless benefit outweighs risk [4] Dermatologic: Serious cutaneous reactions (eg, Stevens-Johnson syndrome, toxic epidermal necrolysis, drug reaction with eosinophilia and systemic symptoms (DRESS), and acute generalized exanthematous pustulosis) have been reported; close monitoring recommended and discontinue if lesions progress [4]",
+        "Endocrine and metabolic: Hypokalemia may occur especially in patients with low potassium reserves and concomitant diuretic or cytotoxic therapy; monitoring recommended in patients with low potassium reserves [4]",
+        "Endocrine and metabolic: Use caution in patients requiring sodium restriction as product contains 2.84 mEq (65 mg) of sodium per g of piperacillin [4].",
+        "Gastrointestinal: Clostridium difficile-associated diarrhea, including mild diarrhea to fatal colitis, has been reported and may occur more than 2 months after use; discontinuation of antibacterial use not directed against C. difficile may be required [4]",
+        "Hematologic: Bleeding manifestations have been reported with piperacillin use, especially in patients with renal failure; monitoring recommended particularly with prolonged use (ie, 21 days or greater); discontinue use if occurs [4]",
+        "Hematologic: Leukopenia and neutropenia have been reported, especially with prolonged use; usually reversible upon discontinuation; however, monitoring recommended [4] Immunologic: Serious anaphylactic reactions, with some fatal cases, have been reported, especially in patients with history of penicillin, cephalosporin, or carbapenem hypersensitivity or history of sensitivity to multiple allergens [4]",
+        "Neurologic: Neuromuscular excitability or convulsions may occur at higher than recommended doses, particularly in the presence of renal failure [8].",
+        "Renal: Increased risk of nephrotoxicity in critically ill patients, including renal failure and",
+        "delayed recovery of renal function; consider alternative therapy, otherwise monitoring required during treatment [9].",
+        "Renal: Use caution in patients with renal failure; increased risk of neuromuscular excitability or convulsions with higher than recommended IV doses [4]",
+        "Renal: Renal insufficiency (ie, CrCl less than or equal to 40 mL/min) and hemodialysis or continuous ambulatory peritoneal dialysis patients; dosage adjustments required [4] Respiratory: Use caution in patients with cystic fibrosis due to increased risk for fever and rash [4]",
+        "Adverse Effects",
+        "Common adverse events (greater than 5%) in adults were diarrhea, constipation, nausea, headache, and insomnia [4].",
+        "Solution Compatibility",
+        "D5W, D10W, NS and LR.",
+        "Terminal Injection Site Compatibility",
+        "Aminophylline, aztreonam, bumetanide, calcium gluconate, cefepime, cimetidine, clindamycin, dexamethasone, dopamine, enalaprilat, esmolol, fluconazole, furosemide, heparin, hydrocortisone succinate, linezolid, lorazepam, magnesium sulfate, metoclopramide, metronidazole, milrinone, morphine, potassium chloride, ranitidine, remifentanil, sodium bicarbonate, trimethoprim/sulfamethoxazole, and zidovudine.",
+        "Terminal Injection Site Incompatibility",
+        "Acyclovir, amikacin, amiodarone,Meropenem, amphotericin B, azithromycin, caspofungin, dobutamine, famotidine, ganciclovir, gentamicin, netilmicin, tobramycin, and vancomycin.",
+        "Monitoring",
+        "Monitor electrolytes periodically in patients with low potassium reserves. Consider monitoring electrolytes periodically in patients with potentially low potassium reserves or those receiving cytotoxic therapy or diuretics. Periodic assessment of hematopoietic function, especially with prolonged therapy of 21 days or greater [4]."
+      ],
+      "MECHANISM OF ACTION/PHARMACOKINETICS": [
+        "Pharmacology",
+        "Piperacillin/tazobactam combines the extended-spectrum antibiotic piperacillin with the beta- lactamase inhibitor tazobactam.",
+        "Distribution: Both piperacillin and tazobactam were 30% bound to plasma proteins. Mean tissue concentrations were typically 50% to 100% of plasma concentrations. In non-inflamed meninges, distribution of piperacillin and tazobactam into CSF was low [4].",
+        "Excretion: Both piperacillin and tazobactam were eliminated by glomerular filtration and tubular secretion. Piperacillin was excreted rapidly as unchanged drug (68% excreted unchanged). Tazobactam and its metabolite was eliminated primarily by renal excretion (80% excreted unchanged) [4].",
+        "Neonatal Pharmacokinetics",
+        "Clearance of piperacillin/tazobactam is significantly associated with body weight, postmenstrual age, postnatal age, and serum creatinine [2].",
+        "The population parameter estimates for piperacillin in 32 neonates administered piperacillin/tazobactam 240 mg/kg/day (piperacillin component) IV divided every 8 hours (3 of the oldest infants (14 days or older and 32 weeks or more gestational age) received 300 mg/kg/day) administered over 30 minutes is in the tables below [2]:",
+        "Target concentrations were achieved (unbound piperacillin concentrations for 75% of the dosing interval) in greater than 90% of dose simulations at MICs of less than 8 mg/L up to 32 mg/L with the following dosages 100 mg/kg/dose IV every 8 hours for PMA of 30 weeks or less, 80 mg/kg/dose IV every 6 hours for PMA of 31 to 35 weeks, and 80 mg/kg/dose IV every 4 hours for PMA 36 to 49 weeks [2].",
+        "Extended-infusion (over 2 to 4 hours) did not improve target concentrations compared with standard infusion (30 minutes) in a model-based simulation in neonates [2]."
+      ],
+      "ABOUT": [
+        "Special Considerations/Preparation",
+        "Available as powder for injection (containing EDTA and sodium citrate) in 2.25-g, 3.375-g, and 4.5-g single-dose vials and 40.5 g pharmacy bulk vials. Each vial provides 2 g, 3 g, 4 g, and 36 g of piperacillin for the 2.25-g, 3.375-g, and 4.5-g single-dose vials and 40.5 g pharmacy bulk vials [10].",
+        "Each 2.25-g, 3.375-g, 4.5-g vial, and 40.5-g bulk vial contains 5.68, 8.52, 11.36 mEq, and",
+        "100.4 mEq (130, 195, 260, 2304 mg) of sodium, respectively [10].",
+        "Reconstitute Stable for 24 hours at room temperature, 48 hours refrigerated:",
+        "2.25 g vial with 10 mL",
+        "3.375 g vial with 15 mL",
+        "4.5 g vial with 20 mL",
+        "40.5 g vial with 152 mL (Concentration: 200 mg/mL piperacillin component)",
+        "Further dilution required[10]. Recommended concentrations in pediatric patients: 40, 60, and 200 mg/mL (piperacillin component) [6].",
+        "Ambulatory IV infusion pumps. Reconstitute and dilute each dose to a volume of 25 or",
+        "37.5 mL with a compatible solution. Stable for 12 hours at room temperature [10].",
+        "Also available in Galaxy\u00ae containers (containing EDTA and sodium citrate) as 2.25 g/50 mL,",
+        "3.375 g/50 mL, and 4.5 g/100 mL [10].",
+        "\u00a9 Copyright IBM Corporation 2020",
+        "NeoFax\u00ae Drug Monograph Summary - MICROMEDEX"
+      ]
+    }
+  },
+  {
+    "drug_name": "Vancomycin",
+    "regimens": [
+      
+      {
+        "raw_text":"Anthrax,loading dose",
+        "dose_value": 20,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": null
+        },
+        "per_time": null,
+        "admin":60,
+        "conc_value":5,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":1,"max":10},
+          "admin_range":{"min":60,"max":120},
+          "dose_range":{"min":20,"max":20}
+        }
+
+      },
+      {
+        "raw_text":"Initial Dose",
+        "dose_value": 15,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 18
+        },
+        "per_time": null,
+        "admin":60,
+        "conc_value":5,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":5,"max":10},
+          "admin_range":{"min":60,"max":120},
+          "dose_range":{"min":10,"max":15}
+        },
+        "pma_range": {"max": 29},
+        "pna_range": {"min": 0, "max": 14}
+        
+      },
+      {
+        "raw_text":"Initial Dose",
+        "dose_value": 15,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 12
+        },
+        "per_time": null,
+        "admin":60,
+        "conc_value":5,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":5,"max":10},
+          "admin_range":{"min":60,"max":120},
+          "dose_range":{"min":10,"max":15}
+        },
+        "pma_range": {"max": 29},
+        "pna_range": {"min": 15}
+        
+      },
+      {
+        "raw_text":"Initial Dose",
+        "dose_value": 15,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 12
+        },
+        "per_time": null,
+        "admin":60,
+        "conc_value":5,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":5,"max":10},
+          "admin_range":{"min":60,"max":120},
+          "dose_range":{"min":10,"max":15}
+        },
+        "pma_range": {"min":30,"max": 36},
+        "pna_range": {"min": 0, "max": 14}
+        
+      },
+      {
+        "raw_text":"Initial Dose",
+        "dose_value": 15,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":60,
+        "conc_value":5,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":5,"max":10},
+          "admin_range":{"min":60,"max":120},
+          "dose_range":{"min":10,"max":15}
+        },
+        "pma_range": {"min":30,"max": 36},
+        "pna_range": {"min": 14}
+        
+      },
+      {
+        "raw_text":"Initial Dose",
+        "dose_value": 15,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 12
+        },
+        "per_time": null,
+        "admin":60,
+        "conc_value":5,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":5,"max":10},
+          "admin_range":{"min":60,"max":120},
+          "dose_range":{"min":10,"max":15}
+        },
+        "pma_range": {"min":37,"max": 44},
+        "pna_range": {"min": 0, "max": 7}
+        
+      },
+      {
+        "raw_text":"Initial Dose",
+        "dose_value": 15,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":60,
+        "conc_value":5,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":5,"max":10},
+          "admin_range":{"min":60,"max":120},
+          "dose_range":{"min":10,"max":15}
+        },
+        "pma_range": {"min":37,"max": 44},
+        "pna_range": {"min": 8}
+        
+      },
+      {
+        "raw_text":"Initial Dose",
+        "dose_value": 15,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 6
+        },
+        "per_time": null,
+        "admin":60,
+        "conc_value":5,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":5,"max":10},
+          "admin_range":{"min":60,"max":120},
+          "dose_range":{"min":10,"max":15}
+        },
+        "pma_range": {"min": 45}
+        
+      },
+      {
+        "raw_text":"MRSA infection,Serious",
+        "dose_value": 10,
+        "dose_unit": "mg/kg",
+        "frequency": {
+          "interval_hours": 8
+        },
+        "per_time": null,
+        "admin":60,
+        "conc_value":5,
+        "routes":"IV",
+        "conc_unit":"mg/mL",
+        "constraints":{
+          "conc_range":{"min":5,"max":10},
+          "admin_range":{"min":60,"max":120},
+          "dose_range":{"min":10,"max":20},
+          "frequency_range":{"min":8,"max":48}
+        }
+
+      }
+    ],
+    "other_info": {
+      "MEDICATION SAFETY": [
+        "Adverse Effects",
+        "Nephrotoxicity and ototoxicity: May be enhanced by aminoglycoside therapy [12][36]. The overall rate of acute kidney injury (AKI) was 2.7% in a retrospective chart review in a neonatal intensive care unit (n=110; mean gestational age 29 weeks, mean birth weight 1200 g). The incidence of AKI increased with higher vancomycin trough concentrations (p=0.04); 1.38% for less than 10 mg/L, 0% for 10 to 15 mg/L, and 18.18% for greater than 15 mg/L [33]. The use of concurrent furosemide and vancomycin was associated with an increased risk of acute kidney injury (AKI) (adjusted OR, 3.52; 95% CI, 1.88 to 6.62) in pediatric patients (0 to 18 years of age) in the intensive care unit in a retrospective study (n=265). The rate of AKI was 23.4% [37].",
+        "Rash and hypotension (red man syndrome): Appears rapidly and resolves within minutes to hours. Lengthening infusion time usually eliminates risk for subsequent doses. Neutropenia: Reported after prolonged administration (more than 3 weeks).",
+        "Phlebitis: May be minimized by slow infusion and dilution of the drug.",
+        "Solution Compatibility",
+        "D5W, D10W, and NS.",
+        "Terminal Injection Site Compatibility",
+        "Acyclovir, alprostadil, amikacin, ampicillin, aminophylline, amiodarone, aztreonam, caffeine citrate, calcium gluconate, caspofungin, cimetidine, enalaprilat, esmolol, famotidine, fluconazole, heparin (concentrations of 1 unit/mL or less), hydrocortisone succinate, insulin, linezolid, lorazepam, magnesium sulfate, meropenem, midazolam, milrinone, morphine, nicardipine, pancuronium bromide, potassium chloride, propofol, ranitidine, remifentanil, sodium bicarbonate, vecuronium, and zidovudine.",
+        "Terminal Injection Site Incompatibility",
+        "Cefazolin, cefepime, cefotaxime, cefoxitin, ceftazidime, ceftriaxone, chloramphenicol, dexamethasone, heparin (concentrations greater than 1 unit/mL), mezlocillin, nafcillin, pentobarbital, phenobarbital, piperacillin, piperacillin/tazobactam, ticarcillin, and ticarcillin/clavulanate.",
+        "Monitoring",
+        "Auditory Function: To minimize the risk of ototoxicity, auditory function monitoring should be considered in patients receiving concomitant ototoxic drugs [25].",
+        "Laboratory Monitoring: Monitor renal function for nephrotoxicity. Periodic monitoring of white blood cell count should be done to screen for neutropenia in patients on prolonged therapy with vancomycin or those who are receiving concomitant drugs that may cause neutropenia. Monitor for infusion-related events, including hypotension and red man syndrome [12].",
+        "Vancomycin Concentration",
+        "Trough: Troughs should be obtained just prior to the next dose under steady state conditions (approximately just before the fourth dose) and then repeated as clinically necessary. Trough concentrations (not peak) are the most accurate measure to monitor for efficacy [26][25]. Due to the variability in pharmacokinetic parameters, peak and trough concentrations have been recommended to provide more individualized dosing in neonates [27]. If peak concentrations are measured, draw 60 minutes after end of infusion.",
+        "Target Concentration: Neither vancomycin troughs nor AUC have been correlated with clinical outcomes in neonates [3][28]. Multiple pharmacokinetic/pharmacodynamic studies in neonates evaluated AUC and MIC and determined vancomycin troughs of around 10 mg/L (range, 7 to 15 mg/L) for MICs of 1 mg/L or less may be adequate [2][3][4][5] for the treatment of the most common neonatal gram-positive infections, which is predominately coagulase-negative staphylococcus [6][7][8][9]. Although, higher troughs have been recommended in adults and children (older than neonates). For endocarditis in children (older than neonates), in the presence of MRSA with MIC of greater than 1 mg/L or when there is a lack of microbiological response, troughs of 15 to 20 mg/L may be required [17]. In adults, many experts recommend a trough of 15 to 20 mg/L when treating MRSA bacteremia, infective endocarditis, osteomyelitis, meningitis, pneumonia, complicated skin and soft-tissue infections, or bone/joint infections [26][25][29].",
+        "The recommended trough concentration range for adults with less severe infections is 10 to 15 mg/L [25].",
+        "For shunt infections, consider monitoring CSF vancomycin levels during therapy to assess drug concentrations (goal: trough, 5 to 10 mg/L) and potential drug accumulation [30][31][32].",
+        "Methicillin-resistant Staphylococcus aureus isolates with a vancomycin MIC greater than 2 mg/L (eg, vancomycin-intermediate or vancomycin-resistant S. aureus [VISA or VRSA]) require alternative therapy [26].",
+        "Nephrotoxicity: The use of higher doses to achieve vancomycin trough concentrations of 15 to 20 mg/L and the association with nephrotoxicity is conflicting [33][34][35]. The incidence of acute kidney injury (AKI) increased with higher vancomycin trough concentrations in 110 neonates during a prospective study (p=0.04); 1.38% for less than 10 mg/L, 0% for 10 to 15 mg/L, and 18.18% for greater than 15 mg/L [33]. The odds of AKI increased by 16% for each 5 mg/kg/day increase in vancomycin dose in one pediatric retrospective study (n=175) [34]. But in another retrospective pediatric study (n=113), vancomycin trough concentrations of 15 mg/L or more were not associated with an increased rate of nephrotoxicity [35]. Increased duration of vancomycin therapy was associated with increased risk of nephrotoxicity in the 2 retrospective studies. The definitions for nephrotoxicity used in these studies may be one reason for the differences in findings [34][35]."
+      ],
+      "MECHANISM OF ACTION/PHARMACOKINETICS": [
+        "Pharmacology",
+        "Mechanism of action: Vancomycin is bactericidal for most gram-positive bacteria, but bacteriostatic for enterococci. It interferes with cell wall synthesis, inhibits RNA synthesis, and alters plasma membrane function. Killing activity is primarily a time-dependent process, not concentration-dependent. MICs for sensitive organisms are less than or equal to 1 mg/L.",
+        "Pharmacokinetics",
+        "Poorly absorbed orally. Diffusion into the lung and bone is variable. Minimal penetration into the CSF in absence of inflamed meninges. Protein binding is approximately 55% in adults. Mean volume of distribution is 0.3 to 0.9 L/kg in infants and 0.5 to 0.8 L/kg in children. Elimination is primarily by glomerular filtration (80% to 90% recovered unchanged in urine), with a small amount of hepatic metabolism. Higher clearance in pediatrics compared with adults (2 to 3 times higher). Mean half-life of 3 to 4 hours in infants and 2 to 3 hours in children. Not effectively removed by hemodialysis or peritoneal dialysis [12][36][38][39].",
+        "Intermittent Dosing:",
+        "Trough concentrations were 10 to 20 mg/L in 60.7% and less than 10 mg/L in 39.3% of 84 initial troughs using the above dosing intervals at doses of 10 or 15 mg/kg/dose (most regimens used 10 mg/kg/dose) in a retrospective study of neonates in the intensive care unit. Of those initial troughs in the 10 to 20 mg/L range, 69.7% were 10 to 15 mg/L and 30.3% were 15 to 20 mg/L. A dose of 15 mg/kg/dose, regardless of interval, achieved a trough concentration of 10 to 20 mg/L in 74.1% of 88 neonates (97 vancomycin initial trough concentrations) [1]. The following were the vancomycin trough concentrations in neonates treated with 10 mg/kg/dose with the above dose intervals [3][40]. A trough concentration of 5 to 15 mg/L was achieved in 84.1% of neonates treated in a retrospective analysis (n=76). Only 9.3% had a trough of less than 5 mg/L [3].",
+        "Median trough concentrations were slightly above 10 mg/L for dose simulations in a retrospective population pharmacokinetic analysis. Serum trough concentrations of 5 to 15 mg/L were achieved in 52% (90% CI 43% to 60%) and",
+        "trough concentrations of 15 to 20 mg/L were achieved in 21% (90% CI 14% to",
+        "28%) [40].",
+        "Continuous Infusion: In a proposed model-based algorithm (based on postnatal age and body weight), a 10.5 mg/kg loading dose followed by 25 to 60 mg/kg/24 hours was predicted to achieve an AUC24/MIC of greater than 400 when MIC was less than 1 mg/L [2]. In pharmacokinetic studies in neonates, vancomycin continuous infusion maintenance doses and target steady state concentrations were 28.3 mg/kg/day for 15 to 25 mg/L [41], 20 to 50 mg/kg/day for 15 to 25",
+        "mg/L [42][43], 30 mg/kg/day for 10 to 30 mg/L [44], and 20 to 30 mg/kg/day",
+        "for 10 to 25 mg/L [45]. Some used loading doses of 10 to 20 mg/kg [41][43][44]. More infants administered continuous infusion vancomycin achieved target concentrations at the first steady-state level compared with infants administered vancomycin by intermittent infusion (85% vs 41%; p less than 0.001) in a randomized trial (n=111; mean birth weight 2271 g; mean gestational age 34 weeks, mean postnatal age 23 days). Target concentrations were 15 to 25 mg/L for continuous infusion and a trough of 10 to 20 mg/L for intermittent infusion.",
+        "The mean time to target concentrations were 27.1 hours for continuous infusion and 33.6 hours for intermittent infusion [42]."
+      ],
+      "ABOUT": [
+        "Special Considerations/Preparation",
+        "Injection: 500-mg and 1-g vials. Reconstitute 500-mg and 1-g vial with 10 mL and 20 mL of sterile water for injection, respectively, to make a final concentration of 50 mg/mL. Reconstituted solution stable for 4 days refrigerated. Dilute prior to administration using D5W or NS to a maximum concentration of 5 mg/mL (concentrations up to 10 mg/mL may also be used in fluid restricted patients) [12].",
+        "Powder for oral solution: 3.75 g (147 mL diluent), 7.5 g (295 mL diluent), 7.5 g",
+        "(145 mL diluent), 10.5 g (203 mL diluent), and 15 g (289 mL diluent). Store prior to reconstitution refrigerated at 2 to 8 degrees C (36 to 46 degrees F). Following reconstitution, store at 2 to 8 degrees C for up to 14 days. Do not freeze. Protect from light [24].",
+        "\u00a9 Copyright IBM Corporation 2020",
+        "NeoFax\u00ae Drug Monograph Summary - MICROMEDEX"
+      ]
+    }
+  },
+  
+  {
+  "drug_name": "Ampicillin",
+  "regimens": [
+    {
+      "raw_text": "Anthrax (systemic, penicillin-susceptible)",
+      "dose_value": 50,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "routes": "IV",
+      "admin": 15,
+      "conc_value": 30,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 50 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 25, "max": 75 }
+      },
+      "pma_range": { "min": 32, "max": 34 },
+      "pna_range": { "max": 7 },
+      "ga_range": { "min": 32, "max": 34 }
+    },
+    {
+      "raw_text": "Anthrax (1–4 weeks)",
+      "dose_value": 75,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "routes": "IV",
+      "admin": 15,
+      "conc_value": 30,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 50 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 50, "max": 75 }
+      },
+      "pma_range": { "min": 32, "max": 34 },
+      "pna_range": { "min": 7, "max": 28 }
+    },
+    {
+      "raw_text": "Anthrax (≥34 weeks)",
+      "dose_value": 50,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 8 },
+      "routes": "IV",
+      "admin": 15,
+      "conc_value": 30,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 50 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 25, "max": 75 }
+      },
+      "pma_range": { "min": 34, "max": 44 },
+      "pna_range": { "max": 28 }
+    },
+    {
+      "raw_text": "Meningitis (≤7 days)",
+      "dose_value": 100,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 8 },
+      "routes": "IV",
+      "admin": 30,
+      "conc_value": 30,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 50 },
+        "admin_range": { "min": 15, "max": 60 },
+        "dose_range": { "min": 75, "max": 100 }
+      },
+      "pma_range": { "max": 34 },
+      "pna_range": { "max": 7 }
+    },
+    {
+      "raw_text": "Meningitis (>7 days)",
+      "dose_value": 75,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 6 },
+      "routes": "IV",
+      "admin": 30,
+      "conc_value": 30,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 50 },
+        "admin_range": { "min": 15, "max": 60 },
+        "dose_range": { "min": 50, "max": 100 }
+      },
+      "pma_range": { "min": 34 },
+      "pna_range": { "min": 7 }
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Rapid IV administration may cause convulsive seizures.",
+      "Hypersensitivity reactions including rash and anaphylaxis may occur.",
+      "Prolonged bleeding time observed in preterm neonates after multiple doses."
+    ],
+    "SOLUTION COMPATIBILITY": [
+      "D5W, D5W/0.45% NaCl, Lactated Ringer’s, NS, Sterile Water."
+    ],
+    "SOLUTION INCOMPATIBILITY": [
+      "D10W, Gentamicin, Amikacin, Midazolam, Sodium Bicarbonate."
+    ],
+    "TERMINAL INJECTION SITE INCOMPATIBILITY": [
+      "Gentamicin, Dopamine, Amikacin, Tobramycin."
+    ]
+  }
+}
+,
+{
+  "drug_name": "Gentamicin",
+  "regimens": [
+    {
+      "raw_text": "Standard neonatal dosing — PMA ≤ 29 wk, PNA 0–7 days",
+      "dose_value": 5.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 48 },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 20 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 6 }
+      },
+      "pma_range": { "max": 29 },
+      "pna_range": { "min": 0, "max": 7 },
+      "notes": "PMA ≤29 wk and PNA 0–7 days: 5 mg/kg IV every 48 hr (NeoFax). Monitor troughs/peaks and renal function."
+    },
+    {
+      "raw_text": "Standard neonatal dosing — PMA ≤ 29 wk, PNA 8–28 days",
+      "dose_value": 4.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 36 },
+      "per_time": null,
+      "admin": "IM",
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IM",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 10 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 3.5, "max": 5 }
+      },
+      "pma_range": { "max": 29 },
+      "pna_range": { "min": 8, "max": 28 },
+      "notes": "PMA ≤29 wk and PNA 8–28 days: 4 mg/kg IV every 36 hr (NeoFax)."
+    },
+    {
+      "raw_text": "Standard neonatal dosing — PMA ≤ 29 wk, PNA 8–28 days",
+      "dose_value": 4.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 36 },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 10 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 3.5, "max": 5 }
+      },
+      "pma_range": { "max": 29 },
+      "pna_range": { "min": 8, "max": 28 },
+      "notes": "PMA ≤29 wk and PNA 8–28 days: 4 mg/kg IV every 36 hr (NeoFax)."
+    },
+    {
+      "raw_text": "Standard neonatal dosing — PMA ≤ 29 wk, PNA 8–28 days",
+      "dose_value": 4.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 36 },
+      "per_time": null,
+      "admin": "IM",
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IM",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 10 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 3.5, "max": 5 }
+      },
+      "pma_range": { "max": 29 },
+      "pna_range": { "min": 8, "max": 28 },
+      "notes": "PMA ≤29 wk and PNA 8–28 days: 4 mg/kg IV every 36 hr (NeoFax)."
+    },
+    {
+      "raw_text": "Standard neonatal dosing — PMA ≥ 29 wk (old scheme)",
+      "dose_value": 4.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 20 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pma_range": { "min": 29 },
+      "pna_range": { "min": 29 },
+      "notes": "PMA ≥29 wk: 4 mg/kg IV every 24 hr (NeoFax). Adjust per PNA/PMA and renal function."
+    },
+    {
+      "raw_text": "Standard neonatal dosing — PMA ≥ 29 wk (old scheme)",
+      "dose_value": 4.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": "IM",
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IM",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 20 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pma_range": { "min": 29 },
+      "pna_range": { "min": 29 },
+      "notes": "PMA ≥29 wk: 4 mg/kg IV every 24 hr (NeoFax). Adjust per PNA/PMA and renal function."
+    },
+    {
+      "raw_text": "PMA 30–34 wk: PNA 0–7 days",
+      "dose_value": 4.5,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 36 },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 10 },
+        "admin_range": { "min": 30, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pma_range": { "min": 30, "max": 34 },
+      "pna_range": { "min": 0, "max": 7 },
+      "notes": "PMA 30–34 wk and PNA 0–7 d: 4.5 mg/kg IV (NeoFax chart)."
+    },
+    {
+      "raw_text": "PMA 30–34 wk: PNA 0–7 days",
+      "dose_value": 4.5,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 36 },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IM",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 10 },
+        "admin_range": { "min": 30, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pma_range": { "min": 30, "max": 34 },
+      "pna_range": { "min": 0, "max": 7 },
+      "notes": "PMA 30–34 wk and PNA 0–7 d: 4.5 mg/kg IV (NeoFax chart)."
+    },
+    {
+      "raw_text": "PMA 30–34 wk: PNA ≥ 8 days",
+      "dose_value": 4.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 20 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pma_range": { "min": 30, "max": 34 },
+      "pna_range": { "min": 8 },
+      "notes": "PMA 30–34 wk and PNA ≥8 d: 4 mg/kg IV every 24 hr (NeoFax chart)."
+    },
+    {
+      "raw_text": "PMA ≥ 35 wk (all PNA)",
+      "dose_value": 4.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 20 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pma_range": { "min": 35 },
+      "notes": "PMA ≥35 wk: 4 mg/kg IV every 24 hr (NeoFax chart)."
+    },
+    {
+      "raw_text": "PMA ≥ 35 wk (all PNA)",
+      "dose_value": 4.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": "IM",
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IM",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 20 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pma_range": { "min": 35 },
+      "notes": "PMA ≥35 wk: 4 mg/kg IV every 24 hr (NeoFax chart)."
+    },
+    {
+      "raw_text": "Plague (initial dosing / treatment)",
+      "dose_value": 4.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": "IM",
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IM",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 40 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pna_range": { "max": 7 },
+      "notes": "Plague therapy — neonates ≤7 days: 4 mg/kg IV/IM every 24 hr; older neonates 8–28 d: 5 mg/kg q24h or per NeoFax guidance."
+    },
+    {
+      "raw_text": "Plague (initial dosing / treatment)",
+      "dose_value": 4.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 10 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pna_range": { "max": 7 },
+      "notes": "Plague therapy — neonates ≤7 days: 4 mg/kg IV/IM every 24 hr; older neonates 8–28 d: 5 mg/kg q24h or per NeoFax guidance."
+    },
+    {
+      "raw_text": "Plague (initial dosing / treatment)",
+      "dose_value": 5.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 20 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pna_range": { "min":8,"max": 28 },
+      "notes": "Plague therapy — neonates ≤7 days: 4 mg/kg IV/IM every 24 hr; older neonates 8–28 d: 5 mg/kg q24h or per NeoFax guidance."
+    },
+    {
+      "raw_text": "Plague (initial dosing / treatment)",
+      "dose_value": 5.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": "IM",
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IM",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 20 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pna_range": { "min":8,"max": 28 },
+      "notes": "Plague therapy — neonates ≤7 days: 4 mg/kg IV/IM every 24 hr; older neonates 8–28 d: 5 mg/kg q24h or per NeoFax guidance."
+    },
+    {
+      "raw_text": "Plague (post-exposure prophylaxis)",
+      "dose_value": 4.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 20 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pna_range": {"max": 7},
+      "notes": "Plague post-exposure prophylaxis: 4 mg/kg IV/IM q24h (neonates ≤7 d) or 5 mg/kg q24h for 8–28 d (NeoFax). Duration per guidance."
+    },
+    {
+      "raw_text": "Plague (post-exposure prophylaxis)",
+      "dose_value": 4.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": "IM",
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IM",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 20 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pna_range": {"max": 7},
+      "notes": "Plague post-exposure prophylaxis: 4 mg/kg IV/IM q24h (neonates ≤7 d) or 5 mg/kg q24h for 8–28 d (NeoFax). Duration per guidance."
+    },
+    {
+      "raw_text": "Plague (post-exposure prophylaxis)",
+      "dose_value": 5.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 20 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pna_range": { "min":8,"max": 28 },
+      "notes": "Plague post-exposure prophylaxis: 4 mg/kg IV/IM q24h (neonates ≤7 d) or 5 mg/kg q24h for 8–28 d (NeoFax). Duration per guidance."
+    },
+    {
+      "raw_text": "Plague (post-exposure prophylaxis)",
+      "dose_value": 5.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": "IM",
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IM",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 20 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      },
+      "pna_range": { "min":8,"max": 28 },
+      "notes": "Plague post-exposure prophylaxis: 4 mg/kg IV/IM q24h (neonates ≤7 d) or 5 mg/kg q24h for 8–28 d (NeoFax). Duration per guidance."
+    },
+    {
+      "raw_text": "Extended Interval Dosing ",
+      "dose_value": 5.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 36 },
+      "per_time": null,
+      "admin": 60,
+      "conc_value": 2,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 10 },
+        "admin_range": { "min": 15, "max": 120 },
+        "dose_range": { "min": 4, "max": 5 }
+      }
+    }
+  ],
+  "other_info": {
+    "MONITORING": [
+      "Therapeutic drug monitoring recommended when treatment >48 hours: obtain peak 30 minutes after end of infusion and trough just prior to next dose.",
+      "Target: peak ≥5 mg/L (8–13 mg/L for extended-interval), trough ≤2 mg/L (preferably <1 mg/L when feasible).",
+      "Measure concentrations at 22–24 hr post-dose to guide interval adjustments using NeoFax suggested concentration→interval table."
+    ],
+    "ADMINISTRATION/PREPARATION": [
+      "IV: Infuse over 30–120 minutes depending on practice; dilute in NS or D5W.",
+      "Recommended neonatal concentration: standard 10 mg/mL (ISMP/VON standard). For very low weight (<500 g) use lower concentration per local guidance.",
+      "Compatibility: D5W, D10W, NS. See monograph for injection-site compatibility and incompatibilities."
+    ],
+    "WARNINGS": [
+      "Black box: nephrotoxicity and ototoxicity; monitor renal function and auditory function during therapy.",
+      "Avoid concurrent nephrotoxic/ototoxic drugs when possible (eg, vancomycin, loop diuretics)."
+    ],
+    "SOURCE": "NeoFax® Drug Monograph Summary (Micromedex)."
+  }
+},
+{
+  "drug_name": "Cefotaxime",
+  "regimens": [
+    {
+      "raw_text": "Disseminated Gonococcal Infections and Gonococcal Scalp Abscesses",
+      "dose_value": 25,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "admin": 30,
+      "conc_value": 100,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 180 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 25, "max": 25 }
+      },
+      "duration_days": 7,
+      "comments": "Extend to 10–14 days if meningitis is documented"
+    },
+    {
+      "raw_text": "Disseminated Gonococcal Infections and Gonococcal Scalp Abscesses",
+      "dose_value": 25,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "admin": 30,
+      "conc_value": 300,
+      "conc_unit": "mg/mL",
+      "routes": "IM",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 180 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 25, "max": 25 }
+      },
+      "duration_days": 7,
+      "comments": "Extend to 10–14 days if meningitis is documented"
+    },
+    {
+      "raw_text": "Meningitis (0–7 days of age)",
+      "dose_value": 125,
+      "dose_unit": "mg/kg/day",
+      "frequency": { "interval_hours": 8 },
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 180 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 100, "max": 125 }
+      },
+      "pna_range": { "max": 7 },
+      "weight_range_kg": { "max_kg": 2 }
+    },
+    {
+      "raw_text": "Meningitis (≥8 days of age)",
+      "dose_value": 200,
+      "dose_unit": "mg/kg/day",
+      "frequency": { "interval_hours": 6 },
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 40 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 150, "max": 200 },
+        "dose_day_range":{"min":3,"max":4}
+      },
+      "dose_per_day":4,
+      "pna_range": { "min": 8 },
+      "weight_range_kg": { "min_kg": 2 }
+    },
+    {
+      "raw_text": "Sepsis (All weeks GA, <7 days PNA)",
+      "dose_value": 50,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 180 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 50, "max": 50 }
+      },
+    
+      "pna_range": { "max": 7 }
+    },
+    {
+      "raw_text": "Sepsis (<32 weeks GA, ≥7 days PNA)",
+      "dose_value": 50,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 8 },
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 180 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 50, "max": 50 }
+      },
+      "ga_range": { "max": 32 },
+      "pna_range": { "min": 7 }
+    },
+    {
+      "raw_text": "Sepsis (≥32 weeks GA, ≥7 days PNA)",
+      "dose_value": 50,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 6 },
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 180 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 50, "max": 50 }
+      },
+      "pma_range": { "min": 32 },
+      "pna_range": { "min": 7 }
+    },
+    {
+      "raw_text": "General Infections (≤7 days, any weight)",
+      "dose_value": 50,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 180 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 50, "max": 50 }
+      },
+      "pna_range":{"max":7}
+    },
+    {
+      "raw_text": "General Infections (8–28 days, ≤2 kg)",
+      "dose_value": 50,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 10 },
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 180 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 50, "max": 50 }
+      },
+      "pna_range": { "min": 8, "max": 28 },
+      "weight_range_kg": { "max_kg": 2 }
+    },
+    {
+      "raw_text": "General Infections (8–28 days, >2 kg)",
+      "dose_value": 50,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 8 },
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 180 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 50, "max": 50 }
+      },
+      "pna_range": { "min": 8, "max": 28 },
+      "weight_range_kg": { "min_kg": 2 }
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Use cautiously in patients with GI disease, especially colitis.",
+      "C. difficile–associated diarrhea reported; discontinue if necessary.",
+      "Leukopenia, neutropenia, pancytopenia possible.",
+      "Hypersensitivity may occur in patients allergic to penicillins or cephalosporins.",
+      "Dose adjustments recommended in renal insufficiency (CrCl <20 mL/min/1.73 m²).",
+      "Avoid rapid bolus via central line; may cause arrhythmia."
+    ],
+    "MECHANISM OF ACTION/PHARMACOKINETICS": [
+      "Third-generation cephalosporin; inhibits bacterial cell wall synthesis.",
+      "Metabolized hepatically to desacetylcefotaxime (active metabolite).",
+      "Widely distributed to CSF, bile, bronchial secretions, lung tissue, middle ear.",
+      "Eliminated renally as unchanged drug and metabolite.",
+      "Half-life ≈ 3.6 hours in neonates."
+    ],
+    "ABOUT": [
+      "Available as 500 mg, 1 g, and 2 g vials for IV/IM.",
+      "Dilute for IV: 10 mL SWFI (50–180 mg/mL); infuse over 10–30 minutes.",
+      "Stable 24h at room temperature or 7 days refrigerated.",
+      "Recommended neonatal concentration: 100 mg/mL."
+    ]
+  }
+}
+,
+{
+  "drug_name": "Amoxicillin",
+  "regimens": [
+    {
+      "raw_text": "Standard oral dosing (routine infections)",
+      "dose_value": 15.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "per_time": null,
+      "admin": "PO",
+      "conc_value": 50,
+      "conc_unit": "mg/mL",
+      "routes": "PO",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 50 },
+        "admin_range": {},
+        "dose_range": { "min": 10, "max": 20 }
+      },
+      "notes": "Standard-dose oral regimen: 15 mg/kg PO every 12 hours. Continue 48–72 hr after symptom resolution; for Streptococcus pyogenes treat ≥10 days."
+    },
+    {
+      "raw_text": "High-dose oral — < 2 kg (serious infections)",
+      "dose_value": 37.5,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "per_time": null,
+      "admin": "Oral",
+      "dose_per_day":2,
+      "conc_value": 50,
+      "conc_unit": "mg/mL",
+      "routes": "Oral",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 50 },
+        "admin_range": {},
+        "dose_range": { "min": 30, "max": 75 }
+      },
+      "weight_range_kg": { "max_kg": 2.0 },
+      "notes": "High-dose oral (used for possible serious infections) for neonates <2 kg: 37.5 mg/kg PO q12h."
+    },
+    {
+      "raw_text": "High-dose oral — ≥ 2 kg (serious infections)",
+      "dose_value": 50.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "per_time": null,
+      "admin": "Oral",
+      "conc_value": 50,
+      "dose_per_day":2,
+      "conc_unit": "mg/mL",
+      "routes": "Oral",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 50 },
+        "admin_range": {},
+        "dose_range": { "min": 30, "max": 100 }
+      },
+      "weight_range_kg": { "min_kg": 2.0 },
+      "notes": "High-dose oral for neonates ≥2 kg: 50 mg/kg PO every 12 hours (used for possible serious infections)."
+    },
+    {
+      "raw_text": "Anthrax",
+      "dose_value": 25.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "per_time": null,
+      "admin": "PO",
+      "conc_value": 50,
+      "dose_per_day":2,
+      "conc_unit": "mg/mL",
+      "routes": "PO",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 50 },
+        "admin_range": {},
+        "dose_range": { "min": 25, "max": 25 }
+      },
+      "ga_range": { "min": 32, "max": 33.999 },
+      "pna_range": { "min": 0, "max": 6 },
+      "notes": "Anthrax postexposure / treatment: 25 mg/kg PO q12h for 32 to <34 wk GA and 0 to <1 wk chronologic age. (See NeoFax for duration rules — aerosol exposure → 60 days total)."
+    },
+    {
+      "raw_text": "Anthrax — 32–<34 wk GA, 1–4 wk PNA",
+      "dose_value": 25.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 8 },
+      "per_time": null,
+      "admin": "PO",
+      "conc_value": 50,
+      "dose_per_day":2,
+      "conc_unit": "mg/mL",
+      "routes": "PO",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 50 },
+        "admin_range": {},
+        "dose_range": { "min": 25, "max": 25 }
+      },
+      "ga_range": { "min": 32, "max": 33.999 },
+      "pna_range": { "min": 7, "max": 27 },
+      "notes": "Anthrax: 25 mg/kg PO every 8 hours for 1–4 weeks chronologic age in 32–<34 wk GA neonates."
+    },
+    {
+      "raw_text": "Anthrax — ≥ 34 wk GA",
+      "dose_value": 25.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 8 },
+      "per_time": null,
+      "admin": "PO",
+      "conc_value": 50,
+      "conc_unit": "mg/mL",
+      "dose_per_day":2,
+      "routes": "PO",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 50 },
+        "admin_range": {},
+        "dose_range": { "min": 25, "max": 25 }
+      },
+      "ga_range": { "min": 34 },
+      "notes": "Anthrax: 25 mg/kg PO every 8 hours for neonates ≥34 weeks GA. Duration: aerosol exposure → 60 days; nonaerosol exposures shorter per guidance."
+    },
+    {
+      "raw_text": "UTI prophylaxis (neonatal/infant)",
+      "dose_value": 12.5,
+      "dose_unit": "mg/kg/day",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": "Oral",
+      "conc_value": 50,
+      "conc_unit": "mg/mL",
+      "routes": "Oral",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 50 },
+        "admin_range": {},
+        "dose_range": { "min": 10, "max": 15 }
+      },
+      "notes": "Urinary tract infection prophylaxis: 10–15 mg/kg/day PO once daily."
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Severe cutaneous adverse reactions (SJS/TEN/DRESS) can occur; discontinue if lesions progress.",
+      "Clostridioides difficile–associated diarrhea has been reported; monitor.",
+      "Avoid in mononucleosis due to high risk of rash."
+    ],
+    "ADMINISTRATION/PREPARATION": [
+      "Oral suspension commonly prepared at 50 mg/mL; shake before use.",
+      "May mix with formula, milk, juice; administer immediately after mixing.",
+      "Reconstituted suspension: discard unused portion after 14 days; refrigeration preferable."
+    ],
+    "PHARMACOKINETICS": [
+      "Neonatal PK: Vd ~0.6–0.66 L/kg; half-life varies with GA/PNA; clearance increases with postnatal age.",
+      "Primarily renally excreted."
+    ],
+    "SOURCE": "NeoFax® Drug Monograph Summary - Micromedex (amoxicillin dosing/administration)."
+  }
+},
+{
+  "drug_name": "Caffeine Citrate",
+  "regimens": [
+    {
+      "raw_text": "Apnea of prematurity – FDA-approved loading dose",
+      "dose_value": 20,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 0 },
+      "per_time": "once",
+      "admin": 30,
+      "conc_value": 20,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 25 },
+        "admin_range": { "min": 30, "max": 30 },
+        "dose_range": { "min": 20, "max": 40 }
+      },
+      "pma_range": { "min": 28, "max": 33 },
+      "notes": "Loading dose 20 mg/kg IV over 30 min; doses up to 40 mg/kg (max 80 mg/kg reported). Follow with maintenance 24 h later."
+    },
+    {
+      "raw_text": "Apnea of prematurity – FDA-approved maintenance dose",
+      "dose_value": 5,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "dose_per_day": 1,
+      "admin": 10,
+      "conc_value": 20,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 25 },
+        "admin_range": { "min": 10, "max": 10 },
+        "dose_range": { "min": 5, "max": 10 }
+      },
+      "pma_range": { "min": 28, "max": 33 },
+      "notes": "Maintenance 5 mg/kg IV or PO every 24 h; begin 24 h after loading dose."
+    },
+    {
+      "raw_text": "Apnea of prematurity – alternative high-dose loading",
+      "dose_value": 40,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 0 },
+      "per_time": "once",
+      "admin": 30,
+      "conc_value": 20,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 25 },
+        "admin_range": { "min": 30, "max": 30 },
+        "dose_range": { "min": 20, "max": 80 }
+      },
+      "pma_range": { "max": 32 },
+      "notes": "Alternative loading 20–40 mg/kg IV; doses up to 80 mg/kg reported for ≤ 32 wk GA neonates."
+    },
+    {
+      "raw_text": "Apnea of prematurity – alternative maintenance",
+      "dose_value": 10,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "dose_per_day": 1,
+      "admin": 10,
+      "conc_value": 20,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 25 },
+        "admin_range": { "min": 10, "max": 10 },
+        "dose_range": { "min": 5, "max": 20 }
+      },
+      "pma_range": { "max": 32 },
+      "notes": "Maintenance 5–20 mg/kg IV or PO q 24 h; start 24 h after loading dose."
+    },
+    {
+      "raw_text": "High-dose regimen (prevention or reintubation)",
+      "dose_value": 20,
+      "dose_unit": "mg/kg/day",
+      "dose_per_day": 2,
+      "frequency": { "interval_hours": 12 },
+      "admin": 10,
+      "conc_value": 20,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 25 },
+        "admin_range": { "min": 10, "max": 10 },
+        "dose_range": { "min": 12, "max": 30 }
+      },
+      "pma_range": { "min": 23, "max": 30 },
+      "notes": "High-dose therapy (>10 mg/kg/day) reduces BPD rates in very preterm infants; monitor for tachycardia."
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Use with caution in cardiovascular, hepatic, renal, or seizure disorders.",
+      "Monitor for feeding intolerance, tachycardia, rash, or necrotizing enterocolitis.",
+      "Therapeutic trough 5–25 mcg/mL; > 40–50 mcg/mL toxic."
+    ],
+    "ADMINISTRATION/PREPARATION": [
+      "IV loading dose over 30 min; maintenance over 10 min.",
+      "Oral solution 20 mg/mL (preservative-free); discard unused portion.",
+      "Dilute IV dose in D5W if needed; stable 24 h at room temp.",
+      "Extemporaneous 20 mg/mL oral compound stable ≈ 1 year."
+    ],
+    "PHARMACOKINETICS": [
+      "Vd 0.8–0.9 L/kg; t½ ≈ 3–4 days in neonates.",
+      "≈ 86 % renally excreted unchanged in neonates.",
+      "Metabolism via CYP1A2 (minimal in preterms)."
+    ],
+    "SOURCE": "NeoFax® Drug Monograph Summary – Caffeine Citrate (Micromedex 2025)"
+  }
+},
+{
+  "drug_name": "Ciprofloxacin",
+  "regimens": [
+    {
+      "raw_text": "Anthrax, cutaneous (32 to <37 weeks GA)-Oral",
+      "dose_value": 10,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "admin": 60,
+      "routes": "Oral",
+      "conc_value": 100,
+      "conc_unit": "mg/mL",
+      "pma_range": { "min": 32, "max": 37 },
+      "constraints": {
+        "conc_range": { "min": 50, "max": 100 },
+        "admin_range": { "min": 30, "max": 60 },
+        "dose_range": { "min": 7.5, "max": 15 }
+      }
+    },
+    {
+      "raw_text": "Anthrax, cutaneous (Full term neonates)-Oral",
+      "dose_value": 15,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "admin": 60,
+      "routes": "Oral",
+      "conc_value": 100,
+      "conc_unit": "mg/mL",
+      "pma_range": { "min": 37 },
+      "constraints": {
+        "conc_range": { "min": 50, "max": 100 },
+        "admin_range": { "min": 30, "max": 60 },
+        "dose_range": { "min": 10, "max": 15 }
+      }
+    },
+    {
+      "raw_text": "Anthrax, systemic (32–34 weeks GA, <1 week age)",
+      "dose_value": 7.5,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "admin": 60,
+      "routes": "IV",
+      "conc_value": 2,
+      "conc_unit": "mg/mL",
+      "pma_range": { "min": 32, "max": 34 },
+      "pna_range": { "max": 7 },
+      "constraints": {
+        "conc_range": { "min": 0.5, "max": 2 },
+        "admin_range": { "min": 30, "max": 60 },
+        "dose_range": { "min": 7.5, "max": 12.5 }
+      }
+    },
+    {
+      "raw_text": "Anthrax, systemic (34 weeks GA and greater)",
+      "dose_value": 12.5,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "admin": 60,
+      "routes": "IV",
+      "conc_value": 2,
+      "conc_unit": "mg/mL",
+      "pma_range": { "min": 34 },
+      "constraints": {
+        "conc_range": { "min": 0.5, "max": 2 },
+        "admin_range": { "min": 30, "max": 60 },
+        "dose_range": { "min": 10, "max": 15 }
+      }
+    },
+    {
+      "raw_text": "Plague (IV)",
+      "dose_value": 10,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 8 },
+      "admin": 60,
+      "routes": "IV",
+      "conc_value": 2,
+      "conc_unit": "mg/mL",
+      "pma_range": { "min": 32 },
+      "constraints": {
+        "conc_range": { "min": 0.5, "max": 2 },
+        "admin_range": { "min": 30, "max": 60 },
+        "dose_range": { "min": 10, "max": 20 }
+      }
+    },
+    {
+      "raw_text": "Plague (Oral)",
+      "dose_value": 15,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "admin": 60,
+      "routes": "Oral",
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "pma_range": { "min": 32 },
+      "constraints": {
+        "conc_range": { "min": 5, "max": 20 },
+        "admin_range": { "min": 30, "max": 60 },
+        "dose_range": { "min": 10, "max": 20 }
+      }
+    },
+    {
+      "raw_text": "Sepsis (multi-drug resistant organisms)",
+      "dose_value": 15.0,
+      "dose_unit": "mg/kg/day",
+      "frequency": { "interval_hours": 12 },
+      "admin": 60,
+      "conc_value": 2,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "notes": "10–20 mg/kg/day IV divided q12h; used in cohort and case-series studies for resistant gram-negative infections.",
+      "constraints": {
+        "conc_range": { "min": 0.5, "max": 2 },
+        "admin_range": { "min": 60, "max": 60 },
+        "dose_range": { "min": 10, "max": 20 }
+      }
+    },
+    {
+      "raw_text": "Plague, post-exposure prophylaxis (oral)",
+      "dose_value": 15.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "admin": "Oral",
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "PO",
+      "notes": "15 mg/kg PO q12h for 7 days for post-exposure prophylaxis.",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 100 },
+        "admin_range": { "min": 60, "max": 60 },
+        "dose_range": { "min": 15, "max": 15 }
+      }
+    },{
+      "raw_text": "Anthrax, postexposure prophylaxis (≥34 wk GA)",
+      "dose_value": 12.5,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "admin": "Oral",
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "PO",
+      "ga_range": { "min": 34 },
+      "notes": "12.5 mg/kg orally every 12 hr for 60 days (aerosol) or 7 days (cutaneous).",
+      "constraints": {
+        "conc_range": { "min": 50, "max": 100 },
+        "admin_range": { "min": 60, "max": 60 },
+        "dose_range": { "min": 12, "max": 14 }
+      }
+    }
+
+  ],
+  "other_info": {
+    "MECHANISM OF ACTION/PHARMACOKINETICS": [
+      "Ciprofloxacin inhibits bacterial DNA topoisomerase II and IV, preventing replication and repair.",
+      "Bioavailability (oral): 60%. Protein binding: 20–40%. Half-life: 4–5 hours in children."
+    ],
+    "MEDICATION SAFETY": [
+      "Avoid in patients with QT prolongation or tendon disorders.",
+      "Monitor hepatic, renal, and hematologic function during prolonged therapy.",
+      "Tendinitis, tendon rupture, peripheral neuropathy, and CNS effects have been reported."
+    ],
+    "COMPATIBILITY": [
+      "Compatible solutions: D5W, D10W, NS, LR.",
+      "Incompatible: Ampicillin/Sulbactam, Azithromycin, Cefepime, Furosemide, Heparin."
+    ]
+  }
+},
+{
+  "drug_name": "Epinephrine (Adrenaline)",
+  "regimens": [
+    {
+      "raw_text": "Hypotension or persistent bradycardia; prevention of cardiac arrest",
+      "dose_value": 0.001,
+      "dose_unit": "mcg/kg",
+      "routes": "IV/IO",
+      "frequency": {
+        "interval_hours": null,
+        "dose_per_day": null
+      },
+      "admin": 5,
+      "conc_value": 0.01,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 0.01, "max": 1 },
+        "admin_range": { "min": 5, "max": 10 },
+        "dose_range": { "min": 1, "max": 1 }
+      },
+      "notes": "Repeat every 5–10 min as needed or start infusion 0.01–0.2 mcg/kg/min"
+    },
+    {
+      "raw_text": "Pulmonary hemorrhage (endotracheal)",
+      "dose_value": 0.1,
+      "dose_unit": "mL/kg of 1:10,000 solution",
+      "routes": "Endotracheal",
+      "frequency": {
+        "interval_hours": null,
+        "dose_per_day": null
+      },
+      "admin": null,
+      "conc_value": 0.1,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 0.01, "max": 1 },
+        "admin_range": { "min": 1, "max": 5 },
+        "dose_range": { "min": 0.05, "max": 0.1 }
+      },
+      "notes": "Administer via direct ET tube instillation or rapid nebulization"
+    },
+    {
+      "raw_text": "Resuscitation and severe bradycardia (IV)",
+      "dose_value": 0.01,
+      "dose_unit": "mg/kg",
+      "routes": "IV",
+      "frequency": {
+        "interval_hours": null,
+        "dose_per_day": null
+      },
+      "admin": 0.5,
+      "conc_value": 0.1,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 0.01, "max": 1 },
+        "admin_range": { "min": 0.5, "max": 1 },
+        "dose_range": { "min": 0.01, "max": 0.03 }
+      },
+      "notes": "Follow IV with 0.5–1 mL NS flush"
+    },
+    {
+      "raw_text": "Resuscitation and severe bradycardia (Endo)",
+      "dose_value": 0.05,
+      "dose_unit": "mg/kg",
+      "routes": "Endotracheal",
+      "frequency": {
+        "interval_hours": null,
+        "dose_per_day": null
+      },
+      "admin": 0.5,
+      "conc_value": 0.1,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 0.01, "max": 1 },
+        "admin_range": { "min": 0.5, "max": 1 },
+        "dose_range": { "min": 0.01, "max": 0.03 }
+      }
+      
+    },
+    {
+      "raw_text": "Continuous infusion (IV)",
+      "dose_value": 0.1,
+      "dose_unit": "mcg/kg/min",
+      "routes": "IV infusion",
+      "frequency": {
+        "interval_hours": null,
+        "dose_per_day": null
+      },
+      "admin": null,
+      "conc_value": 10,
+      "conc_unit": "mcg/mL",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 60 },
+        "admin_range": { "min": null, "max": null },
+        "dose_range": { "min": 0.05, "max": 1 }
+      },
+      "notes": "Titrate up to 1 mcg/kg/min as needed for desired response"
+    },
+    {
+      "raw_text": "Septic shock (fluid refractory, dopamine-resistant)",
+      "dose_value": 0.05,
+      "dose_unit": "mcg/kg/min",
+      "routes": "IV infusion",
+      "frequency": {
+        "interval_hours": null,
+        "dose_per_day": null
+      },
+      "admin": null,
+      "conc_value": 10,
+      "conc_unit": "mcg/mL",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 60 },
+        "admin_range": { "min": null, "max": null },
+        "dose_range": { "min": 0.05, "max": 0.3 }
+      },
+      "notes": "First-line agent for septic shock per Surviving Sepsis Campaign"
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Adverse effects: hyperglycemia, tachycardia, arrhythmias, hypertension, intracranial hemorrhage.",
+      "Tissue ischemia and necrosis possible with IV infiltration; treat with phentolamine 1 mg/mL locally.",
+      "Monitor heart rate and blood pressure continuously."
+    ],
+    "SOLUTION COMPATIBILITY": [
+      "Compatible: D5W, D10W, NS (preferably dextrose-containing solutions).",
+      "Incompatible: aminophylline, ampicillin, hyaluronidase, micafungin, sodium bicarbonate."
+    ],
+    "MECHANISM OF ACTION/PHARMACOKINETICS": [
+      "Potent alpha and beta adrenergic agonist.",
+      "Low doses cause vasodilation; higher doses increase cardiac output and blood pressure.",
+      "Increased myocardial oxygen consumption; decreased renal blood flow."
+    ],
+    "ABOUT": [
+      "Available concentrations: 0.1 mg/mL and 1 mg/mL injection.",
+      "Protect from light; do not use discolored solution.",
+      "Standard neonatal infusion: 10 mcg/mL (5 mcg/mL for infants <500 g).",
+      "Stable for up to 30 days at 25°C when protected from light (25–100 mcg/mL)."
+    ]
+  }
+},
+{
+  "drug_name": "Furosemide",
+  "regimens": [
+    {
+      "raw_text": "Bronchopulmonary dysplasia (very low birth weight, <34 wk GA)",
+      "dose_value": 1.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": 10,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 10 },
+        "admin_range": { "min": 5, "max": 30 },
+        "dose_range": { "min": 0.5, "max": 2.0 }
+      },
+      "pma_range": { "max": 34 },
+      "notes": "Initial 1 mg/kg IV then 1 mg/kg IV no more than every 24 hr for very low birth weight infants (<34 wk GA). For enteral option: 2 mg/kg enteral q24h."
+    },
+    {
+      "raw_text": "Bronchopulmonary dysplasia (≥34 wk GA)",
+      "dose_value": 1.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "per_time": null,
+      "admin": 10,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 10 },
+        "admin_range": { "min": 5, "max": 30 },
+        "dose_range": { "min": 0.5, "max": 2.0 }
+      },
+      "pma_range": { "min": 34 },
+      "notes": "Initial 1 mg/kg IV then 1 mg/kg IV q12h OR enteral 2 mg/kg q12h for GA ≥34 wk."
+    },
+    {
+      "raw_text": "Post-cardiac surgery — initial bolus",
+      "dose_value": 1.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 0 },
+      "per_time": "once",
+      "admin": 5,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 10 },
+        "admin_range": { "min": 1, "max": 30 },
+        "dose_range": { "min": 0.5, "max": 2.0 }
+      },
+      "notes": "Initial bolus 1 mg/kg IV (single dose) for post-op diuresis."
+    },
+    {
+      "raw_text": "Post-cardiac surgery — loading dose",
+      "dose_value": 1.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 6 },
+      "per_time": null,
+      "admin": 5,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 10 },
+        "admin_range": { "min": 1, "max": 30 },
+        "dose_range": { "min": 0.5, "max": 2.0 }
+      },
+      "notes": "Loading dose 1 mg/kg IV given 6 hr after initial bolus; may use 2 mg/kg loading if serum creatinine doubled or other criteria described in monograph."
+    },
+    {
+      "raw_text": "Post-cardiac surgery — continuous infusion (start/titrate)",
+      "dose_value": 0.2,
+      "dose_unit": "mg/kg/hour",
+      "frequency": { "interval_hours": 0 },
+      "per_time": "continuous",
+      "admin": null,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV infusion",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 10 },
+        "admin_range": { "min": null, "max": null },
+        "dose_range": { "min": 0.05, "max": 1.0 }
+      },
+      "notes": "Initiate infusion at 0.2 mg/kg/hr. Titrate by 0.1 mg/kg/hr increments every 12 hr to target urine output (e.g., 4 mL/kg/hr) per protocol."
+    },
+    {
+      "raw_text": "Posthemorrhagic ventricular dilation adjunct (PHVD)",
+      "dose_value": 1.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "per_time": null,
+      "admin": 10,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV or PO",
+      "constraints": {
+        "conc_range": { "min": 1, "max": 10 },
+        "admin_range": { "min": 5, "max": 30 },
+        "dose_range": { "min": 0.5, "max": 2.0 }
+      },
+      "notes": "Furosemide 1 mg/kg IV or 2 mg/kg enteral daily was used as adjunct in some PHVD protocols; use caution given trial results and adverse outcomes."
+    },
+    {
+      "raw_text": "Diuresis — general neonatal dosing (enteral option)",
+      "dose_value": 2.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 12 },
+      "per_time": null,
+      "admin": null,
+      "conc_value": 1,
+      "conc_unit": "mg/mL",
+      "routes": "PO/OG",
+      "constraints": {
+        "conc_range": { "min": 1, "max": 10 },
+        "admin_range": { "min": null, "max": null },
+        "dose_range": { "min": 1, "max": 4 }
+      },
+      "notes": "Enteral dosing frequently used (2 mg/kg enteral q12–24h) depending on clinical scenario and GA."
+    }
+  ],
+  "other_info": {
+    "PREPARATION": [
+      "Standard neonatal IV concentration: 10 mg/mL for infants ≥500 g; use 2 mg/mL for infants <500 g (ISMP/VON recommendations).",
+      "IV intermittent doses: 2–10 mg/mL infused over 5–30 minutes.",
+      "Oral extemporaneous: 1 mg/mL solution prepared by diluting injectable solution 1:9 (stable ≈96 hr at room temperature)."
+    ],
+    "MONITORING": [
+      "Monitor urine output and weight changes.",
+      "Monitor electrolytes (K+, Na+, Cl-, HCO3-), BUN, creatinine regularly during therapy.",
+      "Consider renal ultrasound in prolonged therapy because of risk of nephrocalcinosis/nephrolithiasis.",
+      "Monitor hearing in neonates receiving prolonged therapy or with other risk factors for ototoxicity."
+    ],
+    "SAFETY/CONTRAINDICATIONS": [
+      "Contraindicated in anuria and in patients with hypersensitivity to furosemide.",
+      "Use caution with concomitant aminoglycosides (increased ototoxicity risk) and with indomethacin for PDA closure (increases serum creatinine).",
+      "Avoid excessive or prolonged dosing due to risk of electrolyte disturbances, nephrocalcinosis, and bone mineralization effects."
+    ],
+    "REFERENCES": [
+      "NeoFax® Drug Monograph Summary - Furosemide (Micromedex)."
+    ]
+  }
+}
+,
+{
+  "drug_name": "Atropine",
+  "regimens": [
+    {
+      "raw_text": "Bradycardia",
+      "dose_value": 0.01,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": "May repeat every 10 to 15"},
+      "per_time": null,
+      "admin": 1,
+      "conc_value": 0.05,
+      "conc_unit": "mg/mL",
+      "routes": "Endotracheal",
+      "constraints": {
+        "conc_range": { "min": 0.05, "max": 1.0 },
+        "admin_range": { "min": 1, "max": 30 },
+        "dose_range": { "min": 0.01, "max": 0.03 }
+      },
+      "notes": "IV: 0.01–0.03 mg/kg IV over 1 minute (can repeat every 10–15 minutes) for bradycardia. Cumulative maximum ~0.04 mg/kg. ET route also 0.01–0.03 mg/kg followed by 1 mL NS."
+    },
+    {
+      "raw_text": "Bradycardia",
+      "dose_value": 0.01,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": "May repeat every 10 to 15"},
+      "per_time": null,
+      "admin": 1,
+      "conc_value": 0.05,
+      "conc_unit": "mg/mL",
+      "routes": "IM",
+      "constraints": {
+        "conc_range": { "min": 0.05, "max": 1.0 },
+        "admin_range": { "min": 1, "max": 30 },
+        "dose_range": { "min": 0.01, "max": 0.03 }
+      },
+      "notes": "Maximum cumulative dose: 0.04 mg/kg"
+    },
+    {
+      "raw_text": "Bradycardia",
+      "dose_value": 0.01,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": "May repeat every 10 to 15"},
+      "per_time": null,
+      "admin": "IV push over 1 minute",
+      "conc_value": 0.05,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 0.05, "max": 1.0 },
+        "admin_range": { "min": 1, "max": 30 },
+        "dose_range": { "min": 0.01, "max": 0.03 }
+      },
+      "notes": "Maximum cumulative dose: 0.04 mg/kg"
+    },
+    {
+      "raw_text": "Bradycardia",
+      "dose_value": 0.02,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 6},
+      "per_time": null,
+      "admin": 1,
+      "conc_value": 0.05,
+      "conc_unit": "mg/mL",
+      "routes": "Oral",
+      "constraints": {
+        "conc_range": { "min": 0.05, "max": 1.0 },
+        "admin_range": { "min": 1, "max": 30 },
+        "dose_range": { "min": 0.01, "max": 0.03 }
+      },
+      "notes": "Start at lowest dose."
+    },
+    
+    {
+      "raw_text": "Organophosphate poisoning,<7 kg (autoinjector)",
+      "calc_notes":"Two or more mild symptoms and exposure is known or suspected:0.25 mg (yellow label autoinjector) IM into mid-lateral thigh; if severe symptoms develop, give 2 additional injections of 0.25 mg each in rapid succession. Severe symptoms or patient unconscious: 3 IM injections of 0.25 mg each (yellow label autoinjectors) into the mid-lateral thigh in rapid succession.  ",
+                    
+      "routes": "IM",
+      "constraints": {
+        "conc_range": { "min": 0.7, "max": 1.0 },
+        "admin_range": {},
+        "dose_range": { "min": 0.25, "max": 0.25 }
+      },
+      "notes": "Autoinjector guidance for suspected organophosphate exposure: <7 kg — 0.25 mg IM (yellow label) for ≥2 mild symptoms; if severe or unconscious give 3 × 0.25 mg IM rapidly. Observe 48–72 hr."
+    },
+   
+    {
+      "raw_text": "Premedication",
+      "dose_value": 0.02,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": "single dose" },
+      "per_time": null,
+      "admin": "IV push over 1 minute",
+      "conc_value": 0.1,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 0.05, "max": 1.0 },
+        "admin_range": {},
+        "dose_range": { "min": 0.01, "max": 0.02 }
+      },
+      "notes": "Oral: begin at 0.02 mg/kg PO every 4–6 hr, may increase gradually up to 0.09 mg/kg/dose if needed."
+    },
+    {
+      "raw_text": "Resuscitation",
+      "dose_value": 0.02,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": "single dose" },
+      "per_time": null,
+      "admin": "IV",
+      "conc_value": 0.1,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 0.05, "max": 1.0 },
+        "admin_range": {},
+        "dose_range": { "min": 0.01, "max": 0.03 }
+      },
+      "notes": "Oral: begin at 0.02 mg/kg PO every 4–6 hr, may increase gradually up to 0.09 mg/kg/dose if needed."
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Adverse effects: tachycardia, arrhythmias (especially within 2 minutes of IV dose), fever (especially in brain-injured infants), mydriasis, decreased GI motility.",
+      "Caution: atropine may cause post-operative respiratory acidosis in neonates after ductal ligation (monitor ventilation and blood gases)."
+    ],
+    "ADMINISTRATION/PREPARATION": [
+      "IV concentrations available: 0.05, 0.1, 0.4, and 1 mg/mL. Administer IV over ~1 minute as undiluted (0.05–0.1 mg/mL strengths) or dilute in 4 mL D5W/NS for premedication.",
+      "Extemporaneous oral suspension: 0.1 mg/mL (stable ~90 days refrigerated)."
+    ],
+    "SOLUTION_COMPATIBILITY": [
+      "Compatible: D5W, NS."
+    ],
+    "TERMINAL_INJECTION_SITE_INCOMPATIBILITY": [
+      "Phenytoin; trimethoprim/sulfamethoxazole."
+    ],
+    "TERMINAL_INJECTION_SITE_COMPATIBILITY": [
+      "Amiodarone, cimetidine, dobutamine, famotidine, fentanyl, furosemide, glycopyrrolate, heparin, hydrocortisone succinate, meropenem, methadone, metoclopramide, midazolam, milrinone, morphine, nafcillin, netilmicin, pentobarbital, potassium chloride, propofol, ranitidine, remifentanil, sodium bicarbonate."
+    ],
+    "MONITORING": [
+      "Monitor heart rate and rhythm closely after administration.",
+      "In organophosphate poisoning, closely supervise patients for at least 48–72 hours after therapy."
+    ],
+    "SOURCE": "NeoFax® Drug Monograph Summary - Atropine (Micromedex)."
+  }
+},
+{
+  "drug_name": "Acetaminophen",
+  "regimens": [
+    {
+      "raw_text": "Fever/Pain (IV) — 28 to <32 weeks gestational age",
+      "dose_value": 10.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 6, "dose_per_day": 4 },
+      "per_time": null,
+      "admin": 15,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 5, "max": 15 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 10, "max": 40 }
+      },
+      "ga_range": { "min": 28, "max": 31.9 },
+      "notes": "10 mg/kg IV every 6 hours (maximum 40 mg/kg/day). Infuse over 15 min."
+    },
+    {
+      "raw_text": "Fever/Pain (IV) — ≥32 weeks gestational age",
+      "dose_value": 12.5,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 6, "dose_per_day": 4 },
+      "per_time": null,
+      "admin": 15,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 5, "max": 15 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 10, "max": 50 }
+      },
+      "ga_range": { "min": 32 },
+      "notes": "12.5 mg/kg IV every 6 hours (maximum 50 mg/kg/day). Infuse over 15 min."
+    },
+    {
+      "raw_text": "Fever/Pain (Oral) — <32 weeks postmenstrual age",
+      "dose_value": 20.0,
+      "dose_unit": "mg/kg (initial)",
+      "frequency": { "interval_hours": 12 },
+      "per_time": null,
+      "admin": "PO",
+      "conc_value": 32,
+      "conc_unit": "mg/mL",
+      "routes": "PO",
+      "constraints": {
+        "conc_range": { "min": 24, "max": 40 },
+        "dose_range": { "min": 12, "max": 25 }
+      },
+      "pma_range": { "max": 31.9 },
+      "notes": "20–25 mg/kg loading dose orally, then 12–15 mg/kg every 12 hr as needed or scheduled around-the-clock."
+    },
+    {
+      "raw_text": "Fever/Pain (Oral) — ≥32 weeks postmenstrual age",
+      "dose_value": 20.0,
+      "dose_unit": "mg/kg (initial)",
+      "frequency": { "interval_hours": 8 },
+      "admin": "PO",
+      "conc_value": 32,
+      "conc_unit": "mg/mL",
+      "routes": "PO",
+      "constraints": {
+        "conc_range": { "min": 24, "max": 40 },
+        "dose_range": { "min": 12, "max": 25 }
+      },
+      "pma_range": { "min": 32, "max": 36.9 },
+      "notes": "20–25 mg/kg orally; then 12–15 mg/kg/dose every 8 hours as needed or scheduled."
+    },
+    {
+      "raw_text": "Fever/Pain (Oral) — Term infants",
+      "dose_value": 20.0,
+      "dose_unit": "mg/kg (initial)",
+      "frequency": { "interval_hours": 6 },
+      "admin": "PO",
+      "conc_value": 32,
+      "conc_unit": "mg/mL",
+      "routes": "PO",
+      "constraints": {
+        "conc_range": { "min": 24, "max": 40 },
+        "dose_range": { "min": 12, "max": 25 }
+      },
+      "pma_range": { "min": 37 },
+      "notes": "20–25 mg/kg orally; then 12–15 mg/kg/dose every 6 hours as needed or scheduled."
+    },
+    {
+      "raw_text": "Fever/Pain (Rectal) — <32 weeks postmenstrual age",
+      "dose_value": 30.0,
+      "dose_unit": "mg/kg (initial)",
+      "frequency": { "interval_hours": 12 },
+      "admin": "PR",
+      "conc_value": null,
+      "conc_unit": null,
+      "routes": "Rectal",
+      "constraints": {
+        "dose_range": { "min": 12, "max": 30 }
+      },
+      "pma_range": { "max": 31.9 },
+      "notes": "30 mg/kg rectally; then 12–18 mg/kg every 12 hours as needed or around-the-clock."
+    },
+    {
+      "raw_text": "Fever/Pain (Rectal) — ≥32 weeks postmenstrual age",
+      "dose_value": 30.0,
+      "dose_unit": "mg/kg (initial)",
+      "frequency": { "interval_hours": 8 },
+      "admin": "PR",
+      "conc_value": null,
+      "conc_unit": null,
+      "routes": "Rectal",
+      "constraints": {
+        "dose_range": { "min": 12, "max": 30 }
+      },
+      "pma_range": { "min": 32, "max": 36.9 },
+      "notes": "30 mg/kg rectally; then 12–18 mg/kg every 8 hours as needed or scheduled."
+    },
+    {
+      "raw_text": "Fever/Pain (Rectal) — Term infants",
+      "dose_value": 30.0,
+      "dose_unit": "mg/kg (initial)",
+      "frequency": { "interval_hours": 6 },
+      "admin": "PR",
+      "conc_value": null,
+      "conc_unit": null,
+      "routes": "Rectal",
+      "constraints": {
+        "dose_range": { "min": 12, "max": 30 }
+      },
+      "pma_range": { "min": 37 },
+      "notes": "30 mg/kg rectally; then 12–18 mg/kg every 6 hours as needed or around-the-clock."
+    },
+    {
+      "raw_text": "Patent Ductus Arteriosus (treatment) — <37 weeks gestational age",
+      "dose_value": 15.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 6, "dose_per_day": 4 },
+      "admin": 15,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "routes": "IV/PO",
+      "constraints": {
+        "conc_range": { "min": 5, "max": 15 },
+        "admin_range": { "min": 10, "max": 30 },
+        "dose_range": { "min": 10, "max": 20 }
+      },
+      "ga_range": { "max": 36.9 },
+      "notes": "15 mg/kg/dose IV or PO every 6 hours for 3 days; second course may be required."
+    }
+  ],
+  "other_info": {
+    "MECHANISM": [
+      "Analgesic and antipyretic; inhibits prostaglandin synthesis centrally with minimal anti-inflammatory activity."
+    ],
+    "ADMINISTRATION": [
+      "IV: Infuse over 15 min; do not exceed 75 mg/kg/day (4 g/day maximum).",
+      "PO: May give with or without food; use weight-based dosing for neonates.",
+      "PR: Use rectal suppository if oral/IV routes unavailable."
+    ],
+    "MONITORING": [
+      "Monitor liver enzymes (ALT, AST) during prolonged therapy.",
+      "Ensure total daily dose does not exceed 75 mg/kg/day."
+    ],
+    "REFERENCES": [
+      "NeoFax® Drug Monograph Summary – Acetaminophen (Micromedex)."
+    ]
+  }
+}
+,{
+  "drug_name": "Aspirin",
+  "regimens": [
+    {
+      "raw_text": "Acute Ischemic Stroke (AIS), Recurrent",
+      "dose_value": 1,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "dose_per_day": 1
+      },
+      "routes": "Oral",
+      "per_time": "daily",
+      "admin": null,
+      "conc_value": null,
+      "conc_unit": null,
+      "constraints": {
+        "dose_range": { "min": 1, "max": 5 }
+      },
+      "notes": "Used for secondary prevention of recurrent AIS."
+    },
+    {
+      "raw_text": "Thrombosis; Prophylaxis",
+      "dose_value": 3,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 24
+      },
+      "routes": "Oral",
+      "per_time": "daily",
+      "admin": null,
+      "conc_value": 81,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "dose_range": { "min": 1, "max": 5 }
+      },
+      "notes": "Recommended for thromboprophylaxis after Fontan surgery, shunts, VAD placement, or mechanical valves. Higher doses (6–10 mg/kg/day) may be used after cardiac surgery."
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Use associated with Reye’s syndrome at anti-inflammatory doses (>40 mg/kg/day).",
+      "Use caution in patients with bleeding disorders, peptic ulcer, renal or hepatic impairment.",
+      "Allergic reactions (asthma, hives, facial swelling) may occur."
+    ],
+    "ADVERSE EFFECTS": [
+      "Common: GI upset, nausea, vomiting, abdominal pain.",
+      "Others: Headache, tinnitus, mild salicylism, dizziness, elevated liver enzymes.",
+      "Severe toxicity: Hyperventilation, mental confusion, hyperthermia, acid-base imbalance."
+    ],
+    "MECHANISM OF ACTION/PHARMACOKINETICS": [
+      "Inhibits prostaglandin biosynthesis via irreversible acetylation of COX-1 enzyme.",
+      "Reduces thromboxane A2 formation, leading to antiplatelet effects.",
+      "Rapid oral absorption (peak at 2 hours); extensive protein binding (80–90%).",
+      "Elimination half-life: 2–3 hours (low dose), 12 hours (high dose).",
+      "Excreted hepatically (major) and renally (minor); pH-dependent renal excretion."
+    ],
+    "ABOUT": [
+      "Available forms: 81 mg chewable tablets; 300 mg and 600 mg rectal suppositories.",
+      "Storage (rectal): 8–15°C (46–59°F).",
+      "Administer without regard to feedings."
+    ]
+  }
+}
+,{
+  "drug_name": "Ranitidine",
+  "regimens": [
+    {
+      "raw_text": "Oral Dose",
+      "dose_value": 2,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 8
+      },
+      "routes": "Oral",
+      "conc_value": 1,
+      "conc_unit": "mg/mL",
+      "admin": null,
+      "constraints": {
+        "dose_range": { "min": 1, "max": 3 },
+        "conc_range": { "min": 0.5, "max": 2 }
+      }
+    },
+    {
+      "raw_text": "IV Dose (Term Neonates)",
+      "dose_value": 1.5,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 8
+      },
+      "routes": "IV",
+      "admin": 5,
+      "conc_value": 1,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "admin_range": { "min": 5, "max": 20 },
+        "conc_range": { "min": 0.5, "max": 2 }
+      },
+      "pma_range": { "min": 37 },
+      "pna_range": {}
+    },
+    {
+      "raw_text": "IV Dose (Preterm Neonates)",
+      "dose_value": 0.5,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 12
+      },
+      "routes": "IV",
+      "admin": 5,
+      "conc_value": 1,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "admin_range": { "min": 5, "max": 20 },
+        "conc_range": { "min": 0.5, "max": 2 }
+      },
+      "pma_range": { "max": 36 }
+    },
+    {
+      "raw_text": "Continuous IV Infusion",
+      "dose_value": 0.05,
+      "dose_unit": "mg/kg/hr",
+      "frequency": {
+        "interval_hours": null
+      },
+      "routes": "IV",
+      "admin": null,
+      "conc_value": 0.5,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 0.03, "max": 0.083 }
+      }
+    },
+    {
+      "raw_text": "Extracorporeal Membrane Oxygenation (ECMO)",
+      "dose_value": 2,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 12
+      },
+      "routes": "IV",
+      "admin": null,
+      "conc_value": 1,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 0.03, "max": 0.083 }
+      },
+      "notes": "Alternative continuous infusion 0.083 mg/kg/hr, titrate up by 0.042 mg/kg/hr if gastric pH < 4"
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Use with caution in hepatic dysfunction.",
+      "Increased risk of infection (NEC, sepsis, pneumonia) in neonates receiving H2 blockers.",
+      "Avoid use in acute porphyria.",
+      "Contains phenylalanine in certain effervescent formulations."
+    ],
+    "ADVERSE EFFECTS": [
+      "Generally well tolerated; mild rash, headache, fatigue, irritability, nausea.",
+      "Reported thrombocytopenia and elevated liver enzymes."
+    ],
+    "COMPATIBILITY": {
+      "solution": ["D5W", "D10W", "NS"],
+      "compatible": ["ampicillin", "gentamicin", "dopamine", "furosemide", "lorazepam"],
+      "incompatible": ["amphotericin B", "phenobarbital"]
+    },
+    "MONITORING": [
+      "Gastric pH monitoring to assess efficacy.",
+      "Observe for infections, hepatic dysfunction, and platelet count abnormalities."
+    ],
+    "MECHANISM": [
+      "Histamine H2-receptor antagonist; inhibits gastric acid secretion.",
+      "Half-life: 3–7 hours in neonates, prolonged in preterm infants or renal/hepatic impairment."
+    ]
+  }
+}
+,
+{
+  "drug_name": "Clopidogrel",
+  "regimens": [
+    {
+      "raw_text": "Thrombosis; Prophylaxis",
+      "dose_value": 0.2,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "dose_per_day": 1
+      },
+      "routes": "Oral",
+      "per_time": "daily",
+      "admin": null,
+      "conc_value": 5,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "dose_range": { "min": 0.2, "max": 0.3 },
+        "conc_range": { "min": 5, "max": 5 }
+      },
+      "ga_range": { "min": 35 },
+      "notes": "For prophylaxis of arterial thrombosis in neonates and infants ≥35 weeks gestation. Achieves 30–50% platelet inhibition similar to adults receiving 75 mg/day."
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Discontinue 5 days before elective surgery where antiplatelet effect is undesirable.",
+      "Increased bleeding risk with aspirin, warfarin, or NSAIDs.",
+      "Avoid use with omeprazole or esomeprazole (reduced antiplatelet effect).",
+      "Avoid in patients with active pathological bleeding (e.g., peptic ulcer, intracranial hemorrhage)."
+    ],
+    "ADVERSE EFFECTS": [
+      "Bleeding, thrombocytopenia, thrombotic thrombocytopenic purpura (TTP).",
+      "Anemia, neutropenia, leukopenia reported in pediatric studies."
+    ],
+    "MECHANISM OF ACTION/PHARMACOKINETICS": [
+      "Prodrug converted by CYP2C19 to active metabolite that irreversibly inhibits platelet ADP P2Y12 receptors.",
+      "Inhibition of platelet aggregation lasts for the lifespan of platelets (7–10 days).",
+      "Bioavailability ≥50%; peak concentration 30–60 min post-dose.",
+      "Half-life: parent 6 hr, active metabolite 30 min.",
+      "Eliminated via urine (50%) and feces (46%)."
+    ],
+    "MONITORING": [
+      "Monitor for bleeding; check hematologic parameters periodically.",
+      "Assess platelet inhibition via aggregation studies if clinically indicated.",
+      "Monitor CYP2C19 genotype if poor metabolism suspected."
+    ],
+    "PREPARATION": [
+      "Extemporaneous 5 mg/mL oral suspension can be compounded using Ora-Plus and Ora-Sweet (stable 60 days).",
+      "Alternatively, SyrSpend SF PH4 suspension stable for 30 days under refrigeration."
+    ],
+    "ABOUT": [
+      "Available as 75 mg and 300 mg tablets.",
+      "Not FDA approved for pediatric patients.",
+      "May be given without regard to feeding."
+    ]
+  }
+}
+,
+{
+  "drug_name": "Erythromycin",
+  "regimens": [
+    {
+      "raw_text": "Pneumonitis and conjunctivitis due to Chlamydia trachomatis",
+      "dose_value": 12.5,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 6
+      },
+      "duration_days": 14,
+      "routes": "Oral",
+      "conc_value": 40,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "dose_range": {"min": 10, "max": 15},
+        "admin_range": {"min": 30, "max": 60}
+      }
+    },
+    {
+      "raw_text": "Pertussis, treatment and prophylaxis",
+      "dose_value": 12.5,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 6
+      },
+      "duration_days": 14,
+      "routes": "Oral",
+      "conc_value": 40,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "dose_range": {"min": 10, "max": 15},
+        "admin_range": {"min": 30, "max": 60}
+      }
+    },
+    {
+      "raw_text": "Feeding intolerance due to dysmotility",
+      "dose_value": 45,
+      "dose_unit": "mg/kg/day",
+      "frequency": {
+        "dose_per_day": 2
+      },
+      "routes": "Oral",
+      "ga_range": {"min": 32},
+      "conc_value": 40,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "dose_range": {"min": 40, "max": 50}
+      }
+    },
+    {
+      "raw_text": "Other infections and prophylaxis",
+      "dose_value": 10,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 6
+      },
+      "routes": "Oral",
+      "conc_value": 40,
+      "conc_unit": "mg/mL"
+    },
+    {
+      "raw_text": "Severe infections when oral route unavailable",
+      "dose_value": 7.5,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 6
+      },
+      "routes": "IV",
+      "admin": 60,
+      "conc_value": 5,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "admin_range": {"min": 60, "max": 120},
+        "conc_range": {"min": 1, "max": 5}
+      }
+    },
+    {
+      "raw_text": "Prophylaxis of gonococcal ophthalmia neonatorum",
+      "dose_value": null,
+      "dose_unit": "0.5% ointment",
+      "routes": "Ophthalmic",
+      "conc_value": 0.5,
+      "conc_unit": "%"
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Avoid use in neonates unless treating Chlamydia trachomatis pneumonia due to risk of hypertrophic pyloric stenosis.",
+      "Contraindicated with astemizole, terfenadine, cisapride, pimozide, ergotamine, or dihydroergotamine.",
+      "Monitor for QT prolongation, electrolyte imbalance, hepatic dysfunction, and myasthenia gravis exacerbation."
+    ],
+    "MECHANISM OF ACTION/PHARMACOKINETICS": [
+      "Macrolide antibiotic; bacteriostatic or bactericidal depending on tissue concentration and organism.",
+      "Poor CNS penetration; concentrated in liver; excreted via bile.",
+      "Motilin receptor agonist—stimulates gastric motility."
+    ],
+    "ABOUT": [
+      "Oral suspension available as 200 mg/5 mL (40 mg/mL) and 400 mg/5 mL (80 mg/mL). Stable for 35 days at room temperature.",
+      "Injection available as 500 mg and 1 g vials; reconstitute to 50 mg/mL and dilute to 1–5 mg/mL for infusion over 60 minutes.",
+      "Ophthalmic form: 0.5% ointment for prophylaxis."
+    ]
+  }
+}
+,
+{
+  "drug_name": "Dobutamine",
+  "regimens": [
+    {
+      "raw_text": "Continuous IV infusion",
+      "dose_value": 2,
+      "dose_unit": "mcg/kg/min",
+      "frequency": {
+        "interval_hours": null
+      },
+      "per_time": "continuous",
+      "admin": null,
+      "conc_value": 2000,
+      "routes": "IV",
+      "conc_unit": "mcg/mL",
+      "constraints": {
+        "conc_range": { "min": 1000, "max": 4000 },
+        "dose_range": { "min": 2, "max": 25 }
+      },
+      "comments": "Begin at a low dose (2 mcg/kg/min) and titrate up to 25 mcg/kg/min based on clinical response. Avoid bolus administration. Use large vein for IV infusion."
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Adverse Effects",
+      "Cardiovascular: Dysrhythmias, increased pulmonary capillary wedge pressure (pulmonary congestion and edema), increased heart rate and blood pressure, possible precipitous decrease in blood pressure.",
+      "Dermatologic: Phlebitis, local inflammatory changes with infiltration."
+    ],
+    "SOLUTION COMPATIBILITY": [
+      "Compatible: D5W, D5NS, D10W, LR, NS.",
+      "Incompatible: Acyclovir, alteplase, aminophylline, cefepime, bumetanide, diazepam, digoxin, furosemide, ibuprofen lysine, indomethacin, micafungin, phenytoin, phytonadione, piperacillin-tazobactam, sodium bicarbonate."
+    ],
+    "MONITORING": [
+      "Continuous heart rate and intra-arterial blood pressure monitoring.",
+      "Monitor IV site for extravasation.",
+      "Target HR for full-term newborn: 110–160 bpm; perfusion pressure 55 mmHg."
+    ],
+    "MECHANISM OF ACTION/PHARMACOKINETICS": [
+      "Synthetic catecholamine with primarily β1-adrenergic activity. Inotropic vasopressor that increases myocardial contractility, cardiac output, and oxygen delivery.",
+      "Onset: 1–2 minutes; Peak: 10 minutes; Half-life: several minutes.",
+      "Metabolized by sulfoconjugation in liver; excreted renally."
+    ],
+    "ABOUT": [
+      "IV concentration available: 12.5 mg/mL (250 mg/20 mL vial).",
+      "Recommended neonatal concentration: 2000 mcg/mL (use 1000 mcg/mL if weight < 500 g).",
+      "Diluted solutions should be used within 24 hours.",
+      "Avoid co-infusion with fat emulsions due to pH instability (6–9)."
+    ]
+  }
+}
+,
+{
+  "drug_name": "Calcium Chloride",
+  "regimens": [
+    {
+      "raw_text": "Calcium Channel Blocker Toxicity",
+      "dose_value": 20,
+      "dose_unit": "mg/kg/dose",
+      "frequency": { "interval_hours": null },
+      "per_time": null,
+      "admin": 10,
+      "conc_value": 100,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "dose_range": { "min": 20, "max": 50 },
+        "admin_range": { "min": 5, "max": 10 },
+        "conc_range": { "min": 27, "max": 100 }
+      }
+    },
+    {
+      "raw_text": "Calcium Channel Blocker Toxicity",
+      "dose_value": 20,
+      "dose_unit": "mg/kg/dose",
+      "frequency": { "interval_hours": null },
+      "per_time": null,
+      "admin": 10,
+      "conc_value": 100,
+      "conc_unit": "mg/mL",
+      "routes": "IO",
+      "constraints": {
+        "dose_range": { "min": 20, "max": 50 },
+        "admin_range": { "min": 5, "max": 10 },
+        "conc_range": { "min": 27, "max": 100 }
+      }
+    },
+    {
+      "raw_text": "Cardiac Resuscitation",
+      "dose_value": 20,
+      "dose_unit": "mg/kg/dose",
+      "frequency": { "interval_hours": null },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 100,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "dose_range": { "min": 20, "max": 20 },
+        "admin_range": { "min": 30, "max": 60 },
+        "conc_range": { "min": 27, "max": 100 }
+      }
+    },
+    {
+      "raw_text": "Exchange Transfusion",
+      "calc_notes":"Give 33 mg (0.33 mL) of 10% Calcium chloride per 100 mL citrated blood exchanged. Dilute to 20 mg/mL if infusing in peripheral vein. Infuse over 10 to 30 minutes while monitoring for bradycardia. Stop infusion if heart rate is less than 100 beats per minute. ",
+      "dose_value": 33,
+
+      "dose_unit": "mg/100 mL blood",
+      "frequency": { "interval_hours": null },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 100,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "dose_range": { "min": 33, "max": 33 },
+        "admin_range": { "min": 10, "max": 30 },
+        "conc_range": { "min": 27, "max": 100 }
+      }
+    },
+    {
+      "raw_text": "Hypocalcemia - Disorders",
+      "dose_value": 5,
+      "dose_unit": "mg/kg/day",
+      "frequency": { "interval_hours": 8 },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 100,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "dose_range": { "min": 148, "max": 296 },
+        "admin_range": { "min": 10, "max": 30 },
+        "conc_range": { "min": 27, "max": 100 }
+      }
+    }
+    
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Contraindications: Ventricular fibrillation; existing digitalis toxicity",
+      "Precautions: Avoid extravasation, rapid administration may cause cardiac arrest, caution with digitalis",
+      "Adverse Effects: Cutaneous necrosis, tissue sloughing, precipitate with ceftriaxone, risk of necrosis with UAC infusion"
+    ],
+    "MECHANISM OF ACTION/PHARMACOKINETICS": [
+      "Mechanism: Provides calcium ions for cardiac and muscular function, blood coagulation, and nerve signaling",
+      "Onset: Immediate",
+      "Excretion: 20% renal, 80% fecal as insoluble salts"
+    ],
+    "ABOUT": [
+      "10% solution contains 100 mg/mL calcium chloride (27 mg/mL elemental calcium)",
+      "Osmolarity: 2040 mOsm/L",
+      "Administer via IV or IO route; avoid IM, subQ, intra-arterial, or endotracheal use",
+      "Rate ≤1 mL/min; dilute 1:1 with D5W if needed"
+    ]
+  }
+}
+,
+{
+  "drug_name": "Amphotericin B",
+  "regimens": [
+    {
+      "raw_text": "Fungal Infections, Suspected or Documented",
+      "dose_value": 1.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "admin": 240,
+      "conc_value": 0.1,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 0.1, "max": 0.5 },
+        "admin_range": { "min": 120, "max": 360 },
+        "dose_range": { "min": 1, "max": 1.5 }
+      },
+      "notes": [
+        "Infuse over 2 to 6 hours; avoid rapid infusion.",
+        "Use concentration not to exceed 0.1 mg/mL (up to 0.5 mg/mL in pediatrics)."
+      ]
+    },
+    {
+      "raw_text": "Candidiasis, Invasive",
+      "dose_value": 1.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "admin": 180,
+      "conc_value": 0.1,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 0.1, "max": 0.5 },
+        "admin_range": { "min": 120, "max": 360 },
+        "dose_range": { "min": 0.5, "max": 1.5 }
+      },
+      "duration": "At least 2 weeks after documented clearance and symptom resolution."
+    },
+    {
+      "raw_text": "Invasive Aspergillosis",
+      "dose_value": 1.5,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 24 },
+      "admin": 180,
+      "conc_value": 0.1,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 0.1, "max": 0.5 },
+        "admin_range": { "min": 120, "max": 360 },
+        "dose_range": { "min": 1, "max": 1.5 }
+      }
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Rapid infusion may result in hypotension, hypokalemia, arrhythmias, and shock.",
+      "If therapy is interrupted >7 days, restart from lowest dosage and increase gradually.",
+      "Monitor for infusion reactions such as fever, chills, and tachypnea.",
+      "Use with caution in renal impairment; hydration and sodium repletion may reduce nephrotoxicity."
+    ],
+    "ADVERSE EFFECTS": [
+      "Hypokalemia, fever, nausea, vomiting, anemia, hypotension, and renal dysfunction are common.",
+      "Hepatotoxicity and infusion reactions may occur more frequently with liposomal formulations."
+    ],
+    "SOLUTION COMPATIBILITY": ["D5W", "D10W", "D15W", "D20W"],
+    "SOLUTION INCOMPATIBILITY": ["NS"],
+    "TERMINAL INJECTION SITE COMPATIBILITY": [
+      "Amiodarone",
+      "Heparin",
+      "Hydrocortisone",
+      "Sodium bicarbonate",
+      "Zidovudine"
+    ],
+    "TERMINAL INJECTION SITE INCOMPATIBILITY": [
+      "Fat emulsion",
+      "Amikacin",
+      "Aztreonam",
+      "Calcium chloride",
+      "Cefepime",
+      "Ciprofloxacin",
+      "Gentamicin",
+      "Meropenem",
+      "Ranitidine",
+      "Tobramycin"
+    ],
+    "MONITORING": [
+      "Monitor renal function, liver function, serum electrolytes (especially potassium and magnesium), CBC, and hemoglobin regularly.",
+      "Monitor blood cultures daily until Candida is cleared."
+    ],
+    "ABOUT": [
+      "Available as 50-mg powder vials for injection.",
+      "Reconstitute with D5W or sterile water to 5 mg/mL, dilute to 0.1 mg/mL for infusion.",
+      "Stable for 24 hours at room temperature or 7 days refrigerated."
+    ]
+  }
+}
+,
+{
+  "drug_name": "Acyclovir",
+  "regimens": [
+    {
+      "raw_text": "Herpes Simplex Virus (HSV) - Initial Treatment",
+      "dose_value": 20.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 8 },
+      "per_time": null,
+      "admin": 60,
+      "conc_value": 5.0,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 5, "max": 10 },
+        "admin_range": { "min": 30, "max": 60 },
+        "dose_range": { "min": 10, "max": 20 }
+      },
+      "pma_range": { "min": 30, "max": 36 },
+      "pna_range": { "max": 14 },
+      "notes": "Use IV infusion over 1 hour to avoid renal toxicity. Duration 10–21 days."
+    },
+    {
+      "raw_text": "HSV – Disseminated / CNS Involvement",
+      "dose_value": 20.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 8 },
+      "per_time": null,
+      "admin": 60,
+      "conc_value": 5.0,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 5, "max": 10 },
+        "admin_range": { "min": 30, "max": 60 },
+        "dose_range": { "min": 10, "max": 20 }
+      },
+      "pma_range": { "min": 37 },
+      "notes": "Treatment usually 21 days; monitor renal function and adjust for creatinine clearance."
+    },
+    {
+      "raw_text": "Herpes Simplex Virus – Suppressive Therapy",
+      "dose_value": 300.0,
+      "dose_unit": "mg/m²",
+      "frequency": { "interval_hours": 8 },
+      "per_time": null,
+      "admin": "Oral",
+      "conc_value": 40.0,
+      "conc_unit": "mg/mL",
+      "routes": "Oral",
+      "constraints": {
+        "conc_range": { "min": 200, "max": 400 },
+        "admin_range": { "min": 0, "max": 0 },
+        "dose_range": { "min": 200, "max": 400 }
+      },
+      "notes": "Oral suspension 200 mg/5 mL; prophylactic use for recurrent infections."
+    },
+    {
+      "raw_text": "HSV infection,treatment and primitive therapy",
+      "dose_value": 20.0,
+      "dose_unit": "mg/kg",
+      "frequency": { "interval_hours": 8 },
+      "per_time": null,
+      "admin": 60,
+      "conc_value": 7.0,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "conc_range": { "min": 1, "max": 7 },
+        "admin_range": { "min": 30, "max": 60 },
+        "dose_range": { "min": 10, "max": 20 }
+      },
+      "pma_range": { "min": 30 },
+      "pna_range": { "max": 28 },
+      "notes": "Administer for 10–14 days for localized disease, up to 21 days if disseminated."
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Adequate hydration is essential during IV therapy to prevent crystalluria and renal toxicity.",
+      "Reduce dose in renal impairment.",
+      "Do not administer as bolus injection."
+    ],
+    "MECHANISM OF ACTION/PHARMACOKINETICS": [
+      "Acyclovir is a guanosine analogue that inhibits viral DNA polymerase.",
+      "Elimination half-life: 3–5 hours in neonates; prolonged in renal impairment."
+    ],
+    "ABOUT": [
+      "Available as IV powder for reconstitution (500 mg/vial) and oral suspension (200 mg/5 mL).",
+      "Reconstitute IV vial with sterile water to 25 mg/mL; further dilute to ≤7 mg/mL for infusion.",
+      "Store reconstituted solution at room temperature for up to 12 hours."
+    ]
+  }
+}
+,
+{
+  "drug_name": "Dopamine",
+  "regimens": [
+    {
+      "raw_text": "Severe sepsis and septic shock",
+      "dose_value": 2,
+      "dose_unit": "mcg/kg/min",
+      "frequency": {
+        "interval_hours": null,
+        "continuous_infusion": true
+      },
+      "dose_range": {
+        "min": 2,
+        "max": 20
+      },
+      "admin": "Continuous IV infusion",
+      "conc_value": 1600,
+      "conc_unit": "mcg/mL",
+      "routes": "IV",
+      "per_time": "minute",
+      "constraints": {
+        "conc_range": { "min": 200, "max": 3200 }
+      },
+      "notes": [
+        "Begin at low dose and titrate based on perfusion and blood pressure response.",
+        "Start at less than 10 mcg/kg/min for fluid-refractory shock.",
+        "Gradually reduce infusion rate to avoid rebound hypotension upon discontinuation."
+      ]
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Contraindicated in patients with pheochromocytoma.",
+      "Correct hypovolemia, hypoxia, and acidosis before starting dopamine.",
+      "Monitor for ventricular arrhythmias and peripheral ischemia.",
+      "Avoid abrupt discontinuation — may cause hypotension.",
+      "Tissue necrosis possible if IV infiltrates — treat with phentolamine infiltration."
+    ],
+    "PREPARATION": [
+      "Dilute concentrated IV solution to 200–3200 mcg/mL using compatible diluents (NS, D5W, LR).",
+      "Stable for 24 hours once diluted.",
+      "Standard neonatal concentrations: 800 mcg/mL (<500g), 1600 mcg/mL (≥500g)."
+    ],
+    "COMPATIBILITY": {
+      "compatible": [
+        "D5W", "D5NS", "D10W", "LR", "NS"
+      ],
+      "terminal_injection_site_compatible": [
+        "Aminophylline", "Amiodarone", "Aztreonam", "Caffeine Citrate", "Calcium Chloride",
+        "Cefotaxime", "Dobutamine", "Epinephrine", "Gentamicin", "Heparin",
+        "Hydrocortisone", "Linezolid", "Lorazepam", "Milrinone", "Morphine", "Piperacillin/Tazobactam"
+      ],
+      "incompatible": [
+        "Acyclovir", "Amphotericin B", "Ampicillin", "Cefepime", "Furosemide",
+        "Insulin", "Penicillin G", "Sodium Bicarbonate"
+      ]
+    },
+    "MONITORING": [
+      "Continuous heart rate and blood pressure monitoring recommended.",
+      "Assess urine output and perfusion frequently.",
+      "Inspect IV site for blanching or infiltration."
+    ],
+    "MECHANISM OF ACTION": [
+      "Catecholamine that increases systemic vascular resistance and blood pressure via α-adrenergic effects.",
+      "Effects on cardiac output vary with gestational age and stroke volume.",
+      "Low doses (2–5 mcg/kg/min) selectively increase renal blood flow and urine output."
+    ],
+    "AVAILABILITY": [
+      "Available as 40 mg/mL, 80 mg/mL, and 160 mg/mL vials.",
+      "Premixed infusion bags: 800, 1600, and 3200 mcg/mL."
+    ]
+  }
+}
+,
+{
+  "drug_name": "Electrolytes and Minerals",
+  "regimens": [
+    {
+      "raw_text": "Sodium - Daily Requirement",
+      "dose_value": 2,
+      "dose_unit": "mEq/kg/day",
+      "dose_range": { "min": 2, "max": 5 },
+      "routes": "IV/Oral",
+      "notes": "Adjust based on serum sodium and total fluid intake. Requirements higher in preterm infants and those with increased losses."
+    },
+    {
+      "raw_text": "Potassium - Daily Requirement",
+      "dose_value": 2,
+      "dose_unit": "mEq/kg/day",
+      "dose_range": { "min": 2, "max": 4 },
+      "routes": "IV/Oral",
+      "notes": "Administer after urine output is established. Use caution in renal impairment or with medications affecting potassium balance."
+    },
+    {
+      "raw_text": "Calcium - Daily Requirement",
+      "dose_value": 2,
+      "dose_unit": "mEq/kg/day",
+      "dose_range": { "min": 2, "max": 4 },
+      "routes": "IV/Oral",
+      "notes": "Administer as calcium gluconate or calcium chloride. Requirements vary by gestational age and vitamin D status."
+    },
+    {
+      "raw_text": "Phosphorus - Daily Requirement",
+      "dose_value": 1,
+      "dose_unit": "mmol/kg/day",
+      "dose_range": { "min": 1, "max": 2 },
+      "routes": "IV/Oral",
+      "notes": "Usually given as sodium or potassium phosphate. Maintain calcium-to-phosphate molar ratio of approximately 1.3:1 in parenteral nutrition."
+    },
+    {
+      "raw_text": "Magnesium - Daily Requirement",
+      "dose_value": 0.3,
+      "dose_unit": "mEq/kg/day",
+      "dose_range": { "min": 0.3, "max": 0.5 },
+      "routes": "IV/Oral",
+      "notes": "Administer as magnesium sulfate or chloride. Monitor serum magnesium to prevent hypermagnesemia, particularly in renal impairment."
+    },
+    {
+      "raw_text": "Acetate - Acid-Base Balance Maintenance",
+      "routes": "IV",
+      "notes": "Administer as needed to maintain acid-base balance. Used in parenteral nutrition to offset chloride and prevent acidosis."
+    },
+    {
+      "raw_text": "Chloride - Acid-Base Balance Maintenance",
+      "routes": "IV/Oral",
+      "notes": "Administer as needed to maintain acid-base balance. Increased requirements may occur with gastrointestinal losses or metabolic alkalosis."
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Ensure appropriate dilution and infusion rate when administering IV electrolytes.",
+      "Monitor serum electrolytes regularly during parenteral nutrition or replacement therapy.",
+      "Adjust dosing for renal dysfunction or excessive fluid losses."
+    ],
+    "ABOUT": [
+      "Based on recommendations from the American Society for Parenteral and Enteral Nutrition (ASPEN, JPEN 2004;28(6):S39–S70).",
+      "Values assume normal organ function and physiologic losses."
+    ]
+  }
+}
+,{
+  "drug_name": "Fentanyl",
+  "regimens": [
+    {
+      "raw_text": "Analgesia (Single or intermittent IV dose)",
+      "dose_value": 0.5,
+      "dose_unit": "mcg/kg",
+      "frequency": { "interval_hours": 2 },
+      "routes": "IV",
+      "admin": 5,
+      "conc_value": 10,
+      "conc_unit": "mcg/mL",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 50 },
+        "admin_range": { "min": 3, "max": 30 },
+        "dose_range": { "min": 0.5, "max": 3 }
+      }
+    },
+    {
+      "raw_text": "Analgesia (Mechanical ventilation - continuous infusion)",
+      "dose_value": 1,
+      "dose_unit": "mcg/kg/hour",
+      "routes": "IV",
+      "admin": 30,
+      "conc_value": 10,
+      "conc_unit": "mcg/mL",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 50 },
+        "admin_range": { "min": 15, "max": 30 },
+        "dose_range": { "min": 0.5, "max": 3 }
+      }
+    },
+    {
+      "raw_text": "Analgesia, procedural",
+      "dose_value": 1,
+      "dose_unit": "mcg/kg",
+      "frequency": { "interval_hours": 4 },
+      "routes": "IV",
+      "admin": 5,
+      "conc_value": 10,
+      "conc_unit": "mcg/mL",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 50 },
+        "admin_range": { "min": 3, "max": 5 },
+        "dose_range": { "min": 0.5, "max": 3 }
+      }
+    },
+    {
+      "raw_text": "Analgesia, procedural",
+      "dose_value": 1,
+      "dose_unit": "mcg/kg",
+      "frequency": { "interval_hours": 4 },
+      "routes": "Intranasal",
+     
+      "conc_value": 50,
+      "conc_unit": "mcg/mL",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 50 },
+        "admin_range": { "min": 3, "max": 5 },
+        "dose_range": { "min": 0.5, "max": 3 }
+      }
+    },
+    {
+      "raw_text": "Analgesia, single or intermittent dose",
+      "dose_value": 1,
+      "dose_unit": "mcg/kg",
+      "frequency": { "interval_hours": 4 },
+      "routes": "Intranasal",
+       "admin": 5,
+      "conc_value": 10,
+      "conc_unit": "mcg/mL",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 50 },
+        "dose_range": { "min": 1, "max": 2 }
+      }
+    },
+    {
+      "raw_text": "Endotracheal intubation, premedication",
+      "dose_value": 2,
+      "dose_unit": "mcg/kg",
+      "frequency": { "dose_per_day": 1 },
+      "routes": "IV/IM",
+      "admin": 5,
+      "conc_value": 10,
+      "conc_unit": "mcg/mL",
+      "constraints": {
+        "conc_range": { "min": 2, "max": 50 },
+        "admin_range": { "min": 3, "max": 5 },
+        "dose_range": { "min": 1, "max": 4 }
+      }
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Addiction, abuse, and misuse risk",
+      "Life-threatening respiratory depression possible",
+      "Avoid concomitant use with benzodiazepines or CNS depressants",
+      "Use caution in hepatic or renal impairment",
+      "Avoid abrupt discontinuation; taper gradually",
+      "Chest wall rigidity may occur at rapid administration"
+    ],
+    "ADVERSE EFFECTS": [
+      "Respiratory depression",
+      "Bradyarrhythmias",
+      "Chest wall rigidity",
+      "Tolerance and withdrawal symptoms",
+      "Hypotension",
+      "Urinary retention with continuous infusions"
+    ],
+    "COMPATIBILITY": {
+      "Solution Compatibility": ["D5W", "NS"],
+      "Terminal Injection Site Compatibility": [
+        "Acetaminophen", "Amphotericin B", "Cefotaxime", "Ceftriaxone", "Gentamicin", "Vancomycin",
+        "Midazolam", "Dobutamine", "Dopamine", "Morphine", "Epinephrine", "Atropine"
+      ],
+      "Terminal Injection Site Incompatibility": [
+        "Diazoxide", "Pantoprazole", "Phenytoin", "Sulfamethoxazole/Trimethoprim"
+      ]
+    },
+    "MECHANISM OF ACTION/PHARMACOKINETICS": [
+      "Synthetic opioid analgesic, 50–100× more potent than morphine",
+      "Highly lipid-soluble and rapidly crosses the blood-brain barrier",
+      "Metabolized by CYP3A4; excreted renally",
+      "Clearance: 4.1 L/hr in neonates (~36 weeks GA)",
+      "Half-life: 8.4–26.7 hours depending on regimen"
+    ],
+    "ABOUT": [
+      "Available as injection solution: 2-, 5-, 10-, 20-mL ampules (50 mcg/mL)",
+      "Dilute for neonatal use: 2–10 mcg/mL recommended",
+      "Standard concentration for neonates ≥500 g: 10 mcg/mL; <500 g: 2 mcg/mL",
+      "Stability: ≥95% maintained for 100 days at room temperature in polypropylene syringes"
+    ]
+  }
+}
+
+,
+{
+  "drug_name": "Ibuprofen",
+  "regimens": [
+    {
+      "raw_text": "Closure of patent ductus arteriosus (standard dose)",
+      "dose_value": 5,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 24,
+        "doses_total": 3
+      },
+      "per_time": null,
+      "admin": 15,
+      "conc_value": 4,
+      "routes": "IV",
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": {"min": 4, "max": 5},
+        "admin_range": {"min": 10, "max": 20},
+        "dose_range": {"min": 5, "max": 10}
+      }
+  
+    },{
+      "raw_text": "Closure of patent ductus arteriosus (standard dose)",
+      "dose_value": 5,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 24,
+        "doses_total": 3
+      },
+      "per_time": null,
+      "admin": 15,
+      "conc_value": 20,
+      "routes": "Oral",
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": {"min": 10, "max": 20},
+        "admin_range": {"min": 10, "max": 20},
+        "dose_range": {"min": 5, "max": 10}
+      }
+  
+    },
+    {
+      "raw_text": "Closure of patent ductus arteriosus (high dose) dose 2 & dose 3",
+      "dose_value": 7.5,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 24,
+        "doses_total": 3
+      },
+      "per_time": null,
+      "admin": 15,
+      "conc_value": 20,
+      "routes": "Oral",
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": {"min": 4, "max": 5},
+        "admin_range": {"min": 10, "max": 20},
+        "dose_range": {"min": 7.5, "max": 20}
+      }
+    },
+    {
+      "raw_text": "Closure of patent ductus arteriosus (high dose) - initial",
+      "dose_value": 15,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 24,
+        "doses_total": 3
+      },
+      "per_time": null,
+      "admin": 15,
+      "conc_value": 20,
+      "routes": "Oral",
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": {"min": 4, "max": 5},
+        "admin_range": {"min": 10, "max": 20},
+        "dose_range": {"min": 7.5, "max": 20}
+      }
+    },
+    {
+      "raw_text": "Closure of patent ductus arteriosus (initial dose)",
+      "dose_value": 10,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 24,
+        "doses_total": 3
+      },
+      "per_time": null,
+      "admin": 15,
+      "conc_value": 5,
+      "routes": "IV",
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": {"min": 4, "max": 5},
+        "admin_range": {"min": 10, "max": 20},
+        "dose_range": {"min": 5, "max": 10}
+      }
+    },
+     {
+      "raw_text": "Closure of patent ductus arteriosus (initial dose)",
+      "dose_value": 10,
+      "dose_unit": "mg/kg",
+      "frequency": {
+        "interval_hours": 24,
+        "doses_total": 3
+      },
+      "per_time": null,
+      "admin": 15,
+      "conc_value": 20,
+      "routes": "Oral",
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": {"min": 10, "max": 20},
+        "admin_range": {"min": 10, "max": 20},
+        "dose_range": {"min": 5, "max": 10}
+      }
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Contraindicated in neonates with active bleeding, untreated infection, or renal impairment.",
+      "Avoid in congenital heart disease requiring PDA patency.",
+      "Monitor urine output; hold dose if <0.6 mL/kg/hr.",
+      "Risk of gastrointestinal bleeding, renal dysfunction, and hyperbilirubinemia."
+    ],
+    "MECHANISM OF ACTION/PHARMACOKINETICS": [
+      "Inhibits COX-1 and COX-2, decreasing prostaglandin synthesis.",
+      "Half-life: 15–43 hours, Vd: 0.17 L/kg, Excretion: renal.",
+      "No correlation between serum levels and PDA closure efficacy."
+    ],
+    "ABOUT": [
+      "Available as oral suspension (100 mg/5 mL) and IV NeoProfen (10 mg/mL).",
+      "Dilute IV solution to 4–5 mg/mL; infuse over 15 minutes.",
+      "Store between 20–25°C; protect from light."
+    ]
+  }
+}
+,
+{
+  "drug_name": "Phenobarbital",
+  "regimens": [
+    {
+      "raw_text": "Anticonvulsant - Loading Dose",
+      "dose_value": 20,
+      "dose_unit": "mg/kg",
+      "routes": "IV",
+      "frequency": { "interval_hours": null },
+      "admin": 15,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 65 },
+        "admin_range": { "min": 15, "max": 30 },
+        "dose_range": { "min": 15, "max": 40 }
+      },
+      "pma_range": {},
+      "pna_range": {},
+      "notes": "Loading dose 20 mg/kg IV; additional 10–20 mg/kg if seizures persist. Max total 40 mg/kg."
+    },
+    {
+      "raw_text": "Anticonvulsant - Maintenance (FDA)",
+      "dose_value": 3,
+      "dose_unit": "mg/kg",
+      "routes": "IV",
+      "frequency": { "interval_hours": 24 },
+      "admin": 15,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 65 },
+        "admin_range": { "min": 15, "max": 30 },
+        "dose_range": { "min": 1.5, "max": 4.5 }
+      },
+      "notes": "1.5 mg/kg every 8 hours or 2.25 mg/kg every 12 hours; max 4.5 mg/kg/day."
+    },
+    {
+      "raw_text": "Anticonvulsant - Maintenance (Guideline)",
+      "dose_value": 10,
+      "dose_unit": "mg/kg/day",
+      "routes": "IV",
+      "frequency": { "interval_hours": 12 },
+      "admin": 15,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 65 },
+        "admin_range": { "min": 15, "max": 30 },
+        "dose_range": { "min": 3, "max": 5 }
+      },
+      "notes": "3–5 mg/kg/day in 1–2 divided doses, started 12 hours after loading dose."
+    },
+    {
+      "raw_text": "Neonatal Abstinence Syndrome - Loading",
+      "dose_value": 16,
+      "dose_unit": "mg/kg",
+      "routes": "Oral",
+      "frequency": { "interval_hours": null },
+      "admin": null,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 4, "max": 10 },
+        "dose_range": { "min": 16, "max": 16 }
+      },
+      "notes": "Loading dose 16 mg/kg orally on day 1; maintenance follows."
+    },
+    {
+      "raw_text": "Neonatal Abstinence Syndrome - Maintenance",
+      "dose_value": 2,
+      "dose_unit": "mg/kg",
+      "routes": "Oral",
+      "frequency": { "interval_hours": 12 },
+      "admin": null,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 4, "max": 10 },
+        "dose_range": { "min": 1, "max": 4 }
+      },
+      "notes": "1–4 mg/kg/dose orally every 12 hours. Wean by decreasing dose 20% every other day."
+    },
+    {
+      "raw_text": "ECMO - Loading and Maintenance",
+      "dose_value": 15,
+      "dose_unit": "mg/kg",
+      "routes": "IV",
+      "frequency": { "interval_hours": 8 },
+      "admin": 15,
+      "conc_value": 10,
+      "conc_unit": "mg/mL",
+      "constraints": {
+        "conc_range": { "min": 10, "max": 65 },
+        "admin_range": { "min": 15, "max": 30 },
+        "dose_range": { "min": 3.5, "max": 5.4 }
+      },
+      "notes": "ECMO: Loading 15 mg/kg; maintenance 4 mg/kg/day divided q8–12h."
+    }
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Avoid rapid IV push—may cause respiratory depression or hypotension.",
+      "Contraindicated in acute porphyria, severe hepatic impairment, or history of addiction.",
+      "Use with caution in cardiac disease or pulmonary disease.",
+      "Monitor for rash, DRESS, and Stevens-Johnson syndrome.",
+      "Avoid extravascular or intra-arterial injection; risk of necrosis."
+    ],
+    "MONITORING": [
+      "Therapeutic range: 15–40 mcg/mL.",
+      "Toxic above 60 mcg/mL.",
+      "Observe IV site for extravasation or phlebitis.",
+      "Monitor ECG and respiratory function during administration."
+    ],
+    "ABOUT": [
+      "Half-life: 73–155 hours (up to 1 week in neonates).",
+      "Available as 10 mg/mL preservative-free IV and 20 mg/5 mL oral solution.",
+      "Vd: 0.64–1.17 L/kg; Clearance: 0.0053–0.0141 L/hr/kg.",
+      "Dilute IV formulation to 10 mg/mL before use. Administer over 15–30 minutes."
+    ]
+  }
+}
+,
+{
+  "drug_name": "Iron Dextran",
+  "regimens": [
+    
+    {
+      "raw_text": "Iron supplementation for patient on EPO",
+      "calc_notes":"0.4 to 1 mg/kg (400 to 1000 mcg/kg) per day IV continuous infusion in Dex/AA solutions containing at least 2% amino acids. ",
+      "dose_value": 33,
+
+      "dose_unit": "mg/100 mL blood",
+      "frequency": { "interval_hours": null },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 100,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "dose_range": { "min": 33, "max": 33 },
+        "admin_range": { "min": 10, "max": 30 },
+        "conc_range": { "min": 27, "max": 100 }
+      }
+    }
+    
+    
+  ],
+  
+
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "No adverse effects observed with low-dose continuous infusion.",
+      "Large (50 mg) IM doses in infants associated with increased infection risk.",
+      "Adult retrospective data: 0.7% risk of immediate serious allergic reactions; 5% risk of delayed reactions (myalgia, arthralgia, phlebitis, lymphadenopathy).",
+      "Black Box Warning: Anaphylactic-type reactions, including fatalities, have occurred. Resuscitation equipment and trained personnel must be available.",
+      "Test dose required; fatal reactions have occurred even after tolerated test doses.",
+      "Patients with history of drug allergy or multiple allergies may be at increased risk.",
+      "Monitoring: Periodic CBC and reticulocyte count; observe Dex/AA solution for rust-colored precipitates."
+    ],
+    "MECHANISM OF ACTION/PHARMACOKINETICS": [
+      "Complex of ferric hydroxide and low molecular mass dextran; dextran acts as protective colloid.",
+      "Localizes to liver and spleen before incorporation into RBC hemoglobin.",
+      "Complete clearance by 3 days.",
+      "Approximately 40% bound to transferrin within 11 hours.",
+      "Addition to Dex/AA solutions inhibits spontaneous peroxide generation."
+    ],
+    "ABOUT": [
+      "Available as 50 mg/mL concentration in 2-mL single-dose vials.",
+      "Store at room temperature.",
+      "Iron dextran products are not interchangeable."
+    ]
+  }
+},
+{
+  "drug_name": "Vitamin D",
+  "regimens": [
+    
+    {
+      "raw_text": "Supplementation",
+      "calc_notes":"less than 2000 g:  200 to 400 international units per day orally.   When weight is about 1500 g and the infant is tolerating full enteral nutrition, dose can be increased to 400 international units/day.     2000 g or more: 400 international units per day orally. ",
+      "dose_value": 33,
+
+      "dose_unit": "mg/100 mL blood",
+      "frequency": { "interval_hours": null },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 100,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "dose_range": { "min": 33, "max": 33 },
+        "admin_range": { "min": 10, "max": 30 },
+        "conc_range": { "min": 27, "max": 100 }
+      }
+    },
+    {
+      "raw_text": "Vitami D deficiency",
+      "calc_notes":"1000 units per day orally  ",
+      "dose_value": 33,
+
+      "dose_unit": "mg/100 mL blood",
+      "frequency": { "interval_hours": null },
+      "per_time": null,
+      "admin": 30,
+      "conc_value": 100,
+      "conc_unit": "mg/mL",
+      "routes": "IV",
+      "constraints": {
+        "dose_range": { "min": 33, "max": 33 },
+        "admin_range": { "min": 10, "max": 30 },
+        "conc_range": { "min": 27, "max": 100 }
+      }
+    }
+    
+    
+  ],
+  "other_info": {
+    "MEDICATION SAFETY": [
+      "Most liquid preparations contain propylene glycol.",
+      "Signs of vitamin D toxicity: hypercalcemia, azotemia, vomiting, nephrocalcinosis.",
+      "25(OH)-D concentration >250 nmol/L may indicate intoxication.",
+      "Monitoring: watch for signs of deficiency (hypocalcemia, seizures, growth failure, irritability, lethargy, recurrent respiratory infections).",
+      "25(OH)-D <50 nmol/L indicates deficiency.",
+      "Biochemical monitoring of bone mineral content recommended in VLBW (<1500 g) infants starting 4–5 weeks after birth."
+    ],
+    "MECHANISM OF ACTION/PHARMACOKINETICS": [
+      "Vitamin D3 synthesized in skin via UV-B (290–315 nm) converting 7-dehydrocholesterol to previtamin D3, then vitamin D3.",
+      "Vitamin D3 binds to vitamin D-binding protein, transported to liver → 25(OH)-D (calcidiol).",
+      "Calcidiol hydroxylated in kidney and other tissues → calcitriol (1,25-OH2-D), active form.",
+      "Calcitriol stimulates intestinal calcium/phosphorus absorption, renal calcium reabsorption, and bone mobilization.",
+      "Vitamin D3 more effective than D2 in raising 25(OH)-D levels."
+    ],
+    "ABOUT": [
+      "Vitamin D supplements available as D2 (ergocalciferol, plant-derived) and D3 (cholecalciferol, animal-derived).",
+      "All liquid vitamin D2 products contain propylene glycol.",
+      "Examples: Drisdol® (200 IU/drop, contains propylene glycol 1036 mg/mL); Baby D drops (400 IU/drop, palm-kernel oil); Bio-D-Mulsion (400 IU/drop, sesame oil, acacia); Just D (400 IU/mL, corn oil); Enfamil® D-Vi-Sol (400 IU/mL, glycerin, water, polysorbate 80, citric acid, sodium citrate, sodium hydroxide, artificial flavor/color); Aqueous Vitamin D Oral Drops (10 mcg/mL, glycerin, water, polysorbate 80)."
+    ]
+  }
+}
+
+
+
+
+
+
+
+]

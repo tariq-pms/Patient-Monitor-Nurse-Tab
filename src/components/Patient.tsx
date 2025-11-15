@@ -1,5 +1,5 @@
 import {
-  Box, Typography, TableRow, TableCell, Table, TableBody, Paper, 
+  Box, Typography, TableRow, TableCell, Table, TableBody, 
   TableHead, TextField, Stack, Button, Tabs, Tab,
   Grid, InputAdornment, Dialog, DialogTitle, DialogContent,
   DialogActions, InputLabel, Snackbar, Alert, CircularProgress,
@@ -16,6 +16,8 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 interface PatientProps {
   userOrganization: string;
   darkTheme: boolean;
+  openDialog: boolean;
+  onCloseDialog: () => void;
 }
 interface Patient {
   active: boolean;
@@ -30,7 +32,7 @@ interface Patient {
   birthWeight: string;
   lastUpdated: string;
 }
-export const Patient: FC<PatientProps> = ({ userOrganization, darkTheme }) => {
+export const Patient: FC<PatientProps> = ({ userOrganization }) => {
 
   const [activeTab, setActiveTab] = useState("current");
   const [openDialog, setOpenDialog] = useState(false);
@@ -371,7 +373,8 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
               code: "g"
             }
           }
-        ]
+        ],
+        
       };
   
       console.log("FHIR Payload:", JSON.stringify(patientResource, null, 2));
@@ -582,7 +585,7 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     {/* Tabs */}
     <Tabs
       value={activeTab}
-      onChange={(e, newValue) => setActiveTab(newValue)}
+      onChange={(_e, newValue) => setActiveTab(newValue)}
       variant="scrollable"
       scrollButtons={isMobile ? "auto" : false}
       allowScrollButtonsMobile
@@ -648,7 +651,7 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   </Stack>
 
   {/* Responsive Table */}
-  <Paper
+  {/* <Paper
   sx={{
     boxShadow: "none",
     border: "1px solid #e0e0e0",
@@ -657,7 +660,7 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     display: "flex",
     flexDirection: "column"
   }}
->
+> */}
     <Table sx={{ minWidth: 600 }}>
       <TableHead>
         <TableRow sx={{ backgroundColor: "lightgrey" }}>
@@ -722,7 +725,7 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
         ))}
       </TableBody>
     </Table>
-  </Paper>
+  {/* </Paper> */}
 
   {/* Menu */}
   <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>

@@ -1,5 +1,5 @@
 
-import { Box,  Card, CardContent, Grid, IconButton, Stack, Typography } from "@mui/material";
+import { Box,  Card, CardContent,  IconButton, Stack, Typography } from "@mui/material";
 import { isArray } from "chart.js/helpers";
 import { FC, useEffect, useState } from "react";
 import { faArrowTrendUp, faBed,  faDroplet,  faFlask, faHeartPulse, faLungs, faNotesMedical, faPrescription, faTemperatureHalf } from "@fortawesome/free-solid-svg-icons";
@@ -11,6 +11,8 @@ export interface PatientDetails {
     onClick: () => void;
     key: string;
     patient_id: string;
+    gestational_age:string;
+    birthDate:string;
     device: {
       "resourceType": string;
       "id": string;
@@ -132,7 +134,7 @@ export interface PatientDetails {
 export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
     console.log('PatientCard props:', props);
     const [obsResource, setObsResource] = useState<any[]>([])
-    const [, setIsBlinking] = useState(false);
+    const [isBlinking, setIsBlinking] = useState(false);
     
     const [alarmColor, setAlarmColor] = useState("")
     const [obsmeta, setobsmeta] = useState<any[]>([])
@@ -141,6 +143,43 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
     const [borderRadiusForRerender, setBorderRadiusForRerender] = useState(true)
     const [newData, setNewData] = useState(false)
     const [, setDisplayAlarm] = useState("")
+    
+    
+    useEffect(() => {
+      const fetchLatestObservation = async () => {
+        try {
+          const baseUrl = import.meta.env.VITE_FHIRAPI_URL; // Your FHIR server base URL
+          const url = `${baseUrl}/Observation?subject=Patient/${props.patient_resource_id}&_sort=-_lastUpdated&_count=1`; 
+    
+          const response = await fetch(url, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Basic " + btoa("fhiruser:change-password"),
+            },
+          });
+    
+          if (!response.ok) {
+            console.error("Failed to fetch latest Observation");
+            return;
+          }
+    
+          const data = await response.json();
+    
+          if (data.entry && data.entry.length > 0) {
+            const latestObservation = data.entry[0].resource;
+            setObsResource([latestObservation]);
+          }
+        } catch (error) {
+          console.error("Error fetching latest Observation:", error);
+        }
+      };
+    
+      fetchLatestObservation();
+    
+      // Optional: refresh data every 10 seconds for real-time updates
+      const interval = setInterval(fetchLatestObservation, 10000);
+      return () => clearInterval(interval);
+    }, [props.patient_resource_id]);
     
     useEffect(() => {
             if(isArray(props.observation_resource)){
@@ -223,30 +262,23 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
     };
     }, [requiredForTimer,newData])
 
-    function finddata(x: string){
-        var hasvalue = false
-        for(var i=0;i<obsResource.length;i++){
-            let index = obsResource[i].component?.findIndex((item: { code: { text: string; }; }) => item.code.text===x)
-            if(index==-1){
-                continue;
-            }
-            else{
-                if(index){
-                    let data = Number(obsResource[i].component[index]?.valueQuantity.value)
-                    data = Math.round((data + Number.EPSILON) * 100) / 100
-                    let unit = obsResource[i].component[index]?.valueQuantity.unit
-                    hasvalue = true
-                    return ({data:data, unit:unit})
-                }
-                
-            }
-            
-        }
-        if(!hasvalue){
-            return({data: "--", unit: "--"})
-        }
-        
+    function finddata(x: string) {
+      if (!obsResource.length) return { data: "--", unit: "--" };
+    
+      const obs = obsResource[0];
+      const component = obs.component?.find(
+        (item: { code: { text: string } }) => item.code.text === x
+      );
+    
+      if (component && component.valueQuantity) {
+        const data = Math.round(component.valueQuantity.value * 100) / 100;
+        const unit = component.valueQuantity.unit;
+        return { data, unit };
+      }
+    
+      return { data: "--", unit: "--" };
     }
+    
     const navigate = useNavigate();
 
     const handleCardClick = () => {
@@ -254,6 +286,8 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
         state: {
           patientName:  props.patient_name,
           patientId: props.patient_id,
+          gestationAge:props. gestational_age,
+          birthDate:props.birthDate,
           deviceId:props.device,
           observation:props.observation_resource,
           patientResourceId:props.patient_resource_id
@@ -267,7 +301,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
       <Box
       width="100%"
       sx={{
-        mb: 1,
+        mb: 3,
       height:'80px'
       }}
     >
@@ -278,8 +312,9 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
           borderRadius: "16px",
           height: "100%",
           display: "flex",
-          mb: 1,
+        
           flexDirection: "column",
+          border: `6px solid ${isBlinking ? alarmColor :'#FFFFFF'}`
         }}
       >
         <CardContent
@@ -360,68 +395,94 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                 </Typography>
               </Typography>
               <Typography variant="subtitle1" color="#124D81" sx={{ fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                G.A.: 22 Wk
+                G.A : {props.gestational_age}
               </Typography>
             </Stack>
           </Box>
     
           {/* Second Section - Vital Signs */}
           <Box
-            sx={{
-              flex: { xs: "1 1 auto", md: "0 0 35%" },
-              display: "flex",flexDirection: "column",minHeight: { xs: "80px", md: "50%" },
-              borderRight: { md: "1px solid #E0E0E0" },
-              borderBottom: { xs: "1px solid #E0E0E0", md: "none" },
-            }}
-          >
-            {/* First Row */}
-            <Stack
-              direction="row"
-              sx={{
-                height: { xs: "40px", md: "50%" },
-                justifyContent: "space-around",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: { xs: 1, md: 0 },
-                px: 1,
-              }}
-            >
-              <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
-                <FontAwesomeIcon icon={faHeartPulse} style={{ fontSize: { xs: "1rem", md: "1.2rem" }, color: "red" }} />{" "}
-                {finddata("Current Pulse Rate")?.data}
-              </Typography>
-              <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
-                <FontAwesomeIcon icon={faDroplet} style={{ fontSize: { xs: "1rem", md: "1.2rem" }, color: "#0CB0D3" }} />{" "}
-                {finddata("Current SpO2")?.data}
-              </Typography>
-            </Stack>
-    
-            {/* Second Row */}
-            <Stack
-              direction="row"
-              sx={{
-                height: { xs: "40px", md: "50%" },
-                justifyContent: "space-around",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: { xs: 1, md: 0 },
-                px: 1,
-              }}
-            >
-              <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
-                <FontAwesomeIcon icon={faTemperatureHalf} style={{ fontSize: { xs: "1rem", md: "1.2rem" }, color: "#FF9D61" }} />{" "}
-                {(() => {
-                  let t2 = finddata("Measured Skin Temp 2");
-                  let t1 = finddata("Measured Skin Temp 1");
-                  return t2?.data || t1?.data || "No Data";
-                })()}
-              </Typography>
-              <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
-                <FontAwesomeIcon icon={faLungs} style={{ fontSize: { xs: "1rem", md: "1.2rem" }, color: "#EACB1C" }} />{" "}
-                98
-              </Typography>
-            </Stack>
-          </Box>
+  sx={{
+    flex: { xs: "1 1 auto", md: "0 0 35%" },
+    display: "flex",
+    flexDirection: "column",
+    minHeight: { xs: "80px", md: "50%" },
+    borderRight: { md: "1px solid #E0E0E0" },
+    borderBottom: { xs: "1px solid #E0E0E0", md: "none" },
+    justifyContent: "space-between",
+  }}
+>
+  {/* First Row */}
+  <Stack
+    direction="row"
+    sx={{
+      height: { xs: "40px", md: "50%" },
+      justifyContent: "space-evenly",
+      alignItems: "center",
+      flexWrap: "wrap",
+      gap: { xs: 1, md: 0 },
+      px: 1,
+    }}
+  >
+    <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
+      <FontAwesomeIcon icon={faHeartPulse} style={{ color: "red" }} />{" "}
+      {finddata("CURRENT PULSE RATE")?.data}
+    </Typography>
+    <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
+      <FontAwesomeIcon icon={faDroplet} style={{ color: "#0CB0D3" }} />{" "}
+      {finddata("CURRENT SPO2")?.data}
+    </Typography>
+  </Stack>
+
+  {/* Second Row */}
+  <Stack
+    direction="row"
+    sx={{
+      height: { xs: "40px", md: "50%" },
+      justifyContent: "space-between",
+      alignItems: "center",
+      flexWrap: "wrap",
+      gap: { xs: 1, md: 0 },
+      px: 1,
+    }}
+  >
+    <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
+      <FontAwesomeIcon icon={faTemperatureHalf} style={{ color: "#FF9D61" }} />{" "}
+      {(() => {
+        const t1 = finddata("CURRENT SKIN TEMPERATURE");
+        return t1?.data || "No Data";
+      })()}
+    </Typography>
+    <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
+      <FontAwesomeIcon icon={faLungs} style={{ color: "#EACB1C" }} /> 98
+    </Typography>
+  </Stack>
+
+  {/* Timestamp Row */}
+  {obsResource.length > 0 && (
+    <Typography
+      variant="caption"
+      sx={{
+        color: "#6C757D",
+        fontSize: "0.5rem",
+        textAlign: "center",
+        pb: 0.5,
+      }}
+    >
+      Last Updated:{" "}
+      {new Date(obsResource[0].meta.lastUpdated).toLocaleString("en-IN", {
+        hour12: true,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })}
+    </Typography>
+  )}
+</Box>
+
     
           {/* Third Section - Action Buttons */}
           
@@ -460,7 +521,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                     icon={icon} 
                     style={{ 
                       color: props.darkTheme ? "#228BE6" : "#228BE6",
-                      fontSize: { xs: "0.9rem", md: "1rem" } 
+                     
                     }} 
                   />
                 </IconButton>

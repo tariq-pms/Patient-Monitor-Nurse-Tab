@@ -1,18 +1,21 @@
 import {
   Box, Typography, Button, TableRow, Table, TableBody,
   TableCell, TableHead, IconButton, CircularProgress,
-  Chip, TableContainer, Snackbar, Alert
+  Chip, TableContainer, Snackbar, Alert,Dialog,DialogContent,DialogTitle,
+  Stack
 } from "@mui/material";
 import { PhotoCamera, UploadFile } from "@mui/icons-material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import Webcam from "react-webcam";
 import { useEffect, useRef, useState } from "react";
-
+import CloseIcon from "@mui/icons-material/Close";
 interface DashboardProps {
   patient: string;
   patient_name: string;
   patient_id: string;
   patient_resource_id: string;
+  birth_date:string;
+  gestational_age:string;
   UserRole: string;
   onClose: () => void;
 }
@@ -43,7 +46,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [savedReports, setSavedReports] = useState<any[]>([]);
 const [isLoadingReports, setIsLoadingReports] = useState(false);
-
+const [open, setOpen] = useState(false);
   const captureAndProcess = async () => {
     if (!webcamRef.current) return;
   
@@ -323,10 +326,12 @@ const [isLoadingReports, setIsLoadingReports] = useState(false);
     const tests = parseConclusionToTable(report.resource.conclusion);
   
     return (
-      <Box sx={{ mt: 3, mb: 4 ,p:2,backgroundColor:'#FFFFFF',borderRadius:'20px'}}>
-        <Typography variant="subtitle1" gutterBottom>
-          Report from {new Date(report.resource.effectiveDateTime).toLocaleString()}
-        </Typography>
+      <Box sx={{ mt: 1, mb: 4 ,p:2,backgroundColor:'#FFFFFF',borderRadius:'20px'}}>
+       <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+  <Typography variant="caption">
+    Reported: {new Date(report.resource.effectiveDateTime).toLocaleString()}
+  </Typography>
+</Box>
         <TableContainer>
           <Table size="small">
             <TableHead>
@@ -359,7 +364,69 @@ const [isLoadingReports, setIsLoadingReports] = useState(false);
     );
   };
   return (
-    <Box sx={{ flexGrow: 1, padding: 2,  justifyContent: 'center' }}>
+    
+    <Box >
+   
+
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        pl={2}
+       
+      >
+          <Typography variant="h6" sx={{ color: "#0F3B61" }} >
+     Lab Report
+    </Typography>
+  <Stack  direction="row" spacing={3}>
+
+  {/* <Button
+   onClick={() => setOpen(true)}
+  sx={{ backgroundColor: "#228BE61A", color: "#228BE6" }}
+>
+  <DownloadIcon />
+</Button> */}
+            <Button
+            variant="outlined"
+            
+            onClick={() => setOpen(true)}
+            sx={{ backgroundColor: "#228BE61A", color: "#228BE6" }}
+          >
+            + Report
+          </Button>
+  </Stack>
+ 
+      </Stack>
+
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: "16px",
+            boxShadow: 6,
+            backgroundColor: "#FFFFFF",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            color: "#0F3B61",
+            fontWeight: "bold",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          Add Report
+          <IconButton onClick={() => setOpen(false)} sx={{ color: "#0F3B61" }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent dividers sx={{ padding: 3 }}>
       <Box sx={{ width: '100%'}}>
         <Typography 
           variant="h5" 
@@ -580,12 +647,13 @@ const [isLoadingReports, setIsLoadingReports] = useState(false);
             )}
           </Box>
         </Box>
+        
       </Box>
+      </DialogContent>
+        </Dialog>
 {/* Saved Reports Section */}
-<Box sx={{ mt: 4,  borderRadius: '20px', p: 3 }}>
-  <Typography variant="h6" gutterBottom>
-    Saved Reports
-  </Typography>
+<Box sx={{  borderRadius: '20px', p: 2 }}>
+
 
   {isLoadingReports ? (
     <Box display="flex" justifyContent="center" py={4}>
@@ -593,7 +661,7 @@ const [isLoadingReports, setIsLoadingReports] = useState(false);
     </Box>
   ) : savedReports.length === 0 ? (
     <Typography variant="body1" color="Black" textAlign="center" py={2}>
-      No saved reports found
+      No Lab reports found
     </Typography>
   ) : (
     savedReports.map((report, index) => (

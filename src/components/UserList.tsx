@@ -4,7 +4,7 @@ import {
   MenuItem, DialogContent, Stack, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, 
   Avatar, DialogActions, Skeleton, InputAdornment, useMediaQuery, 
-  useTheme, Tabs, Tab, Checkbox, 
+  useTheme,
   Switch} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -13,9 +13,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import PeopleIcon from "@mui/icons-material/People";
-import HotelIcon from "@mui/icons-material/Hotel";
-import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+
 import LockIcon from "@mui/icons-material/Lock";
 
 interface AdminPageProps {
@@ -58,7 +56,7 @@ const defaultModulePermissions: ModulePermissions = {
 };
 
 export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) => {
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
+  const { isAuthenticated } = useAuth0();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<User[]>([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -78,14 +76,14 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
   const [permissionDialogOpen, setPermissionDialogOpen] = useState(false);
   const [userPermissions, setUserPermissions] = useState<ModulePermissions>(defaultModulePermissions);
   const [loadingUser, setLoadingUser] = useState(true);
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+
   const [showPassword, setShowPassword] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setSelectedIndex(newValue);
-  };
+  // const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+  //   setSelectedIndex(newValue);
+  // };
 
   const handleSnackbarOpen = (message: string, severity: 'success' | 'error') => {
     setSnackbarMessage(message);
@@ -209,10 +207,16 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
         organization: userOrganization,
       });
   
-    } catch (error) {
-      console.error("User creation failed:", error);
-      handleSnackbarOpen(error.message, 'error');
+    } 
+    
+    catch (error) {
+      console.error('Error:', error);
+      handleSnackbarOpen(error instanceof Error ? error.message : 'error', 'error');
     }
+    // catch (error) {
+    //   console.error("User creation failed:", error);
+    //   handleSnackbarOpen(error.message, 'error');
+    // }
   };
 
   const handleDeleteUser = (userId: string) => {
@@ -518,14 +522,15 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
       handleSnackbarOpen('Permissions updated successfully', 'success');
       setPermissionDialogOpen(false);
       
-    } catch (error) {
-      console.error('Error updating permissions:', error);
-      handleSnackbarOpen('Failed to update permissions: ' + error.message, 'error');
+    } 
+    
+    catch (err) {
+      handleSnackbarOpen(String(err), "error");
     }
   };
   
   // FIXED: Enhanced permission fetching with better search
-  const fetchUserPermissionsFromFHIR = async (user: any) => {
+  const fetchUserPermissionsFromFHIR = async (_user: any) => {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?name=${selectedUser?.name}`, 
@@ -583,7 +588,7 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
   //   await fetchUserPermissionsFromFHIR(user.user_id);
   // };
 
-  const debugSearchResults = async (user: any) => {
+  const debugSearchResults = async (_user: any) => {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?name=${selectedUser?.name}`, 

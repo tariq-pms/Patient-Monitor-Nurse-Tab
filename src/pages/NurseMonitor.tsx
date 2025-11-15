@@ -341,12 +341,12 @@ interface State {
   // const handleOpenDialog = () => setOpenDialog(true);
   const handleCloseDialog = () => setOpenDialog(false);
 
-  const containerStyles = {
+  // const containerStyles = {
     
-    justifyContent: 'center',
-    alignItems: 'center',
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
     
-  };
+  // };
   const tabConfig = [
     { label: "My Tasks", icon: <AssignmentIcon /> },
     { label: "Patients", icon: <EmojiEmotionsIcon /> },
@@ -409,17 +409,16 @@ value={selectedIndex}
                   <Box >
                  {patientList.map(patient => (
               <PatientCard
-                key={String(patient.id)}
-                patient_resource_id={String(patient.id)}
-                patient_name={String(patient.extension[0].valueString)}
-                patient_id={String(patient.identifier[0].value)}
-                device={parentDevice[String(patient.id)]}
-                observation_resource={parentObs[String(patient.id)]}
-                communication_resource={parentComm[String(patient.id)]}
-                darkTheme={darkTheme}
-                // selectedIcon={selectedIcon}
-                onClick={() => handlePatientCardClick(patient)}
-              />
+                     key={String(patient.id)}
+                     patient_resource_id={String(patient.id)}
+                     patient_name={String(patient.extension[0].valueString)}
+                     patient_id={String(patient.identifier[0].value)}
+                     device={parentDevice[String(patient.id)]}
+                     observation_resource={parentObs[String(patient.id)]}
+                     communication_resource={parentComm[String(patient.id)]}
+                     darkTheme={darkTheme}
+                     // selectedIcon={selectedIcon}
+                     onClick={() => handlePatientCardClick(patient)} gestational_age={''} birthDate={''}              />
             ))}
                 </Box>
                 
