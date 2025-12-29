@@ -13,6 +13,7 @@ export interface PatientDetails {
     patient_id: string;
     gestational_age:string;
     birthDate:string;
+    gender:string;
     device: {
       "resourceType": string;
       "id": string;

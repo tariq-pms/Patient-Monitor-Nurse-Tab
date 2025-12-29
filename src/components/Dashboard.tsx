@@ -300,6 +300,7 @@ const [open, setOpen] = useState(false);
       setIsLoadingReports(false);
     }
   };
+  
   const parseConclusionToTable = (conclusion: string) => {
     const lines = conclusion.split('\n');
     return lines.map(line => {

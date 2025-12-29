@@ -13,6 +13,8 @@ export interface PatientDetails {
     patient_id: string;
     gestational_age:string;
     birthDate:string;
+    gender:string;
+    birthWeight:string,
     device: {
       "resourceType": string;
       "id": string;
@@ -287,6 +289,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
           patientName:  props.patient_name,
           patientId: props.patient_id,
           gestationAge:props. gestational_age,
+          gender:props.gender,
           birthDate:props.birthDate,
           deviceId:props.device,
           observation:props.observation_resource,

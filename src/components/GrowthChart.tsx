@@ -1,13 +1,14 @@
 import { useState, useEffect, FC,  useMemo, useRef } from 'react';
 import Box from '@mui/material/Box';
-import {Alert, Dialog,DialogActions,DialogContent,DialogTitle,Snackbar,Stack,TextField,Typography, Button, CircularProgress} from '@mui/material';
+import {Alert, Dialog,DialogActions,DialogContent,DialogTitle,Snackbar,Stack,TextField,Typography, Button, CircularProgress, TableHead, Table, TableCell, TableRow, TableBody} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import annotationPlugin from "chartjs-plugin-annotation";
 import { ChartOptions, LegendItem, Plugin,Chart, CategoryScale } from 'chart.js';
-
+import fentonChart from '../assets/fenton_chart_boy.png';
+import fentonChart1 from '../assets/fenton_chart_girl.png';
 
 import DownloadIcon from '@mui/icons-material/Download';
 import { Line } from 'react-chartjs-2';
@@ -22,11 +23,13 @@ export interface PatientDetails {
   patient_id: string;
   gestational_age: string;
   birth_date:string;
+  gender:string
           }
-
+        
 export const GrowthChart: FC<PatientDetails> = (props): JSX.Element => {
 
     const [addnewbutton, setaddnewbutton] = useState(false);
+    const [addnewbutton1, setaddnewbutton1] = useState(false);
     const [snackSucc, setSnackSucc] = useState(false);
     const [snack, setSnack] = useState(false);
     const [date, setDate] = useState<Date | null>(null);
@@ -35,6 +38,23 @@ export const GrowthChart: FC<PatientDetails> = (props): JSX.Element => {
     const [gainLoss, setGainLoss] = useState("N/A");
     const [totalIntake, setTotalIntake] = useState("");
     const [totalOutput, setTotalOutput] = useState("");
+  
+
+    // const [gainLoss, setGainLoss] = useState("N/A");
+    const [length, setLength] = useState("");
+    // const [weeks, setWeeks] = useState("");
+    // const [days, setDays] = useState("");
+    const [pmaWeeksState, setPmaWeeksState] = useState("");
+    const [pmaDaysState, setPmaDaysState] = useState("");
+    
+
+    const [headC, setHeadC] = useState("");
+    const [fentonEntries, setFentonEntries] = useState<any[]>([]);
+    const [manualEntries, setManualEntries] = useState([]);
+
+
+    // const [manualData, setManualData] = useState<any[]>([]);
+    // const [entries, setEntries] = useState<any[]>([]);
     const chartRef1 = useRef<any | null>(null);
     const [loading, setLoading] = useState(false);
     const [selectedLegends, setSelectedLegends] = useState<any>([])
@@ -67,6 +87,9 @@ export const GrowthChart: FC<PatientDetails> = (props): JSX.Element => {
         // =========================
         const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/${props.userOrganization}`;
         console.log("🏥 Fetching Organization from:", orgUrl);
+        console.log("🏥 Fetching gender from growth chart:", props.gender);
+
+       
         console.log("selectedlegend", selectedLegends);
     
         const res = await fetch(orgUrl, {
@@ -510,7 +533,7 @@ doc.line(10, 70, pageWidth - 10, 70);
     
       try {
         const searchResponse = await fetch(
-          `${baseUrl}/Observation?subject=Patient/${props.patient_resource_id}&code=8331-1`,
+          `${baseUrl}/Observation?subject=Patient/${props.patient_resource_id}&category=growth-chart&_sort=-date`,
           {
             headers: {
               Authorization: authHeader,
@@ -540,12 +563,14 @@ doc.line(10, 70, pageWidth - 10, 70);
           });
     
           if (putResponse.ok) {
-            setSnackSucc(true);  
-            setSnack(true);      
+            await fetchManualTrends(props.patient_resource_id); // 🔥 refresh chart
+            setSnackSucc(true);
+            setSnack(true);
           } else {
-            setSnackSucc(false); 
-            setSnack(true);      
+            setSnackSucc(false);
+            setSnack(true);
           }
+          
         } else {
           // Creating new Observation
           const postResponse = await fetch(`${baseUrl}/Observation`, {
@@ -559,6 +584,7 @@ doc.line(10, 70, pageWidth - 10, 70);
           });
     
           if (postResponse.ok) {
+            await fetchManualTrends(props.patient_resource_id); 
             setSnackSucc(true);  
             setSnack(true);     
           } else {
@@ -573,14 +599,358 @@ doc.line(10, 70, pageWidth - 10, 70);
         setCurrentWeight("");
         setTotalIntake("");
         setTotalOutput("");
+        // 🔄 After save, refresh manual trend data instantly
+
+
+
       } catch (error) {
         console.error("Network error:", error);
         setSnackSucc(false);    
         setSnack(true);         
       }
     };
+
+    // const handleAddEntry1 = async () => {
+    //   if (!currentWeight || !weeks || !days) {
+    //     setSnackSucc(false);
+    //     setSnack(true);
+    //     return;
+    //   }
+    
+    //   const pmaDecimal = parseFloat((Number(weeks) + Number(days) / 7).toFixed(2));
+    
+    //   const components: any[] = [];
+    
+    //   if (currentWeight)
+    //     components.push({
+    //       code: { text: "Weight" },
+    //       valueQuantity: {
+    //         value: parseFloat(currentWeight),
+    //         unit: "g",
+    //         system: "http://unitsofmeasure.org",
+    //         code: "g",
+    //       },
+    //     });
+    
+    //   if (length)
+    //     components.push({
+    //       code: { text: "Length" },
+    //       valueQuantity: {
+    //         value: parseFloat(length),
+    //         unit: "cm",
+    //         system: "http://unitsofmeasure.org",
+    //         code: "cm",
+    //       },
+    //     });
+    
+    //   if (headC)
+    //     components.push({
+    //       code: { text: "Head Circumference" },
+    //       valueQuantity: {
+    //         value: parseFloat(headC),
+    //         unit: "cm",
+    //         system: "http://unitsofmeasure.org",
+    //         code: "cm",
+    //       },
+    //     });
+    
+    //   // PMA
+    //   components.push({
+    //     code: { text: "Post-menstrual Age (PMA)" },
+    //     valueQuantity: {
+    //       value: pmaDecimal,
+    //       unit: "weeks",
+    //       system: "http://unitsofmeasure.org",
+    //       code: "wk",
+    //     },
+    //   });
+    
+    //   const observation = {
+    //     resourceType: "Observation",
+    //     status: "final",
+    //     category: [
+    //       {
+    //         coding: [
+    //           {
+    //             system: "http://terminology.hl7.org/CodeSystem/observation-category",
+    //             code: "fenton-chart",
+    //             display: "Fenton Chart",
+    //           },
+    //         ],
+    //       },
+    //     ],
+    //     code: {
+    //       coding: [
+    //         {
+    //           system: "http://loinc.org",
+    //           code: "8331-1",
+    //           display: "Weekly Fenton Chart Measurement",
+    //         },
+    //       ],
+    //       text: "Fenton Chart Entry",
+    //     },
+    //     subject: {
+    //       reference: `Patient/${props.patient_resource_id}`,
+    //     },
+    //     effectiveDateTime: new Date().toISOString(),
+    //     component: components,
+    //   };
+    
+    //   const baseUrl = import.meta.env.VITE_FHIRAPI_URL;
+    //   const authHeader = "Basic " + btoa("fhiruser:change-password");
+    
+    //   try {
+    //     // 🔍 1. Search if a Fenton observation already exists
+    //     const searchResponse = await fetch(
+    //       `${baseUrl}/Observation?subject=Patient/${props.patient_resource_id}&category=fenton-chart`,
+    //       {
+    //         headers: {
+    //           Authorization: authHeader,
+    //           Accept: "application/fhir+json",
+    //         },
+    //       }
+    //     );
+    
+    //     const searchResult = await searchResponse.json();
+    
+    //     if (searchResponse.ok && searchResult.entry?.length > 0) {
+    //       // 🔁 UPDATE (PUT)
+    //       const existingObservation = searchResult.entry[0].resource;
+    //       const obsId = existingObservation.id;
+    
+    //       const putResponse = await fetch(`${baseUrl}/Observation/${obsId}`, {
+    //         method: "PUT",
+    //         headers: {
+    //           Authorization: authHeader,
+    //           "Content-Type": "application/fhir+json",
+    //           Accept: "application/fhir+json",
+    //         },
+    //         body: JSON.stringify({
+    //           ...existingObservation,
+    //           ...observation,
+    //           id: obsId, // keep same ID
+    //         }),
+    //       });
+    
+    //       if (putResponse.ok) {
+    //         setSnackSucc(true);
+    //         setSnack(true);
+    //       } else {
+    //         setSnackSucc(false);
+    //         setSnack(true);
+    //       }
+    
+    //     } else {
+    //       // 🆕 CREATE (POST)
+    //       const postResponse = await fetch(`${baseUrl}/Observation`, {
+    //         method: "POST",
+    //         headers: {
+    //           Authorization: authHeader,
+    //           "Content-Type": "application/fhir+json",
+    //           Accept: "application/fhir+json",
+    //         },
+    //         body: JSON.stringify(observation),
+    //       });
+    
+    //       if (postResponse.ok) {
+    //         setSnackSucc(true);
+    //         setSnack(true);
+    //       } else {
+    //         setSnackSucc(false);
+    //         setSnack(true);
+    //       }
+    //     }
+    
+    //     // Reset
+    //     setaddnewbutton1(false);
+    //     setCurrentWeight("");
+    //     setLength("");
+    //     setHeadC("");
+    
+    //   } catch (error) {
+    //     console.error("Network error:", error);
+    //     setSnackSucc(false);
+    //     setSnack(true);
+    //   }
+    // };
+    
+    const handleAddEntry1 = async () => {
+      if (!currentWeight) {
+        setSnackSucc(false);
+        setSnack(true);
+        return;
+      }
+    
+      // --- Compute PMA from GA + DOB ---
+     
+    
+     
+    
+      const pmaDecimal = parseFloat(
+        (Number(pmaWeeksState) + Number(pmaDaysState) / 7).toFixed(2)
+      );
       
-    async function fetchManualTrends(patientId: string) {
+    
+      // --- Build FHIR Components ---
+      const components: any[] = [];
+    
+      if (currentWeight)
+        components.push({
+          code: { text: "Weight" },
+          valueQuantity: {
+            value: parseFloat(currentWeight),
+            unit: "g",
+            system: "http://unitsofmeasure.org",
+            code: "g",
+          },
+        });
+    
+      if (length)
+        components.push({
+          code: { text: "Length" },
+          valueQuantity: {
+            value: parseFloat(length),
+            unit: "cm",
+            system: "http://unitsofmeasure.org",
+            code: "cm",
+          },
+        });
+    
+      if (headC)
+        components.push({
+          code: { text: "Head Circumference" },
+          valueQuantity: {
+            value: parseFloat(headC),
+            unit: "cm",
+            system: "http://unitsofmeasure.org",
+            code: "cm",
+          },
+        });
+    
+      // PMA
+      components.push({
+        code: { text: "Post-menstrual Age (PMA)" },
+        valueQuantity: {
+          value: pmaDecimal,
+          unit: "weeks",
+          system: "http://unitsofmeasure.org",
+          code: "wk",
+        },
+      });
+    
+      const observation = {
+        resourceType: "Observation",
+        status: "final",
+        category: [
+          {
+            coding: [
+              {
+                system: "http://terminology.hl7.org/CodeSystem/observation-category",
+                code: "fenton-chart",
+                display: "Fenton Chart",
+              },
+            ],
+          },
+        ],
+        code: {
+          coding: [
+            {
+              system: "http://loinc.org",
+              code: "8331-1",
+              display: "Weekly Fenton Chart Measurement",
+            },
+          ],
+          text: "Fenton Chart Entry",
+        },
+        subject: {
+          reference: `Patient/${props.patient_resource_id}`,
+        },
+        effectiveDateTime: new Date().toISOString(),
+        component: components,
+      };
+    
+      const baseUrl = import.meta.env.VITE_FHIRAPI_URL;
+      const authHeader = "Basic " + btoa("fhiruser:change-password");
+    
+      try {
+        // 🔍 1. CHECK IF FENTON OBS ALREADY EXISTS
+        const searchResponse = await fetch(
+          `${baseUrl}/Observation?subject=Patient/${props.patient_resource_id}&category=fenton-chart`,
+          {
+            headers: {
+              Authorization: authHeader,
+              Accept: "application/fhir+json",
+            },
+          }
+        );
+    
+        const searchResult = await searchResponse.json();
+    
+        if (searchResponse.ok && searchResult.entry?.length > 0) {
+          // 🔁 UPDATE EXISTING
+          const existingObservation = searchResult.entry[0].resource;
+          const obsId = existingObservation.id;
+    
+          const putResponse = await fetch(`${baseUrl}/Observation/${obsId}`, {
+            method: "PUT",
+            headers: {
+              Authorization: authHeader,
+              "Content-Type": "application/fhir+json",
+              Accept: "application/fhir+json",
+            },
+            body: JSON.stringify({
+              ...existingObservation,
+              ...observation,
+              id: obsId,
+            }),
+          });
+    
+          if (putResponse.ok) {
+            await fetchFentonData(props.patient_resource_id);   // 🔥 refresh chart/table instantly
+            setSnackSucc(true);
+            setSnack(true);
+          } else {
+            setSnackSucc(false);
+            setSnack(true);
+          }
+         
+        } else {
+          // 🆕 CREATE NEW
+          const postResponse = await fetch(`${baseUrl}/Observation`, {
+            method: "POST",
+            headers: {
+              Authorization: authHeader,
+              "Content-Type": "application/fhir+json",
+              Accept: "application/fhir+json",
+            },
+            body: JSON.stringify(observation),
+          });
+    
+          if (postResponse.ok) {
+            await fetchFentonData(props.patient_resource_id);   // already good
+            setSnackSucc(true);
+            setSnack(true);
+          } else {
+            setSnackSucc(false);
+            setSnack(true);
+          }
+        }
+    
+        // RESET VALUES
+        setaddnewbutton1(false);
+        setCurrentWeight("");
+        setLength("");
+        setHeadC("");
+        
+      } catch (error) {
+        console.error("Network error:", error);
+        setSnackSucc(false);
+        setSnack(true);
+      }
+    };
+    
+    
+    async function fetchFentonData(patientId: string) {
       console.log("📥 Fetching manual Observation history for patient:", patientId);
     
       const baseUrl = import.meta.env.VITE_FHIRAPI_URL as string;
@@ -588,7 +958,102 @@ doc.line(10, 70, pageWidth - 10, 70);
     
       try {
         // 1️⃣ Find the Observation for this patient (Daily Neonatal Entry)
-        const searchUrl = `${baseUrl}/Observation?subject=Patient/${patientId}&code=8331-1&_sort=-date`;
+        const searchUrl = `${baseUrl}/Observation?subject=Patient/${patientId}&category=fenton-chart&_sort=-date`;
+
+        console.log("🔍 Searching for fenton Observation:", searchUrl);
+    
+        const searchResponse = await fetch(searchUrl, {
+          headers: {
+            Authorization: authHeader,
+            Accept: "application/fhir+json",
+          },
+        });
+    
+        if (!searchResponse.ok) {
+          throw new Error("Failed to search for Observations");
+        }
+    
+        const searchBundle = await searchResponse.json();
+        if (!searchBundle.entry || searchBundle.entry.length === 0) {
+          console.warn("⚠️ No Observation found for patient:", patientId);
+          return [];
+        }
+    
+        // 2️⃣ Use the most recent Observation’s ID (or whichever you want)
+        const observationId = searchBundle.entry[0].resource.id;
+        console.log("🧩 Found Observation ID:", observationId);
+    
+        // 3️⃣ Fetch full history of that Observation
+        const historyUrl = `${baseUrl}/Observation/${observationId}/_history?_count=40`;
+
+        console.log("📜 Fetching full Observation history:", historyUrl);
+    
+        const historyResponse = await fetch(historyUrl, {
+          headers: {
+            Authorization: authHeader,
+            Accept: "application/fhir+json",
+          },
+        });
+    
+        if (!historyResponse.ok) {
+          throw new Error(`Failed to fetch Observation history for ID: ${observationId}`);
+        }
+    
+        const historyBundle = await historyResponse.json();
+    
+        // 4️⃣ Parse each historical version
+        const parsed = historyBundle.entry?.map((entry: any) => {
+          const obs = entry.resource;
+        
+          const dateISO = obs.effectiveDateTime ?? obs.meta?.lastUpdated;
+        
+          let pmaWeeks = null;
+          let weight = null;
+          let length = null;
+          let headC = null;
+        
+          obs.component?.forEach((c: any) => {
+            const label = c.code?.text;
+            const value = c.valueQuantity?.value;
+        
+            if (label === "Post-menstrual Age (PMA)") pmaWeeks = value;
+            if (label === "Weight") weight = value;
+            if (label === "Length") length = value;
+            if (label === "Head Circumference") headC = value;
+          });
+        
+          return {
+            pmaWeeks,
+            weight,
+            length,
+            headC,
+            dateISO,
+          };
+        }) || [];
+    
+        console.log("✅ Parsed Observation history data:", parsed);
+        const parsed1 = parsed.reverse();
+        setFentonEntries(parsed1);   // 🔥 Auto-update chart
+        return parsed1;
+        // return parsed.reverse();
+         // oldest first
+      } catch (error) {
+        console.error("❌ Error fetching manual trends:", error);
+        setSnackSucc(false)
+        return [];
+      }
+    }
+      
+    async function fetchManualTrends(patientId: string) {
+      console.log("📥 Fetching manual Observation history for patient:", patientId);
+      console.log("📥 Fetching Gender in growth chart:", props.gender);
+    
+      const baseUrl = import.meta.env.VITE_FHIRAPI_URL as string;
+      const authHeader = "Basic " + btoa("fhiruser:change-password");
+    
+      try {
+        // 1️⃣ Find the Observation for this patient (Daily Neonatal Entry)
+        const searchUrl = `${baseUrl}/Observation?subject=Patient/${patientId}&category=growth-chart&_sort=-date`;
         console.log("🔍 Searching for Observation:", searchUrl);
     
         const searchResponse = await fetch(searchUrl, {
@@ -613,7 +1078,7 @@ doc.line(10, 70, pageWidth - 10, 70);
         console.log("🧩 Found Observation ID:", observationId);
     
         // 3️⃣ Fetch full history of that Observation
-        const historyUrl = `${baseUrl}/Observation/${observationId}/_history`;
+        const historyUrl = `${baseUrl}/Observation/${observationId}/_history?_count=40`;
         console.log("📜 Fetching full Observation history:", historyUrl);
     
         const historyResponse = await fetch(historyUrl, {
@@ -646,7 +1111,9 @@ doc.line(10, 70, pageWidth - 10, 70);
           }) || [];
     
         console.log("✅ Parsed Observation history data:", parsed);
-        return parsed.reverse(); // oldest first
+        const parsed2 = parsed.reverse();
+        setManualEntries(parsed2);   // 🔥 Auto-update chart
+        return parsed2; // oldest first
       } catch (error) {
         console.error("❌ Error fetching manual trends:", error);
         setSnackSucc(false)
@@ -696,6 +1163,28 @@ doc.line(10, 70, pageWidth - 10, 70);
       }
     };
 
+//     // Input format: "22W 3D"
+// const parseGA = (ga: string) => {
+//   if (!ga) return { weeks: "", days: "" };
+
+//   const match = ga.match(/(\d+)\s*W\s*(\d+)\s*D/i);
+//   if (!match) return { weeks: "", days: "" };
+
+//   return {
+//     weeks: match[1], // "22"
+//     days: match[2],  // "3"
+//   };
+// };
+
+// useEffect(() => {
+//   if (props.gestational_age) {
+//     const { weeks, days } = parseGA(props.gestational_age);
+//     setWeeks(weeks);
+//     setDays(days);
+//   }
+// }, [props.gestational_age]);
+
+
     useEffect(() => {
       if (addnewbutton) {
         fetchPreviousWeight();
@@ -705,11 +1194,19 @@ doc.line(10, 70, pageWidth - 10, 70);
       useEffect(() => {
     if ( props.patient_resource_id) {
       fetchManualTrends(props.patient_resource_id)
-        .then((data) => setManualData(data))
+        .then((data) => setManualEntries(data))
         .catch((err) => console.error(err));
     }
       }, [props.patient_resource_id]);
-  
+
+      useEffect(() => {
+        if (props.patient_resource_id) {
+          fetchFentonData(props.patient_resource_id).then((data) => {
+            setFentonEntries(data);
+          });
+        }
+      }, [props.patient_resource_id]);
+      
   useEffect(() => {
     if (!previousWeight || !currentWeight) {
       setGainLoss("N/A");
@@ -730,7 +1227,47 @@ doc.line(10, 70, pageWidth - 10, 70);
     setGainLoss(display);
   }, [previousWeight, currentWeight]);
 
-  const [manualData, setManualData] = useState<any[]>([]);
+  function parseGA(gaString: string) {
+    // Example: "22W 5D"
+    const match = gaString.match(/(\d+)\s*W\s*(\d+)\s*D/i);
+    if (!match) return { weeks: 0, days: 0 };
+    return { weeks: Number(match[1]), days: Number(match[2]) };
+  }
+  
+  function calculatePMA(gaAtBirth: string, birthDate: string) {
+    const { weeks, days } = parseGA(gaAtBirth);
+    const gaDays = weeks * 7 + days;
+  
+    const dob = new Date(birthDate);
+    const today = new Date();
+  
+    const diffDays = Math.floor((today.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24));
+  
+    const totalDays = gaDays + diffDays;
+  
+    const pmaWeeks = Math.floor(totalDays / 7);
+    const pmaDays = totalDays % 7;
+  
+    return { pmaWeeks, pmaDays };
+  }
+
+  useEffect(() => {
+    const { pmaWeeks, pmaDays } = calculatePMA(
+      props.gestational_age,
+      props.birth_date
+    );
+  
+    setPmaWeeksState(pmaWeeks.toString());
+    setPmaDaysState(pmaDays.toString());
+    
+  }, [props.gestational_age, props.birth_date]);
+  
+// Auto PMA calculation
+// const { pmaWeeks, pmaDays } = calculatePMA(
+//   props.gestational_age, 
+//   props.birth_date
+// );
+
 
   const addValues = () => {
     return (
@@ -979,6 +1516,257 @@ doc.line(10, 70, pageWidth - 10, 70);
     );
 };
 
+const addWeekly = () => {
+  return (
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+    <Dialog
+     open={addnewbutton1}
+     onClose={() => setaddnewbutton1(false)}
+      fullWidth
+      maxWidth="xs"
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          backgroundColor: "#FFFFFF",
+          color: "#000000",
+          boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
+        },
+      }}
+    >
+      {/* Title */}
+      <DialogTitle
+        sx={{
+          textAlign: "center",
+          fontWeight: 600,
+          fontSize: "1.1rem",
+          color: "#000000",
+          borderBottom: "1px solid #E0E0E0",
+        }}
+      >
+       Fenton Chart Entry
+      </DialogTitle>
+
+      {/* Content */}
+      <DialogContent sx={{ pt: 2 }}>
+        {/* Header Info */}
+             {/* Date and Time Pickers */}
+       
+
+        {/* Divider */}
+      
+ 
+
+        {/* <Stack direction="row" gap={2} mt={2}>
+
+  <TextField
+    type="number"
+    label="Weeks"
+    fullWidth
+    required
+    value={weeks}
+    onChange={(e) => setWeeks(e.target.value)}
+    InputProps={{
+      sx: {
+        backgroundColor: "#F5F5F5",
+        borderRadius: 1,
+        color: "#000",
+      },
+    }}
+    InputLabelProps={{ sx: { color: "#000" } }}
+    variant="outlined"
+  />
+
+ 
+  <TextField
+    type="number"
+    label="Days"
+    placeholder="0–6"
+    fullWidth
+    value={days}
+    onChange={(e) => setDays(e.target.value)}
+    InputProps={{
+      sx: {
+        backgroundColor: "#F5F5F5",
+        borderRadius: 1,
+        color: "#000",
+      },
+    }}
+    InputLabelProps={{ sx: { color: "#000" } }}
+  />
+</Stack> */}
+
+<Stack direction="row" gap={2} mt={2}>
+
+  {/* PMA Weeks */}
+  <TextField
+  label="PMA Weeks"
+  value={pmaWeeksState}
+  fullWidth
+  onChange={(e) => setPmaWeeksState(e.target.value)}
+  InputProps={{
+    sx: {
+      backgroundColor: "#F5F5F5",
+      borderRadius: 1,
+      color: "#000",
+    },
+  }}
+  InputLabelProps={{ sx: { color: "#000" } }}
+/>
+
+  {/* PMA Days */}
+  <TextField
+  label="PMA Days"
+  value={pmaDaysState}
+  fullWidth
+  onChange={(e) => setPmaDaysState(e.target.value)}
+  InputProps={{
+    sx: {
+      backgroundColor: "#F5F5F5",
+      borderRadius: 1,
+      color: "#000",
+    },
+  }}
+  InputLabelProps={{ sx: { color: "#000" } }}
+/>
+
+</Stack>
+
+       
+        <Stack direction="row" spacing={2} mt={2}>
+        
+          <TextField
+            label="Current Weight"
+            required
+            type="number"
+            value={currentWeight}
+            onChange={(e) => setCurrentWeight(e.target.value)}
+            InputProps={{
+              endAdornment: (
+                <Typography sx={{ color: "#9BA1AE" }}>g</Typography>
+              ),
+              sx: {
+                backgroundColor: "#F5F5F5",
+                borderRadius: 1,
+                color: "#000",
+              },
+            }}
+            InputLabelProps={{ sx: { color: "#000" } }}
+            fullWidth
+            variant="outlined"
+          />
+             <TextField
+              label="Gain / Loss in 24 hrs"
+              value={gainLoss}
+              InputProps={{
+                readOnly: true,
+                sx: {
+                  backgroundColor: "#F5F5F5",
+                  borderRadius: 1,
+                  color:
+                    gainLoss === "N/A"
+                      ? "#9BA1AE"
+                      : gainLoss.includes("-")
+                      ? "#D32F2F"
+                      : "#2E7D32",
+                  fontWeight: 600,
+                },
+              }}
+              InputLabelProps={{ sx: { color: "#000" } }}
+              fullWidth
+              variant="outlined"
+            />
+        
+        </Stack>
+
+       
+        <Stack direction="row" spacing={2} mt={2}>
+          
+          <TextField
+            label="Length"
+             type="number"
+            value={length}
+            onChange={(e) => setLength(e.target.value)}
+            InputProps={{
+              endAdornment: (
+                <Typography sx={{ color: "#9BA1AE" }}>cm</Typography>
+              ),
+              sx: {
+                backgroundColor: "#F5F5F5",
+                borderRadius: 1,
+                color: "#000",
+              },
+            }}
+            InputLabelProps={{ sx: { color: "#000" } }}
+            fullWidth
+            variant="outlined"
+          />
+        </Stack>
+        <Stack direction="row" spacing={2} mt={2}>
+          
+          <TextField
+            label="Head C"
+            value={headC}
+             type="number"
+            onChange={(e) => setHeadC(e.target.value)}
+            InputProps={{
+              endAdornment: (
+                <Typography sx={{ color: "#9BA1AE" }}>cm</Typography>
+              ),
+              sx: {
+                backgroundColor: "#F5F5F5",
+                borderRadius: 1,
+                color: "#000",
+              },
+            }}
+            InputLabelProps={{ sx: { color: "#000" } }}
+            fullWidth
+            variant="outlined"
+          />
+        </Stack>
+
+      
+      </DialogContent>
+
+      {/* Footer Buttons */}
+      <DialogActions
+        sx={{
+          justifyContent: "space-between",
+          px: 3,
+          pb: 2,
+        }}
+      >
+        <Button
+          variant="outlined"
+          sx={{
+            textTransform: "none",
+            color: "#344054",
+            borderColor: "#D0D5DD",
+            "&:hover": { backgroundColor: "#F9FAFB" },
+          }}
+        >
+          Scan & Upload
+        </Button>
+        <Button
+variant="contained"
+onClick={handleAddEntry1}
+sx={{
+  textTransform: "none",
+  backgroundColor: "#228BE6",
+  "&:hover": { backgroundColor: "#1C7ED6" },
+}}
+>
++ Add Entry
+</Button>
+
+
+      </DialogActions>
+    </Dialog>
+  </LocalizationProvider>
+    
+  );
+};
+
+
 function prepareManualTemperatureData(manualData: any[]) {
   const sortedData = [...manualData].sort(
     (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()
@@ -1041,7 +1829,7 @@ function prepareManualTemperatureData(manualData: any[]) {
   };
 }
 
-const temperatureData1 = prepareManualTemperatureData(manualData);
+const temperatureData1 = prepareManualTemperatureData(manualEntries);
 
 const manualGraph = useMemo(() => {
   return (
@@ -1078,6 +1866,7 @@ p={0}
     >
       Growth Chart 
     </Typography></Stack> */}
+
     <div id="temperatureGraph">
     <Line
       ref={chartRef1}
@@ -1086,7 +1875,9 @@ p={0}
       height="100%"
       plugins={[temperatureLegendPlugin]}
     />
-    <div  id="legend-container"></div></div>
+    <div  id="legend-container"></div>
+    </div>
+
   </Stack>
  
  
@@ -1096,7 +1887,609 @@ p={0}
 );
 
 
-},[manualData])
+},[manualEntries])
+
+
+// Add these constants for reference line intervals
+const PMA_INTERVAL = 2; // weeks
+const LEN_INTERVAL = 2; // cm
+const HC_INTERVAL = 2; // cm
+const WT_INTERVAL = 500; // grams
+
+// Add this function to generate reference lines
+const generateReferenceLines = () => {
+  const lines = [];
+  
+  // 1. PMA reference lines (vertical)
+  for (let pma = PMA_MIN; pma <= PMA_MAX; pma += PMA_INTERVAL) {
+    const x = mapX(pma);
+    lines.push(
+      <line
+        key={`pma-${pma}`}
+        x1={x}
+        x2={x}
+        y1={Y0}
+        y2={Y1}
+        stroke="#e0e0e0"
+        strokeWidth={1}
+        strokeDasharray="3,3"
+      />
+    );
+    
+    // PMA labels at bottom
+    lines.push(
+      <text
+        key={`pma-label-${pma}`}
+        x={x}
+        y={Y1 + 15}
+        fontSize="10"
+        textAnchor="middle"
+        fill="#666"
+      >
+        {pma}
+      </text>
+    );
+  }
+  
+  // 2. Length reference lines (horizontal)
+  for (let len = LEN_MIN; len <= LEN_MAX; len += LEN_INTERVAL) {
+    const y = mapY_length(len);
+    lines.push(
+      <line
+        key={`len-${len}`}
+        x1={X0}
+        x2={X1}
+        y1={y}
+        y2={y}
+        stroke="#87CEFA" // Light blue for length
+        strokeWidth={0.5}
+        strokeDasharray="2,2"
+      />
+    );
+    
+    // Length labels on left
+    lines.push(
+      <text
+        key={`len-label-${len}`}
+        x={X0 - 10}
+        y={y}
+        fontSize="9"
+        textAnchor="end"
+        fill="#666"
+        alignmentBaseline="middle"
+      >
+        {len}
+      </text>
+    );
+  }
+  
+  // 3. Head circumference reference lines (horizontal)
+  for (let hc = HC_MIN; hc <= HC_MAX; hc += HC_INTERVAL) {
+    const y = mapY_head(hc);
+    lines.push(
+      <line
+        key={`hc-${hc}`}
+        x1={X0}
+        x2={X1}
+        y1={y}
+        y2={y}
+        stroke="#98FB98" // Pale green for head circumference
+        strokeWidth={0.5}
+        strokeDasharray="2,2"
+      />
+    );
+    
+    // HC labels on left
+    lines.push(
+      <text
+        key={`hc-label-${hc}`}
+        x={X0 - 10}
+        y={y}
+        fontSize="9"
+        textAnchor="end"
+        fill="#666"
+        alignmentBaseline="middle"
+      >
+        {hc}
+      </text>
+    );
+  }
+  
+  // 4. Weight reference lines (horizontal)
+  for (let wt = WT_MIN; wt <= WT_MAX; wt += WT_INTERVAL) {
+    const y = mapY_weight(wt);
+    lines.push(
+      <line
+        key={`wt-${wt}`}
+        x1={X0}
+        x2={X1}
+        y1={y}
+        y2={y}
+        stroke="#FFB6C1" // Light pink for weight
+        strokeWidth={0.5}
+        strokeDasharray="2,2"
+      />
+    );
+    
+    // Weight labels on left (convert to kg for readability)
+    lines.push(
+      <text
+        key={`wt-label-${wt}`}
+        x={X0 - 10}
+        y={y}
+        fontSize="9"
+        textAnchor="end"
+        fill="#666"
+        alignmentBaseline="middle"
+      >
+        {(wt / 1000).toFixed(1)}
+      </text>
+    );
+  }
+  
+  return lines;
+};
+
+// Also add connecting lines between measurements for the same entry
+const generateConnectingLines = (entries: any[]) => {
+  return entries.map((e, i) => {
+    const x = mapX(e.pmaWeeks);
+    const yLen = mapY_length(e.length);
+    const yHC = mapY_head(e.headC);
+    const yWt = mapY_weight(e.weight);
+    
+    return (
+      <g key={`conn-${i}`}>
+        {/* Vertical reference line for this measurement */}
+        <line
+          x1={x}
+          x2={x}
+          y1={Math.min(yLen, yHC, yWt) - 20}
+          y2={Math.max(yLen, yHC, yWt) + 20}
+          stroke="#888"
+          strokeWidth={0.5}
+          strokeDasharray="5,5"
+        />
+        
+        {/* Labels for each point with values */}
+        <g>
+          <text
+            x={x + 8}
+            y={yLen - 8}
+            fontSize="10"
+            fill="blue"
+            fontWeight="bold"
+          >
+            {e.length}cm
+          </text>
+          <text
+            x={x + 8}
+            y={yHC - 8}
+            fontSize="10"
+            fill="green"
+            fontWeight="bold"
+          >
+            {e.headC}cm
+          </text>
+          <text
+            x={x + 8}
+            y={yWt - 8}
+            fontSize="10"
+            fill="red"
+            fontWeight="bold"
+          >
+            {(e.weight / 1000).toFixed(1)}kg
+          </text>
+        </g>
+      </g>
+    );
+  });
+};
+const IMG_W = 2200;
+const IMG_H = 1700;
+
+const GRID_LEFT = 230;
+const GRID_RIGHT = 1515;
+const GRID_TOP = 102;
+const GRID_BOTTOM = 1699;
+
+const CHART_WIDTH = 800;
+const CHART_HEIGHT = 1100;
+
+// clinical ranges used for each axis
+const PMA_MIN = 22;
+const PMA_MAX = 50;
+
+// Length (cm)
+const LEN_MIN = 31;
+const LEN_MAX = 56;
+
+// Head circumference (cm)
+const HC_MIN = 22;
+const HC_MAX = 42;
+
+// Weight (grams)
+const WT_MIN = 300;
+const WT_MAX = 6000;
+
+// --------------------- MAPPING FUNCTIONS ---------------------
+
+const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+// PMA → X-axis
+const containerRef = useRef<HTMLDivElement | null>(null);
+// const entries = useMemo(() => SAMPLE_DATA, []);
+
+// scale factors: image space -> canvas space
+const scaleX = CHART_WIDTH / IMG_W;
+const scaleY = CHART_HEIGHT / IMG_H;
+
+// scaled grid bounds inside our canvas
+const X0 = GRID_LEFT * scaleX+22;
+const X1 = GRID_RIGHT * scaleX+163;
+const Y0 = GRID_TOP * scaleY-15;
+const Y1 = GRID_BOTTOM * scaleY-114;
+
+
+const LEN_BOTTOM_IMG = GRID_TOP + 450;   // ~ 102 + 450 = 552 (image px)
+const HC_TOP_IMG = LEN_BOTTOM_IMG ;       // 552
+const HC_BOTTOM_IMG = GRID_TOP + 1000;   // ~ 1102 (image px)
+const WT_TOP_IMG = HC_BOTTOM_IMG;        // 1102
+
+const LEN_Y_TOP = GRID_TOP * scaleY+25;
+const LEN_Y_BOTTOM = LEN_BOTTOM_IMG * scaleY;
+
+const HC_Y_TOP = HC_TOP_IMG * scaleY-120;
+const HC_Y_BOTTOM = HC_BOTTOM_IMG * scaleY-265;
+
+const WT_Y_TOP = WT_TOP_IMG * scaleY-350;
+const WT_Y_BOTTOM = GRID_BOTTOM * scaleY-145;
+
+// mapping functions (use clinical ranges -> map into scaled pixel boxes)
+const mapX = (pma: number) => {
+  const frac = (pma - PMA_MIN) / (PMA_MAX - PMA_MIN);
+  const x = X0 + frac * (X1 - X0);
+  return clamp(Math.round(x), 0, CHART_WIDTH);
+};
+
+const mapY_length = (lenCm: number) => {
+  const frac = (lenCm - LEN_MIN) / (LEN_MAX - LEN_MIN);
+  const y = LEN_Y_BOTTOM - frac * (LEN_Y_BOTTOM - LEN_Y_TOP);
+  return Math.round(y);
+};
+
+
+const mapY_head = (hcCm: number) => {
+  const frac = (hcCm - HC_MIN) / (HC_MAX - HC_MIN);
+  const y = HC_Y_BOTTOM - frac * (HC_Y_BOTTOM - HC_Y_TOP);
+  return Math.round(y);
+};
+
+const mapY_weight = (wtGrams: number) => {
+  const frac = (wtGrams - WT_MIN) / (WT_MAX - WT_MIN);
+  const y = WT_Y_BOTTOM - frac * (WT_Y_BOTTOM - WT_Y_TOP);
+  return Math.round(y);
+};
+
+
+const handleDownload = async () => {
+  if (!containerRef.current) return;
+
+  const doc = new jsPDF("p", "pt", "a4");
+
+  // ✔ Correct A4 size in points
+  const PAGE_W = doc.internal.pageSize.getWidth();   // ~595
+  const PAGE_H = doc.internal.pageSize.getHeight();  // ~842
+
+  const PADDING = 10;
+  const HEADER_H = 80;
+
+  // -----------------------------------------
+  // 1️⃣ FETCH ORGANIZATION + LOGO
+  // -----------------------------------------
+  let orgName = "Unknown Organization";
+  let logoDataUrl = null;
+
+  try {
+    const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/${props.userOrganization}`;
+    const res = await fetch(orgUrl, {
+      headers: {
+        Authorization: "Basic " + btoa("fhiruser:change-password"),
+        Accept: "application/fhir+json",
+      },
+    });
+
+    if (res.ok) {
+      const org = await res.json();
+      orgName = org.name || orgName;
+
+      const ext = org.extension || [];
+      const logoExt = ext.find((e: { url: string; }) =>
+        e.url === "http://example.org/fhir/StructureDefinition/organization-logo"
+      );
+      const logoRef = logoExt?.valueReference?.reference;
+
+      if (logoRef) {
+        const binaryId = logoRef.replace("Binary/", "");
+        const binRes = await fetch(
+          `${import.meta.env.VITE_FHIRAPI_URL}/Binary/${binaryId}`,
+          {
+            headers: {
+              Authorization: "Basic " + btoa("fhiruser:change-password"),
+              Accept: "application/fhir+json",
+            },
+          }
+        );
+
+        if (binRes.ok) {
+          const b = await binRes.json();
+          if (b.data) logoDataUrl = `data:${b.contentType};base64,${b.data}`;
+        }
+      }
+    }
+  } catch (err) {
+    console.error("ORG LOGO ERROR:", err);
+  }
+
+  // -----------------------------------------
+  // 2️⃣ CAPTURE CHART AREA
+  // -----------------------------------------
+  const canvas = await html2canvas(containerRef.current, {
+    scale: 2,
+    backgroundColor: "#fff",
+    useCORS: true,
+  });
+  const PNG = canvas.toDataURL("image/png");
+
+  // -----------------------------------------
+  // 3️⃣ HEADER
+  // -----------------------------------------
+  doc.setFillColor(255, 255, 255);
+  doc.rect(0, 0, PAGE_W, HEADER_H + 20, "F");
+
+  // LOGO
+  const logoX = PADDING + 10;
+  const logoY = PADDING + 10;
+
+  if (logoDataUrl) {
+    const img = new Image();
+    img.src = logoDataUrl;
+    await new Promise(r => (img.onload = r));
+    doc.addImage(img, "PNG", logoX, logoY, 120, 35);
+  } else {
+    doc.setFillColor(200);
+    doc.rect(logoX, logoY, 120, 35, "F");
+  }
+
+  // -----------------------------------------
+  // PATIENT CARD
+  // -----------------------------------------
+  const cardX = PAGE_W * 0.35;
+  const cardY = PADDING;
+  const cardW = PAGE_W * 0.62;
+  const cardH = 60;
+
+  doc.setFillColor(245, 245, 245);
+  doc.roundedRect(cardX, cardY, cardW, cardH, 8, 8, "F");
+
+  doc.setFontSize(10);
+  doc.text(`B/O: ${props.patient_name || ""}`, cardX + 10, cardY + 15);
+  doc.text(`ID: ${props.patient_id || ""}`, cardX + 150, cardY + 15);
+  doc.text(`DOB: ${props.birth_date || ""}`, cardX + 280, cardY + 15);
+
+  doc.text(`G.A: ${props.gestational_age || ""}`, cardX + 10, cardY + 32);
+  doc.text(`Printed: ${new Date().toLocaleString()}`, cardX + 150, cardY + 32);
+
+  doc.text(`Gender: ${props.gender || "—"}`, cardX + 10, cardY + 49);
+
+  doc.setDrawColor(180);
+  doc.line(20, HEADER_H, PAGE_W - 20, HEADER_H);
+
+  // -----------------------------------------
+  // 4️⃣ FIT CHART INTO A4 BELOW HEADER
+  // -----------------------------------------
+
+  // Real chart px size from canvas
+  const imgW = canvas.width;
+  const imgH = canvas.height;
+
+  // Compute aspect-fit dimensions
+  const maxW = PAGE_W ;
+  const maxH = PAGE_H - HEADER_H ;
+
+  let finalW = maxW;
+  let finalH = (imgH / imgW) * finalW;
+
+  if (finalH > maxH) {
+    finalH = maxH;
+    finalW = (imgW / imgH) * finalH;
+  }
+
+  const chartX = (PAGE_W - finalW) / 2;
+  const chartY = HEADER_H + 2;
+
+  doc.addImage(PNG, "PNG", chartX, chartY, finalW, finalH);
+
+  // -----------------------------------------
+  // 5️⃣ SAVE
+  // -----------------------------------------
+  doc.save(`FentonChart_${props.patient_id || "patient"}.pdf`);
+};
+const fentonGraph = useMemo(() => {
+  return (
+    <Box display="flex"  alignItems="flex-start">
+    {/* left: chart area */}
+    
+    <Box
+      ref={containerRef}
+      sx={{
+        width: CHART_WIDTH,
+        height: CHART_HEIGHT,
+        position: "relative",
+        // border: "1px solid #e6e6e6",
+        background: "#fff",
+      }}
+    >
+      {/* background PNG from public folder (place your 2200x1700 PNG there as /fenton_chart.png) */}
+      <img
+        src={props.gender?.toLowerCase() === "female" ? fentonChart1 : fentonChart}
+        alt="Fenton Chart"
+        style={{
+          width: CHART_WIDTH,
+          height: CHART_HEIGHT,
+          objectFit: "fill",
+          display: "block",
+        }}
+      />
+
+
+<svg
+width={CHART_WIDTH}
+height={CHART_HEIGHT}
+style={{ position: "absolute", left: 0, top: 0, pointerEvents: "auto" }}
+>
+{/* Background reference lines */}
+{/* {generateReferenceLines()} */}
+
+{/* Connecting lines for each measurement set */}
+{generateConnectingLines(fentonEntries)}
+
+{/* Region labels */}
+{/* <g>
+  <text
+    x={X0 - 40}
+    y={(LEN_Y_TOP + LEN_Y_BOTTOM) / 2}
+    fontSize="12"
+    fill="#0066cc"
+    textAnchor="middle"
+    transform={`rotate(-90 ${X0 - 40} ${(LEN_Y_TOP + LEN_Y_BOTTOM) / 2})`}
+    fontWeight="bold"
+  >
+    Length (cm)
+  </text>
+  <text
+    x={X0 - 40}
+    y={(HC_Y_TOP + HC_Y_BOTTOM) / 2}
+    fontSize="12"
+    fill="#008800"
+    textAnchor="middle"
+    transform={`rotate(-90 ${X0 - 40} ${(HC_Y_TOP + HC_Y_BOTTOM) / 2})`}
+    fontWeight="bold"
+  >
+    Head Circ (cm)
+  </text>
+  <text
+    x={X0 - 40}
+    y={(WT_Y_TOP + WT_Y_BOTTOM) / 2}
+    fontSize="12"
+    fill="#cc0000"
+    textAnchor="middle"
+    transform={`rotate(-90 ${X0 - 40} ${(WT_Y_TOP + WT_Y_BOTTOM) / 2})`}
+    fontWeight="bold"
+  >
+    Weight (kg)
+  </text>
+</g> */}
+
+{/* Main border */}
+<rect x={X0} y={Y0} width={X1 - X0} height={Y1 - Y0} stroke="#aaa" fill="none" />
+
+{/* Plot points */}
+{fentonEntries.map((e, i) => {
+  const x = mapX(e.pmaWeeks);
+  const yLen = mapY_length(e.length);
+  const yHC = mapY_head(e.headC);
+  const yWt = mapY_weight(e.weight);
+  
+  return (
+    <g key={i}>
+      {/* Length point */}
+      <circle cx={x} cy={yLen} r={6} fill="blue" stroke="#fff" strokeWidth={2} />
+      
+      {/* Head circumference point */}
+      <circle cx={x} cy={yHC} r={6} fill="green" stroke="#fff" strokeWidth={2} />
+      
+      {/* Weight point */}
+      <circle cx={x} cy={yWt} r={6} fill="red" stroke="#fff" strokeWidth={2} />
+      
+      {/* Date label */}
+      <text 
+        x={x} 
+        y={Math.min(CHART_HEIGHT - 6, yWt + 28)} 
+        fontSize="10" 
+        textAnchor="middle" 
+        fill="#222"
+        fontWeight="bold"
+      >
+        {new Date(e.dateISO).toLocaleDateString([], { day: "2-digit", month: "short" })}
+      </text>
+      
+      {/* PMA label above */}
+      <text 
+        x={x} 
+        y={Y0 - 10} 
+        fontSize="10" 
+        textAnchor="middle" 
+        fill="#666"
+        fontWeight="bold"
+      >
+        {e.pmaWeeks}w
+      </text>
+    </g>
+  );
+})}
+</svg>
+
+    </Box>
+
+    {/* right: table and controls */}
+    <Box mt={5} flexGrow={0.8} >
+     
+
+      <Table size="small" >
+        <TableHead  sx={{backgroundColor:'#868E961F',justifyContent:'center'}}>
+          <TableRow>
+            <TableCell sx={{color:'black'}}>PMA (w)</TableCell>
+            <TableCell sx={{color:'black'}}>Weight (g)</TableCell>
+            <TableCell sx={{color:'black'}}>Length (cm)</TableCell>
+            <TableCell sx={{color:'black'}}>Head C (cm)</TableCell>
+            <TableCell sx={{color:'black'}}>Date</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+{fentonEntries.map((e, idx) => (
+  <TableRow key={idx} hover>
+    <TableCell sx={{color:'black'}}>
+      {e.pmaWeeks}
+    </TableCell>
+
+    <TableCell sx={{color:'black'}}>
+      {e.weight} g
+    </TableCell>
+
+    <TableCell sx={{color:'black'}}>
+      {e.length} cm
+    </TableCell>
+
+    <TableCell sx={{color:'black'}}>
+      {e.headC} cm
+    </TableCell>
+
+    <TableCell sx={{color:'black'}}>
+    {new Date(e.dateISO).toLocaleString()}
+
+    </TableCell>
+  </TableRow>
+))}
+</TableBody>
+
+      </Table>
+    </Box>
+    </Box>  
+   
+);
+
+
+},[fentonEntries])
 
    return (
   <Box>
@@ -1136,9 +2529,42 @@ p={0}
         </Stack>
       ) : (
          manualGraph
-      )}                                    </Box>
+         
+      )}  
+       <Box  sx={{ backgroundColor:'#ffffff'}}>
+            <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{mt:4,pb:0, pt:2,pl:2,pr:2}}
+      >
+          <Typography variant="h6" sx={{ color: "#0F3B61" }} >
+          Fenton Chart
+    </Typography>
+  <Stack  direction="row" spacing={3}>
+
+  <Button
+ onClick={handleDownload}
+  sx={{ backgroundColor: "#228BE61A", color: "#228BE6" }}
+>
+  <DownloadIcon />
+</Button>
+            <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={() => setaddnewbutton1(true)}
+            sx={{ backgroundColor: "#228BE61A", color: "#228BE6" }}
+          >
+           Weekly Entry
+          </Button>
+  </Stack>
+ 
+          </Stack>      
+        {fentonGraph}                         
+    
+    </Box>
     {/* Tabs Section */}
-   
+    </Box>
 
     {/* Snackbar Feedback */}
     <Snackbar
@@ -1158,6 +2584,7 @@ p={0}
       </Alert>
     </Snackbar>
     {addValues()}
+    {addWeekly()}
   
   </Box>
 );

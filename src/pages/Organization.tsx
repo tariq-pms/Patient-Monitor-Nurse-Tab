@@ -33,7 +33,8 @@ import MuiAlert from '@mui/material/Alert';
 import { Sidebar1 } from '../components/Sidebar1';
 import pmsLogo from '../assets/phx_logo.png';
 import {ModuleToggleList } from '../components/ModuleToggleList';
-import { OrganizationCard } from '../components/OrganizationCard';
+import { OrganizationDeviceList } from '../components/OrganizationDeviceList';
+import { ServiceDetails } from '../components/ServiceDetails';
 
 // Type Definitions
 interface Organization {
@@ -419,7 +420,7 @@ export const Organization : React.FC<OrganizationProps> = ({ userOrganization })
   />
 )}
  {activeTab === "Devices" && selectedOrganization && (
-  <OrganizationCard key={selectedOrganization.id} organizationData={selectedOrganization} OrganizationId={''} OrganizationName={''} deviceChange={function (): void {
+  <OrganizationDeviceList key={selectedOrganization.id} organizationData={selectedOrganization} OrganizationId={''} OrganizationName={''} deviceChange={function (): void {
     throw new Error('Function not implemented.');
   } } />
   )}

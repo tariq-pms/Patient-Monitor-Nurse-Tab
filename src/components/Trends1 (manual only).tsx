@@ -194,8 +194,6 @@ const [timeFrameEnd, setTimeFrameEnd] = useState(Date.now());
 }
   
 const [manualData, setManualData] = useState<any[]>([]);
-const [deviceData, setDeviceData] = useState([]);
-
 const [step, setStep] = useState(1);
 
 // const [manualTrends, setManualTrends] = useState<any[]>([]);
@@ -205,13 +203,12 @@ const [latestManual, setLatestManual] = useState<any | null>(null);
 useEffect(() => {
   const loadManualTrends = async () => {
     const data = await fetchManualTrends(props.patient_resource_id);
-    
     // setManualTrends(data);
 
     // ✅ Get the last element (latest)
     if (data.length > 0) {
       setLatestManual(data[data.length - 1]);
-      // console.log("🆕 Latest Manual:", data[data.length - 1]);
+      console.log("🆕 Latest Manual:", data[data.length - 1]);
     } else {
       setLatestManual(null);
     }
@@ -231,7 +228,6 @@ const temperatureOption = {
   
   stacked: false,
   plugins: {
-    
     decimation: {
       enabled: true,
       algorithm: "min-max",
@@ -320,7 +316,6 @@ const temperatureOption = {
       },
      
   },
-  
 };
 
 const pulseoximeterOption = {
@@ -1843,8 +1838,8 @@ const handleBack = () => setStep((prev) => prev - 1);
         const chartIds = [
           { id: "temperatureGraph", title: "Temperature" },
           { id: "respirationGraph", title: "Respiration Rate" },
-          { id: "pulseGraph", title: "Pulse Rate" },
-          { id: "spo2Graph", title: "Spo2" },
+          { id: "pulseGraph", title: "Heart Rate" },
+          { id: "spo2Graph", title: "SpO2" },
           { id: "colourGraph", title: "Colour" },
           { id: "neuroGraph", title: "Neuro" },
           { id: "feedingGraph", title: "Feeding" },
@@ -1961,19 +1956,329 @@ if (info && info.sublabels) {
         doc.save(`Trends_Report(${props.patient_id || "patient"}).pdf`);
       };
       
-async function fetchDeviceVitals(patientId: string, timeframeHours = 48) {
-        // console.log("📡 fetchDeviceVitals() called", { patientId, timeframeHours });
+         async function downloadTrendsPDF1(props: any, manualData: any[], timeFrameHours: number, timeFrameEnd: number) {
+        const doc = new jsPDF("p", "pt", "a4");
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 24;
+      
+        // Layout dims
+        const leftColWidth = pageWidth * 0.22; // label column (~22%)
+        const rightColX = leftColWidth + margin; // start of chart area
+        const chartAreaWidth = pageWidth - rightColX - margin;
+        const smallGap = 8;
+      
+        // Row heights (tweak as needed)
+        const timeRowHeight = 30;
+        const chartRowHeight = 60; // per-row chart (image height)
+        const rowGap = 18;
+      
+        // Chart IDs and Titles in the desired order
+        const chartDefs = [
+          { id: "temperatureGraph", title: "Temperature", hasBands: true, bandType: "temp" },
+          { id: "respirationGraph", title: "Respiration Rate", hasBands: true, bandType: "rr" },
+          { id: "pulseGraph", title: "Heart Rate", hasBands: true, bandType: "hr" },
+          { id: "spo2Graph", title: "SpO₂", hasBands: true, bandType: "spo2" },
+          { id: "colourGraph", title: "Colour", hasBands: true, bandType: "categorical" },
+          { id: "neuroGraph", title: "Neuro", hasBands: true, bandType: "categorical" },
+          { id: "feedingGraph", title: "Feeding", hasBands: true, bandType: "categorical" },
+          { id: "glucoseGraph", title: "Glucose", hasBands: true, bandType: "categorical" },
+          { id: "parentalGraph", title: "Parental Concern", hasBands: true, bandType: "categorical" },
+        ];
+      
+        // ---------- Helpers ----------
+        // Format time labels (10-minute grid)
+        function generateTimeBuckets(hours: number, endTs: number, intervalMin = 10) {
+          const buckets: number[] = [];
+          const interval = intervalMin * 60 * 1000;
+          const start = endTs - hours * 3600 * 1000;
+          for (let t = start; t <= endTs; t += interval) buckets.push(t);
+          return buckets;
+        }
+      
+        // Draw simple background band patterns for each bandType
+        function drawBands(doc: any, x: number, y: number, w: number, h: number, bandType: string) {
+          // Adjust band segmentation per chart type
+          if (bandType === "temp") {
+            // Example: red (low), green (normal), yellow (warm), red (high)
+            const segments = [
+              { color: [255, 200, 200], heightRatio: 0.25 }, // low
+              { color: [220, 255, 220], heightRatio: 0.15 }, // normal
+              { color: [255, 255, 200], heightRatio: 0.2 },  // warm
+              { color: [255, 200, 200], heightRatio: 0.4 },  // high
+            ];
+            let curY = y;
+            segments.forEach(s => {
+              const segH = Math.round(h * s.heightRatio);
+              doc.setFillColor(...s.color);
+              doc.rect(x, curY, w, segH, "F");
+              curY += segH;
+            });
+          } else if (bandType === "rr") {
+            // simple alternating bands
+            const rows = 4;
+            for (let i = 0; i < rows; i++) {
+              doc.setFillColor(i % 2 ? 255 : 245, i % 2 ? 245 : 235, 235);
+              doc.rect(x, y + (h / rows) * i, w, h / rows, "F");
+            }
+          } else if (bandType === "hr") {
+            // HR: alternating pastel stripes
+            for (let i = 0; i < 5; i++) {
+              doc.setFillColor(255 - i * 6, 240 - i * 6, 245 - i * 6);
+              doc.rect(x, y + (h / 5) * i, w, h / 5, "F");
+            }
+          } else if (bandType === "spo2") {
+            // SPO2: green zone larger
+            const g = Math.round(h * 0.6);
+            doc.setFillColor(235, 255, 235);
+            doc.rect(x, y, w, g, "F");
+            doc.setFillColor(255, 250, 235);
+            doc.rect(x, y + g, w, h - g, "F");
+          } else {
+            // categorical small alternating bands
+            for (let i = 0; i < 3; i++) {
+              doc.setFillColor(250 - i * 6, 245 - i * 6, 255 - i * 6);
+              doc.rect(x, y + (h / 3) * i, w, h / 3, "F");
+            }
+          }
+          // subtle horizontal grid lines
+          doc.setDrawColor(220);
+          const lines = Math.floor(h / 8);
+          for (let i = 0; i <= lines; i++) {
+            const yy = y + (h / lines) * i;
+            doc.line(x, yy, x + w, yy);
+          }
+        }
+      
+        // Safe html2canvas for an element (ensuring size)
+        async function captureElementImage(el: HTMLElement, targetW: number, targetH: number) {
+          // Temporarily enforce sizes so image output is consistent
+          const prevWidth = el.style.width;
+          const prevHeight = el.style.height;
+          const prevBackground = el.style.backgroundColor;
+      
+          el.style.width = `${targetW}px`;
+          el.style.height = `${targetH}px`;
+          el.style.backgroundColor = "#ffffff"; // ensure white background for PDF
+      
+          // wait a tick for style to apply
+          await new Promise((r) => setTimeout(r, 50));
+      
+          const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#fff", useCORS: true });
+          // restore
+          el.style.width = prevWidth;
+          el.style.height = prevHeight;
+          el.style.backgroundColor = prevBackground;
+      
+          return canvas.toDataURL("image/png");
+        }
+      
+        // Fetch organization + logo (same behavior you already had)
+        let orgName = "Unknown Organization";
+        let logoDataUrl: string | null = null;
+        try {
+          const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/${props.userOrganization}`;
+          const res = await fetch(orgUrl, {
+            headers: { Authorization: "Basic " + btoa("fhiruser:change-password"), Accept: "application/fhir+json" },
+          });
+          if (res.ok) {
+            const orgData = await res.json();
+            orgName = orgData.name || orgName;
+            const extensions = Array.isArray(orgData.extension) ? orgData.extension : [];
+            const logoExt = extensions.find((ext: any) => ext.url === "http://example.org/fhir/StructureDefinition/organization-logo");
+            const logoRef = logoExt?.valueReference?.reference;
+            if (logoRef) {
+              const binaryId = logoRef.replace("Binary/", "");
+              const binaryUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Binary/${binaryId}`;
+              const binaryRes = await fetch(binaryUrl, {
+                headers: { Authorization: "Basic " + btoa("fhiruser:change-password"), Accept: "application/fhir+json" },
+              });
+              if (binaryRes.ok) {
+                const binaryData = await binaryRes.json();
+                if (binaryData.data && binaryData.contentType) {
+                  logoDataUrl = `data:${binaryData.contentType};base64,${binaryData.data}`;
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.warn("Org/logo fetch failed:", err);
+        }
+      
+        // ---------- Header ----------
+        const logoBoxSize = 56;
+        const logoX = margin;
+        const logoY = margin;
+        try {
+          if (logoDataUrl) {
+            const img = new Image();
+            img.src = logoDataUrl;
+            await new Promise<void>((resolve, reject) => {
+              img.onload = () => resolve();
+              img.onerror = (e) => reject(e);
+            });
+            // fit inside square
+            const ar = img.width / img.height;
+            let w = logoBoxSize, h = logoBoxSize;
+            if (ar > 1) h = logoBoxSize / ar; else w = logoBoxSize * ar;
+            doc.addImage(img, "PNG", logoX, logoY - 4, w, h);
+          } else {
+            doc.setFillColor(220, 235, 255);
+            doc.rect(logoX, logoY - 4, logoBoxSize, logoBoxSize, "F");
+            doc.setFontSize(7);
+            doc.text("No Logo", logoX + 6, logoY + 20);
+          }
+        } catch (err) {
+          doc.setFillColor(220, 235, 255);
+          doc.rect(logoX, logoY - 4, logoBoxSize, logoBoxSize, "F");
+        }
+      
+        // Hospital name and title
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text(orgName, logoX + logoBoxSize + 10, logoY + 8);
+        doc.setFontSize(10);
+        doc.text("Phoenix Medical Systems (P) Ltd.", logoX + logoBoxSize + 10, logoY + 8 + 16);
+        doc.setFontSize(11);
+        doc.text("NEWBORN EARLY WARNING SCORE", logoX + logoBoxSize + 10, logoY + 36);
+      
+        // Separator
+        doc.setDrawColor(200);
+        doc.line(margin / 2, logoY + 50, pageWidth - margin / 2, logoY + 50);
+      
+        // Patient block
+        const patientY = logoY + 70;
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Name: ${props.patient_name || ""}`, margin, patientY);
+        doc.text(`UHID: ${props.patient_id || ""}`, margin, patientY + 14);
+        doc.text(`DOB: ${props.birth_date || ""}`, margin + 220, patientY);
+        doc.text(`G.A: ${props.gestational_age || ""}`, margin + 360, patientY);
+        doc.text(`DOA: ____________________`, margin + 220, patientY + 14);
+      
+        // Score key (right)
+        doc.setFontSize(9);
+        doc.text("Score Key:", pageWidth - 120, margin + 8);
+        doc.setFillColor(255, 255, 255);
+        doc.rect(pageWidth - 140, margin + 20, 20, 14, "F");
+        doc.setFontSize(8);
+        doc.text("0", pageWidth - 135, margin + 31);
+        doc.setFillColor(255, 255, 0);
+        doc.rect(pageWidth - 120, margin + 16, 20, 14, "F");
+        doc.setFillColor(255, 102, 102);
+        doc.rect(pageWidth - 100, margin + 16, 20, 14, "F");
+        doc.setFontSize(9);
+      
+        // ---------- TIME ROW ----------
+        let cursorY = patientY + 40;
+        // Generate buckets for header time labels (10-min resolution)
+        const buckets = generateTimeBuckets(timeFrameHours, timeFrameEnd, 10); // change 10 -> 5 for higher resolution
+        // draw time row background
+        doc.setFillColor(245, 245, 245);
+        doc.rect(rightColX, cursorY, chartAreaWidth, timeRowHeight, "F");
+      
+        // Draw "Time" label in left column
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setFillColor(230, 240, 255);
+        doc.rect(margin, cursorY, leftColWidth - margin / 2, timeRowHeight, "F");
+        doc.text("Time", margin + 8, cursorY + timeRowHeight / 2 + 4);
+      
+        // Draw each bucket time text across chart area
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        const cellW = chartAreaWidth / Math.max(6, buckets.length); // prevent very narrow
+        let tx = rightColX;
+        for (let i = 0; i < buckets.length; i++) {
+          const t = new Date(buckets[i]);
+          const label = t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          // small separator vertical line
+          doc.setDrawColor(230);
+          doc.line(tx, cursorY, tx, cursorY + timeRowHeight);
+          doc.text(label, tx + 4, cursorY + timeRowHeight / 2 + 4);
+          tx += cellW;
+          if (tx > rightColX + chartAreaWidth) break;
+        }
+        // bottom separator for time row
+        doc.setDrawColor(200);
+        doc.line(margin, cursorY + timeRowHeight, pageWidth - margin, cursorY + timeRowHeight);
+      
+        cursorY += timeRowHeight + rowGap;
+      
+        // ---------- CHART ROWS ----------
+        // For each chart: draw left label block, background bands on chart area, then capture DOM chart and draw image
+        // Keep pagination in mind (move to next page if cursorY + block would overflow)
+        for (const def of chartDefs) {
+          // paginate if needed
+          if (cursorY + chartRowHeight + 60 > pageHeight - margin) {
+            doc.addPage();
+            cursorY = margin + 20;
+          }
+      
+          // Left label column block
+          doc.setFillColor(240, 248, 255);
+          doc.rect(margin, cursorY, leftColWidth - margin / 2, chartRowHeight, "F");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10);
+          // center vertically
+          const titleY = cursorY + chartRowHeight / 2 + 4;
+          doc.text(def.title, margin + 8, titleY);
+      
+          // Chart background bands and grid
+          drawBands(doc, rightColX, cursorY, chartAreaWidth, chartRowHeight, def.bandType);
+      
+          // Try to find DOM element for the chart. If not found, we will only show background
+          const el = document.getElementById(def.id) as HTMLElement | null;
+          if (el) {
+            try {
+              // Calculate target pixel width/height for canvas capture.
+              // Use a width that matches our final printed image width (convert pt to px roughly 1pt = 1.333px)
+              const ptToPx = 1.333; // approximation
+              const targetW = Math.round((chartAreaWidth - 10) * ptToPx); // small padding
+              const targetH = Math.round(chartRowHeight * ptToPx);
+              const imgData = await captureElementImage(el, targetW, targetH);
+      
+              // Maintain aspect ratio when placing into PDF
+              const finalW = chartAreaWidth - 8;
+              const finalH = chartRowHeight - 6;
+              doc.addImage(imgData, "PNG", rightColX + 4, cursorY + 3, finalW, finalH);
+            } catch (err) {
+              // If capture failed, fallback to "no chart" placeholder (we already drew bands)
+              console.warn("capture failed for", def.id, err);
+              doc.setFontSize(7);
+              doc.setTextColor(120);
+              doc.text("Chart capture failed", rightColX + 10, cursorY + chartRowHeight / 2);
+            }
+          } else {
+            // If no DOM element, annotate placeholder
+            doc.setFontSize(8);
+            doc.setTextColor(110);
+            doc.text("No chart available", rightColX + 10, cursorY + chartRowHeight / 2);
+          }
+      
+          cursorY += chartRowHeight + rowGap;
+        }
+      
+        // Footer: NEWTT2 total area (simple box)
+        const footerY = cursorY + 6;
+        doc.setDrawColor(200);
+        doc.rect(margin, footerY, pageWidth - 2 * margin, 48);
+        doc.setFontSize(9);
+        doc.text("NEWT/TT2 TOTAL", margin + 8, footerY + 14);
+        doc.text("Monitoring Flag: _________________", margin + 8, footerY + 30);
+        doc.text("Escalation: _______________________", margin + 220, footerY + 30);
+      
+        // Save
+        const filename = `Trends_Report(${props.patient_id || "patient"}).pdf`;
+        doc.save(filename);
+      }
+
+
+      async function fetchDeviceVitals(patientId: string, timeframeHours = 24) {
+        console.log("📥 Fetching DEVICE vitals for patient:", patientId);
       
         try {
-          const sinceDate = new Date(Date.now() - timeframeHours * 3600 * 1000).toISOString();
-          // console.log("⏳ Fetching history since:", sinceDate);
-      
-          // ---------------- SEARCH LATEST OBSERVATION ----------------
-          const searchUrl =
-            `${import.meta.env.VITE_FHIRAPI_URL}/Observation?subject=Patient/${patientId}` +
-            `&category=data-log&_sort=-_lastUpdated&_count=1`;
-      
-          // console.log("🔍 Search URL:", searchUrl);
+          const searchUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Observation?subject=Patient/${patientId}&category=data-log&_sort=-date&_count=1`;
       
           const searchResponse = await fetch(searchUrl, {
             headers: {
@@ -1982,25 +2287,15 @@ async function fetchDeviceVitals(patientId: string, timeframeHours = 48) {
             },
           });
       
-          // console.log("🔎 Search Response Status:", searchResponse.status);
-      
           const searchResult = await searchResponse.json();
-          // console.log("📥 Search Result:", searchResult);
-      
-          if (!searchResult.entry?.length) {
-            console.warn("⚠ No observation entries found for patient.");
-            return [];
-          }
+          if (!searchResult.entry?.length) return [];
       
           const observationId = searchResult.entry[0].resource.id;
-          // console.log("🆔 Latest Observation ID:", observationId);
       
-          // ---------------- FETCH OBSERVATION HISTORY ----------------
-          const historyUrl =
-            `${import.meta.env.VITE_FHIRAPI_URL}/Observation/${observationId}` +
-            `/_history?_since=${sinceDate}&_count=10000`;
+          const sinceDate = new Date(Date.now() - timeframeHours * 60 * 60 * 1000).toISOString();
+          const historyUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Observation/${observationId}/_history?_since=${sinceDate}`;
       
-          // console.log("📜 History URL:", historyUrl);
+          console.log("📜 Fetching DEVICE observation history:", historyUrl);
       
           const historyResponse = await fetch(historyUrl, {
             headers: {
@@ -2009,141 +2304,131 @@ async function fetchDeviceVitals(patientId: string, timeframeHours = 48) {
             },
           });
       
-          // console.log("📄 History Response Status:", historyResponse.status);
-      
           const bundle = await historyResponse.json();
-          // console.log("📦 History Bundle:", bundle);
       
-          // ---------------- PARSE HISTORY DATA ----------------
           const parsed =
             bundle.entry?.map((entry: any) => {
               const obs = entry.resource;
-              // console.log("🔧 Parsing Observation Entry:", obs);
-      
               const time = obs.effectiveDateTime;
               const values: Record<string, number | string> = {};
       
               obs.component?.forEach((c: any) => {
                 const label = c.code?.coding?.[0]?.display;
                 const value = c.valueQuantity?.value ?? c.valueString;
-      
-                // console.log(`   ➕ Component: ${label} = ${value}`);
-      
                 if (label && value !== undefined) values[label] = value;
               });
       
               return { time, ...values };
             }) || [];
       
-          // console.log("🔍 Parsed Values (Before Sort):", parsed);
+          const parsedSorted = parsed.sort(
+            (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()
+          );
       
-          const sorted = parsed.sort((a, b) => new Date(a.time) - new Date(b.time));
+          console.log("📟 Parsed DEVICE vitals:", parsedSorted);
       
-          // console.log("✅ Sorted Device Vitals:", sorted);
-      
-          return sorted;
-        } catch (err) {
-          console.error("❌ Error fetching device history:", err);
+          return parsedSorted;
+        } catch (error) {
+          console.error("❌ Error fetching device vitals:", error);
           return [];
         }
       }
       
-      
-//  useEffect(() => {
-//   const obsId = "190a53303b0-109e626a-ce18-431a-bb4c-347e48081fab"; // ⚠️ Instead of a single ID, use subject or device ref if possible
-//   const currentTime = new Date("2024-07-22T07:10:07.234512Z");
-//   const cutoff = new Date("2024-07-20T07:10:07.234Z");
-//    console.log('cutoff',cutoff);
+ useEffect(() => {
+  const obsId = "190a53303b0-109e626a-ce18-431a-bb4c-347e48081fab"; // ⚠️ Instead of a single ID, use subject or device ref if possible
+  const currentTime = new Date("2024-07-22T07:10:07.234512Z");
+  const cutoff = new Date("2024-07-20T07:10:07.234Z");
+   console.log('cutoff',cutoff);
    
-//   setLoading(true);
-//   let collected: any[] = [];
+  setLoading(true);
+  let collected: any[] = [];
 
-//   // fetch all Observations in last 24h
-//   fetchObservationsByDate(obsId, cutoff, currentTime, (batch) => {
-//     collected = [...collected, ...batch];
-//     setFullData24h(collected); // ✅ store ALL points
-//     setLoading(false);
-//   });
-//       }, []);
+  // fetch all Observations in last 24h
+  fetchObservationsByDate(obsId, cutoff, currentTime, (batch) => {
+    collected = [...collected, ...batch];
+    setFullData24h(collected); // ✅ store ALL points
+    setLoading(false);
+  });
+      }, []);
       
-//      const fetchObservationsByDate = async (
-//   obsId: string,
-//   cutoff: Date,
-//   end: Date,
-//   onBatch: (batch: any[]) => void
-// ) => {
-//   console.log("⚡ Starting fetch for Observation history. ID:", obsId);
-//   console.log("⏱ Cutoff:", cutoff.toISOString(), "End:", end.toISOString());
+     const fetchObservationsByDate = async (
+  obsId: string,
+  cutoff: Date,
+  end: Date,
+  onBatch: (batch: any[]) => void
+) => {
+  console.log("⚡ Starting fetch for Observation history. ID:", obsId);
+  console.log("⏱ Cutoff:", cutoff.toISOString(), "End:", end.toISOString());
 
-//   const baseUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Observation/${obsId}/_history`;
-//   let url = `${baseUrl}?_count=1000&_since=2024-07-20T07:10:07.234Z`;
-//   let pageCount = 0;
+  const baseUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Observation/${obsId}/_history`;
+  let url = `${baseUrl}?_count=1000&_since=2024-07-20T07:10:07.234Z`;
+  let pageCount = 0;
 
-//   while (url) {
-//     console.log(`🔹 Fetching page #${pageCount + 1}:`, url);
+  while (url) {
+    console.log(`🔹 Fetching page #${pageCount + 1}:`, url);
 
-//     let res;
-//     try {
-//       res = await fetch(url, {
-//         headers: { Authorization: "Basic " + btoa("fhiruser:change-password") },
-//       });
-//       console.log("📡 Fetch result:", res);
-//     } catch (err) {
-//       console.error("❌ Network or fetch error:", err);
-//       break;
-//     }
+    let res;
+    try {
+      res = await fetch(url, {
+        headers: { Authorization: "Basic " + btoa("fhiruser:change-password") },
+      });
+      console.log("📡 Fetch result:", res);
+    } catch (err) {
+      console.error("❌ Network or fetch error:", err);
+      break;
+    }
 
-//     if (!res.ok) {
-//       console.error("❌ FHIR fetch failed:", res.status, await res.text());
-//       break;
-//     }
+    if (!res.ok) {
+      console.error("❌ FHIR fetch failed:", res.status, await res.text());
+      break;
+    }
 
-//     let bundle;
-//     try {
-//       bundle = await res.json();
-//       console.log("📦 Bundle received:", bundle);
-//     } catch (err) {
-//       console.error("❌ Failed to parse JSON:", err);
-//       break;
-//     }
+    let bundle;
+    try {
+      bundle = await res.json();
+      console.log("📦 Bundle received:", bundle);
+    } catch (err) {
+      console.error("❌ Failed to parse JSON:", err);
+      break;
+    }
 
-//     if (!bundle.entry || bundle.entry.length === 0) {
-//       console.log("ℹ️ No entries found in this page → stopping fetch.");
-//       break;
-//     }
+    if (!bundle.entry || bundle.entry.length === 0) {
+      console.log("ℹ️ No entries found in this page → stopping fetch.");
+      break;
+    }
 
-//     console.log(`✅ Page #${pageCount + 1} contains entries:`, bundle.entry.length);
+    console.log(`✅ Page #${pageCount + 1} contains entries:`, bundle.entry.length);
 
-//     const batch: any[] = [];
-//     for (const e of bundle.entry) {
-//       const ts = new Date(e.resource.effectiveDateTime ?? e.resource.meta.lastUpdated);
-//       if (ts >= cutoff && ts <= end) {
-//         batch.push(e);
-//       }
-//     }
+    const batch: any[] = [];
+    for (const e of bundle.entry) {
+      const ts = new Date(e.resource.effectiveDateTime ?? e.resource.meta.lastUpdated);
+      if (ts >= cutoff && ts <= end) {
+        batch.push(e);
+      }
+    }
 
-//     console.log(`📝 Batch after filtering by date:`, batch.length, "entries");
+    console.log(`📝 Batch after filtering by date:`, batch.length, "entries");
 
-//     if (batch.length > 0) {
-//       onBatch(batch.reverse()); // preserve chronological order
-//       console.log(`📤 Sent batch of ${batch.length} entries upstream via onBatch callback.`);
-//     }
+    if (batch.length > 0) {
+      onBatch(batch.reverse()); // preserve chronological order
+      console.log(`📤 Sent batch of ${batch.length} entries upstream via onBatch callback.`);
+    }
 
-//     // ⚡ Follow pagination - Fix: Use base URL and extract only the query parameters
-//     const nextLink = bundle.link?.find((l: any) => l.relation === "next");
-//     if (nextLink && nextLink.url) {
-//       // Extract only the query parameters from the nextLink URL and append to baseUrl
-//       const nextUrl = new URL(nextLink.url);
-//       url = `${baseUrl}${nextUrl.search}`;
-//       console.log("➡️ Next page URL (corrected):", url);
-//       pageCount++;
-//     } else {
-//       url = '';
-//     }
-//   }
+    // ⚡ Follow pagination - Fix: Use base URL and extract only the query parameters
+    const nextLink = bundle.link?.find((l: any) => l.relation === "next");
+    if (nextLink && nextLink.url) {
+      // Extract only the query parameters from the nextLink URL and append to baseUrl
+      const nextUrl = new URL(nextLink.url);
+      url = `${baseUrl}${nextUrl.search}`;
+      console.log("➡️ Next page URL (corrected):", url);
+      pageCount++;
+    } else {
+      url = '';
+    }
+  }
 
-//   console.log(`🎉 Fetch complete. Total pages fetched: ${pageCount}`);
-//       };
+  console.log(`🎉 Fetch complete. Total pages fetched: ${pageCount}`);
+      };
 
 async function fetchManualTrends(patientId: string, timeframeHours = 24) {
   console.log("📥 Fetching MANUAL observations for patient:", patientId);
@@ -2205,17 +2490,10 @@ useEffect(() => {
   if (dataSource === "manual" || dataSource === "log") {
     setLoading(true);
     fetchManualTrends(props.patient_resource_id)
-    // fetchDeviceVitals(props.patient_resource_id)
       .then((data) => setManualData(data))
       .finally(() => setLoading(false));
   }
 }, [dataSource, props.patient_resource_id]);
-
-useEffect(() => {
-  fetchDeviceVitals(props.patient_resource_id)
-    .then((data) => setDeviceData(data));
-}, [props.patient_resource_id,timeFrame]);
-
 
   //     useEffect(() => {
   // if (fullData24h.length === 0) return;
@@ -2251,19 +2529,6 @@ const filteredManualData = useMemo(() => {
   });
 
 }, [manualData, timeFrame, timeFrameEnd]);
-
-const filteredDeviceData = useMemo(() => { 
-  if (!deviceData.length) return [];
-
-  const now = timeFrameEnd;
-  const cutoff = now - timeFrame * 60 * 60 * 1000;
-
-  return deviceData.filter((d) => {
-    const t = new Date(d.time).getTime();
-    return t >= cutoff && t <= now;
-  });
-
-}, [deviceData, timeFrame, timeFrameEnd]);
 
 function generateTimeLabels1(hours: number, timeFrameEnd: number) {
   const labels = [];
@@ -2304,11 +2569,17 @@ function generateTimeLabels(
 
   // 1️⃣ maxTime = timeFrameEnd (user-selected point)
   const maxTime = timeFrameEnd;
+  const readableTime = new Date(maxTime).toLocaleString();
+  console.log("maxTime (readable):", readableTime);
+  
 
   // 2️⃣ Start = end - timeframe hours
   const minTime = maxTime - hours * 60 * 60 * 1000;
-   
-  const interval = 1 * 60 * 1000; // 3 minute interval
+  const readableTime1 = new Date(minTime).toLocaleString();
+  console.log("minTime (readable):", readableTime1);
+ 
+  
+  const interval = 4 * 60 * 1000; // 3 minute interval
   const labels = [];
 
   for (let t = minTime; t <= maxTime; t += interval) {
@@ -2337,6 +2608,74 @@ function generateTimeLabels(
 }
 
 
+// function prepareManualTemperatureData_Filtered(data: any[]) {
+//   return {
+//     labels: data.map(d => new Date(d.time).toLocaleTimeString([], {
+//       hour: "2-digit",
+//       minute: "2-digit"
+//     })),
+
+//     datasets: [
+//       {
+//         label: "Skin Temperature",
+//         data: data.map(d => d["Skin Temperature"] ?? null),
+//         pointRadius: 4,
+//         pointHoverRadius: 6,
+//       },
+//       {
+//         label: "Core Temperature",
+//         data: data.map(d => d["Core Temperature"] ?? null),
+//         pointRadius: 4,
+//         pointHoverRadius: 6,
+//       }
+//     ]
+//   };
+// }
+
+function prepareDeviceTemperatureData_Filtered(deviceData: any[], hours: number, timeFrameEnd: number) {
+  const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
+
+  const findClosestPoint = (target: number, key: string) => {
+    const WINDOW = 2 * 60 * 1000;
+    let closest = null;
+    let minDiff = Infinity;
+
+    deviceData.forEach((item) => {
+      const t = new Date(item.time).getTime();
+      const diff = Math.abs(t - target);
+
+      if (diff < minDiff && diff <= WINDOW) {
+        minDiff = diff;
+        closest = item[key] ?? null;
+      }
+    });
+
+    return closest;
+  };
+
+  return {
+    labels: labels.map(l => l.label),
+    datasets: [
+      {
+        label: "Device Skin Temp",
+        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SKIN TEMPERATURE")),
+        pointRadius: 2,
+        borderDash: [5, 5],     // 🔥 dotted line
+        spanGaps: true,
+      },
+      {
+        label: "Device Core Temp",
+        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PERIPHERAL TEMPERATURE")),
+        pointRadius: 2,
+        borderDash: [5, 5],     // 🔥 dotted line
+        spanGaps: true,
+      }
+    ]
+  };
+}
+
+
+
 function prepareManualTemperatureData_Filtered( data: any[], hours: number, timeFrameEnd: number) 
 { const labels = generateTimeLabels(hours, data, timeFrameEnd);
    const findClosestPoint = (target: number, key: string) => { const WINDOW = 2 * 60 * 1000; 
@@ -2346,256 +2685,9 @@ function prepareManualTemperatureData_Filtered( data: any[], hours: number, time
     if (diff < minDiff && diff <= WINDOW) { minDiff = diff; 
       closest = item[key] ?? null; } }); return closest; }; 
       return { labels: labels.map(l => l.label), 
-        datasets: [ 
-          { label: "Skin Temperature", 
-            data: labels.map(l => findClosestPoint(l.timestamp, "Skin Temperature")), 
-            pointRadius: 3,
-            borderWidth: 1.5,
-            borderDash: [8, 6]
-, // dash-dot
-           pointHoverRadius: 5,
-             spanGaps: true, }, 
-            
-            { label: "Core Temperature", 
-              data: labels.map(l => findClosestPoint(l.timestamp, "Core Temperature")), 
-              pointRadius: 3, 
-              borderDash: [8, 6],
-              borderWidth: 1.5,
-              pointHoverRadius: 5, 
-              spanGaps: true, } ] }; }
+        datasets: [ { label: "Skin Temperature", data: labels.map(l => findClosestPoint(l.timestamp, "Skin Temperature")), pointRadius: 3, pointHoverRadius: 5, spanGaps: true, }, { label: "Core Temperature", data: labels.map(l => findClosestPoint(l.timestamp, "Core Temperature")), pointRadius: 3, pointHoverRadius: 5, spanGaps: true, } ] }; }
 
-
-function prepareDeviceTemperatureData_Filtered(deviceData: any[], hours: number, timeFrameEnd: number) {
-  const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
-
-  const findClosestPoint = (target: number, key: string) => {
-    const WINDOW = 10 * 60 * 1000;
-    let closest = null;
-    let minDiff = Infinity;
-
-    deviceData.forEach((item) => {
-      const t = new Date(item.time).getTime();
-      const diff = Math.abs(t - target);
-
-      if (diff < minDiff && diff <= WINDOW) {
-        minDiff = diff;
-        closest = item[key] ?? null;
-      }
-    });
-
-    return closest;
-  };
-
-  return {
-    labels: labels.map(l => l.label),
-    datasets: [
-      {
-        label: "Skin Temp(Device))",
-        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SKIN TEMPERATURE")),
-        pointRadius: 2,
-            // 🔥 dotted line
-        spanGaps: true,
-      },
-      {
-        label: "Core Temp(Device)",
-        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PERIPHERAL TEMPERATURE")),
-        pointRadius: 2,
-            // 🔥 dotted line
-        spanGaps: true,
-      }
-    ]
-  };
-}
-function prepareDeviceTemperatureData1(deviceData: any[]) {
-  if (!deviceData.length) return { labels: [], datasets: [] };
-
-  const labels = deviceData.map(d =>
-    new Date(d.time).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    })
-  );
-
-  return {
-    labels,
-    datasets: [
-      {
-        label: "Skin Temp",
-        data: deviceData.map(d => d["CURRENT SKIN TEMPERATURE"] ?? null),
-        pointRadius: 2,
-        borderWidth: 1.5,
-        spanGaps: false,   // 🔥 now no gaps!
-      },
-      {
-        label: "Core Temp",
-        data: deviceData.map(d => d["CURRENT PERIPHERAL TEMPERATURE"] ?? null),
-        pointRadius: 2,
-        borderWidth: 1.5,
-        spanGaps: false,
-      }
-    ]
-  };
-}
-function prepareDeviceTemperatureData(deviceData: any[], hours: number, timeFrameEnd: number) {
-  const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
-
-  const findClosestPoint = (target: number, key: string) => {
-    const WINDOW = 2 * 60 * 1000;
-    let closest = null;
-    let minDiff = Infinity;
-
-    deviceData.forEach((item) => {
-      const t = new Date(item.time).getTime();
-      const diff = Math.abs(t - target);
-
-      if (diff < minDiff && diff <= WINDOW) {
-        minDiff = diff;
-        closest = item[key] ?? null;
-      }
-    });
-
-    return closest;
-  };
-
-  return {
-    labels: labels.map(l => l.label),
-    datasets: [
-      {
-        label: "Skin Temp(Device)",
-        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SKIN TEMPERATURE")),
-        pointRadius: 2,
-  
-        // 🔥 dotted line
-        // borderDash: [2, 2],
-        borderWidth: 1.5,
-        borderColor: "#007bff",
-        spanGaps: false,
-      },
-      {
-        label: "Core Temp(Device)",
-        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PERIPHERAL TEMPERATURE")),
-        pointRadius: 2,
-  
-        // 🔥 dotted line
-        // borderDash: [2, 2],
-        borderWidth: 1.5,
-        borderColor: "#ff5733",
-        spanGaps: false,
-      }
-    ]
-  };
-  // return {
-  //   labels: labels.map(l => l.label),
-  //   datasets: [
-  //     {
-  //       label: "Device Skin Temp",
-  //       data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SKIN TEMPERATURE")),
-  //       pointRadius: 3,
-  
-  //       // 🔥 Custom point colors
-  //       pointBackgroundColor: "#007bff",
-  //       pointBorderColor: "#003d80",
-  //       pointHoverBackgroundColor: "#66aaff",
-  //       pointHoverBorderColor: "#002a66",
-  
-  //       // 🔥 dotted line
-  //       borderDash: [4, 4],
-  //       borderWidth: 1.5,
-  //       borderColor: "#007bff",
-  //       spanGaps: false,
-  //     },
-  //     {
-  //       label: "Device Core Temp",
-  //       data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PERIPHERAL TEMPERATURE")),
-  //       pointRadius: 3,
-  
-  //       // 🔥 Custom point colors
-  //       pointBackgroundColor: "#ff5733",
-  //       pointBorderColor: "#a63b22",
-  //       pointHoverBackgroundColor: "#ff8a70",
-  //       pointHoverBorderColor: "#7a1f10",
-  
-  //       // 🔥 dotted line
-  //       borderDash: [4, 4],
-  //       borderWidth: 1.5,
-  //       borderColor: "#ff5733",
-  //       spanGaps: false,
-  //     }
-  //   ]
-  // };
-}
-function prepareDeviceSpo2Data(deviceData: any[], hours: number, timeFrameEnd: number) {
-  const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
-
-  const findClosestPoint = (target: number, key: string) => {
-    const WINDOW = 2 * 60 * 1000;
-    let closest = null;
-    let minDiff = Infinity;
-
-    deviceData.forEach((item) => {
-      const t = new Date(item.time).getTime();
-      const diff = Math.abs(t - target);
-
-      if (diff < minDiff && diff <= WINDOW) {
-        minDiff = diff;
-        closest = item[key] ?? null;
-      }
-    });
-
-    return closest;
-  };
-
-  return {
-    labels: labels.map(l => l.label),
-    datasets: [
-      {
-        label: "SpO₂(Device)",
-        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SPO2")),
-        pointRadius: 2,
-            // 🔥 dotted line
-        spanGaps: true,
-      }
-    ]
-  };
-}
-
-function prepareDevicePrData(deviceData: any[], hours: number, timeFrameEnd: number) {
-  const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
-
-  const findClosestPoint = (target: number, key: string) => {
-    const WINDOW = 2 * 60 * 1000;
-    let closest = null;
-    let minDiff = Infinity;
-
-    deviceData.forEach((item) => {
-      const t = new Date(item.time).getTime();
-      const diff = Math.abs(t - target);
-
-      if (diff < minDiff && diff <= WINDOW) {
-        minDiff = diff;
-        closest = item[key] ?? null;
-      }
-    });
-
-    return closest;
-  };
-
-  return {
-    labels: labels.map(l => l.label),
-    datasets: [
-      {
-        label: "PR(Device)",
-        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PULSE RATE")),
-        pointRadius: 2,
-            // 🔥 dotted line
-        spanGaps: true,
-      }
-    ]
-  };
-}
-
-function preparePulseOXDataFiltered(
+        function preparePulseOXDataFiltered(
 data: any[], hours: number, timeFrameEnd: number, field: string) {
   const labels = generateTimeLabels(hours, data, timeFrameEnd);
 
@@ -2624,14 +2716,13 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
         label: field,
         data: labels.map(l => findClosestPoint(l.timestamp)),
         pointRadius: 3,
-        borderDash: [8, 6],
         pointHoverRadius: 5,
-        borderWidth: 1.5,
+        borderWidth: 2,
         spanGaps: true,
       }
     ]
   };
-  }
+}
 
 function preparePulseOXDataFiltered1(
 data: any[], hours: number, timeFrameEnd: number, field: string) {
@@ -2676,41 +2767,215 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
         label: field,
         data: labels.map(l => findClosestPoint(l.timestamp)),
         pointRadius: 3,
-        borderDash: [8, 6],
         pointHoverRadius: 5,
-        borderWidth: 1.5,
         spanGaps: true,
       }
     ]
   };
 }
- 
+
+// function preparePulseOXDataFiltered(
+//   data: any[],
+//   hours: number,
+//   timeFrameEnd: number,
+//   field: string
+// ) {
+//   const labels = generateTimeLabels(hours, timeFrameEnd);
+
+//   const findClosestPoint = (target: number) => {
+//     const WINDOW = 30 * 60 * 1000;
+
+//     let closest = null;
+//     let minDiff = Infinity;
+
+//     data.forEach((item) => {
+//       const itemTime = new Date(item.time).getTime();
+//       const diff = Math.abs(itemTime - target);
+
+//       if (diff < minDiff && diff <= WINDOW) {
+//         minDiff = diff;
+//         closest = item[field] ?? null;
+//       }
+//     });
+
+//     return closest;
+//   };
+
+//   return {
+//     labels: labels.map((l) => l.label),
+//     datasets: [
+//       {
+//         label: field,
+//         data: labels.map((l) => findClosestPoint(l.timestamp)),
+//         pointRadius: 3,
+//         pointHoverRadius: 5,
+//         borderWidth: 2,
+//         spanGaps: true
+//       },
+//     ],
+//   };
+// }
+
+// function preparePulseOXDataFiltered1(
+//   data: any[],
+//   hours: number,
+//   timeFrameEnd: number,
+//   field: string
+// ) {
+//   console.log("➡️ RUN preparePulseOXDataFiltered1 FOR FIELD:", field);
+
+//   // ⭐ IMPORTANT: The field name in your manual data is EXACTLY the same as "field"
+//   // Example: field="Grunting" → item["Grunting"]
+
+//   const labels = generateTimeLabels(hours, timeFrameEnd);
+
+//   const convertValue = (str: any) => {
+//     if (str === undefined || str === null) return null;
+
+//     // ⭐ Glucose special handling
+//     if (field === "Glucose") {
+//       const nums = String(str)
+//         .split("-")
+//         .map((v) => parseFloat(v.trim()));
+//       if (nums.length === 2) {
+//         return (nums[0] + nums[1]) / 2;
+//       }
+//       return parseFloat(str);
+//     }
+
+//     // ⭐ Categorical mappings
+//     const VALUE_MAP: any = {
+//       "Grunting": { "No": 0, "Mild": 1, "Severe": 2 },
+//       "Colour": { "Pink": 0, "Pale": 1, "Blue": 2 },
+//       "Neuro": { "Active": 0, "Lethargic": 1, "Unresponsive": 2 },
+//       "Feeding": { "Normal": 0, "Reluctantly": 1, "Not Feeding": 2 },
+//       "Parental Concerns": { "None": 0, "Some": 1, "High": 2 },
+//     };
+
+//     const map = VALUE_MAP[field];
+//     return map ? map[str] ?? null : null;
+//   };
+
+//   // ⭐ NEW — simple matching because manual data is simple key/value
+//   const findClosestPoint = (target: number) => {
+//     let closest: any = null;
+//     let minDiff = Infinity;
+//     const WINDOW = 10 * 60 * 1000; // 10 minutes
+
+//     data.forEach((item) => {
+//       const itemTime = new Date(item.time).getTime();
+
+//       const diff = Math.abs(itemTime - target);
+//       if (diff < minDiff && diff <= WINDOW) {
+//         minDiff = diff;
+//         closest = convertValue(item[field]); // ⭐ DIRECT access here
+//       }
+//     });
+
+//     return closest;
+//   };
+
+//   const datasetValues = labels.map((l) => findClosestPoint(l.timestamp));
+
+//   return {
+//     labels: labels.map((l) => l.label),
+//     datasets: [
+//       {
+//         label: field,
+//         data: datasetValues,
+//         pointRadius: 3,
+//         pointHoverRadius: 5,
+//         spanGaps: true,
+//       },
+//     ],
+//   };
+// }
+
+
+
+    //   useEffect(() => {
+        
+    //     if(observation[1]?.resource?.component?.length>1){
+            
+    //         console.log('observation',observation)
+    //         setTimes(observation.map((obs) => {
+    //           let temperatureArr: {}[] = [];
+    //           let pulseRateArr: {}[] = [];
+    //           let spo2Arr: {}[] = [];
+              
+
+    //             observation[1].resource.component.map((data, index) => {
+    //               if (data.code.text.toString() === "Measured Skin Temp 1" || data.code.text.toString() === "Measured Skin Temp 2") {
+    //                 let unit = data.valueQuantity.unit.toString() as keyof typeof heaterYaxis;
+    //                 temperatureArr.push({
+    //                   label: data.code.text.toString(),
+    //                   data: observation.map((data2) => data2?.resource?.component?.[index]?.valueQuantity?.value.toString()),
+    //                   yAxisID: heaterYaxis[unit] || "y"
+    //                 });
+    //               } 
+    //               else if (data.code.text.toString() === "Pulse Rate") {
+    //                 let unit2 = data.valueQuantity.unit.toString() as keyof typeof pulseoximeterYaxis;
+    //                 pulseRateArr.push({
+    //                   label: data.code.text.toString(),
+    //                   data: observation.map((data2) => data2?.resource?.component?.[index]?.valueQuantity?.value.toString()),
+    //                   yAxisID: pulseoximeterYaxis[unit2] || "y"
+    //                 });
+    //               } 
+    //               else if (data.code.text.toString() === "SpO2") {
+    //                 let unit3 = data.valueQuantity.unit.toString() as keyof typeof spo2Yaxis;
+    //                 spo2Arr.push({
+    //                   label: data.code.text.toString(),
+    //                   data: observation.map((data2) => data2?.resource?.component?.[index]?.valueQuantity?.value.toString()),
+    //                   yAxisID: spo2Yaxis[unit3] || "y"
+    //                 });
+    //               }
+                  
+                                      
+    //             })
+    //             setDataSet([temperatureArr, pulseRateArr, spo2Arr])
+
+    //             var fd = new Date(obs.resource.meta.lastUpdated.toString())
+    //             var t = fd.toLocaleTimeString()
+    //             var d = fd.getDate()+"/"+(fd.getMonth()+1)
+                
+    //             return(
+    //                 // new Date(obs.resource.meta.lastUpdated).toLocaleString())
+    //                 d+"-"+t
+    //             )
+    //             }))
+    //     }
+    //          else{
+    //         setTimes(observation.map((obs) => {
+
+    //             let second = [{
+    //                 label: "",
+    //                 data: [] as string[],
+    //                 yAxisID: "y"
+    //             }]
+    //             setDataSet([second, second, second, second])
+    //             return(
+    //                 new Date(obs?.resource?.meta.lastUpdated.toString()).toLocaleTimeString())
+    //             }))
+    //     }
+    //         // setLoading(false)
+    // },[observation])
+
+    // const temperatureData1 = prepareManualTemperatureData(manualData);
+    
     const temperatureData1 = useMemo(() => {
       return prepareManualTemperatureData_Filtered(filteredManualData, timeFrame, timeFrameEnd);
 
     }, [filteredManualData, timeFrame,timeFrameEnd]);
-    const temperatureData2 = useMemo(() => {
-      return prepareDeviceTemperatureData(filteredDeviceData, timeFrame, timeFrameEnd);
-
-    }, [filteredDeviceData, timeFrame,timeFrameEnd]);
     
+
     const pulseoximeterDataM = useMemo(() => {
       return preparePulseOXDataFiltered(
         filteredManualData,
         timeFrame,
         timeFrameEnd,
-        "Pulse Rate"
+        "Heart Rate"
       );
     }, [filteredManualData, timeFrame, timeFrameEnd]);
-    const devicePulseRate = useMemo(() => {
-      return prepareDevicePrData(
-        filteredDeviceData,
-        timeFrame,
-        timeFrameEnd,
-       
-      );
-    }, [filteredDeviceData, timeFrame, timeFrameEnd]);
-
     const pulseoximeterData2 = useMemo(() => {
       return preparePulseOXDataFiltered(
         filteredManualData,
@@ -2719,14 +2984,6 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
         "SpO₂"
       );
     }, [filteredManualData, timeFrame, timeFrameEnd]);
-    const deviceSpo2Data = useMemo(() => {
-      return prepareDeviceSpo2Data(
-        filteredDeviceData,
-        timeFrame,
-        timeFrameEnd,
-      
-      );
-    }, [filteredDeviceData, timeFrame, timeFrameEnd]);
     const pulseoximeterData3 = useMemo(() => {
       return preparePulseOXDataFiltered(
         filteredManualData,
@@ -2788,51 +3045,6 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
         "Parental Concerns"
       );
     }, [filteredManualData, timeFrame, timeFrameEnd]);
-    const combinedTemperatureData = useMemo(() => {
-      const labels =
-        temperatureData1.labels.length > temperatureData2.labels.length
-          ? temperatureData1.labels
-          : temperatureData2.labels;
-    
-      return {
-        labels,
-        datasets: [
-          ...temperatureData1.datasets,
-          ...temperatureData2.datasets,
-        ]
-      };
-    }, [temperatureData1, temperatureData2]);
-    
-    const combinedSpo2Data = useMemo(() => {
-      const labels =
-        pulseoximeterData2.labels.length > deviceSpo2Data.labels.length
-          ? pulseoximeterData2.labels
-          : deviceSpo2Data.labels;
-    
-      return {
-        labels,
-        datasets: [
-          ...pulseoximeterData2.datasets,
-          ...deviceSpo2Data.datasets,
-        ]
-      };
-    }, [pulseoximeterData2, deviceSpo2Data]);
-    
-    const combinedPrData = useMemo(() => {
-      return {
-        labels: devicePulseRate.labels.length 
-          ? devicePulseRate.labels 
-          : pulseoximeterDataM.labels,
-    
-        datasets: [
-          ...pulseoximeterDataM.datasets,  // manual
-          ...devicePulseRate.datasets,     // device
-        ],
-      };
-    }, [pulseoximeterDataM, devicePulseRate]);
-    
-    
-    
 
     const manualGraph = useMemo(() => {
         return (
@@ -2875,7 +3087,7 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
             key={timeFrame}
             ref={chartRef1}
             options={temperatureOption as ChartOptions<'line'>}
-            data={combinedTemperatureData}
+            data={temperatureData1}
             height="50%"
             plugins={[temperatureLegendPlugin]}
           /></div>
@@ -2940,7 +3152,7 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
           <Line
             ref={chartRef2}
             options={pulseoximeterOption1 as ChartOptions<'line'>}
-            data={combinedPrData}
+            data={pulseoximeterDataM}
             height="50%"
             plugins={[temperatureLegendPlugin]}
           /></div>
@@ -2971,7 +3183,7 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
           <div id="spo2Graph">
           <Line
             options={sp02Option as ChartOptions<'line'>}
-            data={combinedSpo2Data}
+            data={pulseoximeterData2}
             ref={chartRef5}
             height="50%"
             plugins={[temperatureLegendPlugin]}
@@ -3101,7 +3313,8 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
       );
 
 
-},[manualData,deviceData, timeFrame])
+},[manualData, timeFrame])
+
 
     useEffect(() => {console.log(selectedLegends)},[selectedLegends])
    
@@ -3186,6 +3399,8 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
                   <div id="legend-container3"></div>
                 </Stack>
               </Stack>
+           
+            
             
             );
      
@@ -3195,7 +3410,8 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
     const combinedData = dataSource === "log"
     ? [...(manualData || []), ]
     : manualData;
-    
+
+
     
     return (
         <React.Fragment>
@@ -3257,8 +3473,10 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
                 onChange={(_, newValue) => {
                   if (newValue !== null) {
                     setLoading(true);
+                
                     setTimeFrameEnd(Date.now());  // 🔥 fix future timeline
                     setTimeFrame(newValue);
+                
                     setTimeout(() => setLoading(false), 150);
                   }
                 }}
@@ -3341,8 +3559,16 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
                 >
                   Trends
                 </ToggleButton>
-                <ToggleButton value="log" onClick={() => setDataSource("log")}
-                  sx={{ height: "35px", width: "75px",fontSize: "15px",textTransform: "capitalize"}}>Log</ToggleButton>
+                <ToggleButton
+                  value="log"
+                  onClick={() => setDataSource("log")}
+                  sx={{
+                    height: "35px",
+                    width: "75px",
+                    fontSize: "15px",
+                    textTransform: "capitalize",
+                  }}
+                >Log</ToggleButton>
               </ToggleButtonGroup>
             </Stack>
           </Stack>

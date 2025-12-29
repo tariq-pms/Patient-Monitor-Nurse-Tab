@@ -194,8 +194,6 @@ const [timeFrameEnd, setTimeFrameEnd] = useState(Date.now());
 }
   
 const [manualData, setManualData] = useState<any[]>([]);
-const [deviceData, setDeviceData] = useState([]);
-
 const [step, setStep] = useState(1);
 
 // const [manualTrends, setManualTrends] = useState<any[]>([]);
@@ -205,13 +203,12 @@ const [latestManual, setLatestManual] = useState<any | null>(null);
 useEffect(() => {
   const loadManualTrends = async () => {
     const data = await fetchManualTrends(props.patient_resource_id);
-    
     // setManualTrends(data);
 
     // ✅ Get the last element (latest)
     if (data.length > 0) {
       setLatestManual(data[data.length - 1]);
-      // console.log("🆕 Latest Manual:", data[data.length - 1]);
+      console.log("🆕 Latest Manual:", data[data.length - 1]);
     } else {
       setLatestManual(null);
     }
@@ -231,7 +228,6 @@ const temperatureOption = {
   
   stacked: false,
   plugins: {
-    
     decimation: {
       enabled: true,
       algorithm: "min-max",
@@ -320,7 +316,6 @@ const temperatureOption = {
       },
      
   },
-  
 };
 
 const pulseoximeterOption = {
@@ -1843,8 +1838,8 @@ const handleBack = () => setStep((prev) => prev - 1);
         const chartIds = [
           { id: "temperatureGraph", title: "Temperature" },
           { id: "respirationGraph", title: "Respiration Rate" },
-          { id: "pulseGraph", title: "Pulse Rate" },
-          { id: "spo2Graph", title: "Spo2" },
+          { id: "pulseGraph", title: "Heart Rate" },
+          { id: "spo2Graph", title: "SpO2" },
           { id: "colourGraph", title: "Colour" },
           { id: "neuroGraph", title: "Neuro" },
           { id: "feedingGraph", title: "Feeding" },
@@ -1961,19 +1956,17 @@ if (info && info.sublabels) {
         doc.save(`Trends_Report(${props.patient_id || "patient"}).pdf`);
       };
       
-async function fetchDeviceVitals(patientId: string, timeframeHours = 48) {
-        // console.log("📡 fetchDeviceVitals() called", { patientId, timeframeHours });
+      async function fetchDeviceVitals(patientId: string, timeframeHours = 24) {
+        console.log("📥 Fetching DEVICE vitals (history) for patient:", patientId);
       
         try {
-          const sinceDate = new Date(Date.now() - timeframeHours * 3600 * 1000).toISOString();
-          // console.log("⏳ Fetching history since:", sinceDate);
+          const sinceDate = new Date(Date.now() - timeframeHours * 60 * 60 * 1000).toISOString();
+          console.log("since date", sinceDate);
       
-          // ---------------- SEARCH LATEST OBSERVATION ----------------
-          const searchUrl =
-            `${import.meta.env.VITE_FHIRAPI_URL}/Observation?subject=Patient/${patientId}` +
-            `&category=data-log&_sort=-_lastUpdated&_count=1`;
-      
-          // console.log("🔍 Search URL:", searchUrl);
+          // 1) Find the Observation resource(s) for this patient in data-log category.
+          // We still search first to locate the Observation resource id(s).
+          const searchUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Observation?subject=Patient/${patientId}&category=data-log&_sort=-date&_count=50`;
+          console.log("searchUrl", searchUrl);
       
           const searchResponse = await fetch(searchUrl, {
             headers: {
@@ -1982,68 +1975,104 @@ async function fetchDeviceVitals(patientId: string, timeframeHours = 48) {
             },
           });
       
-          // console.log("🔎 Search Response Status:", searchResponse.status);
-      
           const searchResult = await searchResponse.json();
-          // console.log("📥 Search Result:", searchResult);
-      
           if (!searchResult.entry?.length) {
-            console.warn("⚠ No observation entries found for patient.");
+            console.log("No device observations found for patient");
             return [];
           }
       
+          // If your device uses a single Observation (updated repeatedly), pick that id.
+          // If there are multiple Observations and each is updated, you might want to fetch history for each.
           const observationId = searchResult.entry[0].resource.id;
-          // console.log("🆔 Latest Observation ID:", observationId);
+          console.log("Using Observation id for history:", observationId);
       
-          // ---------------- FETCH OBSERVATION HISTORY ----------------
-          const historyUrl =
-            `${import.meta.env.VITE_FHIRAPI_URL}/Observation/${observationId}` +
-            `/_history?_since=${sinceDate}&_count=10000`;
+          // 2) Fetch the resource history; follow paging links to collect all versions.
+          let historyUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Observation/${observationId}/_history?_since=${sinceDate}&_count=100`;
+          console.log("First history url:", historyUrl);
       
-          // console.log("📜 History URL:", historyUrl);
+          const allEntries: any[] = [];
       
-          const historyResponse = await fetch(historyUrl, {
-            headers: {
-              Authorization: "Basic " + btoa("fhiruser:change-password"),
-              Accept: "application/fhir+json",
-            },
-          });
+          // follow paging
+          while (historyUrl) {
+            const historyResponse = await fetch(historyUrl, {
+              headers: {
+                Authorization: "Basic " + btoa("fhiruser:change-password"),
+                Accept: "application/fhir+json",
+              },
+            });
       
-          // console.log("📄 History Response Status:", historyResponse.status);
+            const bundle = await historyResponse.json();
       
-          const bundle = await historyResponse.json();
-          // console.log("📦 History Bundle:", bundle);
+            if (Array.isArray(bundle.entry)) {
+              allEntries.push(...bundle.entry);
+            }
       
-          // ---------------- PARSE HISTORY DATA ----------------
+            // Find next link (if any). FHIR paging uses bundle.link where relation="next"
+            const nextLink = Array.isArray(bundle.link) && bundle.link.find((l: any) => l.relation === "next")?.url;
+            if (nextLink) {
+              historyUrl = nextLink;
+            } else {
+              historyUrl = null;
+            }
+          }
+      
+          // 3) Parse each version entry. Use meta.lastUpdated as the timestamp (fallback to effectiveDateTime).
           const parsed =
-            bundle.entry?.map((entry: any) => {
+            allEntries.map((entry: any) => {
               const obs = entry.resource;
-              // console.log("🔧 Parsing Observation Entry:", obs);
+              // Prefer version timestamp: meta.lastUpdated is when this version was stored on server.
+              // FHIR meta.lastUpdated example: "2025-11-25T12:13:50.596527Z"
+              const lastUpdated = obs?.meta?.lastUpdated; // ISO string or undefined
+              const time = lastUpdated ?? obs.effectiveDateTime ?? null;
       
-              const time = obs.effectiveDateTime;
               const values: Record<string, number | string> = {};
       
               obs.component?.forEach((c: any) => {
-                const label = c.code?.coding?.[0]?.display;
-                const value = c.valueQuantity?.value ?? c.valueString;
-      
-                // console.log(`   ➕ Component: ${label} = ${value}`);
-      
-                if (label && value !== undefined) values[label] = value;
+                const label = c.code?.coding?.[0]?.display ?? c.code?.text;
+                const value = c.valueQuantity?.value ?? c.valueString ?? null;
+                if (label && value !== null && value !== undefined) values[label] = value;
               });
       
-              return { time, ...values };
+              // also attach versionId if you need it
+              const versionId = obs?.meta?.versionId ?? entry?.request?.ifNoneExist ?? null;
+      
+              return { time, versionId, ...values };
             }) || [];
       
-          // console.log("🔍 Parsed Values (Before Sort):", parsed);
+          // 4) Filter out any entries without a timestamp (defensive)
+          const withTime = parsed.filter((p: any) => p.time);
       
-          const sorted = parsed.sort((a, b) => new Date(a.time) - new Date(b.time));
+          // 5) Convert to numbers where appropriate (optional) and sort by timestamp asc
+          const normalized = withTime.map((p: any) => ({
+            ...p,
+            timestampMs: new Date(p.time).getTime(),
+          }));
       
-          // console.log("✅ Sorted Device Vitals:", sorted);
+          const parsedSorted = normalized.sort((a: any, b: any) => a.timestampMs - b.timestampMs);
       
-          return sorted;
-        } catch (err) {
-          console.error("❌ Error fetching device history:", err);
+          console.log("📟 Parsed DEVICE vitals (history) total versions:", parsedSorted.length);
+          // OPTIONAL: log sample
+          console.log(parsedSorted.slice(0, 10));
+      
+          // 6) OPTIONAL: If multiple versions share the same timestamp and you want to keep only the latest,
+          // you can dedupe by timestampMs and keep the last one:
+          // (uncomment if you need this behavior)
+          /*
+          const deduped: any[] = [];
+          for (const item of parsedSorted) {
+            if (deduped.length === 0 || deduped[deduped.length - 1].timestampMs !== item.timestampMs) {
+              deduped.push(item);
+            } else {
+              // replace with the later version (keeps latest in the list)
+              deduped[deduped.length - 1] = item;
+            }
+          }
+          return deduped;
+          */
+      
+          return parsedSorted;
+        } catch (error) {
+          console.error("❌ Error fetching device vitals:", error);
           return [];
         }
       }
@@ -2149,7 +2178,7 @@ async function fetchManualTrends(patientId: string, timeframeHours = 24) {
   console.log("📥 Fetching MANUAL observations for patient:", patientId);
 
   try {
-    const searchUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Observation?subject=Patient/${patientId}&category=vital-signs&_sort=-date&_count=1`;
+    const searchUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Observation?subject=Patient/${patientId}&category=vital-signs&_sort=-date&_count=40`;
     const searchResponse = await fetch(searchUrl, {
       headers: {
         Authorization: "Basic " + btoa("fhiruser:change-password"),
@@ -2205,17 +2234,11 @@ useEffect(() => {
   if (dataSource === "manual" || dataSource === "log") {
     setLoading(true);
     fetchManualTrends(props.patient_resource_id)
-    // fetchDeviceVitals(props.patient_resource_id)
+    fetchDeviceVitals(props.patient_resource_id)
       .then((data) => setManualData(data))
       .finally(() => setLoading(false));
   }
 }, [dataSource, props.patient_resource_id]);
-
-useEffect(() => {
-  fetchDeviceVitals(props.patient_resource_id)
-    .then((data) => setDeviceData(data));
-}, [props.patient_resource_id,timeFrame]);
-
 
   //     useEffect(() => {
   // if (fullData24h.length === 0) return;
@@ -2252,19 +2275,6 @@ const filteredManualData = useMemo(() => {
 
 }, [manualData, timeFrame, timeFrameEnd]);
 
-const filteredDeviceData = useMemo(() => { 
-  if (!deviceData.length) return [];
-
-  const now = timeFrameEnd;
-  const cutoff = now - timeFrame * 60 * 60 * 1000;
-
-  return deviceData.filter((d) => {
-    const t = new Date(d.time).getTime();
-    return t >= cutoff && t <= now;
-  });
-
-}, [deviceData, timeFrame, timeFrameEnd]);
-
 function generateTimeLabels1(hours: number, timeFrameEnd: number) {
   const labels = [];
   const now = timeFrameEnd;                     // End time is when user clicked timeframe
@@ -2294,7 +2304,6 @@ console.log("start",start);
 
   return labels;
 }
-
 function generateTimeLabels(
   hours: number,
   sourceData: any[],
@@ -2304,11 +2313,16 @@ function generateTimeLabels(
 
   // 1️⃣ maxTime = timeFrameEnd (user-selected point)
   const maxTime = timeFrameEnd;
+  const readableTime = new Date(maxTime).toLocaleString();
+ 
 
   // 2️⃣ Start = end - timeframe hours
   const minTime = maxTime - hours * 60 * 60 * 1000;
-   
-  const interval = 1 * 60 * 1000; // 3 minute interval
+  const readableTime1 = new Date(minTime).toLocaleString();
+
+ 
+  
+  const interval = 4 * 60 * 1000; // 3 minute interval
   const labels = [];
 
   for (let t = minTime; t <= maxTime; t += interval) {
@@ -2337,6 +2351,72 @@ function generateTimeLabels(
 }
 
 
+// function prepareManualTemperatureData_Filtered(data: any[]) {
+//   return {
+//     labels: data.map(d => new Date(d.time).toLocaleTimeString([], {
+//       hour: "2-digit",
+//       minute: "2-digit"
+//     })),
+
+//     datasets: [
+//       {
+//         label: "Skin Temperature",
+//         data: data.map(d => d["Skin Temperature"] ?? null),
+//         pointRadius: 4,
+//         pointHoverRadius: 6,
+//       },
+//       {
+//         label: "Core Temperature",
+//         data: data.map(d => d["Core Temperature"] ?? null),
+//         pointRadius: 4,
+//         pointHoverRadius: 6,
+//       }
+//     ]
+//   };
+// }
+
+function prepareDeviceTemperatureData_Filtered(deviceData: any[], hours: number, timeFrameEnd: number) {
+  const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
+
+  const findClosestPoint = (target: number, key: string) => {
+    const WINDOW = 2 * 60 * 1000;
+    let closest = null;
+    let minDiff = Infinity;
+
+    deviceData.forEach((item) => {
+      const t = new Date(item.time).getTime();
+      const diff = Math.abs(t - target);
+
+      if (diff < minDiff && diff <= WINDOW) {
+        minDiff = diff;
+        closest = item[key] ?? null;
+      }
+    });
+
+    return closest;
+  };
+
+  return {
+    labels: labels.map(l => l.label),
+    datasets: [
+      {
+        label: "Device Skin Temp",
+        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SKIN TEMPERATURE")),
+        pointRadius: 2,
+            // 🔥 dotted line
+        spanGaps: true,
+      },
+      {
+        label: "Device Core Temp",
+        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PERIPHERAL TEMPERATURE")),
+        pointRadius: 2,
+            // 🔥 dotted line
+        spanGaps: true,
+      }
+    ]
+  };
+}
+
 function prepareManualTemperatureData_Filtered( data: any[], hours: number, timeFrameEnd: number) 
 { const labels = generateTimeLabels(hours, data, timeFrameEnd);
    const findClosestPoint = (target: number, key: string) => { const WINDOW = 2 * 60 * 1000; 
@@ -2346,256 +2426,9 @@ function prepareManualTemperatureData_Filtered( data: any[], hours: number, time
     if (diff < minDiff && diff <= WINDOW) { minDiff = diff; 
       closest = item[key] ?? null; } }); return closest; }; 
       return { labels: labels.map(l => l.label), 
-        datasets: [ 
-          { label: "Skin Temperature", 
-            data: labels.map(l => findClosestPoint(l.timestamp, "Skin Temperature")), 
-            pointRadius: 3,
-            borderWidth: 1.5,
-            borderDash: [8, 6]
-, // dash-dot
-           pointHoverRadius: 5,
-             spanGaps: true, }, 
-            
-            { label: "Core Temperature", 
-              data: labels.map(l => findClosestPoint(l.timestamp, "Core Temperature")), 
-              pointRadius: 3, 
-              borderDash: [8, 6],
-              borderWidth: 1.5,
-              pointHoverRadius: 5, 
-              spanGaps: true, } ] }; }
+        datasets: [ { label: "Skin Temperature", data: labels.map(l => findClosestPoint(l.timestamp, "Skin Temperature")), pointRadius: 3, pointHoverRadius: 5, spanGaps: true, }, { label: "Core Temperature", data: labels.map(l => findClosestPoint(l.timestamp, "Core Temperature")), pointRadius: 3, pointHoverRadius: 5, spanGaps: true, } ] }; }
 
-
-function prepareDeviceTemperatureData_Filtered(deviceData: any[], hours: number, timeFrameEnd: number) {
-  const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
-
-  const findClosestPoint = (target: number, key: string) => {
-    const WINDOW = 10 * 60 * 1000;
-    let closest = null;
-    let minDiff = Infinity;
-
-    deviceData.forEach((item) => {
-      const t = new Date(item.time).getTime();
-      const diff = Math.abs(t - target);
-
-      if (diff < minDiff && diff <= WINDOW) {
-        minDiff = diff;
-        closest = item[key] ?? null;
-      }
-    });
-
-    return closest;
-  };
-
-  return {
-    labels: labels.map(l => l.label),
-    datasets: [
-      {
-        label: "Skin Temp(Device))",
-        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SKIN TEMPERATURE")),
-        pointRadius: 2,
-            // 🔥 dotted line
-        spanGaps: true,
-      },
-      {
-        label: "Core Temp(Device)",
-        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PERIPHERAL TEMPERATURE")),
-        pointRadius: 2,
-            // 🔥 dotted line
-        spanGaps: true,
-      }
-    ]
-  };
-}
-function prepareDeviceTemperatureData1(deviceData: any[]) {
-  if (!deviceData.length) return { labels: [], datasets: [] };
-
-  const labels = deviceData.map(d =>
-    new Date(d.time).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    })
-  );
-
-  return {
-    labels,
-    datasets: [
-      {
-        label: "Skin Temp",
-        data: deviceData.map(d => d["CURRENT SKIN TEMPERATURE"] ?? null),
-        pointRadius: 2,
-        borderWidth: 1.5,
-        spanGaps: false,   // 🔥 now no gaps!
-      },
-      {
-        label: "Core Temp",
-        data: deviceData.map(d => d["CURRENT PERIPHERAL TEMPERATURE"] ?? null),
-        pointRadius: 2,
-        borderWidth: 1.5,
-        spanGaps: false,
-      }
-    ]
-  };
-}
-function prepareDeviceTemperatureData(deviceData: any[], hours: number, timeFrameEnd: number) {
-  const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
-
-  const findClosestPoint = (target: number, key: string) => {
-    const WINDOW = 2 * 60 * 1000;
-    let closest = null;
-    let minDiff = Infinity;
-
-    deviceData.forEach((item) => {
-      const t = new Date(item.time).getTime();
-      const diff = Math.abs(t - target);
-
-      if (diff < minDiff && diff <= WINDOW) {
-        minDiff = diff;
-        closest = item[key] ?? null;
-      }
-    });
-
-    return closest;
-  };
-
-  return {
-    labels: labels.map(l => l.label),
-    datasets: [
-      {
-        label: "Skin Temp(Device)",
-        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SKIN TEMPERATURE")),
-        pointRadius: 2,
-  
-        // 🔥 dotted line
-        // borderDash: [2, 2],
-        borderWidth: 1.5,
-        borderColor: "#007bff",
-        spanGaps: false,
-      },
-      {
-        label: "Core Temp(Device)",
-        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PERIPHERAL TEMPERATURE")),
-        pointRadius: 2,
-  
-        // 🔥 dotted line
-        // borderDash: [2, 2],
-        borderWidth: 1.5,
-        borderColor: "#ff5733",
-        spanGaps: false,
-      }
-    ]
-  };
-  // return {
-  //   labels: labels.map(l => l.label),
-  //   datasets: [
-  //     {
-  //       label: "Device Skin Temp",
-  //       data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SKIN TEMPERATURE")),
-  //       pointRadius: 3,
-  
-  //       // 🔥 Custom point colors
-  //       pointBackgroundColor: "#007bff",
-  //       pointBorderColor: "#003d80",
-  //       pointHoverBackgroundColor: "#66aaff",
-  //       pointHoverBorderColor: "#002a66",
-  
-  //       // 🔥 dotted line
-  //       borderDash: [4, 4],
-  //       borderWidth: 1.5,
-  //       borderColor: "#007bff",
-  //       spanGaps: false,
-  //     },
-  //     {
-  //       label: "Device Core Temp",
-  //       data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PERIPHERAL TEMPERATURE")),
-  //       pointRadius: 3,
-  
-  //       // 🔥 Custom point colors
-  //       pointBackgroundColor: "#ff5733",
-  //       pointBorderColor: "#a63b22",
-  //       pointHoverBackgroundColor: "#ff8a70",
-  //       pointHoverBorderColor: "#7a1f10",
-  
-  //       // 🔥 dotted line
-  //       borderDash: [4, 4],
-  //       borderWidth: 1.5,
-  //       borderColor: "#ff5733",
-  //       spanGaps: false,
-  //     }
-  //   ]
-  // };
-}
-function prepareDeviceSpo2Data(deviceData: any[], hours: number, timeFrameEnd: number) {
-  const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
-
-  const findClosestPoint = (target: number, key: string) => {
-    const WINDOW = 2 * 60 * 1000;
-    let closest = null;
-    let minDiff = Infinity;
-
-    deviceData.forEach((item) => {
-      const t = new Date(item.time).getTime();
-      const diff = Math.abs(t - target);
-
-      if (diff < minDiff && diff <= WINDOW) {
-        minDiff = diff;
-        closest = item[key] ?? null;
-      }
-    });
-
-    return closest;
-  };
-
-  return {
-    labels: labels.map(l => l.label),
-    datasets: [
-      {
-        label: "SpO₂(Device)",
-        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SPO2")),
-        pointRadius: 2,
-            // 🔥 dotted line
-        spanGaps: true,
-      }
-    ]
-  };
-}
-
-function prepareDevicePrData(deviceData: any[], hours: number, timeFrameEnd: number) {
-  const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
-
-  const findClosestPoint = (target: number, key: string) => {
-    const WINDOW = 2 * 60 * 1000;
-    let closest = null;
-    let minDiff = Infinity;
-
-    deviceData.forEach((item) => {
-      const t = new Date(item.time).getTime();
-      const diff = Math.abs(t - target);
-
-      if (diff < minDiff && diff <= WINDOW) {
-        minDiff = diff;
-        closest = item[key] ?? null;
-      }
-    });
-
-    return closest;
-  };
-
-  return {
-    labels: labels.map(l => l.label),
-    datasets: [
-      {
-        label: "PR(Device)",
-        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PULSE RATE")),
-        pointRadius: 2,
-            // 🔥 dotted line
-        spanGaps: true,
-      }
-    ]
-  };
-}
-
-function preparePulseOXDataFiltered(
+        function preparePulseOXDataFiltered(
 data: any[], hours: number, timeFrameEnd: number, field: string) {
   const labels = generateTimeLabels(hours, data, timeFrameEnd);
 
@@ -2624,14 +2457,13 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
         label: field,
         data: labels.map(l => findClosestPoint(l.timestamp)),
         pointRadius: 3,
-        borderDash: [8, 6],
         pointHoverRadius: 5,
-        borderWidth: 1.5,
+        borderWidth: 2,
         spanGaps: true,
       }
     ]
   };
-  }
+}
 
 function preparePulseOXDataFiltered1(
 data: any[], hours: number, timeFrameEnd: number, field: string) {
@@ -2676,41 +2508,218 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
         label: field,
         data: labels.map(l => findClosestPoint(l.timestamp)),
         pointRadius: 3,
-        borderDash: [8, 6],
         pointHoverRadius: 5,
-        borderWidth: 1.5,
         spanGaps: true,
       }
     ]
   };
 }
- 
+
+// function preparePulseOXDataFiltered(
+//   data: any[],
+//   hours: number,
+//   timeFrameEnd: number,
+//   field: string
+// ) {
+//   const labels = generateTimeLabels(hours, timeFrameEnd);
+
+//   const findClosestPoint = (target: number) => {
+//     const WINDOW = 30 * 60 * 1000;
+
+//     let closest = null;
+//     let minDiff = Infinity;
+
+//     data.forEach((item) => {
+//       const itemTime = new Date(item.time).getTime();
+//       const diff = Math.abs(itemTime - target);
+
+//       if (diff < minDiff && diff <= WINDOW) {
+//         minDiff = diff;
+//         closest = item[field] ?? null;
+//       }
+//     });
+
+//     return closest;
+//   };
+
+//   return {
+//     labels: labels.map((l) => l.label),
+//     datasets: [
+//       {
+//         label: field,
+//         data: labels.map((l) => findClosestPoint(l.timestamp)),
+//         pointRadius: 3,
+//         pointHoverRadius: 5,
+//         borderWidth: 2,
+//         spanGaps: true
+//       },
+//     ],
+//   };
+// }
+
+// function preparePulseOXDataFiltered1(
+//   data: any[],
+//   hours: number,
+//   timeFrameEnd: number,
+//   field: string
+// ) {
+//   console.log("➡️ RUN preparePulseOXDataFiltered1 FOR FIELD:", field);
+
+//   // ⭐ IMPORTANT: The field name in your manual data is EXACTLY the same as "field"
+//   // Example: field="Grunting" → item["Grunting"]
+
+//   const labels = generateTimeLabels(hours, timeFrameEnd);
+
+//   const convertValue = (str: any) => {
+//     if (str === undefined || str === null) return null;
+
+//     // ⭐ Glucose special handling
+//     if (field === "Glucose") {
+//       const nums = String(str)
+//         .split("-")
+//         .map((v) => parseFloat(v.trim()));
+//       if (nums.length === 2) {
+//         return (nums[0] + nums[1]) / 2;
+//       }
+//       return parseFloat(str);
+//     }
+
+//     // ⭐ Categorical mappings
+//     const VALUE_MAP: any = {
+//       "Grunting": { "No": 0, "Mild": 1, "Severe": 2 },
+//       "Colour": { "Pink": 0, "Pale": 1, "Blue": 2 },
+//       "Neuro": { "Active": 0, "Lethargic": 1, "Unresponsive": 2 },
+//       "Feeding": { "Normal": 0, "Reluctantly": 1, "Not Feeding": 2 },
+//       "Parental Concerns": { "None": 0, "Some": 1, "High": 2 },
+//     };
+
+//     const map = VALUE_MAP[field];
+//     return map ? map[str] ?? null : null;
+//   };
+
+//   // ⭐ NEW — simple matching because manual data is simple key/value
+//   const findClosestPoint = (target: number) => {
+//     let closest: any = null;
+//     let minDiff = Infinity;
+//     const WINDOW = 10 * 60 * 1000; // 10 minutes
+
+//     data.forEach((item) => {
+//       const itemTime = new Date(item.time).getTime();
+
+//       const diff = Math.abs(itemTime - target);
+//       if (diff < minDiff && diff <= WINDOW) {
+//         minDiff = diff;
+//         closest = convertValue(item[field]); // ⭐ DIRECT access here
+//       }
+//     });
+
+//     return closest;
+//   };
+
+//   const datasetValues = labels.map((l) => findClosestPoint(l.timestamp));
+
+//   return {
+//     labels: labels.map((l) => l.label),
+//     datasets: [
+//       {
+//         label: field,
+//         data: datasetValues,
+//         pointRadius: 3,
+//         pointHoverRadius: 5,
+//         spanGaps: true,
+//       },
+//     ],
+//   };
+// }
+
+
+
+    //   useEffect(() => {
+        
+    //     if(observation[1]?.resource?.component?.length>1){
+            
+    //         console.log('observation',observation)
+    //         setTimes(observation.map((obs) => {
+    //           let temperatureArr: {}[] = [];
+    //           let pulseRateArr: {}[] = [];
+    //           let spo2Arr: {}[] = [];
+              
+
+    //             observation[1].resource.component.map((data, index) => {
+    //               if (data.code.text.toString() === "Measured Skin Temp 1" || data.code.text.toString() === "Measured Skin Temp 2") {
+    //                 let unit = data.valueQuantity.unit.toString() as keyof typeof heaterYaxis;
+    //                 temperatureArr.push({
+    //                   label: data.code.text.toString(),
+    //                   data: observation.map((data2) => data2?.resource?.component?.[index]?.valueQuantity?.value.toString()),
+    //                   yAxisID: heaterYaxis[unit] || "y"
+    //                 });
+    //               } 
+    //               else if (data.code.text.toString() === "Pulse Rate") {
+    //                 let unit2 = data.valueQuantity.unit.toString() as keyof typeof pulseoximeterYaxis;
+    //                 pulseRateArr.push({
+    //                   label: data.code.text.toString(),
+    //                   data: observation.map((data2) => data2?.resource?.component?.[index]?.valueQuantity?.value.toString()),
+    //                   yAxisID: pulseoximeterYaxis[unit2] || "y"
+    //                 });
+    //               } 
+    //               else if (data.code.text.toString() === "SpO2") {
+    //                 let unit3 = data.valueQuantity.unit.toString() as keyof typeof spo2Yaxis;
+    //                 spo2Arr.push({
+    //                   label: data.code.text.toString(),
+    //                   data: observation.map((data2) => data2?.resource?.component?.[index]?.valueQuantity?.value.toString()),
+    //                   yAxisID: spo2Yaxis[unit3] || "y"
+    //                 });
+    //               }
+                  
+                                      
+    //             })
+    //             setDataSet([temperatureArr, pulseRateArr, spo2Arr])
+
+    //             var fd = new Date(obs.resource.meta.lastUpdated.toString())
+    //             var t = fd.toLocaleTimeString()
+    //             var d = fd.getDate()+"/"+(fd.getMonth()+1)
+                
+    //             return(
+    //                 // new Date(obs.resource.meta.lastUpdated).toLocaleString())
+    //                 d+"-"+t
+    //             )
+    //             }))
+    //     }
+    //          else{
+    //         setTimes(observation.map((obs) => {
+
+    //             let second = [{
+    //                 label: "",
+    //                 data: [] as string[],
+    //                 yAxisID: "y"
+    //             }]
+    //             setDataSet([second, second, second, second])
+    //             return(
+    //                 new Date(obs?.resource?.meta.lastUpdated.toString()).toLocaleTimeString())
+    //             }))
+    //     }
+    //         // setLoading(false)
+    // },[observation])
+
+    // const temperatureData1 = prepareManualTemperatureData(manualData);
+    
     const temperatureData1 = useMemo(() => {
       return prepareManualTemperatureData_Filtered(filteredManualData, timeFrame, timeFrameEnd);
 
     }, [filteredManualData, timeFrame,timeFrameEnd]);
     const temperatureData2 = useMemo(() => {
-      return prepareDeviceTemperatureData(filteredDeviceData, timeFrame, timeFrameEnd);
+      return prepareDeviceTemperatureData_Filtered(filteredManualData, timeFrame, timeFrameEnd);
 
-    }, [filteredDeviceData, timeFrame,timeFrameEnd]);
-    
+    }, [filteredManualData, timeFrame,timeFrameEnd]);
+
     const pulseoximeterDataM = useMemo(() => {
       return preparePulseOXDataFiltered(
         filteredManualData,
         timeFrame,
         timeFrameEnd,
-        "Pulse Rate"
+        "Heart Rate"
       );
     }, [filteredManualData, timeFrame, timeFrameEnd]);
-    const devicePulseRate = useMemo(() => {
-      return prepareDevicePrData(
-        filteredDeviceData,
-        timeFrame,
-        timeFrameEnd,
-       
-      );
-    }, [filteredDeviceData, timeFrame, timeFrameEnd]);
-
     const pulseoximeterData2 = useMemo(() => {
       return preparePulseOXDataFiltered(
         filteredManualData,
@@ -2719,14 +2728,6 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
         "SpO₂"
       );
     }, [filteredManualData, timeFrame, timeFrameEnd]);
-    const deviceSpo2Data = useMemo(() => {
-      return prepareDeviceSpo2Data(
-        filteredDeviceData,
-        timeFrame,
-        timeFrameEnd,
-      
-      );
-    }, [filteredDeviceData, timeFrame, timeFrameEnd]);
     const pulseoximeterData3 = useMemo(() => {
       return preparePulseOXDataFiltered(
         filteredManualData,
@@ -2789,51 +2790,14 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
       );
     }, [filteredManualData, timeFrame, timeFrameEnd]);
     const combinedTemperatureData = useMemo(() => {
-      const labels =
-        temperatureData1.labels.length > temperatureData2.labels.length
-          ? temperatureData1.labels
-          : temperatureData2.labels;
-    
       return {
-        labels,
+        labels: temperatureData1.labels,      // same labels for both
         datasets: [
-          ...temperatureData1.datasets,
-          ...temperatureData2.datasets,
+          ...temperatureData1.datasets,       // solid manual lines
+          ...temperatureData2.datasets,       // dotted device lines
         ]
       };
     }, [temperatureData1, temperatureData2]);
-    
-    const combinedSpo2Data = useMemo(() => {
-      const labels =
-        pulseoximeterData2.labels.length > deviceSpo2Data.labels.length
-          ? pulseoximeterData2.labels
-          : deviceSpo2Data.labels;
-    
-      return {
-        labels,
-        datasets: [
-          ...pulseoximeterData2.datasets,
-          ...deviceSpo2Data.datasets,
-        ]
-      };
-    }, [pulseoximeterData2, deviceSpo2Data]);
-    
-    const combinedPrData = useMemo(() => {
-      return {
-        labels: devicePulseRate.labels.length 
-          ? devicePulseRate.labels 
-          : pulseoximeterDataM.labels,
-    
-        datasets: [
-          ...pulseoximeterDataM.datasets,  // manual
-          ...devicePulseRate.datasets,     // device
-        ],
-      };
-    }, [pulseoximeterDataM, devicePulseRate]);
-    
-    
-    
-
     const manualGraph = useMemo(() => {
         return (
         
@@ -2940,7 +2904,7 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
           <Line
             ref={chartRef2}
             options={pulseoximeterOption1 as ChartOptions<'line'>}
-            data={combinedPrData}
+            data={pulseoximeterDataM}
             height="50%"
             plugins={[temperatureLegendPlugin]}
           /></div>
@@ -2971,7 +2935,7 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
           <div id="spo2Graph">
           <Line
             options={sp02Option as ChartOptions<'line'>}
-            data={combinedSpo2Data}
+            data={pulseoximeterData2}
             ref={chartRef5}
             height="50%"
             plugins={[temperatureLegendPlugin]}
@@ -3101,7 +3065,8 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
       );
 
 
-},[manualData,deviceData, timeFrame])
+},[manualData, timeFrame])
+
 
     useEffect(() => {console.log(selectedLegends)},[selectedLegends])
    
@@ -3186,6 +3151,8 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
                   <div id="legend-container3"></div>
                 </Stack>
               </Stack>
+           
+            
             
             );
      
@@ -3195,6 +3162,9 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
     const combinedData = dataSource === "log"
     ? [...(manualData || []), ]
     : manualData;
+
+    
+    
     
     
     return (
@@ -3257,8 +3227,10 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
                 onChange={(_, newValue) => {
                   if (newValue !== null) {
                     setLoading(true);
+                
                     setTimeFrameEnd(Date.now());  // 🔥 fix future timeline
                     setTimeFrame(newValue);
+                
                     setTimeout(() => setLoading(false), 150);
                   }
                 }}
@@ -3341,8 +3313,16 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
                 >
                   Trends
                 </ToggleButton>
-                <ToggleButton value="log" onClick={() => setDataSource("log")}
-                  sx={{ height: "35px", width: "75px",fontSize: "15px",textTransform: "capitalize"}}>Log</ToggleButton>
+                <ToggleButton
+                  value="log"
+                  onClick={() => setDataSource("log")}
+                  sx={{
+                    height: "35px",
+                    width: "75px",
+                    fontSize: "15px",
+                    textTransform: "capitalize",
+                  }}
+                >Log</ToggleButton>
               </ToggleButtonGroup>
             </Stack>
           </Stack>

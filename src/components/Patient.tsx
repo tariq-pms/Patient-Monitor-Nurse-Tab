@@ -8,11 +8,17 @@ import {
   MenuItem,
 
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  FormControlLabel,
+  Checkbox
 } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import AddIcon from '@mui/icons-material/Add';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
+import { useNavigate } from "react-router-dom";
+
 interface PatientProps {
   userOrganization: string;
   darkTheme: boolean;
@@ -33,8 +39,9 @@ interface Patient {
   lastUpdated: string;
 }
 export const Patient: FC<PatientProps> = ({ userOrganization }) => {
-
+const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("current");
+  const [step,setStep]=useState(1);
   const [openDialog, setOpenDialog] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,15 +49,18 @@ export const Patient: FC<PatientProps> = ({ userOrganization }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [practitioners, setPractitioners] = useState<any[]>([]);
+  const [isVerified, setIsVerified] = useState(false);
 const [locations, setLocations] = useState<any[]>([]);
 const theme = useTheme();
 const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+const [sameAsPatient, setSameAsPatient] = useState(false);
 const [assignDialog, setAssignDialog] = useState({
   open: false,
   type: "", // "user" or "bed"
   selectedValue: ""
 });
-const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+const [openPatientDialog, setOpenPatientDialog] = useState(false);
+const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -64,7 +74,99 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     gestationWeeks: "",
     gestationDays: "",
     birthWeight: "",
+    gender:"",
+    bedNo:"",
+    age:"",
+    adminNo:"",
+    mobile:"",
+    nationality:"",
+    otherNationality:"",
+    address:"",
+    kinName:"",
+    kinPhone:"",
+    relationship:"",
+    kinAddress:"",
+    doaDate:"",
+    doaTime:'',
+    treatingDr:"",
+    admittingDr:"",
+    refHospital:"",
+    filledby:""
   });
+  
+  const ResetForm= async() => {
+    setFormData({
+        mothersName: "",
+        patientId: "",
+        birthDate: "",
+        birthTime: "",
+        gestationWeeks: "",
+        gestationDays: "",
+        birthWeight: "",
+        gender:"",
+        age:"",
+    bedNo:"",
+    doaTime:'',
+    adminNo:"",
+    mobile:"",
+    nationality:"",
+    otherNationality:"",
+    address:"",
+    kinName:"",
+    kinPhone:"",
+    relationship:"",
+    kinAddress:"",
+    doaDate:"",
+    treatingDr:"",
+    admittingDr:"",
+    refHospital:"",
+    filledby:""
+      });
+  }
+  const isFormComplete = (form: any) => {
+    const fieldsToCheck = [
+      "mothersName",
+      "patientId",
+      "birthDate",
+      
+      "gestationWeeks",
+      "gestationDays",
+      "birthWeight",
+      "gender",
+      "bedNo",
+      "adminNo",
+      
+    ];
+  
+    return fieldsToCheck.every(
+      (key) => form[key] && String(form[key]).trim() !== ""
+    );
+  };
+  const isFormCompleteSecond = (form: any) => {
+    const fieldsToCheck = [
+    
+       "mobile",
+       "birthTime",
+      "nationality",
+      "address",
+      "kinName",
+      "kinPhone",
+      "relationship",
+      "kinAddress",
+      "doaDate",
+      "treatingDr",
+      "admittingDr",
+      "refHospital",
+    ];
+  
+    return fieldsToCheck.every(
+      (key) => form[key] && String(form[key]).trim() !== ""
+    );
+  };
+  const finalNationality =
+  formData.nationality === "Other"
+    ? formData.otherNationality
+    : formData.nationality;
 
   useEffect(() => {
     const fetchPatients = async () => {
@@ -125,9 +227,8 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
         setLoading(false);
       }
     };
-
     fetchPatients();
-  }, []);
+  },[]);
 
   const fetchPractitioners = async () => {
     try {
@@ -170,17 +271,101 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
       return [];
     }
   };
+  const fetchPatients = async () => {
+    try {
+      setLoading(true);
+  
+      const response = await fetch(
+        `${import.meta.env.VITE_FHIRAPI_URL}/Patient?_count=1000&organization=${userOrganization}`,
+        {
+          headers: {
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+            "Content-Type": "application/fhir+json",
+          },
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+  
+      const fetchedPatients =
+        data.entry?.map((entry: any) => {
+          const resource = entry.resource;
+  
+          const mothersName =
+            resource.extension?.find(
+              (ext: any) =>
+                ext.url ===
+                "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName"
+            )?.valueString || "Unknown";
+  
+          const gestation =
+            resource.extension?.find(
+              (ext: any) =>
+                ext.url ===
+                "http://example.org/fhir/StructureDefinition/gestationalAge"
+            )?.valueString || "N/A";
+  
+          const birthWeight =
+            resource.extension?.find(
+              (ext: any) =>
+                ext.url ===
+                "http://example.org/fhir/StructureDefinition/birthWeight"
+            )?.valueQuantity?.value || "N/A";
+  
+          return {
+            id: resource.id,
+            name: mothersName,
+            patientId: resource.identifier?.[0]?.value || "N/A",
+            birthDateTime: resource.birthDate
+              ? formatDate(resource.birthDate)
+              : "N/A",
+            gestation,
+            birthWeight:
+              birthWeight !== "N/A" ? `${birthWeight} g` : "N/A",
+            lastUpdated: resource.meta?.lastUpdated
+              ? formatDateTime(resource.meta.lastUpdated)
+              : "N/A",
+            bed: "--",
+            assignee: "--",
+            dischargedDateTime: "--",
+            active: resource.active !== false,
+          };
+        }) || [];
+  
+      const sortedPatients = fetchedPatients.sort(
+        (a, b) =>
+          new Date(b.lastUpdated).getTime() -
+          new Date(a.lastUpdated).getTime()
+      );
+  
+      setPatients(sortedPatients);
+    } catch (err) {
+      console.error("Error fetching patients:", err);
+      setError("Failed to load patient data");
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchData = async () => {
-      const [practitionersData, locationsData] = await Promise.all([
-        fetchPractitioners(),
-        fetchLocations()
-      ]);
-      setPractitioners(practitionersData);
-      setLocations(locationsData);
-    };
-    fetchData();
-  }, []);
+    fetchPatients();
+  }, [userOrganization]);
+  
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const [practitionersData, locationsData] = await Promise.all([
+  //       fetchPractitioners(),
+  //       fetchLocations()
+  //     ]);
+  //     setPractitioners(practitionersData);
+  //     setLocations(locationsData);
+  //   };
+  //   fetchData();
+  // }, []);
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { 
       year: 'numeric', 
@@ -336,114 +521,610 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     if (!response.ok) throw new Error("Failed to assign bed");
   };
 
+  // const handleSubmit = async () => {
+  //   try {
+  //     if (!formData.mothersName || !formData.patientId || !formData.birthDate) {
+  //       throw new Error("Required fields are missing");
+  //     }
+  
+  //     const FHIR_BASE = import.meta.env.VITE_FHIRAPI_URL;
+  //     const AUTH = {
+  //       "Content-Type": "application/fhir+json",
+  //       Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //     };
+  
+  //     /* =========================
+  //        1️⃣ CREATE PATIENT
+  //     ========================= */
+  //     const patientPayload: any = {
+  //       resourceType: "Patient",
+  //       active: true,
+  //       managingOrganization: {
+  //         reference: `Organization/${userOrganization}`,
+  //       },
+  //       identifier: [
+  //         {
+  //           system: "http://hospital.org/uhid",
+  //           value: formData.patientId,
+  //         },
+  //         {
+  //           system: "http://hospital.org/admission-no",
+  //           value: formData.adminNo,
+  //         },
+  //       ],
+  //       name: [
+  //         {
+  //           use: "official",
+  //           text: `B/O ${formData.mothersName}`,
+  //         },
+  //       ],
+  //       gender: formData.gender?.toLowerCase() || "unknown",
+  //       birthDate: formData.birthDate,
+  //       address: [
+  //         {
+  //           text: formData.address,
+  //         },
+  //       ],
+  //       telecom: formData.mobile
+  //         ? [
+  //             {
+  //               system: "phone",
+  //               value: formData.mobile,
+  //               use: "mobile",
+  //             },
+  //           ]
+  //         : [],
+  //       extension: [
+  //         {
+  //           url: "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName",
+  //           valueString: formData.mothersName,
+  //         },
+  //         {
+  //           url: "http://example.org/fhir/StructureDefinition/gestationalAge",
+  //           valueString: `${formData.gestationWeeks || 0}W ${formData.gestationDays || 0}D`,
+  //         },
+  //         {
+  //           url: "http://example.org/fhir/StructureDefinition/birthWeight",
+  //           valueQuantity: {
+  //             value: Number(formData.birthWeight) || 0,
+  //             unit: "g",
+  //             system: "http://unitsofmeasure.org",
+  //             code: "g",
+  //           },
+  //         },
+  //         {
+  //           url: "http://example.org/fhir/StructureDefinition/nationality",
+  //           valueString:
+  //             formData.nationality === "Other"
+  //               ? formData.otherNationality
+  //               : formData.nationality,
+  //         },
+  //         {
+  //           url: "http://example.org/fhir/StructureDefinition/age-display",
+  //           valueString: formData.age,
+  //         },
+  //       ],
+  //     };
+  
+  //     const patientRes = await fetch(`${FHIR_BASE}/Patient`, {
+  //       method: "POST",
+  //       headers: AUTH,
+  //       body: JSON.stringify(patientPayload),
+  //     });
+  
+  //     if (!patientRes.ok) throw new Error("Failed to create Patient");
+  
+  //     const patient = await patientRes.json().catch(() => null);
+
+  //     const patientRef = `Patient/${patient.id}`;
+  
+  //     /* =========================
+  //        2️⃣ CREATE ENCOUNTER (ADMISSION)
+  //     ========================= */
+  //     const encounterPayload: any = {
+  //       resourceType: "Encounter",
+  //       status: "in-progress",
+  //       class: {
+  //         system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+  //         code: "IMP",
+  //         display: "inpatient encounter",
+  //       },
+  //       subject: { reference: patientRef },
+  //       period: {
+  //         start: `${formData.doaDate}T${formData.doaTime || "00:00"}`,
+  //       },
+  //       location: formData.bedNo
+  //         ? [
+  //             {
+  //               location: {
+  //                 display: formData.bedNo,
+  //               },
+  //             },
+  //           ]
+  //         : [],
+  //       participant: [
+  //         {
+  //           individual: { display: formData.treatingDr },
+  //         },
+  //         {
+  //           individual: { display: formData.admittingDr },
+  //         },
+  //       ],
+  //       serviceProvider: {
+  //         reference: `Organization/${userOrganization}`,
+  //       },
+  //       extension: [
+  //         {
+  //           url: "http://example.org/fhir/StructureDefinition/referringHospital",
+  //           valueString: formData.refHospital,
+  //         },
+  //       ],
+  //     };
+  
+  //     await fetch(`${FHIR_BASE}/Encounter`, {
+  //       method: "POST",
+  //       headers: AUTH,
+  //       body: JSON.stringify(encounterPayload),
+  //     });
+  
+  //     /* =========================
+  //        3️⃣ CREATE RELATED PERSON (KIN)
+  //     ========================= */
+  //     if (formData.kinName) {
+  //       const relatedPersonPayload: any = {
+  //         resourceType: "RelatedPerson",
+  //         patient: { reference: patientRef },
+  //         relationship: [
+  //           {
+  //             text: formData.relationship,
+  //           },
+  //         ],
+  //         name: [
+  //           {
+  //             text: formData.kinName,
+  //           },
+  //         ],
+  //         telecom: formData.kinPhone
+  //           ? [{ system: "phone", value: formData.kinPhone }]
+  //           : [],
+  //         address: formData.kinAddress
+  //           ? [{ text: formData.kinAddress }]
+  //           : [],
+  //       };
+  
+  //       await fetch(`${FHIR_BASE}/RelatedPerson`, {
+  //         method: "POST",
+  //         headers: AUTH,
+  //         body: JSON.stringify(relatedPersonPayload),
+  //       });
+  //     }
+  
+  //     /* =========================
+  //        ✅ SUCCESS
+  //     ========================= */
+  //     setSnackbar({
+  //       open: true,
+  //       severity: "success",
+  //       message: "NICU Admission completed successfully",
+  //     });
+  
+  //     setOpenDialog(false);
+  //     ResetForm();
+  //     setStep(1);
+  
+  //   } catch (error: any) {
+  //     console.error(error);
+  //     setSnackbar({
+  //       open: true,
+  //       severity: "error",
+  //       message: error.message || "Failed to save admission",
+  //     });
+  //   }
+  // };
+  
   const handleSubmit = async () => {
     try {
-      // Validate required fields
       if (!formData.mothersName || !formData.patientId || !formData.birthDate) {
         throw new Error("Required fields are missing");
       }
   
-      // Create FHIR Patient resource
-      const patientResource = {
+      const FHIR_BASE = import.meta.env.VITE_FHIRAPI_URL;
+      const AUTH = {
+        "Content-Type": "application/json", // 🔥 safer than application/fhir+json
+        Authorization: "Basic " + btoa("fhiruser:change-password"),
+      };
+  
+      /* =========================
+         1️⃣ CREATE PATIENT
+      ========================= */
+      const patientPayload: any = {
         resourceType: "Patient",
         active: true,
         managingOrganization: {
-          "reference": `Organization/${userOrganization}`
-      },
-        identifier: [{
-          system: "urn:ietf:rfc:3986",
-          value: formData.patientId
-        }],
+          reference: `Organization/${userOrganization}`,
+        },
+        identifier: [
+          {
+            system: "http://hospital.org/uhid",
+            value: formData.patientId,
+          },
+          {
+            system: "http://hospital.org/admission-no",
+            value: formData.adminNo,
+          },
+        ],
+        name: [
+          {
+            use: "official",
+            text: `B/O ${formData.mothersName}`,
+          },
+        ],
+        gender: formData.gender?.toLowerCase() || "unknown",
         birthDate: formData.birthDate,
+        address: formData.address ? [{ text: formData.address }] : [],
+        telecom: formData.mobile
+          ? [{ system: "phone", value: formData.mobile, use: "mobile" }]
+          : [],
         extension: [
           {
             url: "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName",
-            valueString: formData.mothersName
+            valueString: formData.mothersName,
           },
           {
-            url: "http://example.org/fhir/StructureDefinition/patient-gestationalAge",
-            valueString: `${formData.gestationWeeks || 0}W ${formData.gestationDays || 0}D`
+            url: "http://example.org/fhir/StructureDefinition/gestationalAge",
+            valueString: `${formData.gestationWeeks || 0}W ${formData.gestationDays || 0}D`,
           },
           {
-            url: "http://example.org/fhir/StructureDefinition/patient-birthWeight",
+            url: "http://example.org/fhir/StructureDefinition/birthWeight",
             valueQuantity: {
-              value: parseFloat(formData.birthWeight) || 0,
+              value: Number(formData.birthWeight) || 0,
               unit: "g",
               system: "http://unitsofmeasure.org",
-              code: "g"
-            }
-          }
+              code: "g",
+            },
+          },
+          {
+            url: "http://example.org/fhir/StructureDefinition/nationality",
+            valueString:
+              formData.nationality === "Other"
+                ? formData.otherNationality
+                : formData.nationality,
+          },
         ],
-        
       };
   
-      console.log("FHIR Payload:", JSON.stringify(patientResource, null, 2));
-  
-      const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Patient`, {
+      const patientRes = await fetch(`${FHIR_BASE}/Patient`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/fhir+json",
-          "Authorization": "Basic " + btoa("fhiruser:change-password")
-        },
-        body: JSON.stringify(patientResource)
+        headers: AUTH,
+        body: JSON.stringify(patientPayload),
       });
   
-      const responseText = await response.text();
-      
-      if (!response.ok) {
-        console.error("Full error response:", responseText);
-        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+      if (!patientRes.ok) {
+        const err = await patientRes.text();
+        throw new Error(`Patient creation failed: ${err}`);
       }
   
-      const result = responseText ? JSON.parse(responseText) : {};
-      console.log("Patient created:", result);
+      /* =========================
+         🔐 SAFE PATIENT ID
+      ========================= */
+      let patientId: string | null = null;
   
-      // Create the new patient object for state update
-      const newPatient: Patient = {
-        id: result.id,
-        name: `B/O ${formData.mothersName}`,
-        patientId: formData.patientId,
-        bed: "--", // Default value, update as needed
-        assignee: "--", // Default value, update as needed
-        birthDateTime: formData.birthDate,
-
-        gestation: `${formData.gestationWeeks || 0}W ${formData.gestationDays || 0}D`,
-        birthWeight: `${formData.birthWeight || 0} g`,
-        lastUpdated: new Date().toISOString(),
-        active: true,
-        dischargedDate: ""
+      const location = patientRes.headers.get("location");
+      if (location) {
+        patientId = location.split("/").pop()!;
+      } else {
+        const searchRes = await fetch(
+          `${FHIR_BASE}/Patient?identifier=http://hospital.org/uhid|${formData.patientId}`,
+          { headers: AUTH }
+        );
+  
+        if (!searchRes.ok) {
+          throw new Error("Patient created but could not be fetched");
+        }
+  
+        const bundle = await searchRes.json();
+        if (!bundle.entry?.length) {
+          throw new Error("Patient not found after creation");
+        }
+  
+        patientId = bundle.entry[0].resource.id;
+      }
+  
+      const patientRef = `Patient/${patientId}`;
+  
+      /* =========================
+         2️⃣ CREATE ENCOUNTER (FIXED)
+      ========================= */
+      const encounterPayload: any = {
+        resourceType: "Encounter",
+        status: "in-progress",
+        class: {
+          system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+          code: "IMP",
+        },
+        subject: {
+          reference: patientRef,
+        },
+        serviceProvider: {
+          reference: `Organization/${userOrganization}`,
+        },
+        period: {
+          start: new Date(
+            `${formData.doaDate}T${formData.doaTime || "00:00"}`
+          ).toISOString(),
+        },
+      
+        /* =========================
+           👨‍⚕️ DOCTORS
+        ========================= */
+        participant: [
+          ...(formData.treatingDr
+            ? [
+                {
+                  type: [
+                    {
+                      coding: [
+                        {
+                          system:
+                            "http://terminology.hl7.org/CodeSystem/v3-ParticipationType",
+                          code: "ATND",
+                          display: "Attending Physician",
+                        },
+                      ],
+                    },
+                  ],
+                  individual: {
+                    display: formData.treatingDr,
+                  },
+                },
+              ]
+            : []),
+      
+          ...(formData.admittingDr
+            ? [
+                {
+                  type: [
+                    {
+                      coding: [
+                        {
+                          system:
+                            "http://terminology.hl7.org/CodeSystem/v3-ParticipationType",
+                          code: "ADM",
+                          display: "Admitting Physician",
+                        },
+                      ],
+                    },
+                  ],
+                  individual: {
+                    display: formData.admittingDr,
+                  },
+                },
+              ]
+            : []),
+        ],
+      
+        /* =========================
+           🏥 REFERRING HOSPITAL
+        ========================= */
+        hospitalization: formData.refHospital
+          ? {
+              origin: {
+                display: formData.refHospital,
+              },
+            }
+          : undefined,
       };
+      
   
-      // Success handling
+      const encounterRes = await fetch(`${FHIR_BASE}/Encounter`, {
+        method: "POST",
+        headers: AUTH,
+        body: JSON.stringify(encounterPayload),
+      });
+      if (encounterRes.ok) {
+       console.log('checking encounter id', encounterPayload);
+       
+       
+      }
+      else {
+        const err = await encounterRes.text();
+        throw new Error(`Encounter creation failed: ${err}`);
+      }
+  
+      /* =========================
+         3️⃣ CREATE RELATED PERSON (FIXED)
+      ========================= */
+      if (formData.kinName) {
+        const relatedPersonPayload: any = {
+          resourceType: "RelatedPerson",
+          patient: {
+            reference: patientRef,
+          },
+          relationship: [
+            {
+              coding: [
+                {
+                  system: "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                  code: "NOK",
+                  display: formData.relationship || "Next of Kin",
+                },
+              ],
+            },
+          ],
+          name: [
+            {
+              use: "official",
+              text: formData.kinName,
+            },
+          ],
+          telecom: formData.kinPhone
+            ? [{ system: "phone", value: formData.kinPhone }]
+            : [],
+          address: formData.kinAddress ? [{ text: formData.kinAddress }] : [],
+        };
+  
+        const kinRes = await fetch(`${FHIR_BASE}/RelatedPerson`, {
+          method: "POST",
+          headers: AUTH,
+          body: JSON.stringify(relatedPersonPayload),
+        });
+  
+        if (!kinRes.ok) {
+          const err = await kinRes.text();
+          throw new Error(`RelatedPerson creation failed: ${err}`);
+        }
+      }
+  
+      /* =========================
+         ✅ SUCCESS
+      ========================= */
       setSnackbar({
         open: true,
-        message: "Patient successfully added!",
-        severity: "success"
+        severity: "success",
+        message: "NICU Admission completed successfully",
       });
-  
+      await fetchPatients();
       setOpenDialog(false);
-      setFormData({
-        mothersName: "",
-        patientId: "",
-        birthDate: "",
-        birthTime: "",
-        gestationWeeks: "",
-        gestationDays: "",
-        birthWeight: "",
-      });
-  
-      // Update state with the new patient
-      setPatients(prevPatients => [...prevPatients, newPatient]);
+      ResetForm();
+      setStep(1);
   
     } catch (error: any) {
-      console.error("Error saving patient:", error);
+      console.error(error);
       setSnackbar({
         open: true,
-        message: error.message || "Failed to add patient",
-        severity: "error"
+        severity: "error",
+        message: error.message || "Failed to save admission",
       });
     }
   };
+  
+   const fetchPatientDetails = async (patientId: string) => {
+    const BASE = import.meta.env.VITE_FHIRAPI_URL;
+    const AUTH = {
+      Authorization: "Basic " + btoa("fhiruser:change-password"),
+    };
+  
+    /* =========================
+       1️⃣ PATIENT
+    ========================= */
+    const patientRes = await fetch(`${BASE}/Patient/${patientId}`, {
+      headers: AUTH,
+    });
+    const patient = await patientRes.json();
+  
+    /* =========================
+       2️⃣ ACTIVE ENCOUNTER
+    ========================= */
+    const encRes = await fetch(
+      `${BASE}/Encounter?subject=Patient/${patientId}&status=in-progress`,
+      { headers: AUTH }
+    );
+    const encBundle = await encRes.json();
+    const encounter = encBundle.entry?.[0]?.resource || null;
+  
+    /* =========================
+       3️⃣ RELATED PERSON
+    ========================= */
+    const rpRes = await fetch(
+      `${BASE}/RelatedPerson?patient=Patient/${patientId}`,
+      { headers: AUTH }
+    );
+    const rpBundle = await rpRes.json();
+    const kin = rpBundle.entry?.[0]?.resource || null;
+  
+    /* =========================
+       🔁 NORMALIZE FOR UI
+    ========================= */
+    return {
+      /* IDs */
+      patientId:
+        patient.identifier?.find((i: any) =>
+          i.system?.includes("uhid")
+        )?.value || "-",
+  
+      admissionNo:
+        patient.identifier?.find((i: any) =>
+          i.system?.includes("admission")
+        )?.value || "-",
+  
+      /* Baby */
+      motherName:
+        patient.extension?.find(
+          (e: any) =>
+            e.url ===
+            "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName"
+        )?.valueString || "-",
+  
+      name: patient.name?.[0]?.text || "-",
+      gender: patient.gender || "-",
+      birthDate: patient.birthDate || "-",
+  
+      birthDateTime: patient.birthDate
+        ? new Date(patient.birthDate).toLocaleDateString()
+        : "-",
+  
+      gestationalAge:
+        patient.extension?.find((e: any) =>
+          e.url.includes("gestationalAge")
+        )?.valueString || "-",
+  
+      birthWeight:
+        patient.extension?.find((e: any) =>
+          e.url.includes("birthWeight")
+        )?.valueQuantity?.value || "-",
+  
+      nationality:
+        patient.extension?.find((e: any) =>
+          e.url.includes("nationality")
+        )?.valueString || "-",
+  
+      /* Contact */
+      mobile: patient.telecom?.[0]?.value || "-",
+      address: patient.address?.[0]?.text || "-",
+  
+      /* Admission */
+      bed:
+        encounter?.location?.[0]?.location?.display || "-",
+  
+      admissionDate: encounter?.period?.start
+        ? new Date(encounter.period.start).toLocaleString()
+        : "-",
+  
+      treatingDoctor:
+        encounter?.participant?.[0]?.individual?.display || "-",
+  
+      admittingDoctor:
+        encounter?.participant?.[1]?.individual?.display || "-",
+  
+      refHospital:
+        encounter?.extension?.find((e: any) =>
+          e.url.includes("referringHospital")
+        )?.valueString || "-",
+  
+      /* Next of Kin */
+      kinName: kin?.name?.[0]?.text || "-",
+  
+      kinRelation:
+        kin?.relationship?.[0]?.coding?.[0]?.display || "-",
+  
+      kinMobile: kin?.telecom?.[0]?.value || "-",
+  
+      kinAddress: kin?.address?.[0]?.text || "-",
+    };
+  };
+   
+  const handlePatientClick = async (patientId: string) => {
+    try {
+      const data = await fetchPatientDetails(patientId);
+      setSelectedPatient(data);
+      console.log("related person data checking",data);
+      
+      setOpenPatientDialog(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  
   const handleCloseSnackbar = () => {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
@@ -687,15 +1368,16 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
       <TableBody>
         {filteredPatients.map((patient) => (
           <TableRow
-            key={patient.id || patient.patientId}
-            sx={{
-              backgroundColor: "#FFFFFF",
-              "&:hover": {
-                backgroundColor: "#f5f5f5",
-                cursor: "pointer",
-              },
-            }}
-          >
+          key={patient.id || patient.patientId}
+           onClick={() => navigate(`/patient-profile/${patient.id}`)}
+          sx={{
+            backgroundColor: "#FFFFFF",
+            "&:hover": {
+              backgroundColor: "#f5f5f5",
+              cursor: "pointer",
+            },
+          }}
+        >
             <TableCell sx={{ color: "#000000" }}>{patient.name}</TableCell>
             <TableCell sx={{ color: "#000000" }}>{patient.patientId}</TableCell>
             <TableCell sx={{ color: "#000000" }}>{patient.bed}</TableCell>
@@ -733,225 +1415,1060 @@ const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     <MenuItem onClick={() => handleAssignClick("user")}>Assign User</MenuItem>
     <MenuItem onClick={() => handleAssignClick("bed")}>Assign Bed</MenuItem>
   </Menu>
+
   <Dialog
   open={openDialog}
   onClose={() => setOpenDialog(false)}
-  maxWidth="xs"
+  maxWidth="sm"
+  fullWidth
+  hideBackdrop={false}
   PaperProps={{
     sx: {
-      borderRadius: 2,
+      borderRadius: 3,
       p: 1,
-      backgroundColor: 'white',
-      color: 'black' // makes all text/icons inside black by default
+      backgroundColor: "white",
+      color: "black",
+      position: "relative",
     }
   }}
 >
-<DialogTitle sx={{ fontWeight: 500, pb: 1, color: '#000000', textAlign: 'center' }}>
-NICU Admission
-</DialogTitle>
+  {/* Close Icon */}
+  <IconButton
+    onClick={() => {
+      ResetForm(),
+      setOpenDialog(false)}}
+    sx={{ position: "absolute", top: 10, right: 10, color: "black" }}
+  >
+    <CloseIcon />
+  </IconButton>
 
-  <DialogContent dividers sx={{ borderColor: '#ccc' }}>
-    <Grid container spacing={3}>
-      
-    <Grid item xs={12}>
-        
-        <TextField
-          fullWidth
-          label="Mother's Name"
-          placeholder="Mother's Name"
-          name="mothersName"
-          value={formData.mothersName}
-          onChange={handleChange}
-          required
-          InputProps={{startAdornment: (
-            <InputAdornment position="start">
-              <Typography color="black">B/O -</Typography>
-            </InputAdornment>
-          ),
-            sx: {
-              backgroundColor: '#F5F5F5',
-              borderRadius: 1,
-              color: '#000',
-            },
-          }}
-          InputLabelProps={{ sx: { color: '#000' } }}
-        />
-      </Grid>
+  {/* ---- TITLE ---- */}
+  <DialogTitle
+    sx={{ fontWeight: 600, textAlign: "center", color: "#000" }}
+  >
+    NICU Admission
+  </DialogTitle>
 
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label="Patient ID"
-          placeholder="07996799"
-          name="patientId"
-          value={formData.patientId}
-          onChange={handleChange}
-          required
-          InputProps={{startAdornment: (
-            <InputAdornment position="start">
-              <Typography color="black">UHID -</Typography>
-            </InputAdornment>
-          ),
-            sx: {
-              backgroundColor: '#F5F5F5',
-              borderRadius: 1,
-              color: '#000',
-            },
-          }}
-          InputLabelProps={{ sx: { color: '#000' } }}
-        />
-      </Grid>
-      
-   
+  {/* ---- STEPPER ---- */}
+  <Box sx={{ display: "flex", justifyContent: "center", mt: 1, mb: 2 }}>
+    {[
+      { id: 1, label: "" },
+      { id: 2, label: "" },
+      { id: 3, label: "" },
+    ].map((stepItem, index, arr) => {
+      const isLast = index === arr.length - 1;
+      const isActive = step >= stepItem.id;
 
-      <Grid item xs={12}>
-       
-        <InputLabel sx={{  color: 'black', mb: 1 }}>
-  Birth Date and Time
-</InputLabel>
-        <Stack direction="row" spacing={2}>
-        <TextField
-            fullWidth
-            type="date"
-            name="birthDate"
-            value={formData.birthDate}
-            onChange={handleChange}
-             InputProps={{
-      sx: {
-        backgroundColor: '#F5F5F5',
-        borderRadius: 1,
-        color: '#000',
-      },
-    }}
-          />
-          <TextField
-            fullWidth
-            type="time"
-            name="birthTime"
-            value={formData.birthTime}
-            onChange={handleChange}
-            InputProps={{
-      sx: {
-        backgroundColor: '#F5F5F5',
-        borderRadius: 1,
-        color: '#000',
-      },
-    }}
-          />
-      
-         
-        </Stack>
-      </Grid>
-
-      <Grid item xs={12}>
-        <Grid container justifyContent={'space-between'}>
-          <Grid item xs={12} sm="auto">
-            <InputLabel sx={{  color: 'black' }}>
-              Gestation*
-            </InputLabel>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
-              <TextField
-                placeholder="27"
-                name="gestationWeeks"
-                value={formData.gestationWeeks}
-                onChange={handleChange}
-                sx={{ width: 60 }}
-                size="small"
-                InputProps={{
-                  sx: {
-                    backgroundColor: '#F5F5F5',
-                    borderRadius: 1,
-                    color: '#000',
-                  },
-                }}
-              />
-              <Typography variant="body2" color="black">W</Typography>
-              <TextField
-                placeholder="04"
-                name="gestationDays"
-                value={formData.gestationDays}
-                onChange={handleChange}
-                sx={{ width: 60 }}
-                size="small"
-                InputProps={{
-                  sx: {
-                    backgroundColor: '#F5F5F5',
-                    borderRadius: 1,
-                    color: '#000',
-                  },
-                }}
-              />
-              <Typography variant="body2" color="black">D</Typography>
-            </Stack>
-          </Grid>
-
-          <Grid item xs={12} sm="auto">
-            <InputLabel sx={{ color: 'black' }}>
-              Birth Weight*
-            </InputLabel>
-            <TextField
-              placeholder="2300"
-              name="birthWeight"
-              value={formData.birthWeight}
-              onChange={handleChange}
-              size="small"
-              sx={{ width: 190, mt: 1 }}
-              InputProps={{endAdornment: (
-                <InputAdornment position="end">
-                  <Typography color="black">gram</Typography>
-                </InputAdornment>
-              ),
-                sx: {
-                  backgroundColor: '#F5F5F5',
-                  borderRadius: 1,
-                  color: '#000',
-                },
-              }}
-              
+      return (
+        <Box
+          key={stepItem.id}
+          sx={{ display: "flex", alignItems: "center", width: "33%", position: "relative" }}
+        >
+          {/* Connecting Line */}
+          {!isLast && (
+            <Box
+              sx={{
+              position: "absolute",
+              top: "-6px", // centers line between circles
+              left: "62%",
+              right: "-38%",
+              height: "2px",
+              backgroundColor:
+                step > stepItem.id ? "#228BE6" : "rgba(34,139,230,0.3)",
+              transition: "background-color 0.3s ease",
+              zIndex: 0,
+            }}
             />
-          </Grid>
-        </Grid>
-      </Grid>
-    </Grid>
-  </DialogContent>
+          )}
 
-  <DialogActions sx={{ justifyContent: "space-between", p: 2 }}>
-  <Button
-    onClick={() => setOpenDialog(false)}
-    variant="outlined"
-    sx={{
-      textTransform: 'none',
-      borderColor: '#D0D5DD',
-      color: '#344054',
-      fontWeight: 500,
-      backgroundColor: '#FFFFFF',
-      '&:hover': {
-        backgroundColor: '#F9FAFB',
-      },
-    }}>
-      Cancel
-    </Button>
-    <Button
-      
-      onClick={handleSubmit}
-      sx={{
-        backgroundColor: '#228BE6',
-        color: '#FFFFFF',
-        '&:hover': {
-          backgroundColor: '#228BE6',
-        color: '#FFFFFF',
-        },
-        '&.Mui-disabled': {
-          backgroundColor: '#228BE61A',
-          color: 'grey',
-          opacity: 1, // prevents dimming
+          {/* Step Circle */}
+          <Box
+            sx={{
+            zIndex: 1,
+            width: 28,
+            height: 28,
+            borderRadius: "50%",
+            backgroundColor: isActive
+              ? "#228BE6"
+              : "rgba(34,139,230,0.15)",
+            color: isActive ? "#fff" : "#228BE6",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: 600,
+            fontSize: "0.9rem",
+            transition: "all 0.3s ease",
+
+            position: "absolute",     // <— IMPORTANT
+    top: "-20px",               // adjust vertically
+    left: "50%",               // center horizontally
+    transform: "translateX(-50%)",
+          }}
+          >
+            {stepItem.id}
+          </Box>
+
+          {/* Step Label */}
+          <Typography
+            sx={{
+              color: isActive ? "#124D81" : "#A7B3CD",
+              fontWeight: isActive ? 600 : 500,
+            }}
+          >
+            {stepItem.label}
+          </Typography>
+        </Box>
+      );
+    })}
+  </Box>
+
+  {/* ---- CONTENT ---- */}
+  <DialogContent dividers sx={{ borderColor: "#ccc" }}>
+   {step === 1 && (
+  <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+
+  {/* --- MOTHER NAME --- */}
+  <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+    <Typography sx={{ fontWeight: 500 }}>Name *</Typography>
+
+    <TextField
+    required
+      fullWidth
+      placeholder="Mother's name"
+      name="mothersName"
+      value={formData.mothersName}
+      onChange={handleChange}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <Typography color="black">B/O -</Typography>
+          </InputAdornment>
+        ),
+        sx: { backgroundColor: "#F5F5F5", borderRadius: 1 ,
+            "& .MuiInputBase-input": {
+        color: "#000",
+        opacity: 1,
+      }
         },
       }}
+    />
+  </Box>
+
+  {/* --- UHID + ADMISSION NO --- */}
+  <Box sx={{ display: "flex", gap: 2 }}>
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ fontWeight: 500 }}>UHID *</Typography>
+      <TextField
+        required
+        fullWidth
+        name="patientId"
+        value={formData.patientId}
+        onChange={handleChange}
+        //placeholder="NBNK-2883"
+        InputProps={{
+          sx: { backgroundColor: "#F5F5F5", borderRadius: 1,
+              "& .MuiInputBase-input": {
+        color: "#000",
+        opacity: 1,
+      }
+           },
+        }}
+      />
+    </Box>
+
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ fontWeight: 500 }}>Admission No *</Typography>
+      <TextField
+      required
+        fullWidth
+        name="adminNo"
+        value={formData.adminNo}
+        onChange={handleChange}
+        //placeholder="NKIP25-26/499"
+        InputProps={{
+          sx: { backgroundColor: "#F5F5F5", borderRadius: 1 ,
+              "& .MuiInputBase-input": {
+        color: "#000",
+        opacity: 1,
+      }
+          },
+        }}
+      />
+    </Box>
+  </Box>
+
+  {/* --- BED NO + GENDER --- */}
+  <Box sx={{ display: "flex", gap: 2 }}>
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ fontWeight: 500 }}>Bed No</Typography>
+      <TextField
+        fullWidth
+        name="bedNo"
+        value={formData.bedNo}
+        onChange={handleChange}
+        //placeholder="141-Vasudama/NICU"
+        InputProps={{
+          sx: { backgroundColor: "#F5F5F5", borderRadius: 1 ,
+              "& .MuiInputBase-input": {
+        color: "#000",
+        opacity: 1,
+      }
+          },
+        }}
+      />
+    </Box>
+
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ fontWeight: 500 }}>Gender *</Typography>
+
+      <Box sx={{ display: "flex", mt: 1}}>
+        <Button
+          fullWidth
+          
+          sx={{
+            textTransform: "none",
+            borderRadius: 2,
+            backgroundColor:
+              formData.gender === "Male" ? "#F9FAFB" : "#ffffffff",
+            color: formData.gender === "Male" ? "#228BE6" : "#868E96",
+            marginLeft:"18px",
+          }}
+          onClick={() => setFormData({ ...formData, gender: "Male" })}
+        >
+          ♂ Male
+        </Button>
+
+        <Button
+          fullWidth
+          
+          sx={{
+            textTransform: "none",
+            borderRadius: 2,
+            backgroundColor:
+              formData.gender === "Female" ? "#F9FAFB" : "#ffffffff",
+            color: formData.gender === "Female" ? "#228BE6" : "#868E96",
+            marginRight:"18px",
+          }}
+          onClick={() => setFormData({ ...formData, gender: "Female" })}
+        >
+          ♀ Female
+        </Button>
+      </Box>
+    </Box>
+  </Box>
+
+  {/* --- DOB + AGE --- */}
+  <Box sx={{ display: "flex", gap: 2 }}>
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ fontWeight: 500 }}>DOB*</Typography>
+      <TextField
+      required
+        type="date"
+        fullWidth
+        name="birthDate"
+        value={formData.birthDate}
+        onChange={handleChange}
+        InputProps={{
+          sx: { backgroundColor: "#F5F5F5", borderRadius: 1 ,
+              "& .MuiInputBase-input": {
+        color: "#000",
+        opacity: 1,
+      }
+          },
+              inputProps: {
+      max: new Date().toISOString().split("T")[0], // ⛔ Prevent future dates
+    },
+        }}
+      />
+    </Box>
+
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ fontWeight: 500 }}>Age</Typography>
+      <TextField
+      required
+      placeholder="Days"
+        fullWidth
+        //placeholder="2 D"
+        name="age"
+        value={formData.age}
+        onChange={handleChange}
+        InputProps={{
+          sx: { backgroundColor: "#F5F5F5", borderRadius: 1 ,
+            
+"& .MuiInputBase-input": {
+      color: "#000",       // BLACK PLACEHOLDER
+      opacity: 1,          // MAKE IT FULLY VISIBLE
+    }
+          },
+        }}
+      />
+    </Box>
+  </Box>
+
+  {/* --- GESTATION + BIRTH WEIGHT --- */}
+  <Box sx={{ display: "flex", gap: 2 }}>
+
+    {/* Gestation */}
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ fontWeight: 500 }}>Gestation</Typography>
+
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
+        <TextField
+          placeholder="00"
+          sx={{ width: 60 }}
+          name="gestationWeeks"
+          value={formData.gestationWeeks}
+          onChange={handleChange}
+          InputProps={{
+            sx: { backgroundColor: "#F5F5F5", borderRadius: 1,
+              "& .MuiInputBase-input": {
+      color: "#000",       // BLACK PLACEHOLDER
+      opacity: 1,          // MAKE IT FULLY VISIBLE
+    }
+             },
+          }}
+        />
+        <Typography>W</Typography>
+
+        <TextField
+          placeholder="00"
+          sx={{ width: 60 }}
+          name="gestationDays"
+          value={formData.gestationDays}
+          onChange={handleChange}
+          InputProps={{
+            sx: { backgroundColor: "#F5F5F5", borderRadius: 1 ,
+              "& .MuiInputBase-input": {
+      color: "#000",       // BLACK PLACEHOLDER
+      opacity: 1,          // MAKE IT FULLY VISIBLE
+    }
+            },
+          }}
+        />
+        <Typography>D</Typography>
+      </Box>
+    </Box>
+
+    {/* Birth Weight */}
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ fontWeight: 500 }}>Birth Weight (g)</Typography>
+      <TextField
+        fullWidth
+        //placeholder="0000 gram"
+        name="birthWeight"
+        value={formData.birthWeight}
+        onChange={handleChange}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+
+            </InputAdornment>
+          ),
+          sx: { backgroundColor: "#F5F5F5", borderRadius: 1,
+            "& .MuiInputBase-input": {
+      color: "#000",       // BLACK PLACEHOLDER
+      opacity: 1,          // MAKE IT FULLY VISIBLE
+    }
+           },
+        }}
+      />
+    </Box>
+
+  </Box>
+
+</Box>
+
+)}
+
+
+    {/* ---- STEP 2 CONTENT ---- */}
+    {step === 2 && (
+  <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+
+    {/* --- MOBILE + NATIONALITY --- */}
+    <Box sx={{ display: "flex", gap: 2 }}>
+      {/* Mobile No */}
+      <Box sx={{ flex: 1 }}>
+        <Typography sx={{ fontWeight: 500 }}>Mobile No</Typography>
+        <TextField
+          fullWidth
+          //placeholder="9948573839"
+          name="mobile"
+          value={formData.mobile}
+          onChange={handleChange}
+          InputProps={{
+            sx: {
+              backgroundColor: "#F5F5F5",
+              borderRadius: 1,
+              "& .MuiInputBase-input": { color: "#000", opacity: 1 }
+            }
+          }}
+        />
+      </Box>
+
+      {/* Nationality */}
+      <Box sx={{ flex: 1 }}>
+  <Typography sx={{ fontWeight: 500 }}>Nationality</Typography>
+
+  <TextField
+    select
+    fullWidth
+    name="nationality"
+    value={formData.nationality}
+    onChange={handleChange}
+    InputProps={{
+      sx: {
+        backgroundColor: "#F5F5F5",
+        borderRadius: 1,
+        "& .MuiInputBase-input": {
+          color: "#000",
+          opacity: 1,
+        },
+      },
+    }}
+  >
+    {[
+      "Indian",
+      // "Bangladeshi",
+      // "Pakistani",
+      // "Nepali",
+      // "Sri Lankan",
+      // "British",
+      // "American",
+      // "Chinese",
+      // "Japanese",
+      // "German",
+      // "Gulf National",
+      "Other",
+    ].map((item) => (
+      <MenuItem key={item} value={item}>
+        {item}
+      </MenuItem>
+    ))}
+  </TextField>
+
+  {/* 👇 SHOW ONLY IF OTHER */}
+  {formData.nationality === "Other" && (
+    <TextField
+      fullWidth
+      sx={{ mt: 1 }}
+      name="otherNationality"
+      placeholder="Enter nationality"
+      value={formData.otherNationality}
+      onChange={handleChange}
+      InputProps={{
+        sx: {
+          backgroundColor: "#F5F5F5",
+          borderRadius: 1,
+          "& .MuiInputBase-input": {
+            color: "#000",
+            opacity: 1,
+          },
+        },
+      }}
+    />
+    
+  )}
+  
+</Box>
+
+    </Box>
+
+    {/* --- ADDRESS --- */}
+    <Box>
+      <Typography sx={{ fontWeight: 500 }}>Address</Typography>
+      <TextField
+        fullWidth
+        multiline
+        minRows={2}
+        //placeholder="Govardhan Hill, Ashok Nagar, Nashik..."
+        name="address"
+        value={formData.address}
+        onChange={handleChange}
+        InputProps={{
+          sx: {
+            backgroundColor: "#F5F5F5",
+            borderRadius: 1,
+            "& .MuiInputBase-input": { color: "#000", opacity: 1 }
+          }
+        }}
+      />
+    </Box>
+
+    {/* --- NEXT OF KIN NAME --- */}
+    <Box>
+      <Typography sx={{ fontWeight: 500 }}>Next of Kin Name</Typography>
+      <TextField
+        fullWidth
+        //placeholder="Shakir Huzain"
+        name="kinName"
+        value={formData.kinName}
+        onChange={handleChange}
+        InputProps={{
+          sx: {
+            backgroundColor: "#F5F5F5",
+            borderRadius: 1,
+            "& .MuiInputBase-input": { color: "#000", opacity: 1 }
+          }
+        }}
+      />
+    </Box>
+
+    {/* --- PHONE + RELATIONSHIP --- */}
+    <Box sx={{ display: "flex", gap: 2 }}>
+      {/* Phone */}
+      <Box sx={{ flex: 1 }}>
+        <Typography sx={{ fontWeight: 500 }}>Phone</Typography>
+        <TextField
+          fullWidth
+          //placeholder="9948573839"
+          name="kinPhone"
+          value={formData.kinPhone}
+           disabled={sameAsPatient}
+          onChange={handleChange}
+          InputProps={{
+            sx: {
+              backgroundColor: "#F5F5F5",
+              borderRadius: 1,
+              "& .MuiInputBase-input": { color: "#000", opacity: 1 , WebkitTextFillColor: "#000",}
+            }
+          }}
+        />
+      </Box>
+
+      {/* Relationship */}
+      <Box sx={{ flex: 1 }}>
+        <Typography sx={{ fontWeight: 500 }}>Relationship</Typography>
+        <TextField
+          fullWidth
+          select
+          name="relationship"
+          value={formData.relationship}
+          onChange={handleChange}
+          InputProps={{
+            sx: { backgroundColor: "#F5F5F5", borderRadius: 1 ,
+              "& .MuiInputBase-input": {
+      color: "#000",       // BLACK PLACEHOLDER
+      opacity: 1,          // MAKE IT FULLY VISIBLE
+    }
+            }
+          }}
+        >
+          <MenuItem value="Father">Father</MenuItem>
+          <MenuItem value="Mother">Mother</MenuItem>
+          <MenuItem value="Guardian">Guardian</MenuItem>
+        </TextField>
+      </Box>
+    </Box>
+
+    {/* --- KIN ADDRESS --- */}
+    <Box>
+      <Typography sx={{ fontWeight: 500 }}>Address</Typography>
+      <TextField
+        fullWidth
+        multiline
+        minRows={2}
+        //placeholder="Govardhan Hill, Ashok Nagar..."
+        name="kinAddress"
+        value={formData.kinAddress}
+         disabled={sameAsPatient}
+        onChange={handleChange}
+        InputProps={{
+          sx: {
+            backgroundColor: "#F5F5F5",
+            borderRadius: 1,
+            "& .MuiInputBase-input": { color: "#000", opacity: 1 , WebkitTextFillColor: "#000",}
+          }
+        }}
+      />
+    </Box>
+    <FormControlLabel
+    sx={{ mt: 1 }}
+    control={
+      <Checkbox
+        checked={sameAsPatient}
+        onChange={(e) => {
+          const checked = e.target.checked;
+          setSameAsPatient(checked);
+
+          if (checked) {
+            setFormData((prev) => ({
+              ...prev,
+              kinAddress: prev.address,
+              kinPhone: prev.mobile,
+            }));
+          } else {
+            setFormData((prev) => ({
+              ...prev,
+              kinAddress: "",
+              kinPhone: "",
+            }));
+          }
+        }}
+        sx={{ color: "#124D81" }}
+      />
+    }
+    label={
+      <Typography sx={{ color: "#000", fontSize: 14 }}>
+        Same as patient address & phone
+      </Typography>
+    }
+  />
+    {/* --- DOA + TREATING DR --- */}
+    <Box sx={{ display: "flex", gap: 2 }}>
+      {/* DOA */}
+      <Box sx={{ flex: 1 }}>
+        <Typography sx={{ fontWeight: 500 }}>DOA</Typography>
+
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <TextField
+            type="date"
+            fullWidth
+            name="doaDate"
+            value={formData.doaDate}
+            onChange={handleChange}
+            InputProps={{
+              sx: { backgroundColor: "#F5F5F5", borderRadius: 1 ,
+                "& .MuiInputBase-input": { color: "#000", opacity: 1 }
+              }
+            }}
+          />
+          <TextField
+            type="time"
+            fullWidth
+            name="doaTime"
+            value={formData.doaTime}
+            onChange={handleChange}
+            InputProps={{
+              sx: { backgroundColor: "#F5F5F5", borderRadius: 1 ,
+                "& .MuiInputBase-input": { color: "#000", opacity: 1 }
+              }
+            }}
+          />
+        </Box>
+      </Box>
+
+      {/* Treating Dr */}
+      <Box sx={{ flex: 1 }}>
+        <Typography sx={{ fontWeight: 500 }}>Treating Dr</Typography>
+        <TextField
+          fullWidth
+          select
+          name="treatingDr"
+          value={formData.treatingDr}
+          onChange={handleChange}
+          InputProps={{
+            sx: { backgroundColor: "#F5F5F5", borderRadius: 1 ,
+              "& .MuiInputBase-input": { color: "#000", opacity: 1 }
+            }
+          }}
+        >
+          <MenuItem value="Dr Kedar Shriram M">Dr Kedar Shriram M</MenuItem>
+        </TextField>
+      </Box>
+    </Box>
+
+    {/* --- ADMITTING DR + REFERRING HOSPITAL --- */}
+    <Box sx={{ display: "flex", gap: 2 }}>
+      <Box sx={{ flex: 1 }}>
+        <Typography sx={{ fontWeight: 500,
+          "& .MuiInputBase-input": {
+      color: "#000",       // BLACK PLACEHOLDER
+      opacity: 1,          // MAKE IT FULLY VISIBLE
+    }
+         }}>Admitting Dr</Typography>
+        <TextField
+          fullWidth
+          select
+          name="admittingDr"
+          value={formData.admittingDr}
+          onChange={handleChange}
+          InputProps={{
+            sx: { backgroundColor: "#F5F5F5", borderRadius: 1 ,
+              "& .MuiInputBase-input": { color: "#000", opacity: 1 }
+            }
+          }}
+        >
+          <MenuItem value="Dr Kedar Shriram M">Dr Kedar Shriram M</MenuItem>
+        </TextField>
+      </Box>
+
+      <Box sx={{ flex: 1 }}>
+        <Typography sx={{ fontWeight: 500 }}>Referring Hospital</Typography>
+        <TextField
+          fullWidth
+         //placeholder="Borneo Hospital"
+          name="refHospital"
+          value={formData.refHospital}
+          onChange={handleChange}
+          InputProps={{
+            sx: {
+              backgroundColor: "#F5F5F5",
+              borderRadius: 1,
+              "& .MuiInputBase-input": { color: "#000", opacity: 1 }
+            }
+          }}
+        />
+      </Box>
+    </Box>
+  </Box>
+)}
+
+    {/* ---- STEP 3 CONTENT ---- */}
+    {step === 3 && (
+  <Box sx={{ display: "flex", flexDirection: "column", gap: 3, pb: 2 }}>
+    
+   
+    {/* ---- SECTION TITLE ---- */}
+
+    {/* PREVIEW BLOCK 1 */}
+    <Box
+  sx={{
+    p: 2,
+    border: "1px solid #E5E7EB",
+    borderRadius: 3,
+    backgroundColor: "#FFFFFF",
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+    
+  }}
+>
+
+  {/* Header Row */}
+  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+    <Box
+      sx={{
+        width: 26,
+        height: 26,
+        borderRadius: "50%",
+        backgroundColor: "#E8F3FF",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#1E88E5",
+        fontSize: "1.1rem",
+      }}
     >
-      Save Admission
-    </Button>
+      
+    </Box>
+
+    <Typography sx={{ fontWeight: 700, fontSize: "1rem" }}>
+      B/O {formData.mothersName}
+    </Typography>
+  </Box>
+
+  <Box
+    sx={{
+      borderBottom: "1px solid #E5E7EB",
+      width: "100%",
+      mt: 1,
+    }}
+  />
+
+  {/* --- Row 1 (UHID & Admission No) --- */}
+  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+    <Box>
+      <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>UHID:</Typography>
+      <Typography sx={{ fontWeight: 700 }}>{formData.patientId}</Typography>
+    </Box>
+
+    <Box>
+      <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>Admission No:</Typography>
+      <Typography sx={{ fontWeight: 700 }}>{formData.adminNo}</Typography>
+    </Box>
+  </Box>
+
+  {/* --- Row 2 (Gender, Age, DOB) --- */}
+  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+    <Box>
+      <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>Gender:</Typography>
+      <Typography sx={{ fontWeight: 700 }}>{formData.gender}</Typography>
+    </Box>
+
+    <Box>
+      <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>Age:</Typography>
+      <Typography sx={{ fontWeight: 700 }}>{formData.age}</Typography>
+    </Box>
+
+    <Box>
+      <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>DOB:</Typography>
+      <Typography sx={{ fontWeight: 700 }}>{formData.birthDate}</Typography>
+    </Box>
+  </Box>
+
+  {/* --- Row 3 (Bed No) --- */}
+  <Box>
+    <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>Bed No:</Typography>
+    <Typography sx={{ fontWeight: 700 }}>{formData.bedNo}</Typography>
+  </Box>
+
+  {/* Edit Icon Button */}
+  <Box
+    sx={{
+      position: "absolute",
+      bottom: 12,
+      right: 12,
+      width: 38,
+      height: 38,
+      backgroundColor: "#F3F4F6",
+      borderRadius: "50%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      transition: "0.2s",
+      "&:hover": {
+        backgroundColor: "#E5E7EB",
+      },
+    }}
+    onClick={() => setStep(1)}
+  >
+    <EditIcon sx={{ color: "#1E88E5", fontSize: "1.2rem" }} />
+  </Box>
+</Box>
+
+
+    {/* ---- SECTION TITLE 2 ---- */}
+   
+    {/* PREVIEW BLOCK 2 */}
+   <Box
+  sx={{
+    p: 2,
+    border: "1px solid #E5E7EB",
+    borderRadius: 3,
+    backgroundColor: "#FFFFFF",
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+    mt: -2
+  }}
+>
+
+  {/* --- Row 1 (Mobile / Nationality) --- */}
+  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>
+        Mobile No:
+      </Typography>
+      <Typography sx={{ fontWeight: 700 }}>
+        {formData.mobile}
+      </Typography>
+    </Box>
+
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>
+        Nationality:
+      </Typography>
+      <Typography sx={{ fontWeight: 700 }}>
+        { finalNationality}
+      </Typography>
+    </Box>
+
+  </Box>
+
+  {/* --- Address (Full Row) --- */}
+  <Box>
+    <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>
+      Address :
+    </Typography>
+    <Typography sx={{ fontWeight: 700, lineHeight: 1.4 }}>
+      {formData.address}
+    </Typography>
+  </Box>
+
+  {/* --- Row 3 (Kin Name / Relationship) --- */}
+  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>
+        Next of Kin:
+      </Typography>
+      <Typography sx={{ fontWeight: 700 }}>
+        {formData.kinName}
+      </Typography>
+    </Box>
+
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>
+        Relationship:
+      </Typography>
+      <Typography sx={{ fontWeight: 700 }}>
+        {formData.relationship}
+      </Typography>
+    </Box>
+  </Box>
+
+  {/* --- Kin Phone (Full Row) --- */}
+  <Box>
+    <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>
+      Kin Phone:
+    </Typography>
+    <Typography sx={{ fontWeight: 700 }}>
+      {formData.kinPhone}
+    </Typography>
+  </Box>
+
+  {/* --- Kin Address (Full Row) --- */}
+  <Box>
+    <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>
+      Kin Address:
+    </Typography>
+    <Typography sx={{ fontWeight: 700, lineHeight: 1.4 }}>
+      {formData.kinAddress}
+    </Typography>
+  </Box>
+
+  {/* --- Row 6 (DOA / Treating Dr) --- */}
+  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+    
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>
+        DOA:
+      </Typography>
+      <Typography sx={{ fontWeight: 700 }}>
+        {formData.doaDate} • {formData.doaTime}
+      </Typography>
+    </Box>
+
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>
+        Treating Dr:
+      </Typography>
+      <Typography sx={{ fontWeight: 700 }}>
+        {formData.treatingDr}
+      </Typography>
+    </Box>
+
+  </Box>
+
+  {/* --- Row 7 (Admitting Dr / Ref Hospital) --- */}
+  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>
+        Admitting Dr:
+      </Typography>
+      <Typography sx={{ fontWeight: 700 }}>
+        {formData.admittingDr}
+      </Typography>
+    </Box>
+
+    <Box sx={{ flex: 1 }}>
+      <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>
+        Referring Hospital:
+      </Typography>
+      <Typography sx={{ fontWeight: 700 }}>
+        {formData.refHospital}
+      </Typography>
+    </Box>
+
+  </Box>
+
+</Box>
+<FormControlLabel
+  control={
+    <Checkbox
+      checked={isVerified}
+      onChange={(e) => setIsVerified(e.target.checked)}
+      sx={{ color: "#124D81" }}
+    />
+  }
+  label="All details are verified and correct"
+/>
+
+{/* <Box sx={{ flex: 1 }}>
+      <Typography sx={{ color: "#6B7280", fontSize: "0.85rem" }}>
+        Filled by:
+      </Typography>
+      <Typography sx={{ fontWeight: 700 }}>
+        {formData.admittingDr}
+      </Typography>
+    </Box> */}
+  </Box>
+)}
+
+  </DialogContent>
+
+  {/* ---- FOOTER BUTTONS ---- */}
+  <DialogActions sx={{ alignContent:"center",justifyContent: "center", p: 2 }}>
+
+     {/* Next / Back / Save logic */}
+    <Box>
+      {step == 1 && (
+        <Button
+          
+          sx={{
+            textTransform: "none",
+            marginRight:"18px",
+            background:"#228BE61A"
+          }}
+        >
+          Admission Form 
+        </Button>
+      )}
+      {step > 1 && (
+        <Button
+          onClick={() => setStep(step - 1)}
+          sx={{ mr: 1, textTransform: "none" }}
+        >
+          Back
+        </Button>
+      )}
+
+      {step < 3 ? (
+        <Button
+        onClick={() => {
+    if (!isFormComplete(formData)) {
+      setSnackbar({
+        open:true,
+        severity:"error",
+        message:"Fill all the fields"
+
+      });
+      return;
+    }
+    setStep(step+1);
+  }}
+          sx={{
+    backgroundColor: "#228BE6",
+    color: "#fff",
+    textTransform: "none",
+    "&:hover": {
+      backgroundColor: "#228BE6 !important",  // <- FIX HOVER FADE
+      color: "#fff",
+    }
+  }}
+        >
+          Add
+        </Button>
+      ) : (
+        <Button
+        disabled={!isVerified}
+          onClick={() => {
+    
+    handleSubmit();
+  }}
+
+          sx={{
+     backgroundColor: isVerified ? "#228BE6" : "#A7B3CD",
+    color: "#fff",
+    textTransform: "none",
+    "&:hover": {
+      backgroundColor: "#228BE6 !important",  // <- FIX HOVER FADE
+      color: "#fff",
+    }
+  }}
+        >
+          Save Admission
+        </Button>
+      )}
+    </Box>
+
   </DialogActions>
 </Dialog>
+
 <Dialog open={assignDialog.open} onClose={handleAssignDialogClose}>
   <DialogTitle>
     {assignDialog.type === "user" ? "Assign User" : "Assign Bed"}
@@ -1003,6 +2520,85 @@ NICU Admission
       Assign
     </Button>
   </DialogActions>
+</Dialog>
+<Dialog
+  open={openPatientDialog}
+  onClose={() => setOpenPatientDialog(false)}
+  fullWidth
+  maxWidth="md"
+>
+  <DialogTitle
+    sx={{
+      fontWeight: 600,
+      color: "#124D81",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    }}
+  >
+    Patient Details
+    <IconButton onClick={() => setOpenPatientDialog(false)}>
+      ✕
+    </IconButton>
+  </DialogTitle>
+
+  <DialogContent dividers>
+    {selectedPatient && (
+      <Stack spacing={3}>
+        {/* 🔹 Top Summary */}
+        <Stack direction="row" spacing={4}>
+          <Typography><b>Mother’s Name:</b> {selectedPatient.motherName}</Typography>
+          <Typography><b>UHID:</b> {selectedPatient.patientId}</Typography>
+          <Typography><b>Admission No:</b> {selectedPatient.admissionNo}</Typography>
+        </Stack>
+
+        {/* 🔹 Baby Info */}
+        <Stack direction="row" spacing={4}>
+          <Typography><b>DOB:</b> {selectedPatient.birthDateTime}</Typography>
+          <Typography><b>Gender:</b> {selectedPatient.gender}</Typography>
+          <Typography><b>GA:</b> {selectedPatient.gestationalAge}</Typography>
+          <Typography><b>Birth Weight:</b> {selectedPatient.birthWeight} g</Typography>
+        </Stack>
+
+        {/* 🔹 Admission Details */}
+        <Box>
+          <Typography fontWeight={600} mb={1}>
+            Admission Details
+          </Typography>
+
+          <Stack spacing={1}>
+            <Typography><b>Bed No:</b> {selectedPatient.bed}</Typography>
+            <Typography><b>DOA:</b> {selectedPatient.admissionDate}</Typography>
+            <Typography><b>Treating Doctor:</b> {selectedPatient.treatingDoctor}</Typography>
+            <Typography><b>Admitting Doctor:</b> {selectedPatient.admittingDoctor}</Typography>
+            <Typography><b>Referring Hospital:</b> {selectedPatient.refHospital}</Typography>
+          </Stack>
+        </Box>
+
+        {/* 🔹 Contact */}
+        <Box>
+          <Typography fontWeight={600} mb={1}>
+            Contact Details
+          </Typography>
+
+          <Typography><b>Mobile:</b> {selectedPatient.mobile}</Typography>
+          <Typography><b>Address:</b> {selectedPatient.address}</Typography>
+          <Typography><b>Nationality:</b> {selectedPatient.nationality}</Typography>
+        </Box>
+
+        {/* 🔹 Next of Kin */}
+        <Box>
+          <Typography fontWeight={600} mb={1}>
+            Next of Kin
+          </Typography>
+
+          <Typography><b>Name:</b> {selectedPatient.kinName}</Typography>
+          <Typography><b>Relation:</b> {selectedPatient.kinRelation}</Typography>
+          <Typography><b>Mobile:</b> {selectedPatient.kinMobile}</Typography>
+        </Box>
+      </Stack>
+    )}
+  </DialogContent>
 </Dialog>
 
       <Snackbar

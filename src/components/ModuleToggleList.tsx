@@ -15,9 +15,11 @@ const MODULE_OPTIONS = [
   'Diagnosis, Treatment & Care plan',
   'Patient Profile & Birth Data',
   'Clinical Notes',
+  'Consent Forms',          // ✅ ADD THIS
   'Alarm Logs',
   'Nurse task list'
 ];
+
 
 export const ModuleToggleList: React.FC<ModuleToggleListProps> = ({ organizationId }) => {
   const [modules, setModules] = useState<{name: string, enabled: boolean}[]>([]);

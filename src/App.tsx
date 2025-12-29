@@ -22,6 +22,7 @@ import {PatientDetailView } from "./pages/PatientDetails";
 import { Administration } from "./pages/Administration";
 
 import { PermissionProvider } from './contexts/PermissionContext';
+import{ PatientProfile } from "./pages/PatientProfile";
 const theme = createTheme({
     typography: {
         allVariants: {
@@ -112,10 +113,12 @@ function App() {
                     <Route path="/patient-monitor" element={<PatientMonitor currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
                     <Route path="/nurse-monitor" element={<NurseMonitor currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
                     {/* <Route path="/all-patient" element={<AllPatient searchQuery={searchQuery} currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} /> */}
+                    
                     <Route path="/admin" element={<AdminPage userOrganization={UserOrganization} darkTheme={darkTheme} />} />
                     <Route path="/administration" element={<Administration  isSidebarCollapsed={isSidebarCollapsed} openDialog={openDialog} userOrganization={UserOrganization} darkTheme={darkTheme} onCloseDialog={handleCloseDialog}/>} />
-                    <Route path="/organization" element={<Organization darkTheme={darkTheme} userOrganization={UserOrganization}/>} /> 
-                     <Route path="/patient/:id" element={<PatientDetailView  isSidebarCollapsed={isSidebarCollapsed} key={""} newData={false} userOrganization={UserOrganization} patient_id={""} device={[]} patient_resource_id={""} observation_resource={[]} communication_resource={[]} patient_name={""} darkTheme={false} UserRole={UserRole} selectedIcon={""} gestational_age={""} birthDate={""} />} />
+                    <Route path="/organization" element={<Organization darkTheme={darkTheme} userOrganization={UserOrganization} />} /> 
+                    <Route path="/patient-profile/:patientId" element={<PatientProfile UserRole={UserRole} userOrganization={UserOrganization} />} />
+                     <Route path="/patient/:id" element={<PatientDetailView  isSidebarCollapsed={isSidebarCollapsed} key={""} newData={false} userOrganization={UserOrganization} patient_id={""} device={[]} patient_resource_id={""} observation_resource={[]} communication_resource={[]} patient_name={""} darkTheme={false} UserRole={UserRole} selectedIcon={""} gestational_age={""} birthDate={""} gender={""} />} />
                 </Routes>
                 </PermissionProvider>
             </DeviceProvider>

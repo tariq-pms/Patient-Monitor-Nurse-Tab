@@ -19,6 +19,8 @@ import {
   faInbox,
   faHeartCircleBolt,
   faTableColumns,
+  faFileSignature
+  
 } from "@fortawesome/free-solid-svg-icons";
 import { usePermissions } from "../contexts/PermissionContext";
 
@@ -60,7 +62,7 @@ export const SidebarOg: FC<SidebarProps> = ({
     { id: 'notes', label: "Notes", icon: faFile, fhirModuleName: "Clinical Notes" },
     { id: 'assessments', label: "Assessments", icon: faClipboardCheck, fhirModuleName: "Assessments" }, 
     { id: 'growthchart', label: "Growth Chart", icon: faBaby, fhirModuleName: "Diagnostics" },
-
+    { id: 'consentforms', label: "Consent Forms", icon: faFileSignature, fhirModuleName: "Consent Forms" },
   
   ];
 
@@ -94,6 +96,7 @@ export const SidebarOg: FC<SidebarProps> = ({
   const filteredMenuItems = loading 
     ? [] 
     : allMenuItems.filter(item => canViewModule(item.fhirModuleName));
+// const filteredMenuItems = allMenuItems;
 
   // Debug: Show what's being filtered
   useEffect(() => {

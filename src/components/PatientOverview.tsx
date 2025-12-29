@@ -579,7 +579,7 @@ const patientData = {
     backgroundColor: "#FFFFFF",
     borderRadius: 3,
     minHeight: "80px",
-    padding: 2,
+    padding: 0,
   }}
 >
   {loading ? (
@@ -607,7 +607,7 @@ const patientData = {
     <>
       {/* -- your entire original component, unchanged -- */}
       {latestManual && (
-        <Box sx={{ flex: "0 0 25%", ml: 2 }}>
+        <Box sx={{ flex: "0 0 25%", ml: 1 }}>
           <Typography
             variant="subtitle2"
             sx={{

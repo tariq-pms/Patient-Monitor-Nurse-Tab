@@ -1,4 +1,4 @@
-import {Box,Typography,Stack} from "@mui/material";
+import {Box,Typography,Stack, IconButton} from "@mui/material";
 import { SidebarOg } from '../components/SidebarOg';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBed } from "@fortawesome/free-solid-svg-icons";
@@ -12,9 +12,12 @@ import { Trends1 } from "../components/Trends1";
 import { Notes } from "../components/Notes";
 import { Treatment } from "../components/Treatment";
 import { Dashboard } from '../components/Dashboard';
+import { ConsentForms } from '../components/ConsentForm';
 import { GrowthChart } from '../components/GrowthChart';
 import { usePermissions } from '../contexts/PermissionContext';
 import { ProtectedModule } from '../components/ProtectedModule'; // ADD THIS IMPORT
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useNavigate } from "react-router-dom"; 
 
 export interface PatientDetails {
   newData: boolean;
@@ -22,6 +25,7 @@ export interface PatientDetails {
   patient_id: string;
   gestational_age:string;
   birthDate:string;
+  gender:string;
   device: {
     "resourceType": string;
     "id": string;
@@ -145,8 +149,8 @@ export interface PatientDetails {
 export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
   const [selectedMenuItemId, setSelectedMenuItemId] = useState('overview');
   const location = useLocation();
-  const { patientName, patientId, patientResourceId,gestationAge,birthDate } = location.state || {};
-  
+  const { patientName, patientId, patientResourceId,gestationAge,birthDate,gender,birthWeight, } = location.state || {};
+  const navigate = useNavigate(); 
   // ADD PERMISSION HOOK
   const { canViewModule, loading } = usePermissions();
 
@@ -161,7 +165,8 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
       'trends': 'Vitals & Trends',
       'treatment': 'Patients Clinical List',
       'assessments': 'Assessments',
-      'growthchart':'Diagnostics'
+      'growthchart':'Diagnostics',
+      'consentforms':'Consent Forms'
     };
     
     const moduleName = moduleMap[id];
@@ -194,47 +199,61 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
     borderBottom: "1px solid #E0E0E0", 
   }}
 >
-        <Box sx={{ display: "flex", padding: 1, justifyContent: "space-between", backgroundColor: '#FFFFFFCC', alignItems: "center" }}>
-          <Stack paddingRight={1} paddingLeft={1} sx={{ backgroundColor: "#5E84CC1A", borderRadius: 2 }}>
-            <Typography variant="h6" sx={{ color: "#124D81" }}>
-              <span style={{ fontSize: 'medium', color: "#A7B3CD" }}>B/O:</span>  {patientName} 
-            </Typography>
-          </Stack>
-         
-          <Stack direction="row" spacing={1} alignItems="center">
-            <FontAwesomeIcon icon={faBed} color="#A7B3CD" />
-            <Typography variant="subtitle1" style={{ color: "#124D81", fontWeight: 600 }}>
-              {/* {props.patient_id} */}
-            </Typography>
-          </Stack>
-          
-          <Stack direction="row" spacing={1} style={{ alignItems: "center" }} >
-            <Typography variant="subtitle1" sx={{ color: "#A7B3CD" }}>
-              PID:
-            </Typography>
-            <Typography variant="subtitle1" style={{ color: "#124D81", fontWeight: 600 }}>
-              {patientId}
-            </Typography>
-          </Stack>
-          
-          <Stack direction="row" spacing={1} style={{ alignItems: "center" }} >
-            <Typography variant="subtitle1" sx={{ color: "#A7B3CD" }}>
-              GA: 
-            </Typography>
-            <Typography variant="subtitle1" style={{ color: "#124D81", fontWeight: 600 }}>
-             {gestationAge}
-            </Typography>
-          </Stack>
-   
-          <Stack direction="row" spacing={1} style={{ alignItems: "center" }}>
-            <Typography variant="subtitle1" style={{ color: "#A7B3CD"}}>
-              D.O.B:
-            </Typography>
-            <Typography variant="subtitle1" style={{ color: "#124D81", fontWeight: 600 }}>
-              {birthDate}
-            </Typography>
-          </Stack>
-        </Box>
+<Box sx={{ display: "flex", alignItems: "center",  backgroundColor: '#FFFFFFCC', borderRadius: 2 }}>
+      
+      {/* Back button */}
+      <IconButton onClick={() => navigate(-1)}>
+        <ArrowBackIcon sx={{ color: "#124D81" }} />
+      </IconButton>
+      
+      <Stack direction="row" width={'100%'} justifyContent={'space-around'}  >
+      {/* Patient Name */}
+      <Stack direction="row"    spacing={10} paddingX={1} sx={{ backgroundColor: "#5E84CC1A", borderRadius: 2 }}>
+        <Typography variant="h6" sx={{ color: "#124D81" }}>
+          <span style={{ fontSize: 'medium', color: "#A7B3CD" }}>B/O:</span> {patientName}
+        </Typography>
+        <Stack direction="row" spacing={1} alignItems="center">
+        <FontAwesomeIcon icon={faBed} color="#A7B3CD" />
+        <Typography variant="subtitle1" sx={{ color: "#124D81", fontWeight: 600 }}>
+          -- {/* Replace with bed info if available */}
+        </Typography>
+      </Stack>
+      </Stack>
+
+      {/* Bed Info */}
+      {/* <Stack direction="row" spacing={1} alignItems="center">
+        <FontAwesomeIcon icon={faBed} color="#A7B3CD" />
+        <Typography variant="subtitle1" sx={{ color: "#124D81", fontWeight: 600 }}>
+          --
+        </Typography>
+      </Stack> */}
+
+      {/* PID */}
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Typography variant="subtitle1" sx={{ color: "#A7B3CD" }}>ID:</Typography>
+        <Typography variant="subtitle1" sx={{ color: "#124D81", fontWeight: 600 }}>{patientId}</Typography>
+      </Stack>
+
+      {/* GA */}
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Typography variant="subtitle1" sx={{ color: "#A7B3CD" }}>GA:</Typography>
+        <Typography variant="subtitle1" sx={{ color: "#124D81", fontWeight: 600 }}>{gestationAge}</Typography>
+      </Stack>
+
+      {/* Weight */}
+      <Stack direction="row" spacing={0.5} alignItems="center">
+        <Typography variant="subtitle1" sx={{ color: "#A7B3CD" }}>Weight:</Typography>
+        <Typography variant="subtitle1" sx={{ color: "#124D81", fontWeight: 600 }}>{birthWeight}</Typography>
+        {/* {weightDelta && <Typography variant="subtitle2" sx={{ color: "green", fontWeight: 600 }}>-- g</Typography>} */}
+      </Stack>
+
+      {/* D.O.B */}
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Typography variant="subtitle1" sx={{ color: "#A7B3CD" }}>D.O.B:</Typography>
+        <Typography variant="subtitle1" sx={{ color: "#124D81", fontWeight: 600 }}>{birthDate}</Typography>
+      </Stack>
+      </Stack>
+    </Box>
       </Box>
 
       {/* Main page */}
@@ -395,11 +414,28 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
         birth_date={birthDate}
         gestational_age= {gestationAge} 
         userOrganization={props.userOrganization}
+        gender={gender}
       />
     </Box>
   </ProtectedModule>
 )}
 
+{selectedMenuItemId === 'consentforms' && (
+  <ProtectedModule module="Consent Forms">
+    <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
+      <ConsentForms  patient_resource_id={patientResourceId}  
+        patient_name={patientName} 
+        patient_id={patientId}
+        birth_date={birthDate}
+        gestational_age= {gestationAge} 
+        UserRole={props.UserRole} 
+        gender={gender}  
+        birth_weight={birthWeight}
+
+      />
+    </Box>
+  </ProtectedModule>
+)}
 
           {/* Default view */}
           {!selectedMenuItemId && (

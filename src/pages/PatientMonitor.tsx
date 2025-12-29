@@ -36,6 +36,8 @@ type Patient = {
     value: string;
   }[];
   birthDate:string,
+  birthWeight:string,
+  gender:string;
   managingOrganization: {
     reference: string;
   };
@@ -73,7 +75,7 @@ interface State {
   const triggerRef = useRef<HTMLDivElement | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [selectedIndex, setSelectedIndex] = useState<number>(1);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setSelectedIndex(newValue);
@@ -169,7 +171,7 @@ interface State {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient?_count=50&organization=${userOrganization}`, {
+        const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient?_count=100&organization=${userOrganization}`, {
           credentials: 'omit',
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -420,7 +422,7 @@ value={selectedIndex}
                 birthDate={String(patient.birthDate)}
                 patient_id={String(patient.identifier[0]?.value)}
                 device={parentDevice[String(patient.id)]}
-         
+                gender={String(patient.gender)}
                 darkTheme={darkTheme}
                 // selectedIcon={selectedIcon}
                 onClick={() => handlePatientCardClick(patient)}
@@ -439,6 +441,8 @@ value={selectedIndex}
                 patient_name={String(patient.extension[0]?.valueString)}
                 gestational_age={String(patient.extension[1]?.valueString)}
                 birthDate={String(patient.birthDate)}
+                birthWeight={String(patient.birthWeight)}
+                gender={String(patient.gender)}
                 patient_id={String(patient.identifier[0]?.value)}
                 device={parentDevice[String(patient.id)]}
                 observation_resource={parentObs[String(patient.id)]}

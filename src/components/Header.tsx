@@ -146,27 +146,12 @@ const handleBackButtonClick = () => {
             <>
               <div style={{ marginRight: 'auto' }}>
               <Box sx={{ width:'55%',maxWidth: '55%', display:'flex'}}>
-                 {/* Sidebar Toggle */}
-          {/* <IconButton 
-            onClick={props.onToggleSidebar} 
-            size={isMobile ? 'small' : 'medium'}
-            
-          >
-            <FontAwesomeIcon
-              icon={props.isSidebarCollapsed ?  faAngleDoubleLeft: faAngleDoubleRight }
-              style={{ 
-                color: props.darkTheme ? 'grey' : 'grey', 
-                fontSize: isMobile ? '1.2rem' : '1.2rem' 
-              }}
-            />
-          </IconButton> */}
-
-          {/* Logo */}
-          <IconButton    onClick={handleBackButtonClick}   sx={{height:'40px',  cursor: 'pointer'}}>
-              <ArrowBackIcon style={{color: darkTheme ? 'white' : '#124D81' }} />       
+               
+          {/* <IconButton    onClick={handleBackButtonClick}   sx={{height:'40px',  cursor: 'pointer'}}>
+              <ArrowBackIcon style={{color: darkTheme ? 'white' : '#124D81' }} />        */}
         {/* < DehazeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} /> */}
-       
-      </IconButton>
+{/*        
+      </IconButton> */}
           <Box 
             sx={{ 
               display: 'flex', 

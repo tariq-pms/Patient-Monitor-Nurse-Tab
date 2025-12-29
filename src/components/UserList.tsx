@@ -53,6 +53,7 @@ const defaultModulePermissions: ModulePermissions = {
   "Clinical Notes": { create: false, view: false, edit: false, delete: false },
   "Patient Birth Details": { create: false, view: false, edit: false, delete: false },
   "Diagnostics": { create: false, view: false, edit: false, delete: false },
+  "Consent Forms": { create: false, view: false, edit: false, delete: false },
 };
 
 export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) => {
