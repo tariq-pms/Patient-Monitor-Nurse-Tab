@@ -24,7 +24,13 @@ interface ConsentFormProps {
 
 
 
-
+interface CardItemProps {
+  label: string;
+  type: string;
+  setSelectedForm: (val: string) => void;
+  generateFormPDF: (label: string, type: string) => void;
+  onClick: () => void;
+}
 
 
 export const ConsentForms: React.FC<ConsentFormProps> = (props) => {
@@ -32,14 +38,7 @@ export const ConsentForms: React.FC<ConsentFormProps> = (props) => {
 
   const [error, setError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
- 
-const [isLoadingReports] = useState(false);
-const [open, setOpen] = useState(false);
 
-
-
-
-  
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
     const [view, setView] = useState<"cards" | "preview">("cards");
   
@@ -190,7 +189,7 @@ incrementFormUsage(formLabel, type);
   pdf.text(`${props.patient_name}`,60,y-1)
   pdf.line(40, y + 1, 120, y + 1);
   pdf.text("Blood Group:", 130, y);
-  pdf.text("A+ve", 180, y);
+  pdf.text("-", 180, y);
   pdf.line(160, y + 1, 195, y + 1);
   y += 8;
 
@@ -212,10 +211,10 @@ incrementFormUsage(formLabel, type);
   y += 8;
 
   pdf.text("Bed No.:", 10, y);
-  pdf.text("343", 40, y);
+  pdf.text("-", 40, y);
   pdf.line(30, y + 1, 60, y + 1);
   pdf.text("Ward:", 70, y);
-  pdf.text("2A", 90, y);
+  pdf.text("-", 90, y);
   pdf.line(90, y + 1, 120, y + 1);
   pdf.text("Time:", 130, y);
   pdf.text("12:00", 150, y);
@@ -599,7 +598,7 @@ case "Anaesthesia Record": {
     body: [
       
       ["Patient Name", `${props.patient_name}`, "Age", "21", "Sex", `${props.gender}`],
-      ["Date", `${props.birth_date}`, "Indoor No.", "", "Time", "13:07"],
+      ["Date", `${props.birth_date}`, "Indoor No.", "", "Time", "-"],
     ],
   });
 
@@ -1016,7 +1015,7 @@ case "Informed Surgery / Procedure": {
   };
 
   /* ================= PAGE 1 ================= */
-  drawHeader("15");
+  drawHeader();
 
   let y = 25;
   pdf.setFont("Times", "Normal");
@@ -1243,11 +1242,11 @@ const drawRadioGroup = (label: string, options: string[], startX: number, startY
 y+=5;
   /* ================= BASIC DETAILS ================= */
   cell(margin, 80, "Patient Name");
-  pdf.text("Gugan",margin+37,37);
+  pdf.text(`${props.patient_name}`,margin+37,37);
   cell(margin + 80, 40, "Sex: ");
   pdf.text(`${props.gender}`,margin+97,37);
   cell(margin + 120, 70, "Age");
-  pdf.text("21",margin+137,37);
+  pdf.text(`${props.gestational_age}`,margin+137,37);
 
   y += rowH;
   cell(margin, 80, "UHID / IP No.");
@@ -1259,7 +1258,7 @@ y+=5;
 
   y += rowH;
   cell(margin, 190, "DOA");
-  pdf.text("15/12/2025",margin+37,49);
+  pdf.text("-",margin+37,49);
   y += rowH;
 
   /* ================= PATIENT CATEGORY ================= */
@@ -2062,7 +2061,7 @@ pdf.setPage(1);
 };
 
 
-const CardItem = ({ label, type }) => {
+const CardItem = ({ label, type }: CardItemProps)=> {
 const isClinical = type === "Clinical Form";
 
 return (
@@ -2204,10 +2203,13 @@ sx={{ fontSize: 14, fontWeight: 600, color: "#475569", mb: 1 }}
 {section.items.map((item) => (
 <Grid item xs={12} sm={6} md={4} lg={3} key={item.label}>
 <CardItem
-label={item.label}
-type={item.type}
-onClick={() => handleFormCardClick(item)}
-
+      label={item.label}
+      type={item.type}
+      onClick={() => handleFormCardClick(item)} setSelectedForm={function (): void {
+        throw new Error("Function not implemented.");
+      } } generateFormPDF={function (): void {
+        throw new Error("Function not implemented.");
+      } }
 />
 </Grid>
 ))}

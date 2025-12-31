@@ -8,23 +8,56 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   MenuItem,
-  IconButton,
+  
  Accordion,
   AccordionSummary,
   AccordionDetails,
 
-  Divider,
   Table,
   TableCell,
   TableBody,
   TableRow,
   TableHead,
-  Card} from "@mui/material";
+  Card,
+  Snackbar,
+  Alert} from "@mui/material";
   import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect,  useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 
+interface AssessmentData {
+  interpreterNeeded?: string;
+  patientDetails: {
+    name?: string;
+    gender?: string;
+    uhid?: string;
+    age?: string;
+    admissionDate?: string;
+    admissionTime?: string;
+    companionName?: string;
+    relation?: string;
+    companionPhone?: string;
+    language?: string;
+  };
+  vitals: {
+    temp?: string;
+    hr?: string;
+    rr?: string;
+    spo2?: string;
+    bp?: string;
+  };
+  anthropometry: {
+    weight?: string;
+    length?: string;
+    hc?: string;
+    bsl?: string;
+  };
+  medications: any[];
+  allergies: any[];
+  nursingNeeds: string[];
+  otherNeeds: string;
+}
 
 export interface PatientDetails {
   UserRole: string;
@@ -101,24 +134,44 @@ const logoBase64="iVBORw0KGgoAAAANSUhEUgAAAcIAAAD4CAYAAAB/juY6AAAQAElEQVR4AexdBZ
       },
   
       // 💊 Medications
-      medications:
-        raw.medications?.map((m: any) => ({
-          name:
-            m.medicationCodeableConcept?.text ||
-            m.medicationReference?.display ||
-            "Unknown",
-          dosage: m.dosage?.[0]?.text || "—",
-          status: m.status || "",
-        })) || [],
+      // 💊 Medications mapping inside buildNurseReport
+medications: raw.medications?.map((m: any) => {
+  const dosageItem = m.dosage?.[0];
+  
+  return {
+    name: m.medicationCodeableConcept?.text || 
+          m.medicationReference?.display || 
+          "Unknown",
+    
+    // In your storage: "text" stores the dose (e.g., "123")
+    dose: dosageItem?.text || "—",
+    
+    // In your storage: timing.code.text stores the frequency (e.g., "12H")
+    frequency: dosageItem?.timing?.code?.text || "—",
+    
+    // effectiveDateTime stores the timestamp
+    lastDose: m.effectiveDateTime || null,
+    
+    status: m.status || "",
+  };
+}) || [],
   
       // 🤧 Allergies
-      allergies:
-        raw.allergies?.map((a: any) => ({
-          name: a.code?.text || "Unknown",
-          category: a.category?.join(", ") || "",
-          reaction: a.reaction?.[0]?.description || "",
-          severity: a.reaction?.[0]?.severity || "",
-        })) || [],
+      // allergies:
+      //   raw.allergies?.map((a: any) => ({
+      //     name: a.code?.text || "Unknown",
+      //     category: a.category?.join(", ") || "",
+      //     reaction: a.reaction?.[0]?.description || "",
+      //     severity: a.reaction?.[0]?.severity || "",
+      //   })) || [],
+      // Inside buildNurseReport function
+allergies: raw.allergies?.map((a: any) => ({
+  name: a.code?.text || "Unknown",
+  // We use the FHIR category array to determine the type
+  category: a.category || [], 
+  reaction: a.reaction?.[0]?.description || "",
+  severity: a.reaction?.[0]?.severity || "",
+})) || [],
   
       // 🩺 Nursing Needs (CarePlan)
       nursingNeeds:
@@ -153,7 +206,7 @@ const logoBase64="iVBORw0KGgoAAAANSUhEUgAAAcIAAAD4CAYAAAB/juY6AAAQAElEQVR4AexdBZ
       treatment: false,
     });
       
-  const [assessment, setAssessment] = useState({
+    const [assessment, setAssessment] = useState<AssessmentData>({
       patientDetails: {},
       vitals: {},
       anthropometry: {},
@@ -161,6 +214,7 @@ const logoBase64="iVBORw0KGgoAAAANSUhEUgAAAcIAAAD4CAYAAAB/juY6AAAQAElEQVR4AexdBZ
       allergies: [],
       nursingNeeds: [],
       otherNeeds: "",
+      interpreterNeeded: "No",
     });
     
     const [loading, setLoading] = useState(true);
@@ -217,16 +271,53 @@ const currentTime = now.toLocaleTimeString("en-US", {
       locked:false, 
     }
   ]);
-  
-  const updateMedication = (
-    index: number,
-    field: string,
-    value: string
-  ) => {
-    const updated = [...medications];
-    updated[index][field] = value;
-    setMedications(updated);
-  };
+  /**
+ * Normalizes allergy records to determine which checkbox should be ticked.
+ * Prevents "Not Known" from triggering the "NO" checkbox.
+ */
+const getAllergyStatus = (records: any[]) => {
+  if (!records || records.length === 0) {
+    return { isYes: false, isNo: false, isUnknown: true };
+  }
+
+  // 1. Check for "Not Known"
+  const isUnknown = records.some(r => r.name.toLowerCase().includes('not known'));
+
+  // 2. Check for "NO"
+  // We ensure it starts with "no" but DOES NOT contain "not known"
+  const isNo = records.some(r => {
+    const name = r.name.toLowerCase();
+    return (name === 'no' || name.startsWith('no ')) && !name.includes('not known');
+  });
+
+  // 3. Check for "YES"
+  // Real clinical data that isn't a placeholder
+  const isYes = records.some(r => {
+    const name = r.name.toLowerCase();
+    return !name.startsWith('no') && !name.includes('not known');
+  });
+
+  // Extract names for the "If Yes" column
+  const yesNames = records
+    .filter(r => {
+      const name = r.name.toLowerCase();
+      return !name.startsWith('no') && !name.includes('not known');
+    })
+    .map(r => r.name)
+    .join(', ');
+
+  return { isYes, isNo, isUnknown, yesNames };
+};
+const updateMedication = (
+  index: number,
+  field: keyof { name: string; dose: string; frequency: string; lastDose: string; locked: boolean },
+  value: string | boolean // value can be string (for name/dose) or boolean (for locked)
+) => {
+  const updated = [...medications];
+  // Now TS knows field is a valid property
+  (updated[index] as any)[field] = value; 
+  setMedications(updated);
+};
   const handleNext = (current: string, next: string) => {
     // optional validation here
   
@@ -237,24 +328,34 @@ const currentTime = now.toLocaleTimeString("en-US", {
   
     setExpandedPanel(next);
   };
-  type VitalKey =
-  | "temp"
-  | "hr"
-  | "rr"
-  | "spo2"
-  | "relatedText"
-  | "weight"
-  | "hc"
-  | "length"
-  | "bsl"
-  | "bp";
+  // This automatically becomes "temp" | "hr" | "rr" | "spo2"
+type NumericVitalKey = keyof typeof VITAL_RANGES;
+  // type VitalKey1 =
+  // | "temp"
+  // | "hr"
+  // | "rr"
+  // | "spo2"
+  // | "relatedText"
+  // | "weight"
+  // | "hc"
+  // | "length"
+  // | "bsl"
+  // | "bp";
 
-  const VITAL_RANGES: Record<"temp" | "hr" | "rr" | "spo2", { min: number; max: number }> = {
+  // const VITAL_RANGES1: Record<"temp" | "hr" | "rr" | "spo2", { min: number; max: number }> = {
+  //   temp: { min: 30, max: 45 },
+  //   hr: { min: 60, max: 200 },
+  //   rr: { min: 20, max: 100 },
+  //   spo2: { min: 0, max: 100 },
+  // };
+  const VITAL_RANGES = {
     temp: { min: 30, max: 45 },
     hr: { min: 60, max: 200 },
     rr: { min: 20, max: 100 },
-    spo2: { min: 0, max: 100 },
-  };
+    spo2: { min: 0, max: 100 },      // cm
+  } as const;
+
+  type VitalKey = "temp" | "hr" | "rr" |"spo2";
   
   const handleVitalChange = (key: VitalKey, value: string) => {
     // allow empty
@@ -269,534 +370,73 @@ const currentTime = now.toLocaleTimeString("en-US", {
     setVitals((prev) => ({ ...prev, [key]: value }));
   };
 
-  const isOutOfRange = (key: "temp" | "hr" | "rr" | "spo2") => {
-    const val = Number(vitals[key]);
-    if (!vitals[key]) return false;
-    return val < VITAL_RANGES[key].min || val > VITAL_RANGES[key].max;
-  };
+  const isOutOfRange = (key: string): boolean => {
+  // Check if the key is one of the four numeric vitals
+  if (key in VITAL_RANGES) {
+    const k = key as NumericVitalKey;
+    const value = parseFloat(vitals[k]);
+    if (isNaN(value)) return false;
+    return value < VITAL_RANGES[k].min || value > VITAL_RANGES[k].max;
+  }
+  return false;
+};
+  
   const downloadPdf = async () => {
     const pages = document.querySelectorAll(".pdf-page");
-
     const pdf = new jsPDF("p", "mm", "a4");
-    
+    const pdfWidth = 210;
+    const pdfHeight = 297;
+  
     for (let i = 0; i < pages.length; i++) {
       const page = pages[i] as HTMLElement;
-    
+  
       const canvas = await html2canvas(page, {
-        scale: 2,                 // 🔴 IMPORTANT
+        scale: 3, // High quality for small text
         useCORS: true,
         backgroundColor: "#fff",
-        windowWidth: page.scrollWidth,
-        windowHeight: page.scrollHeight, // 🔴 IMPORTANT
+        height: page.scrollHeight,
+        windowHeight: page.scrollHeight,
       });
-    
+  
       const imgData = canvas.toDataURL("image/png");
-    
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    
+      const imgProps = pdf.getImageProperties(imgData);
+      
+      // Calculate how high the image would be if it spanned the full 210mm width
+      const actualHeightInMm = (imgProps.height * pdfWidth) / imgProps.width;
+  
       if (i > 0) pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+  
+      if (actualHeightInMm > pdfHeight) {
+        // 🔴 If content is too tall, scale it down to fit the height exactly
+        const ratio = pdfHeight / actualHeightInMm;
+        const scaledWidth = pdfWidth * ratio;
+        const xOffset = (pdfWidth - scaledWidth) / 2;
+        pdf.addImage(imgData, "PNG", xOffset, 0, scaledWidth, pdfHeight);
+      } else {
+        // Content fits naturally
+        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, actualHeightInMm);
+      }
     }
-    
     pdf.save("Initial_Assessment.pdf");
-    
   };
   
   const A4_PAGE_STYLE = {
     width: "210mm",
-    minHeight: "297mm",
-    padding: "5mm",
+    height: "297mm", // Fixed height for PDF capture
+    padding: "8mm",
     boxSizing: "border-box",
     backgroundColor: "#fff",
-    pageBreakAfter: "always",
+    mx: "auto",
+    display: "flex",
+    flexDirection: "column",
+    position: "relative",
+    overflow: "hidden", 
+    color: "#000",
+    "& .MuiTypography-root": { color: "#000", lineHeight: 1.1 }
   };
   
-  const generateNursingPdf = (assessment: any) => {
-    if (!assessment) {
-      alert("Assessment data is not available.");
-      return;
-    }
-  
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pageW = 210;
-    const margin = 10;
-    let y = 12;
-  
-    // Helper function
-    const val = (value: any) => {
-      if (value === null || value === undefined || value === "") return "";
-      return String(value);
-    };
-  
-    const patient = assessment.patientDetails || {};
-    const vitals = assessment.vitals || {};
-    const anthropometry = assessment.anthropometry || {};
-    const medications = assessment.medications || [];
-    const allergies = assessment.allergies || [];
-    const nursingNeeds = assessment.nursingNeeds || [];
-  
-    /* ================= PAGE 1 ================= */
-    
-    /* ================= HEADER ================= */
-    pdf.setFont("Times", "bold");
-    pdf.setFontSize(14);
-    pdf.text("INITIAL ASSESSMENT NURSING", pageW / 2, y, { align: "center" });
-    y += 8;
-  
-    // Hospital header
-    pdf.setFont("Times", "normal");
-    pdf.setFontSize(11);
-    pdf.text("borneo", pageW / 2, y, { align: "center" });
-    y += 4;
-    
-    pdf.setFontSize(9);
-    pdf.text("MOTHER & CHILD CARE HOSPITAL", pageW / 2, y, { align: "center" });
-    y += 6;
-  
-    // Doc number
-    pdf.setFont("Times", "bold");
-    pdf.text("DOC NO", pageW - margin - 20, y - 10);
-    pdf.setFontSize(14);
-    pdf.text("7", pageW - margin - 20, y - 4);
-  
-    /* ================= PATIENT DETAILS ================= */
-    pdf.setFont("Times", "normal");
-    pdf.setFontSize(11);
-    
-    // Patient details table
-    const createBox = (x: number, y: number, width: number, height: number, text: string, bold: boolean = false) => {
-      pdf.rect(x, y, width, height);
-      if (bold) pdf.setFont("Times", "bold");
-      pdf.text(text, x + 2, y + height/2 + 2);
-      if (bold) pdf.setFont("Times", "normal");
-    };
-  
-    // Row 1: Name and Sex
-    createBox(margin, y, 30, 8, "Name:", true);
-    createBox(margin + 30, y, 60, 8, val(patient.name));
-    createBox(margin + 90, y, 25, 8, "Sex:", true);
-    createBox(margin + 115, y, 35, 8, val(patient.gender));
-    y += 8;
-  
-    // Row 2: Date of Admission and Age
-    createBox(margin, y, 45, 8, "Date of Admitted:", true);
-    createBox(margin + 45, y, 45, 8, val(patient.admissionDate));
-    createBox(margin + 90, y, 25, 8, "Age:", true);
-    createBox(margin + 115, y, 35, 8, val(patient.age));
-    y += 8;
-  
-    // Row 3: Contact and UHID
-    createBox(margin, y, 70, 8, "Contact Person's Name & Phone No.:", true);
-    const contactInfo = patient.companionName ? `${patient.companionName} - ${patient.companionPhone || ''}` : "";
-    createBox(margin + 70, y, 50, 8, contactInfo);
-    createBox(margin + 120, y, 30, 8, "UHID / IP No.:", true);
-    createBox(margin + 150, y, 40, 8, val(patient.uhid));
-    y += 8;
-  
-    // Row 4: Chief Complaints and Time
-    createBox(margin, y, 40, 8, "Chief Complaints:", true);
-    createBox(margin + 40, y, 70, 8, nursingNeeds.length > 0 ? nursingNeeds[0] : "");
-    createBox(margin + 110, y, 40, 8, "Time Admitted:", true);
-    createBox(margin + 150, y, 40, 8, val(patient.admissionTime));
-    y += 12;
-  
-    /* ================= ADMISSION INFO ================= */
-    pdf.setFont("Times", "bold");
-    pdf.text("Accompanied by companion:", margin, y);
-    pdf.setFont("Times", "normal");
-    
-    // YES/NO checkboxes for companion
-    pdf.rect(margin + 60, y - 4, 8, 8);
-    if (patient.companionName) pdf.text("✓", margin + 62, y + 2);
-    pdf.text("YES", margin + 70, y + 2);
-    
-    pdf.rect(margin + 85, y - 4, 8, 8);
-    if (!patient.companionName) pdf.text("✓", margin + 87, y + 2);
-    pdf.text("NO", margin + 95, y + 2);
-    y += 8;
-  
-    // Companion details
-    if (patient.companionName) {
-      pdf.text("If Yes, Name of companion:", margin, y);
-      pdf.text(val(patient.companionName), margin + 60, y);
-      y += 6;
-      
-      pdf.text("Relationship with patient:", margin, y);
-      pdf.text(val(patient.relation), margin + 60, y);
-      y += 6;
-      
-      pdf.text("Phone No.:", margin, y);
-      pdf.text(val(patient.companionPhone), margin + 60, y);
-      y += 6;
-    }
-  
-    // Language and interpreter
-    pdf.text("Primary language spoken:", margin, y);
-    pdf.text(val(patient.language), margin + 60, y);
-    
-    pdf.text("Interpreter needed:", margin + 120, y);
-    pdf.rect(margin + 170, y - 4, 8, 8);
-    if (patient.requiresInterpreter) pdf.text("✓", margin + 172, y + 2);
-    pdf.text("YES", margin + 180, y + 2);
-    
-    pdf.rect(margin + 195, y - 4, 8, 8);
-    if (!patient.requiresInterpreter) pdf.text("✓", margin + 197, y + 2);
-    pdf.text("NO", margin + 205, y + 2);
-    y += 8;
-  
-    // Status of admission
-    pdf.text("Status of admission:", margin, y);
-    const admissionStatus = patient.admissionStatus || "Walking";
-    const statusOptions = ["Walking", "Wheelchair", "Stretcher"];
-    
-    statusOptions.forEach((option, index) => {
-      const x = margin + 50 + (index * 40);
-      pdf.rect(x, y - 4, 8, 8);
-      if (admissionStatus === option) {
-        pdf.text("✓", x + 2, y + 2);
-      }
-      pdf.text(option, x + 12, y + 2);
-    });
-    y += 12;
-  
-    /* ================= VITALS ================= */
-    pdf.setFont("Times", "bold");
-    pdf.text("Temp.:", margin, y);
-    pdf.setFont("Times", "normal");
-    pdf.text(val(vitals.temp), margin + 15, y);
-    
-    pdf.setFont("Times", "bold");
-    pdf.text("Pulse:", margin + 40, y);
-    pdf.setFont("Times", "normal");
-    pdf.text(val(vitals.hr), margin + 55, y);
-    
-    pdf.setFont("Times", "bold");
-    pdf.text("BP:", margin + 80, y);
-    pdf.setFont("Times", "normal");
-    pdf.text(val(vitals.bp), margin + 95, y);
-    
-    pdf.setFont("Times", "bold");
-    pdf.text("Respiration:", margin + 120, y);
-    pdf.setFont("Times", "normal");
-    pdf.text(val(vitals.rr), margin + 145, y);
-    
-    pdf.setFont("Times", "bold");
-    pdf.text("SpO2:", margin + 160, y);
-    pdf.setFont("Times", "normal");
-    pdf.text(val(vitals.spo2), margin + 180, y);
-    y += 6;
-  
-    pdf.setFont("Times", "bold");
-    pdf.text("Height:", margin, y);
-    pdf.setFont("Times", "normal");
-    pdf.text(val(anthropometry.height), margin + 20, y);
-    
-    pdf.setFont("Times", "bold");
-    pdf.text("Weight:", margin + 60, y);
-    pdf.setFont("Times", "normal");
-    pdf.text(val(anthropometry.weight), margin + 80, y);
-    
-    y += 10;
-  
-    // Horizontal line
-    pdf.line(margin, y, pageW - margin, y);
-    y += 8;
-  
-    /* ================= VALUABLES / BELONGINGS ================= */
-    pdf.setFont("Times", "bold");
-    pdf.setFontSize(12);
-    pdf.text("Valuables / Belongings (Please Tick)", pageW / 2, y, { align: "center" });
-    y += 6;
-  
-    const valuables = [
-      { label: "Dentures", checked: patient.dentures || false },
-      { label: "Hearing Aid", checked: patient.hearingAid || false },
-      { label: "Eye Glasses/ Contact Lens", checked: patient.eyeGlasses || false },
-      { label: "Jewellery", checked: patient.jewellery || false },
-      { label: "Prosthesis", checked: patient.prosthesis || false },
-    ];
-  
-    // Header for With Patient / Sent Home
-    pdf.setFontSize(9);
-    pdf.text("With Patient", pageW - margin - 80, y - 6);
-    pdf.text("Sent Home", pageW - margin - 30, y - 6);
-  
-    valuables.forEach((item, index) => {
-      const rowY = y + (index * 8);
-      
-      // Item label
-      pdf.rect(margin, rowY, 80, 8);
-      pdf.text(item.label, margin + 2, rowY + 5);
-      
-      // YES/NO checkboxes
-      pdf.rect(margin + 80, rowY, 30, 8);
-      pdf.text("YES", margin + 85, rowY + 5);
-      pdf.rect(margin + 85, rowY + 1, 8, 6);
-      if (item.checked) pdf.text("✓", margin + 87, rowY + 5);
-      
-      pdf.text("NO", margin + 100, rowY + 5);
-      pdf.rect(margin + 100, rowY + 1, 8, 6);
-      if (!item.checked) pdf.text("✓", margin + 102, rowY + 5);
-      
-      // With Patient checkbox
-      pdf.rect(pageW - margin - 80, rowY, 20, 8);
-      
-      // Sent Home checkbox
-      pdf.rect(pageW - margin - 30, rowY, 20, 8);
-    });
-  
-    y += valuables.length * 8 + 8;
-  
-    /* ================= ORIENTATION TO PATIENT ENVIRONMENT ================= */
-    pdf.setFont("Times", "bold");
-    pdf.setFontSize(12);
-    pdf.text("Orientation to Patient Environment", pageW / 2, y, { align: "center" });
-    y += 6;
-  
-    const orientationItems = [
-      "Room", "Nurse Call", "Telephone", "Service Directory", "Admission Kit",
-      "Visitors Policy", "Bed Controls", "Smoking Policy", "Bathroom", "Television",
-      "Functional", "Emergency Exit", "Veg. only food"
-    ];
-  
-    pdf.setFontSize(9);
-    orientationItems.forEach((item, index) => {
-      const col = index % 5;
-      const row = Math.floor(index / 5);
-      const x = margin + (col * 38);
-      const itemY = y + (row * 6);
-      
-      pdf.rect(x, itemY - 2, 36, 6);
-      pdf.text(item, x + 2, itemY + 2);
-    });
-  
-    y += Math.ceil(orientationItems.length / 5) * 6 + 10;
-  
-    /* ================= ALLERGIES / ADVERSE REACTION ================= */
-    pdf.setFont("Times", "bold");
-    pdf.setFontSize(12);
-    pdf.text("Allergies / Adverse Reaction", pageW / 2, y, { align: "center" });
-    y += 6;
-  
-    // Create allergy table
-    const allergyStartX = margin;
-    const colWidths = [40, 25, 15, 15, 45];
-    
-    // Header row
-    const allergyHeaders = ["Medication / Drug", "Not Known", "NO", "YES", "If Yes, Name of drug:"];
-    let currentX = allergyStartX;
-    
-    pdf.setFontSize(9);
-    pdf.setFont("Times", "bold");
-    allergyHeaders.forEach((header, i) => {
-      pdf.rect(currentX, y, colWidths[i], 8);
-      pdf.text(header, currentX + 2, y + 5);
-      currentX += colWidths[i];
-    });
-    y += 8;
-  
-    // Helper function for allergy rows
-    const createAllergyRow = (label: string, hasAllergy: boolean, specificAllergies: string) => {
-      currentX = allergyStartX;
-      
-      pdf.setFont("Times", "normal");
-      pdf.rect(currentX, y, colWidths[0], 8);
-      pdf.text(label, currentX + 2, y + 5);
-      currentX += colWidths[0];
-      
-      pdf.rect(currentX, y, colWidths[1], 8);
-      if (allergies.length === 0) pdf.text("✓", currentX + 10, y + 5);
-      currentX += colWidths[1];
-      
-      pdf.rect(currentX, y, colWidths[2], 8);
-      if (!hasAllergy) pdf.text("✓", currentX + 6, y + 5);
-      currentX += colWidths[2];
-      
-      pdf.rect(currentX, y, colWidths[3], 8);
-      if (hasAllergy) pdf.text("✓", currentX + 6, y + 5);
-      currentX += colWidths[3];
-      
-      pdf.rect(currentX, y, colWidths[4], 8);
-      if (hasAllergy && specificAllergies) {
-        pdf.text(specificAllergies, currentX + 2, y + 5);
-      }
-      
-      y += 8;
-    };
-  
-    // Medication/Drug row
-    const hasDrugAllergy = allergies.some((a: any) => a.type === "drug" || a.type === "medication");
-    const drugAllergies = allergies.filter((a: any) => a.type === "drug" || a.type === "medication")
-      .map((a: any) => a.name).join(", ");
-    createAllergyRow("Medication/Drug", hasDrugAllergy, drugAllergies);
-  
-    // Blood Transfusion row
-    createAllergyRow("Blood Transfusion", false, "");
-  
-    // Food row
-    const hasFoodAllergy = allergies.some((a: any) => a.type === "food");
-    const foodAllergies = allergies.filter((a: any) => a.type === "food")
-      .map((a: any) => a.name).join(", ");
-    createAllergyRow("Food", hasFoodAllergy, foodAllergies);
-  
-    y += 8;
-  
-    /* ================= PAGE 2 ================= */
-    pdf.addPage();
-    y = 12;
-  
-    /* ================= CURRENT MEDICATION ================= */
-    pdf.setFont("Times", "bold");
-    pdf.setFontSize(12);
-    pdf.text("Current Medication", pageW / 2, y, { align: "center" });
-    y += 8;
-  
-    // Medication table
-    const medStartX = margin;
-    const medColWidths = [70, 30, 40, 50];
-    
-    // Header
-    const medHeaders = ["Medication", "Dose", "Frequency", "Date/Time of last dose"];
-    currentX = medStartX;
-    
-    pdf.setFontSize(9);
-    pdf.setFont("Times", "bold");
-    medHeaders.forEach((header, i) => {
-      pdf.rect(currentX, y, medColWidths[i], 8);
-      pdf.text(header, currentX + 2, y + 5);
-      currentX += medColWidths[i];
-    });
-    y += 8;
-  
-    // Medication rows
-    pdf.setFont("Times", "normal");
-    const displayMeds = medications.slice(0, 4);
-    
-    displayMeds.forEach((med: any) => {
-      currentX = medStartX;
-      
-      pdf.rect(currentX, y, medColWidths[0], 8);
-      pdf.text(val(med.name), currentX + 2, y + 5);
-      currentX += medColWidths[0];
-      
-      pdf.rect(currentX, y, medColWidths[1], 8);
-      pdf.text(val(med.dosage), currentX + 2, y + 5);
-      currentX += medColWidths[1];
-      
-      pdf.rect(currentX, y, medColWidths[2], 8);
-      pdf.text(val(med.frequency), currentX + 2, y + 5);
-      currentX += medColWidths[2];
-      
-      pdf.rect(currentX, y, medColWidths[3], 8);
-      pdf.text(val(med.lastDose), currentX + 2, y + 5);
-      
-      y += 8;
-    });
-  
-    // Empty rows if needed
-    for (let i = displayMeds.length; i < 4; i++) {
-      currentX = medStartX;
-      medColWidths.forEach(width => {
-        pdf.rect(currentX, y, width, 8);
-        currentX += width;
-      });
-      y += 8;
-    }
-  
-    y += 12;
-  
-    /* ================= NURSING NEEDS ================= */
-    pdf.setFont("Times", "bold");
-    pdf.setFontSize(12);
-    pdf.text("Nursing Needs", pageW / 2, y, { align: "center" });
-    y += 8;
-  
-    // Nursing needs table
-    const needsStartX = margin;
-    
-    nursingNeeds.forEach((need: string, index: number) => {
-      pdf.setFont("Times", "normal");
-      pdf.setFontSize(9);
-      
-      // Need text
-      pdf.rect(needsStartX, y, 120, 8);
-      pdf.text(need, needsStartX + 2, y + 5);
-      
-      // YES column
-      pdf.rect(needsStartX + 120, y, 20, 8);
-      pdf.setFont("Times", "bold");
-      pdf.text("YES", needsStartX + 125, y + 5);
-      
-      // NO column
-      pdf.rect(needsStartX + 140, y, 20, 8);
-      pdf.text("NO", needsStartX + 145, y + 5);
-      
-      y += 8;
-    });
-  
-    // Other needs
-    if (assessment?.otherNeeds) {
-      pdf.setFont("Times", "normal");
-      pdf.rect(needsStartX, y, 160, 8);
-      pdf.text(`Other: ${assessment.otherNeeds}`, needsStartX + 2, y + 5);
-      y += 8;
-    }
-  
-    y += 12;
-  
-    /* ================= FORM COMPLETED BY ================= */
-    pdf.setFont("Times", "bold");
-    pdf.setFontSize(12);
-    pdf.text("Form Completed By", pageW / 2, y, { align: "center" });
-    y += 8;
-  
-    // Signature section
-    const sigStartX = margin;
-    const sigColWidths = [30, 70, 30, 40];
-    
-    // Name row
-    pdf.rect(sigStartX, y, sigColWidths[0], 8);
-    pdf.setFont("Times", "bold");
-    pdf.text("Name:", sigStartX + 2, y + 5);
-    
-    pdf.rect(sigStartX + sigColWidths[0], y, sigColWidths[1], 8);
-    y += 8;
-  
-    // Signature row
-    pdf.rect(sigStartX, y, sigColWidths[0], 8);
-    pdf.text("Signature:", sigStartX + 2, y + 5);
-    
-    pdf.rect(sigStartX + sigColWidths[0], y, sigColWidths[1], 8);
-    y += 8;
-  
-    // Designation row
-    pdf.rect(sigStartX, y, sigColWidths[0], 8);
-    pdf.text("Designation:", sigStartX + 2, y + 5);
-    
-    pdf.rect(sigStartX + sigColWidths[0], y, sigColWidths[1], 8);
-    y += 8;
-  
-    // Date and Time row
-    pdf.rect(sigStartX, y, sigColWidths[0], 8);
-    pdf.text("Date:", sigStartX + 2, y + 5);
-    
-    pdf.rect(sigStartX + sigColWidths[0], y, sigColWidths[2], 8);
-    
-    pdf.rect(sigStartX + sigColWidths[0] + sigColWidths[2], y, sigColWidths[0], 8);
-    pdf.text("Time:", sigStartX + sigColWidths[0] + sigColWidths[2] + 2, y + 5);
-    
-    pdf.rect(sigStartX + sigColWidths[0] + sigColWidths[2] + sigColWidths[0], y, sigColWidths[3], 8);
-  
-    /* ================= SAVE PDF ================= */
-    pdf.save(`Nursing_Initial_Assessment_${patient.name || 'Patient'}.pdf`);
-  };
   
   // Helper function
-  const val = (value: any) => {
-    if (value === null || value === undefined || value === "") return "";
-    return String(value);
-  };
 const MEASUREMENT_RANGES = {
   weight: { min: 300, max: 6000 },   // grams (preterm → term)
   hc: { min: 20, max: 45 },          // cm
@@ -861,6 +501,8 @@ const saveNurseInitialAssessment = async (
       Authorization: "Basic " + btoa("fhiruser:change-password"),
     };
   console.log('checking patientId',patientId);
+  console.log('completedPanels',completedPanels);
+  
   console.log('checking encounterId',encounterId);
   
     try {
@@ -938,7 +580,8 @@ const saveNurseInitialAssessment = async (
             valueString: patient.language,
           },
         ].filter(c =>
-          Object.keys(c).some(k => k.startsWith("value") && c[k] !== undefined)
+          // By casting 'c' to any, we tell TS we know what we are doing with the dynamic key
+          Object.keys(c).some(k => k.startsWith("value") && (c as any)[k] !== undefined && (c as any)[k] !== "")
         ),
       };
       
@@ -1104,17 +747,13 @@ for (const med of medications) {
 
   const payload: any = {
     resourceType: "MedicationStatement",
-
     status: "active",
-
     medicationCodeableConcept: {
       text: med.name,
     },
-
     subject: {
       reference: `Patient/${patientId}`,
     },
-
     statusReason: [
       {
         text: "Reported by nurse during initial assessment",
@@ -1122,7 +761,7 @@ for (const med of medications) {
     ],
   };
 
-  // ✅ Proper ISO date
+  // 1. Store Last Dose Time (FHIR effectiveDateTime)
   if (med.lastDose) {
     const d = new Date(med.lastDose);
     if (!isNaN(d.getTime())) {
@@ -1130,10 +769,19 @@ for (const med of medications) {
     }
   }
 
-  // ✅ Dosage (optional)
-  const doseText = `${med.dose || ""} ${med.frequency || ""}`.trim();
-  if (doseText) {
-    payload.dosage = [{ text: doseText }];
+  // 2. Store Dosage and Frequency separately
+  // FHIR allows 'text' for general instructions and 'timing' for frequency
+  if (med.dose || med.frequency) {
+    payload.dosage = [
+      {
+        text: med.dose || "", // Store the amount (e.g., "500mg")
+        timing: {
+          code: {
+            text: med.frequency || "", // Store frequency (e.g., "BD" or "Twice daily")
+          },
+        },
+      },
+    ];
   }
 
   const res = await fetch(`${BASE}/MedicationStatement`, {
@@ -1144,111 +792,103 @@ for (const med of medications) {
 
   if (!res.ok) {
     const err = await res.json();
-    console.error(
-      "❌ MedicationStatement failed:",
-      err.issue?.[0]?.details?.text || err
-    );
+    console.error("❌ MedicationStatement failed:", err);
     continue;
   }
-
-  console.log("✅ MedicationStatement saved", payload);
 }
-
   
    /* ===============================
    5️⃣ ALLERGIES / ADVERSE REACTIONS (FHIR SAFE)
 ================================ */
-
+/* ===============================
+   5️⃣ ALLERGIES / ADVERSE REACTIONS (FIXED)
+================================ */
 
 const allergyMappings = [
   {
-    key: "medication",
+    key: "medication", // This matches your state key
     label: "Medication / Drug Allergy",
     category: "medication",
-    snomed: "416098002", // Drug allergy
+    snomed: "416098002",
   },
   {
     key: "bloodTransfusion",
     label: "Blood Transfusion Reaction",
     category: "biologic",
-    snomed: "414285001", // Transfusion reaction
+    snomed: "414285001",
   },
   {
     key: "food",
     label: "Food Allergy",
     category: "food",
-    snomed: "414285001", // Food allergy
+    snomed: "414285001",
   },
 ];
 
+
 for (const item of allergyMappings) {
-  const value = allergies[item.key];
+  // 1. Get the raw value (e.g., "No", "Not Known", "Yes")
+  const rawValue = allergies[item.key as keyof typeof allergies] || "unknown";
+  
+  // 2. Convert to lowercase for reliable comparison
+  const value = rawValue.toLowerCase(); 
 
-  // ❗ CREATE RESOURCE ONLY IF YES
+  console.log(`Checking key: ${item.key}, Normalized value: ${value}`);
+  
+  let statusText = item.label; 
+  let verificationCode = "confirmed";
 
+  // 3. Match against your actual state strings
+  if (value === "no") {
+    statusText = `No ${item.label}`; 
+    verificationCode = "refuted";
+  } 
+  // Handle "not known" (which is what your log shows) or "unknown"
+  else if (value === "not known" || value === "unknown") {
+    statusText = `Not Known - ${item.label}`;
+    verificationCode = "unconfirmed";
+  }
 
   const allergyPayload = {
     resourceType: "AllergyIntolerance",
-
     clinicalStatus: {
-      coding: [
-        {
-          system:
-            "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
-          code: "active",
-        },
-      ],
+      coding: [{
+        system: "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
+        code: value === "no" ? "inactive" : "active" // Sets to inactive if 'No'
+      }]
     },
-
     verificationStatus: {
-      coding: [
-        {
-          system:
-            "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
-          code: "confirmed",
-        },
-      ],
+      coding: [{
+        system: "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
+        code: verificationCode,
+      }],
     },
-
     type: "allergy",
-
     category: [item.category],
-
     code: {
-      coding: [
-        {
-          system: "http://snomed.info/sct",
-          code: item.snomed,
-          display: item.label,
-        },
-      ],
-      text: item.label,
+      text: statusText, // This will now correctly be "No Medication..."
+      coding: [{
+        system: "http://snomed.info/sct",
+        code: item.snomed,
+        display: item.label
+      }]
     },
-
-    patient: {
-      reference: `Patient/${patientId}`,
-    },
-
-    encounter: {
-      reference: `Encounter/${encounterId}`,
-    },
-
+    patient: { reference: `Patient/${patientId}` },
     recordedDate: new Date().toISOString(),
-
-    note: [
-      {
-        text: "Recorded by nurse during initial assessment",
-      },
-    ],
   };
 
-  await fetch(`${BASE}/AllergyIntolerance`, {
+  const response = await fetch(`${BASE}/AllergyIntolerance`, {
     method: "POST",
     headers: AUTH,
     body: JSON.stringify(allergyPayload),
   });
 
-  console.log("✅ AllergyIntolerance created:", allergyPayload);
+  console.log(`📌 Final Payload for ${item.key}:`, allergyPayload.code.text);
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.error("❌ FHIR Server Error Details:", errorData.issue);
+  }
 }
 
       /* ===============================
@@ -1293,13 +933,13 @@ for (const item of allergyMappings) {
         created: new Date().toISOString(),
   
         activity: nursingItems
-          .filter((item) => nursingNeeds[item.key])
-          .map((item) => ({
-            detail: {
-              description: item.label,
-              status: "completed",
-            },
-          })),
+        .filter((item) => nursingNeeds[item.key as keyof typeof nursingNeeds])
+        .map((item) => ({
+          detail: {
+            description: item.label,
+            status: "completed",
+          },
+        })),
   
         note: nursingNeeds.otherNeeds
           ? [{ text: nursingNeeds.otherNeeds }]
@@ -1314,9 +954,19 @@ for (const item of allergyMappings) {
 
       
       console.log("📌 CarePlan", carePlanPayload);
+      setSnackbar({
+      open: true,
+      message: "Assessment saved successfully!",
+      severity: 'success',
+    });
       console.log("✅ Nurse Initial Assessment saved successfully");
   
     } catch (error) {
+      setSnackbar({
+      open: true,
+      message: "Failed to save assessment. Please check the server connection.",
+      severity: 'error',
+    });
       console.error("❌ Nurse Initial Assessment failed", error);
       throw error;
     }
@@ -1354,10 +1004,11 @@ for (const item of allergyMappings) {
           `${BASE}/MedicationStatement?subject=Patient/${patientId}&_count=100`,
           { headers: AUTH }
         ),
-        fetch(
-          `${BASE}/AllergyIntolerance?patient=Patient/${patientId}&_count=100`,
-          { headers: AUTH }
-        ),
+        // 🔹 Update this specific line in your Promise.all
+fetch(
+  `${BASE}/AllergyIntolerance?patient=Patient/${patientId}&_count=100`,
+  { headers: AUTH }
+),
         fetch(
           `${BASE}/CarePlan?subject=Patient/${patientId}&encounter=Encounter/${encounterId}&_count=10`,
           { headers: AUTH }
@@ -1433,16 +1084,42 @@ for (const item of allergyMappings) {
   };
   function getDatePart(dateTime: string) {
     if (!dateTime) return "";
+    
     const d = new Date(dateTime);
+    
+    // Check if the date is valid
+    if (isNaN(d.getTime())) {
+      console.warn("Invalid date provided to getDatePart:", dateTime);
+      return "";
+    }
+    
     return d.toISOString().split("T")[0]; // YYYY-MM-DD
   }
   
   function getTimePart(dateTime: string) {
     if (!dateTime) return "";
+    
     const d = new Date(dateTime);
+    
+    // Check if the date is valid
+    if (isNaN(d.getTime())) {
+      console.warn("Invalid date provided to getTimePart:", dateTime);
+      return "";
+    }
+    
     return d.toTimeString().slice(0, 5); // HH:mm
   }
-  
+  const [snackbar, setSnackbar] = useState<{
+  open: boolean;
+  message: string;
+  severity: 'success' | 'error';
+}>({
+  open: false,
+  message: '',
+  severity: 'success',
+});
+
+const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
   useEffect(() => {
     async function load() {
       try {
@@ -1498,33 +1175,11 @@ useEffect(() => {
     setRelation(props.patient.kinRelation || "");
   }
 }, [props.patientId]);
-const updatePatient = (field, value) => {
+const updatePatient = (field: string, value: string) => {
   setPatient((prev) => ({
     ...prev,
     [field]: value,
   }));
-};
-const addMedicationRow = () => {
-  setMedications((prev) => {
-    const updated = [...prev];
-
-    // 🔒 lock the last row
-    updated[updated.length - 1] = {
-      ...updated[updated.length - 1],
-      locked: true,
-    };
-
-    // ➕ add new empty editable row
-    updated.push({
-      name: "",
-      dose: "",
-      frequency: "",
-      lastDose: "",
-      locked: false,
-    });
-
-    return updated;
-  });
 };
 
   const [allergies, setAllergies] = useState({
@@ -1540,15 +1195,6 @@ const addMedicationRow = () => {
     }));
   };
   
-  const textFieldStyle = {
-    border: "1px solid #E6EEF6",
-    backgroundColor: "#F9FBFF",
-    borderRadius: 2,
-    "& .MuiInputBase-input": {
-      color: "#000",
-      cursor: "text",
-    },
-  };
   
 
   const [nursingNeeds, setNursingNeeds] = useState({
@@ -1565,10 +1211,22 @@ const addMedicationRow = () => {
   });
   
   const toggleNursingNeed = (key: string) => {
-    setNursingNeeds((prev) => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+    setNursingNeeds((prev) => {
+      // 1. Cast 'key' so TS knows it belongs to this object
+      const fieldKey = key as keyof typeof prev;
+      const currentValue = prev[fieldKey];
+  
+      // 2. Type Guard: Only toggle if it's a boolean
+      if (typeof currentValue === "boolean") {
+        return {
+          ...prev,
+          [fieldKey]: !currentValue,
+        };
+      }
+  
+      // If it's the 'otherNeeds' string, return the state unchanged
+      return prev;
+    });
   };
   
   const updateOtherNeeds = (value: string) => {
@@ -1659,7 +1317,7 @@ const addMedicationRow = () => {
     exclusive
     fullWidth
     value={patient.gender}
-    onChange={(e, v) => {
+    onChange={(_e, v) => {
       if (v) {
         updatePatient("gender", v.toLowerCase()); // store as "male"/"female"
       }
@@ -1816,7 +1474,7 @@ const addMedicationRow = () => {
   exclusive
   fullWidth
   value={patient.language}
-  onChange={(e, v) => updatePatient("language", v)}
+  onChange={(_e, v) => updatePatient("language", v)}
 >
   {["Marathi", "Hindi", "English", "Urdu", "Other"].map((lang) => (
     <ToggleButton
@@ -1926,9 +1584,10 @@ const addMedicationRow = () => {
     }
     error={isOutOfRange(item.key)}
     helperText={
-      isOutOfRange(item.key)
-        ? `Allowed: ${VITAL_RANGES[item.key].min}–${VITAL_RANGES[item.key].max}`
-        : `${VITAL_RANGES[item.key].min}–${VITAL_RANGES[item.key].max}`
+      // ✅ Cast the key in all these locations
+      isOutOfRange(item.key as VitalKey)
+        ? `Allowed: ${VITAL_RANGES[item.key as VitalKey].min}–${VITAL_RANGES[item.key as VitalKey].max}`
+        : `${VITAL_RANGES[item.key as VitalKey].min}–${VITAL_RANGES[item.key as VitalKey].max}`
     }
     inputProps={{ inputMode: "decimal" }}
     InputLabelProps={{
@@ -2127,156 +1786,63 @@ const addMedicationRow = () => {
     </Typography>
   </AccordionSummary>
 
-  <AccordionDetails
-    sx={{
+  <AccordionDetails sx={{
       "& *": { color: "#0F2B45" },
       "& .MuiInputBase-input": { color: "#000" }
-    }}
-  >
-    {/* HEADER */}
-    <Grid
-  container
-  spacing={2}
-  sx={{ mb: 2, ml: "26px", alignItems: "center" }}
->
-  {["Medication", "Dose", "Frequency", "Date / Time of last dose"].map(
-    (h) => (
-      <Grid item xs={2.8} key={h}>
-        <Typography sx={{ fontSize: 13, fontWeight: 600 }}>
-          {h}
-        </Typography>
+    }}>
+  {medications.map((med, index) => (
+    <Grid container spacing={2} key={index} sx={{ mb: 2, alignItems: 'center' }}>
+      <Grid item xs={3}>
+        <TextField
+       
+          fullWidth
+          label="Medication Name"
+          size="small"
+          value={med.name}
+          onChange={(e) => updateMedication(index, "name", e.target.value)}
+        />
       </Grid>
-    )
-  )}
-
-  {/* Action column */}
+      <Grid item xs={2}>
+        <TextField
+          fullWidth
+          label="Dose"
+          size="small"
+          placeholder="e.g. 500mg"
+          value={med.dose}
+          onChange={(e) => updateMedication(index, "dose", e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={3}>
+        <TextField
+          fullWidth
+          label="Frequency"
+          size="small"
+          placeholder="e.g. BD / TDS"
+          value={med.frequency}
+          onChange={(e) => updateMedication(index, "frequency", e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={4}>
+        <TextField
+          fullWidth
+          label="Last Dose Date/Time"
+          type="datetime-local"
+          size="small"
+          InputLabelProps={{ shrink: true }}
+          value={med.lastDose}
+          onChange={(e) => updateMedication(index, "lastDose", e.target.value)}
+        />
+      </Grid>
+    </Grid>
+  ))}
   
-</Grid>
-
-
-    {/* ROWS */}
-    {medications.map((med, index) => (
-  <Grid
-    container
-    spacing={2}
-    alignItems="center"
-    key={index}
-    sx={{
-      mb: 1,
-      p: 1.5,
-      borderRadius: "10px",
-      border: "1px solid #E6EEF6",
-      // backgroundColor: med.locked ? "#FFFFFF" : "#F9FBFF",
-    }}
+  <Button 
+    startIcon={<AddIcon />} 
+    onClick={() => setMedications([...medications, { name: "", dose: "", frequency: "", lastDose: "", locked: false }])}
   >
-    <Grid item xs={2.8}>
-      <TextField
-        fullWidth
-        placeholder="Medication"
-        value={med.name}
-        InputProps={{ readOnly: med.locked }}
-        sx={textFieldStyle}
-        onChange={(e) =>
-          !med.locked && updateMedication(index, "name", e.target.value)
-        }
-      />
-    </Grid>
-
-    <Grid item xs={2.8}>
-      <TextField
-        fullWidth
-        value={med.dose}
-        InputProps={{ readOnly: med.locked }}
-        sx={textFieldStyle}
-        onChange={(e) =>
-          !med.locked && updateMedication(index, "dose", e.target.value)
-        }
-      />
-    </Grid>
-
-    <Grid item xs={2.8}>
-      <TextField
-        fullWidth
-        value={med.frequency}
-        InputProps={{ readOnly: med.locked }}
-        sx={textFieldStyle}
-        onChange={(e) =>
-          !med.locked && updateMedication(index, "frequency", e.target.value)
-        }
-      />
-    </Grid>
-
-    <Grid item xs={2.8}>
-      <TextField
-        type="datetime-local"
-        fullWidth
-        value={med.lastDose}
-        InputProps={{ readOnly: med.locked }}
-        sx={textFieldStyle}
-        onChange={(e) =>
-          !med.locked && updateMedication(index, "lastDose", e.target.value)
-        }
-      />
-    </Grid>
-
-    {/* ADD / REMOVE BUTTON */}
-    <Grid item xs={0.8} sx={{ display: "flex", justifyContent: "center" }}>
-      {index === medications.length - 1 && (
-        <IconButton
-        
-          onClick={addMedicationRow}
-          sx={{
-            background: "#228BE6",
-            borderRadius: "8px",
-            width: 32,
-            height: 32,
-            fontSize: 18,
-          }}
-        >
-          +
-        </IconButton>
-      )}
-    </Grid>
-  </Grid>
-))}
-
-
-    {/* ADD BUTTON */}
-   
-
-    {/* ACTION BUTTONS */}
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "flex-end",
-        gap: 2,
-        mt: 3
-      }}
-    >
-      {/* <Button
-        variant="outlined"
-        sx={{
-          textTransform: "none",
-          borderColor: "#A7C0DA",
-          color: "#124D81"
-        }}
-      >
-        Save & Exit
-      </Button> */}
-
-      <Button
-        variant="contained"
-        onClick={() => handleNext("diagnosis", "treatment")}
-        sx={{
-          textTransform: "none",
-          backgroundColor: "#228BE6",
-          px: 4
-        }}
-      >
-        Next
-      </Button>
-    </Box>
-  </AccordionDetails>
+    Add Another Medication
+  </Button>
+</AccordionDetails>
 </Accordion>
 
 <Accordion
@@ -2332,16 +1898,17 @@ const addMedicationRow = () => {
         </Typography>
 
         <ToggleButtonGroup
-          exclusive
-          fullWidth
-          value={allergies[item.key]}
-          onChange={(e, v) => v && updateAllergy(item.key, v)}
-          sx={{
-            borderRadius: "10px",
-            overflow: "hidden",
-            border: "1px solid #E6EEF6"
-          }}
-        >
+  exclusive
+  fullWidth
+  // ✅ Cast the key here to 'keyof typeof allergies'
+  value={allergies[item.key as keyof typeof allergies]}
+  onChange={(_e, v) => v && updateAllergy(item.key, v)}
+  sx={{
+    borderRadius: "10px",
+    overflow: "hidden",
+    border: "1px solid #E6EEF6"
+  }}
+>
           {["No", "Not Known", "Yes"].map((opt) => (
             <ToggleButton
               key={opt}
@@ -2460,10 +2027,15 @@ const addMedicationRow = () => {
         </Typography>
 
         <Checkbox
-          checked={nursingNeeds[item.key]}
-          onChange={() => toggleNursingNeed(item.key)}
-          sx={{ color: "#228BE6" }}
-        />
+  // 1. Cast the key: item.key as keyof typeof nursingNeeds
+  // 2. Force boolean: Use !! to convert potential string/undefined to boolean
+  checked={!!nursingNeeds[item.key as keyof typeof nursingNeeds]}
+  
+  // Cast the key in the function call as well
+  onChange={() => toggleNursingNeed(item.key as keyof typeof nursingNeeds)}
+  
+  sx={{ color: "#228BE6" }}
+/>
       </Box>
     ))}
 
@@ -2490,16 +2062,6 @@ const addMedicationRow = () => {
         mt: 3
       }}
     >
-      {/* <Button
-        variant="outlined"
-        sx={{
-          textTransform: "none",
-          borderColor: "#A7C0DA",
-          color: "#124D81"
-        }}
-      >
-        Save & Exit
-      </Button> */}
 
       <Button
         variant="contained"
@@ -2524,11 +2086,14 @@ const addMedicationRow = () => {
   </Button>
 </Box>
 
-     <Card className="pdf-page"   sx={{
-    ...A4_PAGE_STYLE,
-    border: "2px solid #000",
-    mx: "auto",
-  }}>
+    <Card 
+  className="pdf-page" 
+  sx={{ 
+    ...A4_PAGE_STYLE, 
+    border: "1px solid #000", // Thinner border looks better in PDF
+    "& .MuiTypography-root": { lineHeight: 1.2 } // Tighter lines to fit more content
+  }}
+>
       
       {/* HEADER */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -2578,77 +2143,80 @@ const addMedicationRow = () => {
   {/* ROW 1: Name & Sex */}
   <Grid container sx={{ borderBottom: '1px solid #000' }}>
     <Grid item xs={7} sx={{ borderRight: '1px solid #000', p: 0.5, display: 'flex' }}>
-      <Typography fontSize={11} sx={{color:'black'}}>Name: &nbsp;</Typography>
-      <Typography fontSize={11} fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.name}</Typography>
+      <Typography  variant="caption" sx={{color:'black'}}>Name: &nbsp;</Typography>
+      <Typography  variant="caption" fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.name}</Typography>
     </Grid>
     <Grid item xs={5} sx={{ p: 0.5, display: 'flex', alignItems: 'center' }}>
-      <Typography fontSize={11}sx={{color:'black'}}>Sex: &nbsp;</Typography>
+      <Typography  variant="caption"sx={{color:'black'}}>Sex: &nbsp;</Typography>
       <Tick checked={assessment.patientDetails.gender?.toLowerCase() === 'male'} /> 
-      <Typography fontSize={11}sx={{color:'black'}}>Male</Typography>
+      <Typography  variant="caption"sx={{color:'black'}}>Male</Typography>
       <Box  />
       <Tick checked={assessment.patientDetails.gender?.toLowerCase() === 'female'} /> 
-      <Typography fontSize={11}sx={{color:'black'}}>Female</Typography>
+      <Typography  variant="caption"sx={{color:'black'}}>Female</Typography>
     </Grid>
   </Grid>
 
   {/* ROW 2: Date & Age */}
   <Grid container sx={{ borderBottom: '1px solid #000' }}>
     <Grid item xs={7} sx={{ borderRight: '1px solid #000', p: 0.5, display: 'flex' }}>
-      <Typography fontSize={11} sx={{color:'black'}}>Date of Admitted: &nbsp;</Typography>
-      <Typography fontSize={11} fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.admissionDate}</Typography>
+      <Typography  variant="caption" sx={{color:'black'}}>Date of Admitted: &nbsp;</Typography>
+      <Typography  variant="caption" fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.admissionDate}</Typography>
     </Grid>
     <Grid item xs={5} sx={{ p: 0.5, display: 'flex' }}>
-      <Typography fontSize={11} sx={{color:'black'}}>Age: &nbsp;</Typography>
-      <Typography fontSize={11} fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.age}</Typography>
+      <Typography  variant="caption" sx={{color:'black'}}>Age: &nbsp;</Typography>
+      <Typography  variant="caption" fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.age}</Typography>
     </Grid>
   </Grid>
 
   {/* ROW 3: Contact & UHID */}
   <Grid container sx={{ borderBottom: '1px solid #000' }}>
     <Grid item xs={7} sx={{ borderRight: '1px solid #000', p: 0.5, display: 'flex' }}>
-      <Typography fontSize={11} sx={{color:'black'}}>Contact Person & Phone: &nbsp;</Typography>
-      <Typography fontSize={11} fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.companionPhone || "—"}</Typography>
+      <Typography  variant="caption" sx={{color:'black'}}>Contact Person & Phone: &nbsp;</Typography>
+      <Typography  variant="caption" fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.companionName || "—"}</Typography>
     </Grid>
     <Grid item xs={5} sx={{ p: 0.5, display: 'flex' }}>
-      <Typography fontSize={11} sx={{color:'black'}}>UHID / IP No: &nbsp;</Typography>
-      <Typography fontSize={11} fontWeight="bold" sx={{color:'black'}}>{assessment.uhid}</Typography>
+      <Typography  variant="caption" sx={{color:'black'}}>UHID / IP No: &nbsp;</Typography>
+      <Typography  variant="caption" fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.uhid}</Typography>
     </Grid>
   </Grid>
 
   {/* ROW 4: Complaints & Time */}
   <Grid container sx={{ borderBottom: '1px solid #000' }}>
     <Grid item xs={7} sx={{ borderRight: '1px solid #000', p: 0.5, display: 'flex' }}>
-      <Typography fontSize={11} sx={{color:'black'}}>Chief Complaints: &nbsp;</Typography>
-      <Typography fontSize={11} fontWeight="bold" sx={{color:'black'}}>{assessment.chiefComplaints || "—"}</Typography>
+      <Typography  variant="caption" sx={{color:'black'}}>Chief Complaints: &nbsp;</Typography>
+      <Typography  variant="caption" fontWeight="bold" sx={{color:'black'}}>
+        {/* {assessment.chiefComplaints || "—"} */}
+        
+      </Typography>
     </Grid>
     <Grid item xs={5} sx={{ p: 0.5, display: 'flex' }}>
-      <Typography fontSize={11} sx={{color:'black'}}>Time Admitted: &nbsp;</Typography>
-      <Typography fontSize={11} fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.admissionTime}</Typography>
+      <Typography  variant="caption" sx={{color:'black'}}>Time Admitted: &nbsp;</Typography>
+      <Typography  variant="caption" fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.admissionTime}</Typography>
     </Grid>
   </Grid>
   
   {/* ROW 5: COMPANION & LANGUAGE */}
   <Grid container sx={{ borderBottom: '1px solid #000', p: 0.5 }}>
-    <Grid item xs={11} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-      <Typography fontSize={11} sx={{color:'black'}}>Accompanied by companion: &nbsp;</Typography>
-      <Tick checked={!!assessment.patientDetails.companionName} /> <Typography fontSize={11} sx={{color:'black'}}> YES</Typography>
+    <Grid item xs={10} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+      <Typography  variant="caption" sx={{color:'black'}}>Accompanied by companion: &nbsp;</Typography>
+      <Tick checked={!!assessment.patientDetails.companionName} /> <Typography fontSize={10} sx={{color:'black'}}> YES</Typography>
       <Box sx={{ ml: 1 }} />
-      <Tick checked={!assessment.patientDetails.companionName} /> <Typography fontSize={11} sx={{color:'black'}}>NO</Typography>
+      <Tick checked={!assessment.patientDetails.companionName} /> <Typography fontSize={10} sx={{color:'black'}}>NO</Typography>
     </Grid>
     <Grid item xs={6} sx={{ display: 'flex' }}>
-      <Typography fontSize={11} sx={{color:'black'}}>Relationship: &nbsp;</Typography>
-      <Typography fontSize={11} fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.relation || "—"}</Typography>
+      <Typography  variant="caption" sx={{color:'black'}}>Relationship: &nbsp;</Typography>
+      <Typography  variant="caption" fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.relation || "—"}</Typography>
     </Grid>
     <Grid item xs={6} sx={{ display: 'flex' }}>
-      <Typography fontSize={11} sx={{color:'black'}}>Phone: &nbsp;</Typography>
-      <Typography fontSize={11} fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.companionPhone || "—"}</Typography>
+      <Typography  variant="caption" sx={{color:'black'}}>Phone: &nbsp;</Typography>
+      <Typography  variant="caption" fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.companionPhone || "—"}</Typography>
     </Grid>
     <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-      <Typography fontSize={11} sx={{color:'black'}}>Primary language: &nbsp;</Typography>
-      <Typography fontSize={11} fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.language || "—"}</Typography>
-      <Typography fontSize={11} sx={{ ml: 2 ,color:'black'}} >| Interpreter needed: &nbsp;</Typography>
-      <Tick checked={assessment.interpreterNeeded === "YES"} /> <Typography fontSize={11} sx={{color:'black'}}>YES</Typography>
-      <Tick checked={assessment.interpreterNeeded !== "YES"} /> <Typography fontSize={11} sx={{color:'black'}}>NO</Typography>
+      <Typography  variant="caption" sx={{color:'black'}}>Primary language: &nbsp;</Typography>
+      <Typography variant="caption" fontWeight="bold" sx={{color:'black'}}>{assessment.patientDetails.language || "—"}</Typography>
+      <Typography  variant="caption" sx={{ ml: 2 ,color:'black'}} >| Interpreter needed: &nbsp;</Typography>
+      <Tick checked={assessment.interpreterNeeded === "YES"} /> <Typography fontSize={10} sx={{color:'black'}}>YES</Typography>
+      <Tick checked={assessment.interpreterNeeded !== "YES"} /> <Typography fontSize={8} sx={{color:'black'}}>NO</Typography>
     </Grid>
   </Grid>
 
@@ -2696,59 +2264,75 @@ const addMedicationRow = () => {
           ))}
         </Grid>
       </Box>
-        <Box sx={{ border: '1px solid #000', mb: 1 }}>
-  <Typography variant="caption" sx={{ backgroundColor: '#ccc',color:'black', display: 'block', px: 1, fontWeight: 'bold', borderBottom: '1px solid #000', fontSize: '11px' }}>
+       <Box sx={{ border: '1px solid #000', mb: 1 }}>
+  <Typography variant="caption" sx={{ backgroundColor: '#ccc', color: 'black', display: 'block', px: 1, fontWeight: 'bold', borderBottom: '1px solid #000', fontSize: '11px' }}>
     Allergies / Adverse Reaction
   </Typography>
   <Table size="small">
-    <TableBody>
-    
-      {(() => {
-        const drugAllergies = assessment.allergies?.filter(a => a.type?.toLowerCase() === 'medication' || a.type?.toLowerCase() === 'drug') || [];
-        const hasDrugAllergy = drugAllergies.length > 0;
-        return (
-          <TableRow>
-            <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px',color:'black', width: '20%' }}>Medication / Drug</TableCell>
-            <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px' ,color:'black'}}>Not Known <Tick checked={!assessment.allergies} /></TableCell>
-            <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px',color:'black' }}>NO <Tick checked={assessment.allergies && !hasDrugAllergy} /></TableCell>
-            <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px',color:'black' }}>YES <Tick checked={hasDrugAllergy} /></TableCell>
-            <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px',color:'black' ,fontWeight: hasDrugAllergy ? 'bold' : 'normal' }}>
-              If Yes, Name: {drugAllergies.map(a => a.name).join(', ') || '________'}
-            </TableCell>
-          </TableRow>
+  <TableBody>
+  {[
+    { label: 'Medication / Drug', key: 'medication', category: 'medication' },
+    { label: 'Blood Transfusion', key: 'bloodTransfusion', category: 'biologic' },
+    { label: 'Food', key: 'food', category: 'food' }
+  ].map((row) => {
+    const records =
+    assessment.allergies?.filter((a: any) => {
+      if (!a.category) return false;
+  
+      if (Array.isArray(a.category)) {
+        return a.category.some(
+          (cat: string) =>
+            typeof cat === "string" &&
+            cat.toLowerCase().includes(row.category.toLowerCase())
         );
-      })()}
+      }
+  
+      if (typeof a.category === "string") {
+        return a.category
+          .toLowerCase()
+          .includes(row.category.toLowerCase());
+      }
+  
+      return false;
+    }) || [];
+  
+    
+    const { isYes, isNo, isUnknown, yesNames } = getAllergyStatus(records);
 
-      
-      <TableRow>
-        <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px',color:'black' }}>Blood Transfusion</TableCell>
-        <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px',color:'black' }}>Not Known</TableCell>
-        <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px',color:'black' }}>NO <Tick checked={!assessment.bloodReaction} /></TableCell>
-        <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px' ,color:'black'}}>YES <Tick checked={!!assessment.bloodReaction} /></TableCell>
-        <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px' ,color:'black'}}>
-          If Yes, (Event): {assessment.bloodReaction || '________'}
+    return (
+      <TableRow key={row.key}>
+        <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px', color: 'black', width: '20%' }}>
+          {row.label}
+        </TableCell>
+        
+        <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px', color: 'black' }}>
+          Not Known <Tick checked={isUnknown} />
+        </TableCell>
+        
+        <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px', color: 'black' }}>
+          NO <Tick checked={isNo} />
+        </TableCell>
+        
+        <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px', color: 'black' }}>
+          YES <Tick checked={isYes} />
+        </TableCell>
+        
+        <TableCell sx={{ 
+          border: '1px solid #000', 
+          py: 0.2, 
+          fontSize: '10px', 
+          color: 'black', 
+          fontWeight: isYes ? 'bold' : 'normal' 
+        }}>
+          {row.label === 'Blood Transfusion' ? 'If Yes, (Event): ' : 'If Yes, Name: '}
+          {isYes ? yesNames : '________'}
         </TableCell>
       </TableRow>
-
-      {/* 3. Food Row */}
-      {(() => {
-        const foodAllergies = assessment.allergies?.filter(a => a.type?.toLowerCase() === 'food') || [];
-        const hasFoodAllergy = foodAllergies.length > 0;
-        return (
-          <TableRow>
-            <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px' ,color:'black'}}>Food</TableCell>
-            <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px',color:'black' }}>Not Known <Tick checked={!assessment.allergies} /></TableCell>
-            <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px',color:'black' }}>NO <Tick checked={assessment.allergies && !hasFoodAllergy} /></TableCell>
-            <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px' ,color:'black'}}>YES <Tick checked={hasFoodAllergy} /></TableCell>
-            <TableCell sx={{ border: '1px solid #000', py: 0.2, fontSize: '10px', color:'black',fontWeight: hasFoodAllergy ? 'bold' : 'normal' }}>
-              If Yes, Name: {foodAllergies.map(a => a.name).join(', ') || '________'}
-            </TableCell>
-          </TableRow>
-        );
-      })()}
-    </TableBody>
+    );
+  })}
+</TableBody>
   </Table>
-        </Box>
+</Box>
       <Box sx={{ border: '1px solid #000', mb: 1 }}>
         <Typography variant="caption" sx={{ backgroundColor: '#ccc',color:'black', display: 'block', px: 1, fontWeight: 'bold', borderBottom: '1px solid #000' }}>
           Fall Risk Assessment
@@ -2765,8 +2349,10 @@ const addMedicationRow = () => {
           <Grid item xs={3} sx={{ fontSize: '11px',color:'black' }}>Other: ________</Grid>
         </Grid>
       </Box>
-     
-      <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 1,color:'black' }}>Ability to Perform ADL</Typography>
+      <Box sx={{ textAlign: 'center', pt: 1, borderTop: '1px solid #eee' }}>
+    <Typography variant="caption" sx={{ color: '#888' }}>Page 1 of 2</Typography>
+  </Box>
+      {/* <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 1,color:'black' }}>Ability to Perform ADL</Typography>
       <Table size="small" sx={{ border: '1px solid #000' }}>
         <TableHead sx={{ backgroundColor: '#eee' }}>
           <TableRow>
@@ -2786,18 +2372,13 @@ const addMedicationRow = () => {
             </TableRow>
           ))}
         </TableBody>
-      </Table>
+      </Table> */}
 
       
     </Card>
-    
-    <Card className="pdf-page"   sx={{
-    ...A4_PAGE_STYLE,
-    border: "2px solid #000",
-    mx: "auto",
-  }}>
+    <Card className="pdf-page" sx={{ ...A4_PAGE_STYLE, border: "1px solid #000",mb: 2}}>
         
-      <Box sx={{ border: '1px solid #000', mt: 1, p: 1 }}>
+      <Box sx={{ border: '1px solid #000', mb: 1, p: 1 }}>
         <Typography variant="subtitle2" fontWeight="bold" sx={{color:'black'}}>Assessment of Pain:</Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1 }}>
           <Typography variant="caption" sx={{color:'black'}}>Score: 0 - 2</Typography>
@@ -2807,10 +2388,10 @@ const addMedicationRow = () => {
       </Box>
 
     
-     <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 1, fontSize: '13px',color:'black' }}>
+     <Typography variant="subtitle2" fontWeight="bold" sx={{mb: 1, fontSize: '13px',color:'black' }}>
   Current Medication
 </Typography>
-<Table size="small" sx={{ border: '1px solid #000' }}>
+<Table size="small" sx={{mb: 1, border: '1px solid #000' }}>
   <TableHead sx={{ backgroundColor: '#eee' }}>
     <TableRow>
       <TableCell sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '11px', py: 0.5,color:'black' }}>Medication</TableCell>
@@ -2820,35 +2401,47 @@ const addMedicationRow = () => {
     </TableRow>
   </TableHead>
   <TableBody>
-    {assessment.medications && assessment.medications.length > 0 ? (
-      assessment.medications.map((m, i) => (
-        <TableRow key={i}>
-          <TableCell sx={{ border: '1px solid #000', fontSize: '11px', py: 0.3 ,color:'black'}}>
-            {m.name || "—"}
-          </TableCell>
-          <TableCell sx={{ border: '1px solid #000', fontSize: '11px', py: 0.3 ,color:'black'}}>
-            {m.dosage || "—"}
-          </TableCell>
-          <TableCell sx={{ border: '1px solid #000', fontSize: '11px', py: 0.3,color:'black' }}>
-            {m.frequency || "—"}
-          </TableCell>
-          <TableCell sx={{ border: '1px solid #000', fontSize: '11px', py: 0.3 ,color:'black'}}>
-            {m.lastDoseTime || "—"}
-          </TableCell>
-        </TableRow>
-      ))
-    ) : (
-     
-      [1, 2, 3].map((_, i) => (
-        <TableRow key={i}>
-          <TableCell sx={{ border: '1px solid #000', height: '20px',color:'black' }} />
-          <TableCell sx={{ border: '1px solid #000' ,color:'black'}} />
-          <TableCell sx={{ border: '1px solid #000' ,color:'black'}} />
-          <TableCell sx={{ border: '1px solid #000',color:'black' }} />
-        </TableRow>
-      ))
-    )}
-  </TableBody>
+  {assessment.medications && assessment.medications.length > 0 ? (
+    assessment.medications.map((m:any, i) => (
+      <TableRow key={i}>
+        <TableCell sx={{ border: '1px solid #000', fontSize: '11px', py: 0.3, color: 'black' }}>
+          {m.name}
+        </TableCell>
+        
+        {/* Shows "123" */}
+        <TableCell sx={{ border: '1px solid #000', fontSize: '11px', py: 0.3, color: 'black' }}>
+          {m.dose} 
+        </TableCell>
+        
+        {/* Shows "12H" */}
+        <TableCell sx={{ border: '1px solid #000', fontSize: '11px', py: 0.3, color: 'black' }}>
+          {m.frequency}
+        </TableCell>
+        
+        {/* Formats "2025-12-31T07:09:00Z" to readable local string */}
+        <TableCell sx={{ border: '1px solid #000', fontSize: '11px', py: 0.3, color: 'black' }}>
+          {m.lastDose 
+            ? new Date(m.lastDose).toLocaleString([], { 
+                dateStyle: 'short', 
+                timeStyle: 'short' 
+              }) 
+            : "—"}
+        </TableCell>
+      </TableRow>
+    ))
+  ) : (
+    // Placeholder empty rows for the PDF look
+    [1, 2, 3].map((_, i) => (
+      <TableRow key={i}>
+        <TableCell sx={{ border: '1px solid #000', height: '20px' }} />
+        <TableCell sx={{ border: '1px solid #000' }} />
+        <TableCell sx={{ border: '1px solid #000' }} />
+        <TableCell sx={{ border: '1px solid #000' }} />
+      </TableRow>
+    ))
+  )}
+</TableBody>
+  
 </Table>
 
       
@@ -2910,47 +2503,48 @@ const addMedicationRow = () => {
       <Table size="small" sx={{ border: '1px solid #000', mb: 1 }}>
   <TableHead>
     <TableRow sx={{ backgroundColor: '#eee' }}>
-      <TableCell colSpan={3} sx={{ py: 0.5, fontWeight: 'bold',color:'black', fontSize: '12px', border: '1px solid #000' }}>
+      <TableCell colSpan={3} sx={{ py: 0.2, fontWeight: 'bold',color:'black', fontSize: '12px', border: '1px solid #000' }}>
         Nursing Needs
       </TableCell>
     </TableRow>
   </TableHead>
   <TableBody>
-    {[
-      { label: "Is there a language problem", key: "Language problem" },
-      { label: "Any cultural/ religious barriers", key: "cultural/ religious barriers" },
-      { label: "Is the patient at risk for falls", key: "risk for falls" },
-      { label: "Is the patient incontinent", key: "incontinent" },
-      { label: "Does patient require oxygen therapy", key: "oxygen therapy" },
-      { label: "Has tracheotomy been done", key: "tracheotomy" },
-      { label: "Is the patient at risk for pressure ulcers", key: "risk for pressure ulcers" },
-      { label: "Any special nutrition needs", key: "special nutrition needs" },
-      { label: "Does the patient have implants", key: "implants" },
-      { label: "Any other needs", key: "other needs" }
-    ].map((item, idx) => {
-    
-      const isYes = assessment.nursingNeeds?.some(n => 
-        n.toLowerCase().includes(item.key.toLowerCase())
-      );
+ {[
+  { label: "Language problem", key: "languageProblem" },
+  { label: "Cultural / religious barriers", key: "culturalBarrier" },
+  { label: "Risk for falls", key: "fallRisk" },
+  { label: "Incontinent", key: "incontinent" },
+  { label: "Requires oxygen therapy", key: "oxygenTherapy" },
+  { label: "Tracheotomy done", key: "tracheotomy" },
+  { label: "Risk for pressure ulcers", key: "pressureUlcerRisk" },
+  { label: "Special nutritional needs", key: "specialNutrition" },
+  { label: "Implants present", key: "implants" }
+].map((item, idx) => {
 
-      return (
-        <TableRow key={idx}>
-          <TableCell sx={{ border: '1px solid #000',color:'black', fontSize: '11px', py: 0.2 }}>
-            {item.label}
-          </TableCell>
-          <TableCell sx={{ border: '1px solid #000', width: '70px',color:'black', textAlign: 'center', fontSize: '11px' }}>
-            YES <Tick checked={isYes} />
-          </TableCell>
-          <TableCell sx={{ border: '1px solid #000', width: '70px',color:'black', textAlign: 'center', fontSize: '11px' }}>
-            NO <Tick checked={!isYes} />
-          </TableCell>
-        </TableRow>
-      );
-    })}
+  // ✅ FIX: Match against the label saved in the CarePlan description
+  const isYes = assessment.nursingNeeds?.some((n: string) =>
+    n.toLowerCase() === item.label.toLowerCase()
+  );
+  
+
+  return (
+    <TableRow key={idx}>
+      <TableCell sx={{py: 0.2, border: '1px solid #000', color: 'black', fontSize: '11px' }}>
+        {item.label}
+      </TableCell>
+      <TableCell sx={{py: 0.2, border: '1px solid #000', width: '70px', color: 'black', textAlign: 'center', fontSize: '11px' }}>
+        YES <Tick checked={isYes} />
+      </TableCell>
+      <TableCell sx={{py: 0.2, border: '1px solid #000', width: '70px', color: 'black', textAlign: 'center', fontSize: '11px' }}>
+        NO <Tick checked={!isYes} />
+      </TableCell>
+    </TableRow>
+  );
+})}
     
     {assessment.otherNeeds && (
       <TableRow>
-        <TableCell colSpan={3} sx={{ border: '1px solid #000',color:'black', fontSize: '11px', py: 0.5 }}>
+        <TableCell colSpan={3} sx={{ border: '1px solid #000',color:'black', fontSize: '11px' }}>
           <strong>Other:</strong> {assessment.otherNeeds}
         </TableCell>
       </TableRow>
@@ -3164,9 +2758,17 @@ const addMedicationRow = () => {
   )}
 </Box>
 
-
+<Snackbar 
+  open={snackbar.open} 
+  autoHideDuration={4000} 
+  onClose={handleCloseSnackbar}
+  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+>
+  <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+    {snackbar.message}
+  </Alert>
+</Snackbar>
 
 
     </Box>);
 };
-

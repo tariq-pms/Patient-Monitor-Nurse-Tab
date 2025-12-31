@@ -1891,144 +1891,144 @@ p={0}
 
 
 // Add these constants for reference line intervals
-const PMA_INTERVAL = 2; // weeks
-const LEN_INTERVAL = 2; // cm
-const HC_INTERVAL = 2; // cm
-const WT_INTERVAL = 500; // grams
+// const PMA_INTERVAL = 2; // weeks
+// const LEN_INTERVAL = 2; // cm
+// const HC_INTERVAL = 2; // cm
+// const WT_INTERVAL = 500; // grams
 
 // Add this function to generate reference lines
-const generateReferenceLines = () => {
-  const lines = [];
+// const generateReferenceLines = () => {
+//   const lines = [];
   
-  // 1. PMA reference lines (vertical)
-  for (let pma = PMA_MIN; pma <= PMA_MAX; pma += PMA_INTERVAL) {
-    const x = mapX(pma);
-    lines.push(
-      <line
-        key={`pma-${pma}`}
-        x1={x}
-        x2={x}
-        y1={Y0}
-        y2={Y1}
-        stroke="#e0e0e0"
-        strokeWidth={1}
-        strokeDasharray="3,3"
-      />
-    );
+//   // 1. PMA reference lines (vertical)
+//   for (let pma = PMA_MIN; pma <= PMA_MAX; pma += PMA_INTERVAL) {
+//     const x = mapX(pma);
+//     lines.push(
+//       <line
+//         key={`pma-${pma}`}
+//         x1={x}
+//         x2={x}
+//         y1={Y0}
+//         y2={Y1}
+//         stroke="#e0e0e0"
+//         strokeWidth={1}
+//         strokeDasharray="3,3"
+//       />
+//     );
     
-    // PMA labels at bottom
-    lines.push(
-      <text
-        key={`pma-label-${pma}`}
-        x={x}
-        y={Y1 + 15}
-        fontSize="10"
-        textAnchor="middle"
-        fill="#666"
-      >
-        {pma}
-      </text>
-    );
-  }
+//     // PMA labels at bottom
+//     lines.push(
+//       <text
+//         key={`pma-label-${pma}`}
+//         x={x}
+//         y={Y1 + 15}
+//         fontSize="10"
+//         textAnchor="middle"
+//         fill="#666"
+//       >
+//         {pma}
+//       </text>
+//     );
+//   }
   
-  // 2. Length reference lines (horizontal)
-  for (let len = LEN_MIN; len <= LEN_MAX; len += LEN_INTERVAL) {
-    const y = mapY_length(len);
-    lines.push(
-      <line
-        key={`len-${len}`}
-        x1={X0}
-        x2={X1}
-        y1={y}
-        y2={y}
-        stroke="#87CEFA" // Light blue for length
-        strokeWidth={0.5}
-        strokeDasharray="2,2"
-      />
-    );
+//   // 2. Length reference lines (horizontal)
+//   for (let len = LEN_MIN; len <= LEN_MAX; len += LEN_INTERVAL) {
+//     const y = mapY_length(len);
+//     lines.push(
+//       <line
+//         key={`len-${len}`}
+//         x1={X0}
+//         x2={X1}
+//         y1={y}
+//         y2={y}
+//         stroke="#87CEFA" // Light blue for length
+//         strokeWidth={0.5}
+//         strokeDasharray="2,2"
+//       />
+//     );
     
-    // Length labels on left
-    lines.push(
-      <text
-        key={`len-label-${len}`}
-        x={X0 - 10}
-        y={y}
-        fontSize="9"
-        textAnchor="end"
-        fill="#666"
-        alignmentBaseline="middle"
-      >
-        {len}
-      </text>
-    );
-  }
+//     // Length labels on left
+//     lines.push(
+//       <text
+//         key={`len-label-${len}`}
+//         x={X0 - 10}
+//         y={y}
+//         fontSize="9"
+//         textAnchor="end"
+//         fill="#666"
+//         alignmentBaseline="middle"
+//       >
+//         {len}
+//       </text>
+//     );
+//   }
   
-  // 3. Head circumference reference lines (horizontal)
-  for (let hc = HC_MIN; hc <= HC_MAX; hc += HC_INTERVAL) {
-    const y = mapY_head(hc);
-    lines.push(
-      <line
-        key={`hc-${hc}`}
-        x1={X0}
-        x2={X1}
-        y1={y}
-        y2={y}
-        stroke="#98FB98" // Pale green for head circumference
-        strokeWidth={0.5}
-        strokeDasharray="2,2"
-      />
-    );
+//   // 3. Head circumference reference lines (horizontal)
+//   for (let hc = HC_MIN; hc <= HC_MAX; hc += HC_INTERVAL) {
+//     const y = mapY_head(hc);
+//     lines.push(
+//       <line
+//         key={`hc-${hc}`}
+//         x1={X0}
+//         x2={X1}
+//         y1={y}
+//         y2={y}
+//         stroke="#98FB98" // Pale green for head circumference
+//         strokeWidth={0.5}
+//         strokeDasharray="2,2"
+//       />
+//     );
     
-    // HC labels on left
-    lines.push(
-      <text
-        key={`hc-label-${hc}`}
-        x={X0 - 10}
-        y={y}
-        fontSize="9"
-        textAnchor="end"
-        fill="#666"
-        alignmentBaseline="middle"
-      >
-        {hc}
-      </text>
-    );
-  }
+//     // HC labels on left
+//     lines.push(
+//       <text
+//         key={`hc-label-${hc}`}
+//         x={X0 - 10}
+//         y={y}
+//         fontSize="9"
+//         textAnchor="end"
+//         fill="#666"
+//         alignmentBaseline="middle"
+//       >
+//         {hc}
+//       </text>
+//     );
+//   }
   
-  // 4. Weight reference lines (horizontal)
-  for (let wt = WT_MIN; wt <= WT_MAX; wt += WT_INTERVAL) {
-    const y = mapY_weight(wt);
-    lines.push(
-      <line
-        key={`wt-${wt}`}
-        x1={X0}
-        x2={X1}
-        y1={y}
-        y2={y}
-        stroke="#FFB6C1" // Light pink for weight
-        strokeWidth={0.5}
-        strokeDasharray="2,2"
-      />
-    );
+//   // 4. Weight reference lines (horizontal)
+//   for (let wt = WT_MIN; wt <= WT_MAX; wt += WT_INTERVAL) {
+//     const y = mapY_weight(wt);
+//     lines.push(
+//       <line
+//         key={`wt-${wt}`}
+//         x1={X0}
+//         x2={X1}
+//         y1={y}
+//         y2={y}
+//         stroke="#FFB6C1" // Light pink for weight
+//         strokeWidth={0.5}
+//         strokeDasharray="2,2"
+//       />
+//     );
     
-    // Weight labels on left (convert to kg for readability)
-    lines.push(
-      <text
-        key={`wt-label-${wt}`}
-        x={X0 - 10}
-        y={y}
-        fontSize="9"
-        textAnchor="end"
-        fill="#666"
-        alignmentBaseline="middle"
-      >
-        {(wt / 1000).toFixed(1)}
-      </text>
-    );
-  }
+//     // Weight labels on left (convert to kg for readability)
+//     lines.push(
+//       <text
+//         key={`wt-label-${wt}`}
+//         x={X0 - 10}
+//         y={y}
+//         fontSize="9"
+//         textAnchor="end"
+//         fill="#666"
+//         alignmentBaseline="middle"
+//       >
+//         {(wt / 1000).toFixed(1)}
+//       </text>
+//     );
+//   }
   
-  return lines;
-};
+//   return lines;
+// };
 
 // Also add connecting lines between measurements for the same entry
 const generateConnectingLines = (entries: any[]) => {
@@ -2256,7 +2256,7 @@ const handleDownload = async () => {
     await new Promise(r => (img.onload = r));
     doc.addImage(img, "PNG", logoX, logoY, 120, 35);
   } else {
-    doc.setFillColor(200);
+    doc.setFillColor('200');
     doc.rect(logoX, logoY, 120, 35, "F");
   }
 

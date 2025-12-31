@@ -374,7 +374,7 @@ export const AllPatient: React.FC< PatientMonitorProps> = ({ userOrganization, c
         communication_resource={parentcomm[String(patient.id)]}
         darkTheme={darkTheme}
         // selectedIcon={selectedIcon}
-        onClick={() => handlePatientCardClick(patient)} gestational_age={''} birthDate={''}    />
+        onClick={() => handlePatientCardClick(patient)} gestational_age={''} birthDate={''} gender={''} birthWeight={''}    />
   )});
   
   const filterPatients = (query: string) => {

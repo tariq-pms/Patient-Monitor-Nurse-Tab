@@ -1,4 +1,4 @@
-import { Box, Stack, Divider, ToggleButtonGroup, ToggleButton, Button, Dialog, DialogActions, DialogContent, TextField, DialogTitle, Typography,  CircularProgress, IconButton, Tooltip } from '@mui/material'
+import { Box, Stack,  ToggleButtonGroup, ToggleButton, Button, Dialog, DialogActions, DialogContent, TextField, DialogTitle, Typography,  CircularProgress, IconButton, Tooltip } from '@mui/material'
 import React, { FC, useEffect, useMemo, useRef, useState } from 'react'
 import { ChartOptions, LegendItem, Plugin } from 'chart.js';
 import { Line } from 'react-chartjs-2';
@@ -174,24 +174,24 @@ if (item.text !== '') {
 const [timeFrame, setTimeFrame] = useState<number>(12);
 const [timeFrameEnd, setTimeFrameEnd] = useState(Date.now());
 
-    const [times, setTimes] = useState<Array<any>>([])
-    const [dataset, setDataSet] = useState([[{}]])
+    const [times] = useState<Array<any>>([])
+    const [dataset] = useState([[{}]])
     const [loading, setLoading] = useState(false);
     const [dataSource, setDataSource] = useState('manual'); // 'device' or 'manual'
 
-    const heaterYaxis = {
-        "%": "y",
+//     const heaterYaxis = {
+//         "%": "y",
       
-        "C°": "y"
-    };
-    const pulseoximeterYaxis = {
+//         "C°": "y"
+//     };
+//     const pulseoximeterYaxis = {
      
-      'BPM': "y"
-  }
-  const spo2Yaxis = {
-    "%": "y",
+//       'BPM': "y"
+//   }
+//   const spo2Yaxis = {
+//     "%": "y",
     
-}
+// }
   
 const [manualData, setManualData] = useState<any[]>([]);
 const [deviceData, setDeviceData] = useState([]);
@@ -895,19 +895,19 @@ const pulseoximeterOption3 = {
 };
 
 // Helper: converts an array into tick labels (0 → first label, 1 → second ...)
-const createCategoryTickCallback = (labels: string[]) => {
-  return function (value: string | number) {
-    return labels[value] ?? "";
-  };
-};
+// const createCategoryTickCallback = (labels: string[]) => {
+//   return function (value: string | number) {
+//     return labels[value] ?? "";
+//   };
+// };
 // Your category label sets
-const CATEGORY_LABELS = {
-  colour: [ "NORMAL", "PALE","BLUE"],
-  neuro: [ "RESPONSIVE", "LETHARGIC","UNRESPONSIVE"],
-  feeding: [ "FEEDING WELL", "RELUCTANTLY","NOT FEEDING"],
-  glucose: [ "≥2.6", "2.0–2.5", "1.0–1.9","<1.0"],
-  parentalConcern: ["NO", "SOME","HIGH"],
-};
+// const CATEGORY_LABELS = {
+//   colour: [ "NORMAL", "PALE","BLUE"],
+//   neuro: [ "RESPONSIVE", "LETHARGIC","UNRESPONSIVE"],
+//   feeding: [ "FEEDING WELL", "RELUCTANTLY","NOT FEEDING"],
+//   glucose: [ "≥2.6", "2.0–2.5", "1.0–1.9","<1.0"],
+//   parentalConcern: ["NO", "SOME","HIGH"],
+// };
 
 const categoricalOption = {
   animation: false,
@@ -1227,126 +1227,126 @@ const gulcoseOption = {
   }
   
 };
-const neuroOptions = { 
-  ...categoricalOption,
-  scales: {
-    ...categoricalOption.scales,
-    y: {
-      ...categoricalOption.scales.y,
+// const neuroOptions = { 
+//   ...categoricalOption,
+//   scales: {
+//     ...categoricalOption.scales,
+//     y: {
+//       ...categoricalOption.scales.y,
 
-      max: CATEGORY_LABELS.neuro.length - 0.5,
+//       max: CATEGORY_LABELS.neuro.length - 0.5,
 
-      ticks: {
-        ...categoricalOption.scales.y.ticks,
+//       ticks: {
+//         ...categoricalOption.scales.y.ticks,
 
-        // ↓↓↓ ADD THIS ↓↓↓
-        font: {
-          size: 9,        // Change to any size you want (6, 7, 8 px)
-          weight: "normal",
-        },
+//         // ↓↓↓ ADD THIS ↓↓↓
+//         font: {
+//           size: 9,        // Change to any size you want (6, 7, 8 px)
+//           weight: "normal",
+//         },
 
-        callback: createCategoryTickCallback(CATEGORY_LABELS.neuro),
-      },
-    },
-  },
-};
+//         callback: createCategoryTickCallback(CATEGORY_LABELS.neuro),
+//       },
+//     },
+//   },
+// };
 
 
-const colourOptions = {
-  ...categoricalOption,
-  scales: {
-    ...categoricalOption.scales,
-    y: {
-      ...categoricalOption.scales.y,
-      max: CATEGORY_LABELS.colour.length - 1,
-      ticks: {
-        ...categoricalOption.scales.y.ticks,
-        font: {
-          size: 9,        // Change to any size you want (6, 7, 8 px)
-          weight: "normal",
-        },
-        callback: createCategoryTickCallback(CATEGORY_LABELS.colour),
-      },
-    },
-  },
-};
+// const colourOptions = {
+//   ...categoricalOption,
+//   scales: {
+//     ...categoricalOption.scales,
+//     y: {
+//       ...categoricalOption.scales.y,
+//       max: CATEGORY_LABELS.colour.length - 1,
+//       ticks: {
+//         ...categoricalOption.scales.y.ticks,
+//         font: {
+//           size: 9,        // Change to any size you want (6, 7, 8 px)
+//           weight: "normal",
+//         },
+//         callback: createCategoryTickCallback(CATEGORY_LABELS.colour),
+//       },
+//     },
+//   },
+// };
 
-const parentalConcernOptions = {
-  ...categoricalOption,
-  scales: {
-    ...categoricalOption.scales,
-    y: {
-      ...categoricalOption.scales.y,
-      max: CATEGORY_LABELS.parentalConcern.length - 1,
-      ticks: {
-        ...categoricalOption.scales.y.ticks,
-        font: {
-          size: 9,        // Change to any size you want (6, 7, 8 px)
-          weight: "normal",
-        },
-        callback: createCategoryTickCallback(CATEGORY_LABELS.parentalConcern),
-      },
-    },
-  },
-};
+// const parentalConcernOptions = {
+//   ...categoricalOption,
+//   scales: {
+//     ...categoricalOption.scales,
+//     y: {
+//       ...categoricalOption.scales.y,
+//       max: CATEGORY_LABELS.parentalConcern.length - 1,
+//       ticks: {
+//         ...categoricalOption.scales.y.ticks,
+//         font: {
+//           size: 9,        // Change to any size you want (6, 7, 8 px)
+//           weight: "normal",
+//         },
+//         callback: createCategoryTickCallback(CATEGORY_LABELS.parentalConcern),
+//       },
+//     },
+//   },
+// };
 
-const glucoseOptions = {
-  ...categoricalOption,
-  scales: {
-    ...categoricalOption.scales,
-    y: {
-      ...categoricalOption.scales.y,
-      max: CATEGORY_LABELS.glucose.length - 1,
-      ticks: {
-        ...categoricalOption.scales.y.ticks,
-        callback: createCategoryTickCallback(CATEGORY_LABELS.glucose),
-      },
-    },
-  },
-};
+// const glucoseOptions = {
+//   ...categoricalOption,
+//   scales: {
+//     ...categoricalOption.scales,
+//     y: {
+//       ...categoricalOption.scales.y,
+//       max: CATEGORY_LABELS.glucose.length - 1,
+//       ticks: {
+//         ...categoricalOption.scales.y.ticks,
+//         callback: createCategoryTickCallback(CATEGORY_LABELS.glucose),
+//       },
+//     },
+//   },
+// };
 
-const feedingOptions = {
-  ...categoricalOption,
-  scales: {
-    ...categoricalOption.scales,
-    y: {
-      ...categoricalOption.scales.y,
-      max: CATEGORY_LABELS.feeding.length - 1,
-      ticks: {
-        ...categoricalOption.scales.y.ticks,
-        font: {
-          size: 9,        // Change to any size you want (6, 7, 8 px)
-          weight: "normal",
-        },
-        callback: createCategoryTickCallback(CATEGORY_LABELS.feeding),
-      },
-    },
-  },
-};
+// const feedingOptions = {
+//   ...categoricalOption,
+//   scales: {
+//     ...categoricalOption.scales,
+//     y: {
+//       ...categoricalOption.scales.y,
+//       max: CATEGORY_LABELS.feeding.length - 1,
+//       ticks: {
+//         ...categoricalOption.scales.y.ticks,
+//         font: {
+//           size: 9,        // Change to any size you want (6, 7, 8 px)
+//           weight: "normal",
+//         },
+//         callback: createCategoryTickCallback(CATEGORY_LABELS.feeding),
+//       },
+//     },
+//   },
+// };
 
-const categoricalOption1: ChartOptions<'line'> = {
-  responsive: true,
-  scales: {
-    y: {
-      min: 0,
-      max: 3,
-      ticks: { stepSize: 1 }
-    },
-    x: {
-      ticks: { maxRotation: 0, minRotation: 0 }
-    }
-  },
-  plugins: {
-    legend: { display: false }
-  }
-};
+// const categoricalOption1: ChartOptions<'line'> = {
+//   responsive: true,
+//   scales: {
+//     y: {
+//       min: 0,
+//       max: 3,
+//       ticks: { stepSize: 1 }
+//     },
+//     x: {
+//       ticks: { maxRotation: 0, minRotation: 0 }
+//     }
+//   },
+//   plugins: {
+//     legend: { display: false }
+//   }
+// };
 
 
   const [temperatureData, setTemperatureData] = useState<TemperatureData>({
         labels: [], // Initially, there are no labels
         datasets: [], // Initially, there are no datasets
     })
-  const [fullData24h, setFullData24h] = useState<any[]>([]);
+  // const [fullData24h, setFullData24h] = useState<any[]>([]);
    
   const [pulseoximeterData, setPulseoximeterData] = useState<TemperatureData>({
       labels: [], // Initially, there are no labels
@@ -1619,7 +1619,7 @@ const handleBack = () => setStep((prev) => prev - 1);
         if (!scale) return [];
       
         // Chart.js stores visible ticks here
-        return scale.ticks.map(t => t.label);
+        return scale.ticks.map((t: { label: any; }) => t.label);
       }
       
       const downloadTrendsPDF = async () => {
@@ -1750,11 +1750,11 @@ const handleBack = () => setStep((prev) => prev - 1);
       
             doc.addImage(img, "PNG", logoX, logoY, 130, 35);
           } else {
-            doc.setFillColor(200);
+            doc.setFillColor('200');
             doc.rect(logoX, logoY, 130, 35, "F");
           }
         } catch {
-          doc.setFillColor(200);
+          doc.setFillColor('200');
           doc.rect(logoX, logoY, 130, 35, "F");
         }
       
@@ -1823,7 +1823,7 @@ const handleBack = () => setStep((prev) => prev - 1);
           doc.setFont("helvetica", "normal");
           doc.setTextColor(0, 0, 0);
       
-          timeList.forEach((t, i) => {
+          timeList.forEach((t: string | string[], i: number) => {
             const x = graphStartX + i * cellWidth + cellWidth / 2;
             doc.text(t, x - 15, startY + 10, { align: "center" });
           });
@@ -1862,7 +1862,7 @@ const handleBack = () => setStep((prev) => prev - 1);
           const el = document.getElementById(chart.id);
           if (!el) continue;
       
-          const chartHeight = chartHeights [chart.id] || defaultHeight;
+          const chartHeight = chartHeights[chart.id as keyof typeof chartHeights] || defaultHeight;
       
           doc.setFillColor(245, 245, 245);
           doc.rect(10, startY, titleColumnWidth, chartHeight, "F");
@@ -1872,9 +1872,9 @@ const handleBack = () => setStep((prev) => prev - 1);
           doc.text(chart.title, 20, startY + chartHeight / 2 + 3);
           
        // --- Determine lookup key (fix for multi-line titles) ---
-let lookupLabel = Array.isArray(chart.title)
-? (chart.labelKey ?? chart.title.join(" "))
-: chart.title;
+       let lookupLabel = Array.isArray(chart.title)
+       ? ((chart as any).labelKey ?? chart.title.join(" "))
+       : chart.title;
 
 // --- Find matching chart label entry ---
 // const info = chartLabels.find(l => l.label === lookupLabel);
@@ -1910,7 +1910,7 @@ if (info && info.sublabels) {
     ? chart.title.join(" ")
     : chart.title;
 
-  let  gap, subLabelX: number;
+  let  subLabelX: number;
   let subY = startY - 20 + chartHeight / 2 + 3;
   // --------------------------
   // RULE A → For 3 Sublabels
@@ -1926,7 +1926,6 @@ if (info && info.sublabels) {
   // --------------------------
   else if (subCount === 4) {
     subY = startY - 20 + chartHeight / 2 + 3;
-    gap = 15;
     subLabelX = 25 + doc.getTextWidth(titleText) + 15;
   }
 
@@ -2037,7 +2036,9 @@ async function fetchDeviceVitals(patientId: string, timeframeHours = 48) {
       
           // console.log("🔍 Parsed Values (Before Sort):", parsed);
       
-          const sorted = parsed.sort((a, b) => new Date(a.time) - new Date(b.time));
+          const sorted = parsed.sort((a: any, b: any) => 
+            new Date(a.time).getTime() - new Date(b.time).getTime()
+          );
       
           // console.log("✅ Sorted Device Vitals:", sorted);
       
@@ -2258,42 +2259,42 @@ const filteredDeviceData = useMemo(() => {
   const now = timeFrameEnd;
   const cutoff = now - timeFrame * 60 * 60 * 1000;
 
-  return deviceData.filter((d) => {
+  return deviceData.filter((d:any) => {
     const t = new Date(d.time).getTime();
     return t >= cutoff && t <= now;
   });
 
 }, [deviceData, timeFrame, timeFrameEnd]);
 
-function generateTimeLabels1(hours: number, timeFrameEnd: number) {
-  const labels = [];
-  const now = timeFrameEnd;                     // End time is when user clicked timeframe
-  const start = now - hours * 60 * 60 * 1000;   // History window start
-console.log("start",start);
+// function generateTimeLabels1(hours: number, timeFrameEnd: number) {
+//   const labels = [];
+//   const now = timeFrameEnd;                     // End time is when user clicked timeframe
+//   const start = now - hours * 60 * 60 * 1000;   // History window start
+// console.log("start",start);
 
-  let t = start;
+//   let t = start;
 
-  while (t <= now) {
-    const d = new Date(t);
-    const time = d.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+//   while (t <= now) {
+//     const d = new Date(t);
+//     const time = d.toLocaleTimeString([], {
+//       hour: "2-digit",
+//       minute: "2-digit",
+//     });
 
-    const year = String(d.getFullYear()).slice(-2);
-    const date = `${d.getDate()}/${d.getMonth() + 1}/${year}`;
-    // 🔥 if > 12 hr timeframe → include date
-    const label =
-      hours > 12
-        ? [time, date]
-        :  [time]
+//     const year = String(d.getFullYear()).slice(-2);
+//     const date = `${d.getDate()}/${d.getMonth() + 1}/${year}`;
+//     // 🔥 if > 12 hr timeframe → include date
+//     const label =
+//       hours > 12
+//         ? [time, date]
+//         :  [time]
 
-    labels.push({ label, timestamp: t });   // store raw timestamp for exact matching
-    t += 10 * 60 * 1000;
-  }
+//     labels.push({ label, timestamp: t });   // store raw timestamp for exact matching
+//     t += 10 * 60 * 1000;
+//   }
 
-  return labels;
-}
+//   return labels;
+// }
 
 function generateTimeLabels(
   hours: number,
@@ -2365,78 +2366,78 @@ function prepareManualTemperatureData_Filtered( data: any[], hours: number, time
               spanGaps: true, } ] }; }
 
 
-function prepareDeviceTemperatureData_Filtered(deviceData: any[], hours: number, timeFrameEnd: number) {
-  const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
+// function prepareDeviceTemperatureData_Filtered(deviceData: any[], hours: number, timeFrameEnd: number) {
+//   const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
 
-  const findClosestPoint = (target: number, key: string) => {
-    const WINDOW = 10 * 60 * 1000;
-    let closest = null;
-    let minDiff = Infinity;
+//   const findClosestPoint = (target: number, key: string) => {
+//     const WINDOW = 10 * 60 * 1000;
+//     let closest = null;
+//     let minDiff = Infinity;
 
-    deviceData.forEach((item) => {
-      const t = new Date(item.time).getTime();
-      const diff = Math.abs(t - target);
+//     deviceData.forEach((item) => {
+//       const t = new Date(item.time).getTime();
+//       const diff = Math.abs(t - target);
 
-      if (diff < minDiff && diff <= WINDOW) {
-        minDiff = diff;
-        closest = item[key] ?? null;
-      }
-    });
+//       if (diff < minDiff && diff <= WINDOW) {
+//         minDiff = diff;
+//         closest = item[key] ?? null;
+//       }
+//     });
 
-    return closest;
-  };
+//     return closest;
+//   };
 
-  return {
-    labels: labels.map(l => l.label),
-    datasets: [
-      {
-        label: "Skin Temp(Device))",
-        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SKIN TEMPERATURE")),
-        pointRadius: 2,
-            // 🔥 dotted line
-        spanGaps: true,
-      },
-      {
-        label: "Core Temp(Device)",
-        data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PERIPHERAL TEMPERATURE")),
-        pointRadius: 2,
-            // 🔥 dotted line
-        spanGaps: true,
-      }
-    ]
-  };
-}
-function prepareDeviceTemperatureData1(deviceData: any[]) {
-  if (!deviceData.length) return { labels: [], datasets: [] };
+//   return {
+//     labels: labels.map(l => l.label),
+//     datasets: [
+//       {
+//         label: "Skin Temp(Device))",
+//         data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SKIN TEMPERATURE")),
+//         pointRadius: 2,
+//             // 🔥 dotted line
+//         spanGaps: true,
+//       },
+//       {
+//         label: "Core Temp(Device)",
+//         data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PERIPHERAL TEMPERATURE")),
+//         pointRadius: 2,
+//             // 🔥 dotted line
+//         spanGaps: true,
+//       }
+//     ]
+//   };
+// }
+// function prepareDeviceTemperatureData1(deviceData: any[]) {
+//   if (!deviceData.length) return { labels: [], datasets: [] };
 
-  const labels = deviceData.map(d =>
-    new Date(d.time).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    })
-  );
+//   const labels = deviceData.map(d =>
+//     new Date(d.time).toLocaleTimeString([], {
+//       hour: "2-digit",
+//       minute: "2-digit",
+//       second: "2-digit"
+//     })
+//   );
 
-  return {
-    labels,
-    datasets: [
-      {
-        label: "Skin Temp",
-        data: deviceData.map(d => d["CURRENT SKIN TEMPERATURE"] ?? null),
-        pointRadius: 2,
-        borderWidth: 1.5,
-        spanGaps: false,   // 🔥 now no gaps!
-      },
-      {
-        label: "Core Temp",
-        data: deviceData.map(d => d["CURRENT PERIPHERAL TEMPERATURE"] ?? null),
-        pointRadius: 2,
-        borderWidth: 1.5,
-        spanGaps: false,
-      }
-    ]
-  };
-}
+//   return {
+//     labels,
+//     datasets: [
+//       {
+//         label: "Skin Temp",
+//         data: deviceData.map(d => d["CURRENT SKIN TEMPERATURE"] ?? null),
+//         pointRadius: 2,
+//         borderWidth: 1.5,
+//         spanGaps: false,   // 🔥 now no gaps!
+//       },
+//       {
+//         label: "Core Temp",
+//         data: deviceData.map(d => d["CURRENT PERIPHERAL TEMPERATURE"] ?? null),
+//         pointRadius: 2,
+//         borderWidth: 1.5,
+//         spanGaps: false,
+//       }
+//     ]
+//   };
+// }
 function prepareDeviceTemperatureData(deviceData: any[], hours: number, timeFrameEnd: number) {
   const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
 
@@ -2736,14 +2737,14 @@ data: any[], hours: number, timeFrameEnd: number, field: string) {
       );
     }, [filteredManualData, timeFrame, timeFrameEnd]);
 
-    const gruntingData = useMemo(() => {
-      return preparePulseOXDataFiltered1(
-        filteredManualData,
-        timeFrame,
-        timeFrameEnd,
-        "Grunting"
-      );
-    }, [filteredManualData, timeFrame, timeFrameEnd]);
+    // const gruntingData = useMemo(() => {
+    //   return preparePulseOXDataFiltered1(
+    //     filteredManualData,
+    //     timeFrame,
+    //     timeFrameEnd,
+    //     "Grunting"
+    //   );
+    // }, [filteredManualData, timeFrame, timeFrameEnd]);
     const colourData = useMemo(() => {
       return preparePulseOXDataFiltered1(
         filteredManualData,

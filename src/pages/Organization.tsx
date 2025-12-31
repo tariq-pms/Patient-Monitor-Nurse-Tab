@@ -34,7 +34,7 @@ import { Sidebar1 } from '../components/Sidebar1';
 import pmsLogo from '../assets/phx_logo.png';
 import {ModuleToggleList } from '../components/ModuleToggleList';
 import { OrganizationDeviceList } from '../components/OrganizationDeviceList';
-import { ServiceDetails } from '../components/ServiceDetails';
+// import { ServiceDetails } from '../components/ServiceDetails';
 
 // Type Definitions
 interface Organization {
@@ -55,13 +55,10 @@ interface Organization {
   }>;
 }
 
-
-
 interface OrganizationProps {
   userOrganization: string;
   darkTheme: boolean;
 }
-
 
 export const Organization : React.FC<OrganizationProps> = ({ userOrganization }) => {
   // State Hooks
@@ -421,8 +418,10 @@ export const Organization : React.FC<OrganizationProps> = ({ userOrganization })
 )}
  {activeTab === "Devices" && selectedOrganization && (
   <OrganizationDeviceList key={selectedOrganization.id} organizationData={selectedOrganization} OrganizationId={''} OrganizationName={''} deviceChange={function (): void {
-    throw new Error('Function not implemented.');
-  } } />
+            throw new Error('Function not implemented.');
+          } } isDialogOpened={false} handleCloseDialog={function (): void {
+            throw new Error('Function not implemented.');
+          }} />
   )}
       </Box>
     </Box>

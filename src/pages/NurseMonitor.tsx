@@ -418,7 +418,7 @@ value={selectedIndex}
                      communication_resource={parentComm[String(patient.id)]}
                      darkTheme={darkTheme}
                      // selectedIcon={selectedIcon}
-                     onClick={() => handlePatientCardClick(patient)} gestational_age={''} birthDate={''}              />
+                     onClick={() => handlePatientCardClick(patient)} gestational_age={''} birthDate={''} gender={''} birthWeight={''}              />
             ))}
                 </Box>
                 

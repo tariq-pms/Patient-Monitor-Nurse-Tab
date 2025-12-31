@@ -3,7 +3,7 @@ import {AppBar, Divider,IconButton,Switch,Menu, Stack, useMediaQuery, useTheme} 
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
 import Button from '@mui/material/Button';
 import { useNavigate,useLocation } from 'react-router-dom';
 import pmsLogo from '../assets/image 135.png';
@@ -43,7 +43,7 @@ export const Header: FC<HeaderProps> = (props) => {
  
  
   
-  const [notHome, setNotHome] = useState(true);
+  // const [notHome, setNotHome] = useState(true);
   const [temproom, settemproom] = useState([
     {
       resource: {
@@ -77,7 +77,7 @@ export const Header: FC<HeaderProps> = (props) => {
     getIdTokenClaims()
     .then((res) => {
       console.log('Role:', res);
-      console.log('notHome:', notHome);
+      // console.log('notHome:', notHome);
       console.log('temproom:', temproom);
 
       setUserRole(res?.role);
@@ -126,17 +126,17 @@ useEffect(() => {
 }, [isAuthenticated, UserRole, location.pathname, navigate]);
 
 
-const handleBackButtonClick = () => {
-  setNotHome(true);
+// const handleBackButtonClick = () => {
+//   setNotHome(true);
 
-  if (UserRole === 'Hospital Technician') {
-      navigate('/patient-monitor');
-  } else {
-      navigate('/patient-monitor');
-  }
+//   if (UserRole === 'Hospital Technician') {
+//       navigate('/patient-monitor');
+//   } else {
+//       navigate('/patient-monitor');
+//   }
 
   
-};
+// };
 
   return (
    <Box sx={{ flexGrow: 1 }}>

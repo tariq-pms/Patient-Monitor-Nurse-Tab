@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Button,
@@ -29,7 +29,7 @@ import { CustomNoButton } from './CustomNoButton';
 import TextField from '@mui/material/TextField';
 import SearchIcon from '@mui/icons-material/Search';
 import { ServiceDetails } from './ServiceDetails';
-import { fontWeight } from 'html2canvas/dist/types/css/property-descriptors/font-weight';
+
 
 interface OrganizationCardProps {
   organizationData: {
@@ -123,6 +123,7 @@ export const OrganizationDeviceList: React.FC<OrganizationCardProps> = ({
         const data = await res.json();
         const metrics: DeviceMetric[] = data.entry?.map((entry: any) => entry.resource) || [];
         setMetricsData(metrics);
+        console.log(metricsData);
         
         // Create a map of device ID to DeviceMetric ID
         const map: Record<string, string> = {};

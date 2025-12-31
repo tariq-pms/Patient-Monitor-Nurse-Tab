@@ -25,8 +25,8 @@ export const ServiceDetails: React.FC<ServiceDetailsProps> = ({
   const [deviceMetricsHistory, setDeviceMetricsHistory] = useState<any[]>([]);
   const [, setLoading] = useState(false); // Add loading state
   const [selectedFilter, setSelectedFilter] = useState("All");
-  const [openDialog, setOpenDialog] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [, setOpenDialog] = useState(false);
+
  
   const filteredData = deviceMetricsHistory.filter((metric) => {
     const typeCode = metric.type.coding[0].code;

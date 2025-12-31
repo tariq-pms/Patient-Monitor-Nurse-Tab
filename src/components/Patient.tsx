@@ -1,7 +1,7 @@
 import {
   Box, Typography, TableRow, TableCell, Table, TableBody, 
   TableHead, TextField, Stack, Button, Tabs, Tab,
-  Grid, InputAdornment, Dialog, DialogTitle, DialogContent,
+  InputAdornment, Dialog, DialogTitle, DialogContent,
   DialogActions, InputLabel, Snackbar, Alert, CircularProgress,
   IconButton,
   Menu,
@@ -48,9 +48,9 @@ const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [practitioners, setPractitioners] = useState<any[]>([]);
+  // const [practitioners, setPractitioners] = useState<any[]>([]);
   const [isVerified, setIsVerified] = useState(false);
-const [locations, setLocations] = useState<any[]>([]);
+// const [locations, setLocations] = useState<any[]>([]);
 const theme = useTheme();
 const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 const [sameAsPatient, setSameAsPatient] = useState(false);
@@ -142,27 +142,27 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
       (key) => form[key] && String(form[key]).trim() !== ""
     );
   };
-  const isFormCompleteSecond = (form: any) => {
-    const fieldsToCheck = [
+  // const isFormCompleteSecond = (form: any) => {
+  //   const fieldsToCheck = [
     
-       "mobile",
-       "birthTime",
-      "nationality",
-      "address",
-      "kinName",
-      "kinPhone",
-      "relationship",
-      "kinAddress",
-      "doaDate",
-      "treatingDr",
-      "admittingDr",
-      "refHospital",
-    ];
+  //      "mobile",
+  //      "birthTime",
+  //     "nationality",
+  //     "address",
+  //     "kinName",
+  //     "kinPhone",
+  //     "relationship",
+  //     "kinAddress",
+  //     "doaDate",
+  //     "treatingDr",
+  //     "admittingDr",
+  //     "refHospital",
+  //   ];
   
-    return fieldsToCheck.every(
-      (key) => form[key] && String(form[key]).trim() !== ""
-    );
-  };
+  //   return fieldsToCheck.every(
+  //     (key) => form[key] && String(form[key]).trim() !== ""
+  //   );
+  // };
   const finalNationality =
   formData.nationality === "Other"
     ? formData.otherNationality
@@ -230,47 +230,47 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
     fetchPatients();
   },[]);
 
-  const fetchPractitioners = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Practitioner`, {
-        headers: {
-          Authorization: "Basic " + btoa("fhiruser:change-password"),
-          "Content-Type": "application/fhir+json"
-        }
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      return data.entry?.map((entry: any) => ({
-        id: entry.resource.id,
-        name: entry.resource.name?.[0]?.text || "Unknown"
-      })) || [];
-    } catch (err) {
-      console.error("Error fetching practitioners:", err);
-      return [];
-    }
-  };
+  // const fetchPractitioners = async () => {
+  //   try {
+  //     const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Practitioner`, {
+  //       headers: {
+  //         Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //         "Content-Type": "application/fhir+json"
+  //       }
+  //     });
+  //     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+  //     const data = await response.json();
+  //     return data.entry?.map((entry: any) => ({
+  //       id: entry.resource.id,
+  //       name: entry.resource.name?.[0]?.text || "Unknown"
+  //     })) || [];
+  //   } catch (err) {
+  //     console.error("Error fetching practitioners:", err);
+  //     return [];
+  //   }
+  // };
   
-  const fetchLocations = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Location`, {
-        headers: {
-          Authorization: "Basic " + btoa("fhiruser:change-password"),
-          "Content-Type": "application/fhir+json"
-        }
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      return data.entry?.map((entry: any) => ({
-        id: entry.resource.id,
-        name: entry.resource.name,
-        type: entry.resource.physicalType?.coding?.[0]?.code,
-        identifier: entry.resource.identifier?.[0]?.value
-      })).filter((loc: any) => loc.type === "bd" || loc.type === "ro") || []; // Filter for beds and rooms
-    } catch (err) {
-      console.error("Error fetching locations:", err);
-      return [];
-    }
-  };
+  // const fetchLocations = async () => {
+  //   try {
+  //     const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Location`, {
+  //       headers: {
+  //         Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //         "Content-Type": "application/fhir+json"
+  //       }
+  //     });
+  //     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+  //     const data = await response.json();
+  //     return data.entry?.map((entry: any) => ({
+  //       id: entry.resource.id,
+  //       name: entry.resource.name,
+  //       type: entry.resource.physicalType?.coding?.[0]?.code,
+  //       identifier: entry.resource.identifier?.[0]?.value
+  //     })).filter((loc: any) => loc.type === "bd" || loc.type === "ro") || []; // Filter for beds and rooms
+  //   } catch (err) {
+  //     console.error("Error fetching locations:", err);
+  //     return [];
+  //   }
+  // };
   const fetchPatients = async () => {
     try {
       setLoading(true);
@@ -337,7 +337,7 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
         }) || [];
   
       const sortedPatients = fetchedPatients.sort(
-        (a, b) =>
+        (a: { lastUpdated: string | number | Date; }, b: { lastUpdated: string | number | Date; }) =>
           new Date(b.lastUpdated).getTime() -
           new Date(a.lastUpdated).getTime()
       );
@@ -426,19 +426,19 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
       }
   
       // Update local state
-      setPatients(prev => prev.map(p => 
-        p.id === selectedPatient.id 
-          ? { 
-              ...p, 
-              assignee: assignDialog.type === "user" 
-                ? practitioners.find(pr => pr.id === assignDialog.selectedValue)?.name || "--"
-                : p.assignee,
-              bed: assignDialog.type === "bed" 
-                ? locations.find(loc => loc.id === assignDialog.selectedValue)?.identifier || "--"
-                : p.bed
-            } 
-          : p
-      ));
+      // setPatients(prev => prev.map(p => 
+      //   p.id === selectedPatient.id 
+      //     ? { 
+      //         // ...p, 
+      //         // assignee: assignDialog.type === "user" 
+      //         //   ? practitioners.find(pr => pr.id === assignDialog.selectedValue)?.name || "--"
+      //         //   : p.assignee,
+      //         // bed: assignDialog.type === "bed" 
+      //         //   ? locations.find(loc => loc.id === assignDialog.selectedValue)?.identifier || "--"
+      //         //   : p.bed
+      //       } 
+      //     : p
+      // ));
   
       handleAssignDialogClose();
       handleMenuClose();
@@ -998,132 +998,132 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
     }
   };
   
-   const fetchPatientDetails = async (patientId: string) => {
-    const BASE = import.meta.env.VITE_FHIRAPI_URL;
-    const AUTH = {
-      Authorization: "Basic " + btoa("fhiruser:change-password"),
-    };
+  //  const fetchPatientDetails = async (patientId: string) => {
+  //   const BASE = import.meta.env.VITE_FHIRAPI_URL;
+  //   const AUTH = {
+  //     Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //   };
   
-    /* =========================
-       1️⃣ PATIENT
-    ========================= */
-    const patientRes = await fetch(`${BASE}/Patient/${patientId}`, {
-      headers: AUTH,
-    });
-    const patient = await patientRes.json();
+  //   /* =========================
+  //      1️⃣ PATIENT
+  //   ========================= */
+  //   const patientRes = await fetch(`${BASE}/Patient/${patientId}`, {
+  //     headers: AUTH,
+  //   });
+  //   const patient = await patientRes.json();
   
-    /* =========================
-       2️⃣ ACTIVE ENCOUNTER
-    ========================= */
-    const encRes = await fetch(
-      `${BASE}/Encounter?subject=Patient/${patientId}&status=in-progress`,
-      { headers: AUTH }
-    );
-    const encBundle = await encRes.json();
-    const encounter = encBundle.entry?.[0]?.resource || null;
+  //   /* =========================
+  //      2️⃣ ACTIVE ENCOUNTER
+  //   ========================= */
+  //   const encRes = await fetch(
+  //     `${BASE}/Encounter?subject=Patient/${patientId}&status=in-progress`,
+  //     { headers: AUTH }
+  //   );
+  //   const encBundle = await encRes.json();
+  //   const encounter = encBundle.entry?.[0]?.resource || null;
   
-    /* =========================
-       3️⃣ RELATED PERSON
-    ========================= */
-    const rpRes = await fetch(
-      `${BASE}/RelatedPerson?patient=Patient/${patientId}`,
-      { headers: AUTH }
-    );
-    const rpBundle = await rpRes.json();
-    const kin = rpBundle.entry?.[0]?.resource || null;
+  //   /* =========================
+  //      3️⃣ RELATED PERSON
+  //   ========================= */
+  //   const rpRes = await fetch(
+  //     `${BASE}/RelatedPerson?patient=Patient/${patientId}`,
+  //     { headers: AUTH }
+  //   );
+  //   const rpBundle = await rpRes.json();
+  //   const kin = rpBundle.entry?.[0]?.resource || null;
   
-    /* =========================
-       🔁 NORMALIZE FOR UI
-    ========================= */
-    return {
-      /* IDs */
-      patientId:
-        patient.identifier?.find((i: any) =>
-          i.system?.includes("uhid")
-        )?.value || "-",
+  //   /* =========================
+  //      🔁 NORMALIZE FOR UI
+  //   ========================= */
+  //   return {
+  //     /* IDs */
+  //     patientId:
+  //       patient.identifier?.find((i: any) =>
+  //         i.system?.includes("uhid")
+  //       )?.value || "-",
   
-      admissionNo:
-        patient.identifier?.find((i: any) =>
-          i.system?.includes("admission")
-        )?.value || "-",
+  //     admissionNo:
+  //       patient.identifier?.find((i: any) =>
+  //         i.system?.includes("admission")
+  //       )?.value || "-",
   
-      /* Baby */
-      motherName:
-        patient.extension?.find(
-          (e: any) =>
-            e.url ===
-            "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName"
-        )?.valueString || "-",
+  //     /* Baby */
+  //     motherName:
+  //       patient.extension?.find(
+  //         (e: any) =>
+  //           e.url ===
+  //           "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName"
+  //       )?.valueString || "-",
   
-      name: patient.name?.[0]?.text || "-",
-      gender: patient.gender || "-",
-      birthDate: patient.birthDate || "-",
+  //     name: patient.name?.[0]?.text || "-",
+  //     gender: patient.gender || "-",
+  //     birthDate: patient.birthDate || "-",
   
-      birthDateTime: patient.birthDate
-        ? new Date(patient.birthDate).toLocaleDateString()
-        : "-",
+  //     birthDateTime: patient.birthDate
+  //       ? new Date(patient.birthDate).toLocaleDateString()
+  //       : "-",
   
-      gestationalAge:
-        patient.extension?.find((e: any) =>
-          e.url.includes("gestationalAge")
-        )?.valueString || "-",
+  //     gestationalAge:
+  //       patient.extension?.find((e: any) =>
+  //         e.url.includes("gestationalAge")
+  //       )?.valueString || "-",
   
-      birthWeight:
-        patient.extension?.find((e: any) =>
-          e.url.includes("birthWeight")
-        )?.valueQuantity?.value || "-",
+  //     birthWeight:
+  //       patient.extension?.find((e: any) =>
+  //         e.url.includes("birthWeight")
+  //       )?.valueQuantity?.value || "-",
   
-      nationality:
-        patient.extension?.find((e: any) =>
-          e.url.includes("nationality")
-        )?.valueString || "-",
+  //     nationality:
+  //       patient.extension?.find((e: any) =>
+  //         e.url.includes("nationality")
+  //       )?.valueString || "-",
   
-      /* Contact */
-      mobile: patient.telecom?.[0]?.value || "-",
-      address: patient.address?.[0]?.text || "-",
+  //     /* Contact */
+  //     mobile: patient.telecom?.[0]?.value || "-",
+  //     address: patient.address?.[0]?.text || "-",
   
-      /* Admission */
-      bed:
-        encounter?.location?.[0]?.location?.display || "-",
+  //     /* Admission */
+  //     bed:
+  //       encounter?.location?.[0]?.location?.display || "-",
   
-      admissionDate: encounter?.period?.start
-        ? new Date(encounter.period.start).toLocaleString()
-        : "-",
+  //     admissionDate: encounter?.period?.start
+  //       ? new Date(encounter.period.start).toLocaleString()
+  //       : "-",
   
-      treatingDoctor:
-        encounter?.participant?.[0]?.individual?.display || "-",
+  //     treatingDoctor:
+  //       encounter?.participant?.[0]?.individual?.display || "-",
   
-      admittingDoctor:
-        encounter?.participant?.[1]?.individual?.display || "-",
+  //     admittingDoctor:
+  //       encounter?.participant?.[1]?.individual?.display || "-",
   
-      refHospital:
-        encounter?.extension?.find((e: any) =>
-          e.url.includes("referringHospital")
-        )?.valueString || "-",
+  //     refHospital:
+  //       encounter?.extension?.find((e: any) =>
+  //         e.url.includes("referringHospital")
+  //       )?.valueString || "-",
   
-      /* Next of Kin */
-      kinName: kin?.name?.[0]?.text || "-",
+  //     /* Next of Kin */
+  //     kinName: kin?.name?.[0]?.text || "-",
   
-      kinRelation:
-        kin?.relationship?.[0]?.coding?.[0]?.display || "-",
+  //     kinRelation:
+  //       kin?.relationship?.[0]?.coding?.[0]?.display || "-",
   
-      kinMobile: kin?.telecom?.[0]?.value || "-",
+  //     kinMobile: kin?.telecom?.[0]?.value || "-",
   
-      kinAddress: kin?.address?.[0]?.text || "-",
-    };
-  };
+  //     kinAddress: kin?.address?.[0]?.text || "-",
+  //   };
+  // };
    
-  const handlePatientClick = async (patientId: string) => {
-    try {
-      const data = await fetchPatientDetails(patientId);
-      setSelectedPatient(data);
-      console.log("related person data checking",data);
+  // const handlePatientClick = async (patientId: string) => {
+  //   try {
+  //     const data = await fetchPatientDetails(patientId);
+  //     setSelectedPatient(data);
+  //     console.log("related person data checking",data);
       
-      setOpenPatientDialog(true);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  //     setOpenPatientDialog(true);
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
   
   const handleCloseSnackbar = () => {
     setSnackbar(prev => ({ ...prev, open: false }));
@@ -2484,11 +2484,11 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
           onChange={(e) => setAssignDialog(prev => ({ ...prev, selectedValue: e.target.value }))}
           sx={{ mt: 1 }}
         >
-          {practitioners.map((practitioner) => (
+          {/* {practitioners.map((practitioner) => (
             <MenuItem key={practitioner.id} value={practitioner.id}>
               {practitioner.name}
             </MenuItem>
-          ))}
+          ))} */}
         </TextField>
       </>
     ) : (
@@ -2501,11 +2501,11 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
           onChange={(e) => setAssignDialog(prev => ({ ...prev, selectedValue: e.target.value }))}
           sx={{ mt: 1 }}
         >
-          {locations.map((location) => (
+          {/* {locations.map((location) => (
             <MenuItem key={location.id} value={location.id}>
               {location.identifier} ({location.type === "bd" ? "Bed" : "Room"})
             </MenuItem>
-          ))}
+          ))} */}
         </TextField>
       </>
     )}
