@@ -1,0 +1,137 @@
+[
+  {
+    "category": "Respiratory",
+    "interfaceName": "RDS",
+    "standardMedicalTerm": "Respiratory Distress Syndrome"
+  },
+  {
+    "category": "Respiratory",
+    "interfaceName": "Tachypnea",
+    "standardMedicalTerm": "Transient Tachypnea of Newborn"
+  },
+  {
+    "category": "Respiratory",
+    "interfaceName": "MAS",
+    "standardMedicalTerm": "Meconium Aspiration Syndrome"
+  },
+  {
+    "category": "Respiratory",
+    "interfaceName": "Apnea",
+    "standardMedicalTerm": "Apnea of Prematurity"
+  },
+  {
+    "category": "Respiratory",
+    "interfaceName": "Pneumonia",
+    "standardMedicalTerm": "Pneumonia"
+  },
+  {
+    "category": "Respiratory",
+    "interfaceName": "PPHN",
+    "standardMedicalTerm": "Persistent Pulmonary Hypertension"
+  },
+  {
+    "category": "Gastrointestinal",
+    "interfaceName": "MSL",
+    "standardMedicalTerm": "Meconium Stained Liquor"
+  },
+  {
+    "category": "Gastrointestinal",
+    "interfaceName": "Feed intolerance",
+    "standardMedicalTerm": "Feeding Intolerance"
+  },
+  {
+    "category": "Gastrointestinal",
+    "interfaceName": "NEC",
+    "standardMedicalTerm": "Necrotizing Enterocolitis"
+  },
+  {
+    "category": "Gastrointestinal",
+    "interfaceName": "TEF",
+    "standardMedicalTerm": "Tracheoesophageal Fistula"
+  },
+  {
+    "category": "Neurological",
+    "interfaceName": "HIE",
+    "standardMedicalTerm": "Hypoxic Ischemic Encephalopathy"
+  },
+  {
+    "category": "Neurological",
+    "interfaceName": "Seizures",
+    "standardMedicalTerm": "Neonatal Seizures"
+  },
+  {
+    "category": "Neurological",
+    "interfaceName": "IVH",
+    "standardMedicalTerm": "Intraventricular Hemorrhage"
+  },
+  {
+    "category": "Infection",
+    "interfaceName": "EOS",
+    "standardMedicalTerm": "Early Onset Sepsis"
+  },
+  {
+    "category": "Infection",
+    "interfaceName": "LOS",
+    "standardMedicalTerm": "Late Onset Sepsis"
+  },
+  {
+    "category": "Infection",
+    "interfaceName": "Meningitis",
+    "standardMedicalTerm": "Neonatal Meningitis"
+  },
+  {
+    "category": "General",
+    "interfaceName": "Preterm",
+    "standardMedicalTerm": "Preterm Infant"
+  },
+  {
+    "category": "General",
+    "interfaceName": "LBW",
+    "standardMedicalTerm": "Low Birth Weight"
+  },
+  {
+    "category": "General",
+    "interfaceName": "Jaundice",
+    "standardMedicalTerm": "Neonatal Jaundice"
+  },
+  {
+    "category": "General",
+    "interfaceName": "Hypoglycemia",
+    "standardMedicalTerm": "Neonatal Hypoglycemia"
+  },
+  {
+    "category": "General",
+    "interfaceName": "IDM",
+    "standardMedicalTerm": "Infant of Diabetic Mother"
+  },
+  {
+    "category": "General",
+    "interfaceName": "IUGR",
+    "standardMedicalTerm": "Intrauterine Growth Restriction"
+  },
+  {
+    "category": "Cardiac",
+    "interfaceName": "Cong. Heart",
+    "standardMedicalTerm": "Congenital Heart Disease"
+  },
+  {
+    "category": "Cardiac",
+    "interfaceName": "PDA",
+    "standardMedicalTerm": "Patent Ductus Arteriosus"
+  },
+  {
+    "category": "Hematology",
+    "interfaceName": "Anemia",
+    "standardMedicalTerm": "Neonatal Anemia"
+  },
+  {
+    "category": "Hematology",
+    "interfaceName": "Polycythemia",
+    "standardMedicalTerm": "Polycythemia"
+  },
+  {
+    "category": "Respiratory",
+    "interfaceName": "SCR",
+    "standardMedicalTerm": "Subcostal Retractions"
+  }
+]

@@ -1,30 +1,12 @@
 import {
-  Box,
-  Typography,
-  Button,
-  Grid,
-  TextField,
-  Checkbox,
-  ToggleButton,
-  ToggleButtonGroup,
-  MenuItem,
-  
- Accordion,
-  AccordionSummary,
-  AccordionDetails,
-
-  Table,
-  TableCell,
-  TableBody,
-  TableRow,
-  TableHead,
-  Card,
-  Snackbar,
-  Alert} from "@mui/material";
+  Box,Typography,Button,Grid,TextField,Checkbox,ToggleButton,ToggleButtonGroup,MenuItem,Accordion,AccordionSummary,AccordionDetails,Table,TableCell,TableBody,TableRow,TableHead,Card,Snackbar,Alert,
+  IconButton} from"@mui/material";
   import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { FC, useEffect,  useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
 interface AssessmentData {
   interpreterNeeded?: string;
@@ -1791,49 +1773,158 @@ const updatePatient = (field: string, value: string) => {
       "& .MuiInputBase-input": { color: "#000" }
     }}>
   {medications.map((med, index) => (
-    <Grid container spacing={2} key={index} sx={{ mb: 2, alignItems: 'center' }}>
-      <Grid item xs={3}>
-        <TextField
-       
-          fullWidth
-          label="Medication Name"
-          size="small"
-          value={med.name}
-          onChange={(e) => updateMedication(index, "name", e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={2}>
-        <TextField
-          fullWidth
-          label="Dose"
-          size="small"
-          placeholder="e.g. 500mg"
-          value={med.dose}
-          onChange={(e) => updateMedication(index, "dose", e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <TextField
-          fullWidth
-          label="Frequency"
-          size="small"
-          placeholder="e.g. BD / TDS"
-          value={med.frequency}
-          onChange={(e) => updateMedication(index, "frequency", e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={4}>
-        <TextField
-          fullWidth
-          label="Last Dose Date/Time"
-          type="datetime-local"
-          size="small"
-          InputLabelProps={{ shrink: true }}
-          value={med.lastDose}
-          onChange={(e) => updateMedication(index, "lastDose", e.target.value)}
-        />
-      </Grid>
-    </Grid>
+   <Grid container spacing={1.5} key={index} sx={{ mb: 2, alignItems: 'flex-start' }}>
+   {/* 1. Medication Name */}
+   <Grid item xs={12} md={3.5}>
+     <TextField
+       fullWidth
+       label="Medication Name"
+       size="small"
+       value={med.name}
+       onChange={(e) => updateMedication(index, "name", e.target.value)}
+       sx={{
+        backgroundColor: '#F8F9FA',
+        borderRadius: '8px',
+        // --- Label Styling ---
+        '& .MuiInputLabel-root': { 
+          color: '#000000', // Black color when resting
+        },
+        '& .MuiInputLabel-root.Mui-focused': { 
+          color: '#000000', // Keeps label black when clicked/focused
+        },
+        // --- Input Border and Text Styling ---
+        '& .MuiOutlinedInput-root': {
+          '& fieldset': { borderColor: '#CED4DA' },
+          '&:hover fieldset': { borderColor: '#228BE6' },
+          '&.Mui-focused fieldset': { borderColor: '#228BE6' }, // Border turns blue on focus
+        },
+        '& .MuiInputBase-input': { 
+          fontWeight: 500,
+          color: '#000000' // Ensures the typed text is also black
+        }
+      }}
+     />
+   </Grid>
+ 
+   {/* 2. Dose */}
+   <Grid item xs={6} md={2}>
+     <TextField
+       fullWidth
+       label="Dose"
+       size="small"
+       placeholder="500mg"
+       value={med.dose}
+       onChange={(e) => updateMedication(index, "dose", e.target.value)}
+       sx={{
+        backgroundColor: '#F8F9FA',
+        borderRadius: '8px',
+        // --- Label Styling ---
+        '& .MuiInputLabel-root': { 
+          color: '#000000', // Black color when resting
+        },
+        '& .MuiInputLabel-root.Mui-focused': { 
+          color: '#000000', // Keeps label black when clicked/focused
+        },
+        // --- Input Border and Text Styling ---
+        '& .MuiOutlinedInput-root': {
+          '& fieldset': { borderColor: '#CED4DA' },
+          '&:hover fieldset': { borderColor: '#228BE6' },
+          '&.Mui-focused fieldset': { borderColor: '#228BE6' }, // Border turns blue on focus
+        },
+        '& .MuiInputBase-input': { 
+          fontWeight: 500,
+          color: '#000000' // Ensures the typed text is also black
+        }
+      }}
+     />
+   </Grid>
+ 
+   {/* 3. Frequency */}
+   <Grid item xs={6} md={2}>
+     <TextField
+       fullWidth
+       label="Frequency"
+       size="small"
+       placeholder="BD / TDS"
+       value={med.frequency}
+       onChange={(e) => updateMedication(index, "frequency", e.target.value)}
+       sx={{
+        backgroundColor: '#F8F9FA',
+        borderRadius: '8px',
+        // --- Label Styling ---
+        '& .MuiInputLabel-root': { 
+          color: '#000000', // Black color when resting
+        },
+        '& .MuiInputLabel-root.Mui-focused': { 
+          color: '#000000', // Keeps label black when clicked/focused
+        },
+        // --- Input Border and Text Styling ---
+        '& .MuiOutlinedInput-root': {
+          '& fieldset': { borderColor: '#CED4DA' },
+          '&:hover fieldset': { borderColor: '#228BE6' },
+          '&.Mui-focused fieldset': { borderColor: '#228BE6' }, // Border turns blue on focus
+        },
+        '& .MuiInputBase-input': { 
+          fontWeight: 500,
+          color: '#000000' // Ensures the typed text is also black
+        }
+      }}
+     />
+   </Grid>
+ 
+   {/* 4. Date/Time */}
+   <Grid item xs={10} md={3.5}>
+     <TextField
+       fullWidth
+       label="Last Dose Date/Time"
+       type="datetime-local"
+       size="small"
+       InputLabelProps={{ shrink: true }}
+       value={med.lastDose}
+       onChange={(e) => updateMedication(index, "lastDose", e.target.value)}
+       sx={{
+        backgroundColor: '#F8F9FA',
+        borderRadius: '8px',
+        // --- Label Styling ---
+        '& .MuiInputLabel-root': { 
+          color: '#000000', // Black color when resting
+        },
+        '& .MuiInputLabel-root.Mui-focused': { 
+          color: '#000000', // Keeps label black when clicked/focused
+        },
+        // --- Input Border and Text Styling ---
+        '& .MuiOutlinedInput-root': {
+          '& fieldset': { borderColor: '#CED4DA' },
+          '&:hover fieldset': { borderColor: '#228BE6' },
+          '&.Mui-focused fieldset': { borderColor: '#228BE6' }, // Border turns blue on focus
+        },
+        '& .MuiInputBase-input': { 
+          fontWeight: 500,
+          color: '#000000' // Ensures the typed text is also black
+        }
+      }}
+     />
+   </Grid>
+ 
+   {/* 5. Actions (Add/Remove) */}
+   <Grid item xs={2} md={1} sx={{ display: 'flex', alignItems: 'center', height: '40px' }}>
+     {index === medications.length - 1 ? (
+       <IconButton 
+         color="primary" 
+         onClick={() => setMedications([...medications, { name: "", dose: "", frequency: "", lastDose: "", locked: false }])}
+       >
+         <AddCircleOutlineIcon />
+       </IconButton>
+     ) : (
+       <IconButton 
+         color="error" 
+         onClick={() => setMedications(medications.filter((_, i) => i !== index))}
+       >
+         <DeleteOutlineIcon fontSize="small" />
+       </IconButton>
+     )}
+   </Grid>
+ </Grid>
   ))}
   
   <Button 
@@ -2732,9 +2823,6 @@ const updatePatient = (field: string, value: string) => {
                   </Typography>
                 ))}
               </Box>
-
-
-              
               <Box sx={{ border: "1px solid #000", mt: 1, p: 1 }}>
                 <Typography fontSize={13} fontWeight={600}>
                   Nursing Needs
