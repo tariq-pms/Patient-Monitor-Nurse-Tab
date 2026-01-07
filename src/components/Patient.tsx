@@ -521,206 +521,6 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
     if (!response.ok) throw new Error("Failed to assign bed");
   };
 
-  // const handleSubmit = async () => {
-  //   try {
-  //     if (!formData.mothersName || !formData.patientId || !formData.birthDate) {
-  //       throw new Error("Required fields are missing");
-  //     }
-  
-  //     const FHIR_BASE = import.meta.env.VITE_FHIRAPI_URL;
-  //     const AUTH = {
-  //       "Content-Type": "application/fhir+json",
-  //       Authorization: "Basic " + btoa("fhiruser:change-password"),
-  //     };
-  
-  //     /* =========================
-  //        1️⃣ CREATE PATIENT
-  //     ========================= */
-  //     const patientPayload: any = {
-  //       resourceType: "Patient",
-  //       active: true,
-  //       managingOrganization: {
-  //         reference: `Organization/${userOrganization}`,
-  //       },
-  //       identifier: [
-  //         {
-  //           system: "http://hospital.org/uhid",
-  //           value: formData.patientId,
-  //         },
-  //         {
-  //           system: "http://hospital.org/admission-no",
-  //           value: formData.adminNo,
-  //         },
-  //       ],
-  //       name: [
-  //         {
-  //           use: "official",
-  //           text: `B/O ${formData.mothersName}`,
-  //         },
-  //       ],
-  //       gender: formData.gender?.toLowerCase() || "unknown",
-  //       birthDate: formData.birthDate,
-  //       address: [
-  //         {
-  //           text: formData.address,
-  //         },
-  //       ],
-  //       telecom: formData.mobile
-  //         ? [
-  //             {
-  //               system: "phone",
-  //               value: formData.mobile,
-  //               use: "mobile",
-  //             },
-  //           ]
-  //         : [],
-  //       extension: [
-  //         {
-  //           url: "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName",
-  //           valueString: formData.mothersName,
-  //         },
-  //         {
-  //           url: "http://example.org/fhir/StructureDefinition/gestationalAge",
-  //           valueString: `${formData.gestationWeeks || 0}W ${formData.gestationDays || 0}D`,
-  //         },
-  //         {
-  //           url: "http://example.org/fhir/StructureDefinition/birthWeight",
-  //           valueQuantity: {
-  //             value: Number(formData.birthWeight) || 0,
-  //             unit: "g",
-  //             system: "http://unitsofmeasure.org",
-  //             code: "g",
-  //           },
-  //         },
-  //         {
-  //           url: "http://example.org/fhir/StructureDefinition/nationality",
-  //           valueString:
-  //             formData.nationality === "Other"
-  //               ? formData.otherNationality
-  //               : formData.nationality,
-  //         },
-  //         {
-  //           url: "http://example.org/fhir/StructureDefinition/age-display",
-  //           valueString: formData.age,
-  //         },
-  //       ],
-  //     };
-  
-  //     const patientRes = await fetch(`${FHIR_BASE}/Patient`, {
-  //       method: "POST",
-  //       headers: AUTH,
-  //       body: JSON.stringify(patientPayload),
-  //     });
-  
-  //     if (!patientRes.ok) throw new Error("Failed to create Patient");
-  
-  //     const patient = await patientRes.json().catch(() => null);
-
-  //     const patientRef = `Patient/${patient.id}`;
-  
-  //     /* =========================
-  //        2️⃣ CREATE ENCOUNTER (ADMISSION)
-  //     ========================= */
-  //     const encounterPayload: any = {
-  //       resourceType: "Encounter",
-  //       status: "in-progress",
-  //       class: {
-  //         system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
-  //         code: "IMP",
-  //         display: "inpatient encounter",
-  //       },
-  //       subject: { reference: patientRef },
-  //       period: {
-  //         start: `${formData.doaDate}T${formData.doaTime || "00:00"}`,
-  //       },
-  //       location: formData.bedNo
-  //         ? [
-  //             {
-  //               location: {
-  //                 display: formData.bedNo,
-  //               },
-  //             },
-  //           ]
-  //         : [],
-  //       participant: [
-  //         {
-  //           individual: { display: formData.treatingDr },
-  //         },
-  //         {
-  //           individual: { display: formData.admittingDr },
-  //         },
-  //       ],
-  //       serviceProvider: {
-  //         reference: `Organization/${userOrganization}`,
-  //       },
-  //       extension: [
-  //         {
-  //           url: "http://example.org/fhir/StructureDefinition/referringHospital",
-  //           valueString: formData.refHospital,
-  //         },
-  //       ],
-  //     };
-  
-  //     await fetch(`${FHIR_BASE}/Encounter`, {
-  //       method: "POST",
-  //       headers: AUTH,
-  //       body: JSON.stringify(encounterPayload),
-  //     });
-  
-  //     /* =========================
-  //        3️⃣ CREATE RELATED PERSON (KIN)
-  //     ========================= */
-  //     if (formData.kinName) {
-  //       const relatedPersonPayload: any = {
-  //         resourceType: "RelatedPerson",
-  //         patient: { reference: patientRef },
-  //         relationship: [
-  //           {
-  //             text: formData.relationship,
-  //           },
-  //         ],
-  //         name: [
-  //           {
-  //             text: formData.kinName,
-  //           },
-  //         ],
-  //         telecom: formData.kinPhone
-  //           ? [{ system: "phone", value: formData.kinPhone }]
-  //           : [],
-  //         address: formData.kinAddress
-  //           ? [{ text: formData.kinAddress }]
-  //           : [],
-  //       };
-  
-  //       await fetch(`${FHIR_BASE}/RelatedPerson`, {
-  //         method: "POST",
-  //         headers: AUTH,
-  //         body: JSON.stringify(relatedPersonPayload),
-  //       });
-  //     }
-  
-  //     /* =========================
-  //        ✅ SUCCESS
-  //     ========================= */
-  //     setSnackbar({
-  //       open: true,
-  //       severity: "success",
-  //       message: "NICU Admission completed successfully",
-  //     });
-  
-  //     setOpenDialog(false);
-  //     ResetForm();
-  //     setStep(1);
-  
-  //   } catch (error: any) {
-  //     console.error(error);
-  //     setSnackbar({
-  //       open: true,
-  //       severity: "error",
-  //       message: error.message || "Failed to save admission",
-  //     });
-  //   }
-  // };
   
   const handleSubmit = async () => {
     try {
@@ -808,29 +608,70 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
          🔐 SAFE PATIENT ID
       ========================= */
       let patientId: string | null = null;
+
+// 1️⃣ Try response body
+const patientJson = await patientRes.json().catch(() => null);
+console.log("📦 Patient Response JSON:", patientJson);
+
+if (patientJson?.id) {
+  patientId = patientJson.id;
+}
+
+// 2️⃣ Correct Location header parsing (FHIR-safe)
+if (!patientId) {
+  const location = patientRes.headers.get("location");
+  console.log("📍 Location Header:", location);
+
+  if (location) {
+    const match = location.match(/Patient\/([^/]+)/);
+    if (match && match[1]) {
+      patientId = match[1];
+    }
+  }
+}
+
+// 3️⃣ Fallback search (last resort)
+if (!patientId) {
+  const searchRes = await fetch(
+    `${FHIR_BASE}/Patient?identifier=http://hospital.org/uhid|${formData.patientId}`,
+    { headers: AUTH }
+  );
+
+  const bundle = await searchRes.json();
+  patientId = bundle?.entry?.[0]?.resource?.id;
+}
+
+if (!patientId) {
+  throw new Error("Unable to resolve Patient ID");
+}
+
+const patientRef = `Patient/${patientId}`;
+console.log("✅ FINAL patientRef:", patientRef);
+
+      // let patientId: string | null = null;
   
-      const location = patientRes.headers.get("location");
-      if (location) {
-        patientId = location.split("/").pop()!;
-      } else {
-        const searchRes = await fetch(
-          `${FHIR_BASE}/Patient?identifier=http://hospital.org/uhid|${formData.patientId}`,
-          { headers: AUTH }
-        );
+      // const location = patientRes.headers.get("location");
+      // if (location) {
+      //   patientId = location.split("/").pop()!;
+      // } else {
+      //   const searchRes = await fetch(
+      //     `${FHIR_BASE}/Patient?identifier=http://hospital.org/uhid|${formData.patientId}`,
+      //     { headers: AUTH }
+      //   );
   
-        if (!searchRes.ok) {
-          throw new Error("Patient created but could not be fetched");
-        }
+      //   if (!searchRes.ok) {
+      //     throw new Error("Patient created but could not be fetched");
+      //   }
   
-        const bundle = await searchRes.json();
-        if (!bundle.entry?.length) {
-          throw new Error("Patient not found after creation");
-        }
+      //   const bundle = await searchRes.json();
+      //   if (!bundle.entry?.length) {
+      //     throw new Error("Patient not found after creation");
+      //   }
   
-        patientId = bundle.entry[0].resource.id;
-      }
+      //   patientId = bundle.entry[0].resource.id;
+      // }
   
-      const patientRef = `Patient/${patientId}`;
+      // const patientRef = `Patient/${patientId}`;
   
       /* =========================
          2️⃣ CREATE ENCOUNTER (FIXED)
@@ -997,133 +838,6 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
       });
     }
   };
-  
-  //  const fetchPatientDetails = async (patientId: string) => {
-  //   const BASE = import.meta.env.VITE_FHIRAPI_URL;
-  //   const AUTH = {
-  //     Authorization: "Basic " + btoa("fhiruser:change-password"),
-  //   };
-  
-  //   /* =========================
-  //      1️⃣ PATIENT
-  //   ========================= */
-  //   const patientRes = await fetch(`${BASE}/Patient/${patientId}`, {
-  //     headers: AUTH,
-  //   });
-  //   const patient = await patientRes.json();
-  
-  //   /* =========================
-  //      2️⃣ ACTIVE ENCOUNTER
-  //   ========================= */
-  //   const encRes = await fetch(
-  //     `${BASE}/Encounter?subject=Patient/${patientId}&status=in-progress`,
-  //     { headers: AUTH }
-  //   );
-  //   const encBundle = await encRes.json();
-  //   const encounter = encBundle.entry?.[0]?.resource || null;
-  
-  //   /* =========================
-  //      3️⃣ RELATED PERSON
-  //   ========================= */
-  //   const rpRes = await fetch(
-  //     `${BASE}/RelatedPerson?patient=Patient/${patientId}`,
-  //     { headers: AUTH }
-  //   );
-  //   const rpBundle = await rpRes.json();
-  //   const kin = rpBundle.entry?.[0]?.resource || null;
-  
-  //   /* =========================
-  //      🔁 NORMALIZE FOR UI
-  //   ========================= */
-  //   return {
-  //     /* IDs */
-  //     patientId:
-  //       patient.identifier?.find((i: any) =>
-  //         i.system?.includes("uhid")
-  //       )?.value || "-",
-  
-  //     admissionNo:
-  //       patient.identifier?.find((i: any) =>
-  //         i.system?.includes("admission")
-  //       )?.value || "-",
-  
-  //     /* Baby */
-  //     motherName:
-  //       patient.extension?.find(
-  //         (e: any) =>
-  //           e.url ===
-  //           "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName"
-  //       )?.valueString || "-",
-  
-  //     name: patient.name?.[0]?.text || "-",
-  //     gender: patient.gender || "-",
-  //     birthDate: patient.birthDate || "-",
-  
-  //     birthDateTime: patient.birthDate
-  //       ? new Date(patient.birthDate).toLocaleDateString()
-  //       : "-",
-  
-  //     gestationalAge:
-  //       patient.extension?.find((e: any) =>
-  //         e.url.includes("gestationalAge")
-  //       )?.valueString || "-",
-  
-  //     birthWeight:
-  //       patient.extension?.find((e: any) =>
-  //         e.url.includes("birthWeight")
-  //       )?.valueQuantity?.value || "-",
-  
-  //     nationality:
-  //       patient.extension?.find((e: any) =>
-  //         e.url.includes("nationality")
-  //       )?.valueString || "-",
-  
-  //     /* Contact */
-  //     mobile: patient.telecom?.[0]?.value || "-",
-  //     address: patient.address?.[0]?.text || "-",
-  
-  //     /* Admission */
-  //     bed:
-  //       encounter?.location?.[0]?.location?.display || "-",
-  
-  //     admissionDate: encounter?.period?.start
-  //       ? new Date(encounter.period.start).toLocaleString()
-  //       : "-",
-  
-  //     treatingDoctor:
-  //       encounter?.participant?.[0]?.individual?.display || "-",
-  
-  //     admittingDoctor:
-  //       encounter?.participant?.[1]?.individual?.display || "-",
-  
-  //     refHospital:
-  //       encounter?.extension?.find((e: any) =>
-  //         e.url.includes("referringHospital")
-  //       )?.valueString || "-",
-  
-  //     /* Next of Kin */
-  //     kinName: kin?.name?.[0]?.text || "-",
-  
-  //     kinRelation:
-  //       kin?.relationship?.[0]?.coding?.[0]?.display || "-",
-  
-  //     kinMobile: kin?.telecom?.[0]?.value || "-",
-  
-  //     kinAddress: kin?.address?.[0]?.text || "-",
-  //   };
-  // };
-   
-  // const handlePatientClick = async (patientId: string) => {
-  //   try {
-  //     const data = await fetchPatientDetails(patientId);
-  //     setSelectedPatient(data);
-  //     console.log("related person data checking",data);
-      
-  //     setOpenPatientDialog(true);
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
   
   const handleCloseSnackbar = () => {
     setSnackbar(prev => ({ ...prev, open: false }));

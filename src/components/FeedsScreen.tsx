@@ -1,15 +1,190 @@
-import { Box,Typography, TextField, Button,Grid, IconButton, TableRow,TableCell,Table,TableBody,TableContainer,Paper, MenuItem,Select,FormControl,
-  Tab,
-  Tabs,
-  Stack,
+import {
+  Box,
+  Typography,
+  Button,
+  IconButton,
+  Paper,
+  Divider,
+  Dialog,
+TextField,
+Checkbox,
+  Chip,
 } from "@mui/material";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight, faClock } from "@fortawesome/free-solid-svg-icons";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import CloseIcon from "@mui/icons-material/Close";
+import DownloadIcon from "@mui/icons-material/Download";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import AddIcon from "@mui/icons-material/Add";
+import WaterDropIcon from "@mui/icons-material/WaterDrop";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import AirIcon from "@mui/icons-material/Air";
+import OpacityIcon from "@mui/icons-material/Opacity";
+import { alpha  } from "@material-ui/core";
+import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+import React from "react";
+function DailyBalanceCard() {
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        borderRadius: "12px",
+        border: "1px solid #E5E7EB",
+        backgroundColor: "#FFFFFF",
+        p: 2,
+      }}
+    >
+      {/* ===== Header ===== */}
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={1.5}
+      >
+        <Box display="flex" alignItems="center" gap={1}>
+          <TrendingUpIcon sx={{ color: "#2563EB", fontSize: 18 }} />
+          <Typography fontWeight={600} color="#111827">
+            Daily Balance
+          </Typography>
+        </Box>
 
+      
+        <Box display="flex" alignItems="center" gap={1}>
+          <Typography variant="caption" color="#6B7280">
+             1340
+          </Typography>
+          
+          <Chip
+            size="small"
+            label="+130"
+            sx={{
+              backgroundColor: "#DCFCE7",
+              color: "#16A34A",
+              fontSize: "0.7rem",
+              height: 20,
+            }}
+          />
+
+          <Typography variant="caption" color="#6B7280">
+            Day 01
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* ===== Metrics Row ===== */}
+      <Box
+        display="grid"
+        gridTemplateColumns="repeat(7, 1fr)"
+        gap={2}
+        alignItems="center"
+      >
+        {/* Intake */}
+        <Metric
+          label="Intake"
+          value="10 ml"
+          sub="Oral"
+          color="#2563EB"
+        />
+
+        {/* Target */}
+        <Metric
+          label="Target"
+          value="230 ml"
+          sub="(Total)"
+        />
+
+        {/* Total Output */}
+        <Metric
+          label="Total Output"
+          value="10 ml"
+          color="#DC2626"
+        />
+
+        {/* Urine */}
+        <Metric label="Urine" value="0 ml" />
+
+        {/* Aspiration */}
+        <Metric label="Aspiration" value="0 ml" />
+
+        {/* Stool */}
+        <Metric label="Stool Output" value="0" />
+
+        {/* Fluid Balance */}
+        <Box
+          sx={{
+            backgroundColor: "#ECFDF5",
+            borderRadius: "10px",
+            p: 1.5,
+            textAlign: "center",
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{ color: "#16A34A", fontWeight: 600 }}
+          >
+            FLUID BALANCE
+          </Typography>
+
+          <Typography
+            fontWeight={700}
+            fontSize="1rem"
+            color="#16A34A"
+          >
+            0 ml
+          </Typography>
+
+          <Chip
+            size="small"
+            label="Balanced"
+            sx={{
+              mt: 0.5,
+              backgroundColor: "#BBF7D0",
+              color: "#166534",
+              fontSize: "0.7rem",
+              height: 20,
+            }}
+          />
+        </Box>
+      </Box>
+    </Paper>
+
+  );
+}
+
+/* ===== Reusable Metric Component ===== */
+function Metric({
+  label,
+  value,
+  sub,
+  color,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  color?: string;
+}) {
+  return (
+    
+    <Box>
+      <Typography variant="caption" color="#6B7280">
+        {label}
+      </Typography>
+
+      <Typography
+        fontWeight={700}
+        fontSize="0.95rem"
+        color={color || "#111827"}
+      >
+        {value}
+      </Typography>
+
+      {sub && (
+        <Typography variant="caption" color="#9CA3AF">
+          {sub}
+        </Typography>
+      )}
+    </Box>
+  );
+}
 export const FeedsScreen = () => {
  
 
@@ -116,467 +291,325 @@ export const FeedsScreen = () => {
 
 
 // In your component
-
-const medications = [
-  { name: "Nutrition 1", dose: "120 ml/day", frequency: "Q36H", route: "IV", time: "12:30 PM", isCritical: true },
-  { name: "Nutrition 2", dose: "120 ml/day", frequency: "Q36H", route: "IV", time: "10:00 AM" },
-  { name: "Nutrition 3",dose: "120 ml/day", frequency: "Q36H", route: "IV", time: "10:00 AM" },
-];
-const fluidData = {
-  totalFluid: 450,
-  remainingFluid: 170,
-  enteral: 180,
-  parenteral: 180,
-  deficits: {
-    vitaminD: -20,
-    calcSyrup: -45,
-    iron: -69,
-    vitaminA: -120,
-  },
+type SectionProps = {
+  title: string;
+  children: React.ReactNode;
 };
 
-const deficits = [
-  { label: "Vitamin D", value: -20 },
-  { label: "Calc Syrup", value: -45 },
-  { label: "Iron", value: -69 },
-  { label: "Vitamin A", value: -120 },
-];
-  
-  return (
-    <Box sx={{  borderRadius: "25px", padding: 2 }}>
-     <Box sx={{ padding: 3, borderRadius: 5,backgroundColor: "#FFFFFF",marginBottom:3 }} > 
-    {/* changing the logic */}
-       <Box display="flex" justifyContent="center"  alignItems="center"  >
-        <Typography variant="h6" sx={{ color: "#0F3B61" }}>Feeds & Nutrition</Typography>
-       
- </Box>
- <Box sx={{ display: "flex", justifyContent: "space-evenly", alignItems: "center", border: "1px solid #DBE2F2" }}>
- <Tabs   value={""} onChange={(_e, newValue) => (newValue)} indicatorColor="primary" textColor="inherit">
-          <Tab label="Enteral" />
-          <Tab label="Parenteral" />
-          <Tab label="Blood Products" />
-        </Tabs></Box>
-      <Box sx={{ display: "flex", gap: 2,marginTop: 4 , marginBottom: 2 }}>
-      <TextField
-          label="Feed Type"
-          sx={{ flex: 1 ,
-         
-            '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-          borderColor: '#DBE2F2', 
-        },
-      
-      },  
-            '& .MuiInputBase-root': {
-              color: '#0F3B61', // Text color inside the input
-            },
-            '& .MuiInputLabel-root  ': {
-              color: '#9BA1AE', // Label color (optional)
-            },
-            
-          }}
-        />
-         <Select value={""} onChange={(e) => (e.target.value)} fullWidth 
-      MenuProps={{MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81',color: '#FFFFFF',},},}}
-     sx={{
-    '& .MuiSelect-icon': { color: '#0F3B61', backgroundColor: '#F2FBFF' },
-    flex: 1,
-    color: '#0F3B61',
-    border: '1px solid #DBE2F2',
-     // Adding the red border here
-  }}>
-      
-      <MenuItem value="Oral">Oral</MenuItem>
-      <MenuItem value="Intravenous" >Intravenous</MenuItem>
-      <MenuItem value="Rectal">Rectal</MenuItem>
-      <MenuItem value="Epidural">Epidural</MenuItem>
-      <MenuItem value="Nasal">Nasal</MenuItem>
+const Section = ({ title, children }: SectionProps) => (
+  <Box mt={2}>
+    <Typography fontWeight={600} mb={0.5} color="#111827">
+      {title}
+    </Typography>
+    {children}
+  </Box>
+);
 
-      </Select>
-    
-
-<Select
- 
-  onChange={(e) => (e.target.value)}
-  fullWidth
-  MenuProps={{MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81',color: '#FFFFFF',},},}}
-  sx={{
- '& .MuiSelect-icon': { color: '#0F3B61', backgroundColor: '#F2FBFF' },
- 
- flex: 1,
- color: '#0F3B61',
- border: '1px solid #DBE2F2', // Adding the red border here
-}}>
-  <MenuItem 
-    value="Q12H"
-   
-  >
-    Q12H
-  </MenuItem>
-  <MenuItem  value="Q8H" > Q8H </MenuItem>
-  <MenuItem 
-    value="Q6H"
-   
-  >
-    Q6H
-  </MenuItem>
-</Select>
-         
- </Box>
-      <Box sx={{ display: "flex", gap: 2,marginTop: 2 , marginBottom: 2 }}>
-      <TextField
-          label="EBM (ml)"
-      
-          type="number"
-          // InputProps={{
-          //   endAdornment: <InputAdornment position="end"  style={{color:'red',backgroundColor:'red'}} sx={{color:'red',backgroundColor:'red'}}>mg</InputAdornment>,
-          // }}
-        sx={{ flex: 1 ,
-         
-            '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-          borderColor: '#DBE2F2', 
-        },
-       
-      },'& .MuiInputBase-root': {
-              color: '#0F3B61', // Text color inside the input
-            },
-            '& .MuiInputLabel-root  ': {
-              color: '#9BA1AE', // Label color (optional)
-            },
-            
-          }}
-        />
-         <TextField
-          label="Doxolac (ml)"
-      
-          type="number"
-          // InputProps={{
-          //   endAdornment: <InputAdornment position="end"  style={{color:'red',backgroundColor:'red'}} sx={{color:'red',backgroundColor:'red'}}>mg</InputAdornment>,
-          // }}
-        sx={{ flex: 1 ,
-         
-            '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-          borderColor: '#DBE2F2', 
-        },
-       
-      },'& .MuiInputBase-root': {
-              color: '#0F3B61', // Text color inside the input
-            },
-            '& .MuiInputLabel-root  ': {
-              color: '#9BA1AE', // Label color (optional)
-            },
-            
-          }}
-        />
-         <TextField
-          label="Enfamil (ml)"
-      
-          type="number"
-          // InputProps={{
-          //   endAdornment: <InputAdornment position="end"  style={{color:'red',backgroundColor:'red'}} sx={{color:'red',backgroundColor:'red'}}>mg</InputAdornment>,
-          // }}
-        sx={{ flex: 1 ,
-         
-            '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-          borderColor: '#DBE2F2', 
-        },
-       
-      },'& .MuiInputBase-root': {
-              color: '#0F3B61', // Text color inside the input
-            },
-            '& .MuiInputLabel-root  ': {
-              color: '#9BA1AE', // Label color (optional)
-            },
-            
-          }}
-        />
-
-     
-
-      </Box>
-       <Box sx={{ display: "flex", gap: 2, marginBottom: 2 }}>
-       <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <FormControl fullWidth>
-            <DateTimePicker
-              label="Start"
-            
-              format="dd/MM/yyyy hh:mm a"
-              minDateTime={new Date()}
-              slotProps={{
-                textField: {
-                  variant: "outlined",
-                  fullWidth: true,
-                  size: "medium",
-                },
-              }}
-              sx={{ 
-                marginBottom: 2, 
-                '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-              borderColor: '#DBE2F2', // Border color when the field is not focused
-            },
-           
-          },
-                '& .MuiInputBase-root': {
-                  color: '#0F3B61', // Text color inside the input
-                },
-                '& .MuiInputLabel-root  ': {
-                  color: '#9BA1AE', // Label color (optional)
-                },
-                
-              }}
-            />
-          </FormControl>
-        </LocalizationProvider>
-        <FormControl fullWidth>
-        <TextField
-          label="Category"
-         
-          sx={{ flex: 1 ,
-         
-            '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-          borderColor: '#DBE2F2', // Border color when the field is not focused
-        },
-       
-      },
-            '& .MuiInputBase-root': {
-              color: '#0F3B61', // Text color inside the input
-            },
-            '& .MuiInputLabel-root  ': {
-              color: '#9BA1AE', // Label color (optional)
-            },
-            
-          }}
-        />
-       </FormControl>
-
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <FormControl fullWidth>
-            <DateTimePicker
-              label="End"
-           
-              format="dd/MM/yyyy hh:mm a"
-              minDateTime={new Date()} // Prevent selecting past dates/times
-              slotProps={{
-                textField: {
-                  variant: "outlined",
-                  fullWidth: true,
-                  size: "medium",
-                },
-              }}
-              sx={{ 
-                marginBottom: 2, 
-                '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-              borderColor: '#DBE2F2', // Border color when the field is not focused
-            },},
-                '& .MuiInputBase-root': {
-                  color: '#0F3B61', // Text color inside the input
-                },
-                '& .MuiInputLabel-root  ': {
-                  color: '#9BA1AE', // Label color (optional)
-                },}}
-            />
-          </FormControl>
-        </LocalizationProvider>
-      
-       </Box>
-      
-
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Button variant="outlined" sx={{ borderColor: "#0F3B61", color: "#0F3B61" }}>
-          Reset
-        </Button>
-        <Button
-          variant="contained"
-          
-        >
-          Submit
-        </Button>
-      </Box>
-
-      <Box sx={{ marginTop: 3, display: "flex", alignItems: "center" }}>
-        <Typography variant="body2" sx={{ color: "#0F3B61" }}>
-          Assessed by
+const QuantityInput = () => (
+  <TextField
+    fullWidth
+    placeholder="Enter or pick qty"
+    InputProps={{
+      endAdornment: (
+        <Typography variant="caption" color="#6B7280">
+          mL
         </Typography>
-        <Typography
-          variant="body2"
-          sx={{
-            marginLeft: 1,
-            display: "flex",
-            alignItems: "center",
-            color: "#0F3B61",
-          }}
-        >
-          Dr.John
-          <span style={{ color: "green", marginLeft: 4 }}></span>
-        </Typography>
-      </Box>
-    </Box>
-    <Box sx={{ backgroundColor: "#FFFFFF", mb: 2, borderRadius: 3,  }}>
-        <Grid style={{padding:15}} container alignItems="center" >
-          {/* Fluid Overview */}
-          <Grid item xs={7} style={{backgroundColor:'#DBFFD9',borderTopLeftRadius:6,borderBottomLeftRadius:6}}>
-            <Typography variant="h6" sx={{ fontWeight: "bold",paddingLeft:1, color: "#124D81" }}>
-              {fluidData.totalFluid} ml/day
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#6c757d",paddingLeft:1, }}>
-              Total fluid
-            </Typography>
-          </Grid>
-          <Grid item xs={5} style={{backgroundColor:'#F2F4FB',borderTopRightRadius:6,borderBottomRightRadius:6}}>
-            <Typography variant="h6" sx={{ fontWeight: "bold",paddingRight:1, color: "#124D81", textAlign: "right" }}>
-              {fluidData.remainingFluid} ml/day
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#6c757d",paddingRight:1, textAlign: "right" }}>
-              Remaining
-            </Typography>
-          </Grid>
-        </Grid>
-        <Grid container  sx={{paddingLeft:2,paddingRight:2}}>
-          <Grid item xs={2}>
-    <Stack style={{ alignItems: "center"}} >
-                  <Typography variant="subtitle2" sx={{ color: "#A7B3CD" }}>Enteral</Typography>
-                  <Typography variant="subtitle1" sx={{ color: "#124D81" }}>450 ml/day</Typography>
-                   </Stack></Grid>
-          <Grid item xs={2}>
-        <Stack style={{ alignItems: "center"}} >
-                        <Typography variant="subtitle2" sx={{ color: "#A7B3CD" }}> Parenteral</Typography>
-                        <Typography variant="subtitle1" sx={{ color: "#124D81" }}> 180 ml/day</Typography></Stack>
-                       </Grid>
-          <Grid item xs={8}>
-            <Button variant="outlined" size="small" color="primary" sx={{ float: "right", textTransform: "none" }}>
-              Feeds
-            </Button>
-          </Grid>
-        </Grid>
-        <Grid style={{padding:'10px'}} container > 
-        <TableContainer
-      component={Paper}
-      elevation={0}
-      sx={{ backgroundColor: "#FFFFFF", }}>
-      {/* Header */}
-      <Typography variant="subtitle2" sx={{color: "#A7B3CD", }} > Deficit </Typography>
-
-      {/* Table */}
-      <Table>
-        <TableBody>
-          <TableRow >
-            {/* Iterate over deficits */}
-            {deficits.map((item, index) => (
-              <TableCell
-                key={index}
-                sx={{ borderBottom: "none", textAlign: "center", padding:0, color: "#124D81",}}>
-                <Typography variant="subtitle1" component="span">{item.label}</Typography>{" "}
-                <Typography component="span"sx={{ color: "red"}}  > {item.value}
-                </Typography>
-              </TableCell>
-            ))}
-            {/* Arrow Icon */}
-            <TableCell
-              sx={{ borderBottom: "none",width: "40px", textAlign: "center", }} >
-              <IconButton
-                sx={{  color: "#124D81", width: 10, height: 10, borderRadius: "8px","&:hover": {  backgroundColor: "#CCE6FF",  },  }}   >
-                <FontAwesomeIcon icon={faChevronRight} />
-              </IconButton>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </TableContainer>
-        </Grid>
-        <Box width="100%" sx={{ display: "flex",justifyContent: "space-around",  }}>
-<Button sx={{ backgroundColor:'#F2FBFF', color:'#124D81  ', flex: "1 1 50%", maxWidth: "50%", }} > Current</Button>
-  <Button sx={{backgroundColor:'#F2F4FB', color:'#9BA1AE', flex: "1 1 50%", maxWidth: "50%",}} >Last Feed </Button>
-</Box>
- </Box>
-
- <Box >
-  <TableContainer
-    component={Paper}
-    elevation={0}
-    sx={{
-      backgroundColor: "#FFFFFF",
-      borderRadius: 3,
-      boxShadow: "0px 1px 4px rgba(0, 0, 0, 0.1)",
+      ),
     }}
-  >
-    <Table
+    sx={{
+      backgroundColor: "#F9FAFB",
+      borderRadius: "10px",
+      mt: 0.5,
+      "& .MuiOutlinedInput-root": {
+        borderRadius: "10px",
+      },
+    }}
+  />
+);
+
+type ChipRowProps = {
+  values: string[];
+};
+
+const ChipRow = ({ values }: ChipRowProps) => (
+  <Box display="flex" gap={1} flexWrap="wrap" mt={1}>
+    {values.map((value) => (
+      <Chip
+        key={value}
+        label={value}
+        clickable
+        sx={{
+          backgroundColor: "#E0F2FE",
+          color: "#0284C7",
+          borderRadius: "999px",
+          fontWeight: 500,
+          "&:hover": {
+            backgroundColor: "#BAE6FD",
+          },
+        }}
+      />
+    ))}
+  </Box>
+);
+
+
+
+const [openEntryDialog, setOpenEntryDialog] = React.useState(false);
+
+return (
+  <Box>
+    <Dialog
+  open={openEntryDialog}
+  onClose={() => setOpenEntryDialog(false)}
+  maxWidth="sm"
+  fullWidth
+  PaperProps={{
+    sx: {
+      borderRadius: "16px",
+      p: 2.5,
+    },
+  }}
+>
+  {/* ===== Header ===== */}
+  <Box display="flex" justifyContent="space-between" alignItems="center">
+    <Typography fontWeight={600}>Input Output Entry</Typography>
+    <IconButton onClick={() => setOpenEntryDialog(false)}>
+      <CloseIcon />
+    </IconButton>
+  </Box>
+
+  {/* ===== Vitals ===== */}
+  <Box display="grid" gridTemplateColumns="repeat(4, 1fr)" gap={1.5} mt={2}>
+    {[
+      { icon: <FavoriteIcon color="error" />, value: "150" },
+      { icon: <WaterDropIcon color="primary" />, value: "98" },
+      { icon: <LocalFireDepartmentIcon color="warning" />, value: "35.6" },
+      { icon: <AirIcon color="info" />, value: "71" },
+    ].map((v, i) => (
+      <Box
+        key={i}
+        display="flex"
+        alignItems="center"
+        gap={1}
+        px={1.5}
+        py={1}
+        border="1px solid #E5E7EB"
+        borderRadius="10px"
+      >
+        {v.icon}
+        <Typography>{v.value}</Typography>
+      </Box>
+    ))}
+  </Box>
+
+  {/* ===== IV Fluid ===== */}
+  <Section title="I.V Fluid">
+    <QuantityInput />
+    <ChipRow values={["2.0 mL", "5.0 mL", "10.0 mL", "15.0 mL", "50.0 mL"]} />
+  </Section>
+
+  {/* ===== By Mouth ===== */}
+  <Section title="By Mouth">
+    <QuantityInput />
+  </Section>
+
+  {/* ===== RT Feed ===== */}
+  <Section title="RT Feed / NG">
+    <QuantityInput />
+    <ChipRow values={["12.0 mL", "13.0 mL", "15.0 mL", "20.0 mL", "NBM"]} />
+  </Section>
+
+  {/* ===== Outputs ===== */}
+  <Box display="grid" gridTemplateColumns="repeat(3, 1fr)" gap={1.5} mt={2}>
+    {["Aspiration", "Urine", "Drain / Stool"].map(label => (
+      <Box
+        key={label}
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        px={2}
+        py={1.2}
+        border="1px solid #E5E7EB"
+        borderRadius="10px"
+      >
+        <Typography fontWeight={500}>{label}</Typography>
+        <Checkbox />
+      </Box>
+    ))}
+  </Box>
+
+  {/* ===== Remarks ===== */}
+  <Box mt={2}>
+    <Typography fontWeight={600} mb={0.5}>
+      Remarks
+    </Typography>
+    <TextField
+      fullWidth
+      placeholder="Type or Search"
+      sx={{ backgroundColor: "#F9FAFB", borderRadius: "10px" }}
+    />
+  </Box>
+
+  {/* ===== Footer ===== */}
+  <Divider sx={{ my: 2 }} />
+
+  <Box display="grid" gridTemplateColumns="1fr 1fr" gap={1.5}>
+    <Button
+      disabled
       sx={{
-        "& .MuiTableCell-root": {
-          borderBottom: "none", // Remove default row border
-        },
-        "& .MuiTableRow-root:not(:last-child)": {
-          borderBottom: "1px solid #E0E0E0", // Row border color
-        },
+        backgroundColor: "#E5E7EB",
+        color: "#9CA3AF",
+        borderRadius: "10px",
       }}
     >
-      <TableBody>
-        {medications.map((medication, index) => (
-          <TableRow
-            key={index}
-            sx={{"&:before": { content: '""', display: "block", width: "4px", height: "100%",  backgroundColor: medication.isCritical  ? "#FF5A5F"  : medication.isCritical ? "#FFD700"  : "#4CAF50", position: "absolute",  left: 0,  top: 0, },  position: "relative",  backgroundColor: medication.isCritical ? "#FFF7F7" : "inherit",  }} >
-            {/* Medication Name */}
-            <TableCell sx={{ color: medication.isCritical ? "red" : "#124D81" }}>
-              {medication.name}
-            </TableCell>
+      Cancel
+    </Button>
 
-            {/* Dose */}
-            <TableCell
-              style={{ color: "#124D81" }}
-              align="center"
-            >
-              {medication.dose}
-            </TableCell>
+    <Button
+      startIcon={<AddIcon />}
+      sx={{
+        backgroundColor: "#E0F2FE",
+        color: "#0284C7",
+        borderRadius: "10px",
+        fontWeight: 600,
+      }}
+    >
+      Add
+    </Button>
+  </Box>
+</Dialog>
 
-            {/* Frequency */}
-            <TableCell style={{ color: "#124D81" }} align="center">
-              <FontAwesomeIcon
-                icon={faClock}
-                style={{
-                  marginRight: "6px",
-                  color: "#A7B3CD",
-                }}
-              />
-              {medication.frequency}
-            </TableCell>
+  <Box mt={2} mb={2}><Typography variant="inherit" fontWeight={500}>Input Output Chart</Typography>
+  <Box display={"flex"}  alignItems="center"
+  justifyContent="flex-end"
+  gap={1.5}>
+    <IconButton sx={{
+          backgroundColor: alpha("#228BE6", 0.1),
+          color: "#228BE6",
+          textTransform: "none",
+          borderRadius: "8px",
+          px: 2,py:0.9,
+          "&:hover": {
+            backgroundColor: alpha("#228BE6", 0.2),
+          },
+        }}><DownloadIcon/></IconButton>
+   <Button
+  startIcon={<AddIcon fontSize="small" />}
+  onClick={() => setOpenEntryDialog(true)}
+  sx={{
+    backgroundColor: alpha("#228BE6", 0.1),
+    color: "#228BE6",
+    textTransform: "none",
+    borderRadius: "8px",
+    px: 3,
+  }}
+>
+  Entry
+</Button>
 
-            {/* Route */}
-            <TableCell align="center">
-              <Typography color="#A7B3CD">
-                Route:{" "}
-                <Typography
-                  component="span"
-                  color="#124D81"
-                  fontWeight="bold"
-                >
-                  {medication.route}
-                </Typography>
-              </Typography>
-            </TableCell>
+  </Box>
+  </Box>
 
-            {/* Time */}
-            <TableCell
-              style={{
-                color: medication.isCritical ? "red" : "#124D81",
-                fontWeight: medication.isCritical ? "bold" : "normal",
-              }}
-              align="center"
-            >
-              {medication.time}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  </TableContainer>
-</Box>
- </Box>
-   
+    <Paper
+      elevation={0}
+      sx={{
+        borderRadius: "12px",
+        backgroundColor: "#FFFFFF",
+        border: "1px solid #E5E7EB",
+        overflow: "hidden",
+      }}
+    >
+      {/* ===== Header Row ===== */}
+      <Box
+        display="grid"
+        gridTemplateColumns="repeat(12, 1fr)"
+        alignItems="center"
+        px={2}
+        py={1}
+        sx={{
+          backgroundColor: "#F9FAFB",
+          fontSize: "0.75rem",
+          color: "#6B7280",
+        }}
+      >
+        <Typography variant="caption">Time</Typography>
+
+        <Box display="flex" alignItems="center" gap={0.4}>
+          <LocalFireDepartmentIcon fontSize="inherit" color="warning" />
+          <Typography variant="caption">T°</Typography>
+        </Box>
+
+        <Box display="flex" alignItems="center" gap={0.4}>
+          <FavoriteIcon fontSize="inherit" color="error" />
+          <Typography variant="caption">P</Typography>
+        </Box>
+
+        <Box display="flex" alignItems="center" gap={0.4}>
+          <AirIcon fontSize="inherit" color="info" />
+          <Typography variant="caption">R</Typography>
+        </Box>
+
+        <Box display="flex" alignItems="center" gap={0.4}>
+          <OpacityIcon fontSize="inherit" color="primary" />
+          <Typography variant="caption">SpO₂</Typography>
+        </Box>
+
+        <Typography variant="caption">IV Fluid</Typography>
+        <Typography variant="caption">By Mouth</Typography>
+        <Typography variant="caption">RT Feed</Typography>
+        <Typography variant="caption">Aspiration</Typography>
+        <Typography variant="caption">Urine</Typography>
+        <Typography variant="caption">Drain / Stool</Typography>
+        <Typography variant="caption">Remark</Typography>
+      </Box>
+
+      {/* ===== Empty State ===== */}
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        gap={1}
+        py={3}
+      >
+        <Typography variant="caption" color="#9CA3AF">
+          Add first charting
+        </Typography>
+
+        <Button
+          size="small"
+          startIcon={<AddIcon fontSize="small" />}
+          sx={{
+          backgroundColor: alpha("#228BE6", 0.1),
+          color: "#228BE6",
+          textTransform: "none",
+          borderRadius: "8px",
+          px: 3,
+          "&:hover": {
+            backgroundColor: alpha("#228BE6", 0.2),
+          },
+        }}
+        >
+          Entry
+        </Button>
+      </Box>
+    </Paper>
+     <Box
+     
+    sx={{
+      position: "fixed",
+      bottom: 0,
+      px: 2,
+      pb: 1.5,
+      backgroundColor: "#F9FAFB",
+      borderTop: "1px solid #E5E7EB",
+    }}
+  >
+    <DailyBalanceCard />
+  </Box>
+    </Box>
   );
+
+
+
 };
 

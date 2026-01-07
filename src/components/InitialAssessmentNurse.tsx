@@ -1,12 +1,35 @@
 import {
-  Box,Typography,Button,Grid,TextField,Checkbox,ToggleButton,ToggleButtonGroup,MenuItem,Accordion,AccordionSummary,AccordionDetails,Table,TableCell,TableBody,TableRow,TableHead,Card,Snackbar,Alert,
-  IconButton} from"@mui/material";
+  Box,
+  Typography,
+  Button,
+  Grid,
+  TextField,
+  Checkbox,
+  ToggleButton,
+  ToggleButtonGroup,
+  MenuItem,
+  
+ Accordion,
+  AccordionSummary,
+  AccordionDetails,
+
+  Table,
+  TableCell,
+  TableBody,
+  TableRow,
+  TableHead,
+  Card,
+  Snackbar,
+  Alert,
+  CircularProgress,
+  IconButton} from "@mui/material";
   import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { FC, useEffect,  useState } from "react";
-import AddIcon from "@mui/icons-material/Add";
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import DownloadIcon from "@mui/icons-material/Download";
+import AddIcon from "@mui/icons-material/Add";
 
 interface AssessmentData {
   interpreterNeeded?: string;
@@ -362,45 +385,70 @@ type NumericVitalKey = keyof typeof VITAL_RANGES;
   }
   return false;
 };
-  
+  const [isDownloading, setIsDownloading] = useState(false);
   const downloadPdf = async () => {
-    const pages = document.querySelectorAll(".pdf-page");
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pdfWidth = 210;
-    const pdfHeight = 297;
-  
+  // 1. Show "Started" message
+  setIsDownloading(true);
+  setSnackbar({
+    open: true,
+    message: "Generating PDF, please wait...",
+    severity: 'success', // Use 'info' for progress
+  });
+
+  const pages = document.querySelectorAll(".pdf-page");
+  const pdf = new jsPDF("p", "mm", "a4");
+  const pdfWidth = 210;
+  const pdfHeight = 297;
+
+  try {
     for (let i = 0; i < pages.length; i++) {
       const page = pages[i] as HTMLElement;
-  
+
       const canvas = await html2canvas(page, {
-        scale: 3, // High quality for small text
+        scale: 3, 
         useCORS: true,
         backgroundColor: "#fff",
         height: page.scrollHeight,
         windowHeight: page.scrollHeight,
       });
-  
+
       const imgData = canvas.toDataURL("image/png");
       const imgProps = pdf.getImageProperties(imgData);
-      
-      // Calculate how high the image would be if it spanned the full 210mm width
       const actualHeightInMm = (imgProps.height * pdfWidth) / imgProps.width;
-  
+
       if (i > 0) pdf.addPage();
-  
+
       if (actualHeightInMm > pdfHeight) {
-        // 🔴 If content is too tall, scale it down to fit the height exactly
         const ratio = pdfHeight / actualHeightInMm;
         const scaledWidth = pdfWidth * ratio;
         const xOffset = (pdfWidth - scaledWidth) / 2;
         pdf.addImage(imgData, "PNG", xOffset, 0, scaledWidth, pdfHeight);
       } else {
-        // Content fits naturally
         pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, actualHeightInMm);
       }
     }
+
     pdf.save("Initial_Assessment.pdf");
-  };
+
+    // 2. Show "Success" message
+    setSnackbar({
+      open: true,
+      message: "PDF downloaded successfully!",
+      severity: 'success',
+    });
+
+  } catch (error) {
+    console.error("PDF Generation Error:", error);
+    
+    // 3. Show "Error" message
+    setSnackbar({
+      open: true,
+      message: "Failed to generate PDF. Please try again.",
+      severity: 'error',
+    });
+  }
+  setIsDownloading(false);
+};
   
   const A4_PAGE_STYLE = {
     width: "210mm",
@@ -1773,166 +1821,134 @@ const updatePatient = (field: string, value: string) => {
       "& .MuiInputBase-input": { color: "#000" }
     }}>
   {medications.map((med, index) => (
-   <Grid container spacing={1.5} key={index} sx={{ mb: 2, alignItems: 'flex-start' }}>
-   {/* 1. Medication Name */}
-   <Grid item xs={12} md={3.5}>
-     <TextField
-       fullWidth
-       label="Medication Name"
-       size="small"
-       value={med.name}
-       onChange={(e) => updateMedication(index, "name", e.target.value)}
-       sx={{
-        backgroundColor: '#F8F9FA',
-        borderRadius: '8px',
-        // --- Label Styling ---
-        '& .MuiInputLabel-root': { 
-          color: '#000000', // Black color when resting
-        },
-        '& .MuiInputLabel-root.Mui-focused': { 
-          color: '#000000', // Keeps label black when clicked/focused
-        },
-        // --- Input Border and Text Styling ---
-        '& .MuiOutlinedInput-root': {
-          '& fieldset': { borderColor: '#CED4DA' },
-          '&:hover fieldset': { borderColor: '#228BE6' },
-          '&.Mui-focused fieldset': { borderColor: '#228BE6' }, // Border turns blue on focus
-        },
-        '& .MuiInputBase-input': { 
-          fontWeight: 500,
-          color: '#000000' // Ensures the typed text is also black
-        }
+    <Grid container spacing={1.5} key={index} sx={{ mb: 2, alignItems: 'flex-start' }}>
+  {/* 1. Medication Name */}
+  <Grid item xs={12} md={3.5}>
+    <TextField
+      fullWidth
+      label="Medication Name"
+      size="small"
+      value={med.name}
+      onChange={(e) => updateMedication(index, "name", e.target.value)}
+      sx={{
+       
+  backgroundColor: '#F8F9FA', // A lighter, cleaner grey
+  borderRadius: '8px',
+  '& .MuiInputLabel-root': { 
+      color: '#000000', // Black color when resting
+    },
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': { borderColor: '#CED4DA' },
+    '&:hover fieldset': { borderColor: '#228BE6' },
+  },
+  '& .MuiInputBase-input': { fontWeight: 500 }
       }}
-     />
-   </Grid>
- 
-   {/* 2. Dose */}
-   <Grid item xs={6} md={2}>
-     <TextField
-       fullWidth
-       label="Dose"
-       size="small"
-       placeholder="500mg"
-       value={med.dose}
-       onChange={(e) => updateMedication(index, "dose", e.target.value)}
-       sx={{
-        backgroundColor: '#F8F9FA',
-        borderRadius: '8px',
-        // --- Label Styling ---
-        '& .MuiInputLabel-root': { 
-          color: '#000000', // Black color when resting
-        },
-        '& .MuiInputLabel-root.Mui-focused': { 
-          color: '#000000', // Keeps label black when clicked/focused
-        },
-        // --- Input Border and Text Styling ---
-        '& .MuiOutlinedInput-root': {
-          '& fieldset': { borderColor: '#CED4DA' },
-          '&:hover fieldset': { borderColor: '#228BE6' },
-          '&.Mui-focused fieldset': { borderColor: '#228BE6' }, // Border turns blue on focus
-        },
-        '& .MuiInputBase-input': { 
-          fontWeight: 500,
-          color: '#000000' // Ensures the typed text is also black
-        }
-      }}
-     />
-   </Grid>
- 
-   {/* 3. Frequency */}
-   <Grid item xs={6} md={2}>
-     <TextField
-       fullWidth
-       label="Frequency"
-       size="small"
-       placeholder="BD / TDS"
-       value={med.frequency}
-       onChange={(e) => updateMedication(index, "frequency", e.target.value)}
-       sx={{
-        backgroundColor: '#F8F9FA',
-        borderRadius: '8px',
-        // --- Label Styling ---
-        '& .MuiInputLabel-root': { 
-          color: '#000000', // Black color when resting
-        },
-        '& .MuiInputLabel-root.Mui-focused': { 
-          color: '#000000', // Keeps label black when clicked/focused
-        },
-        // --- Input Border and Text Styling ---
-        '& .MuiOutlinedInput-root': {
-          '& fieldset': { borderColor: '#CED4DA' },
-          '&:hover fieldset': { borderColor: '#228BE6' },
-          '&.Mui-focused fieldset': { borderColor: '#228BE6' }, // Border turns blue on focus
-        },
-        '& .MuiInputBase-input': { 
-          fontWeight: 500,
-          color: '#000000' // Ensures the typed text is also black
-        }
-      }}
-     />
-   </Grid>
- 
-   {/* 4. Date/Time */}
-   <Grid item xs={10} md={3.5}>
-     <TextField
-       fullWidth
-       label="Last Dose Date/Time"
-       type="datetime-local"
-       size="small"
-       InputLabelProps={{ shrink: true }}
-       value={med.lastDose}
-       onChange={(e) => updateMedication(index, "lastDose", e.target.value)}
-       sx={{
-        backgroundColor: '#F8F9FA',
-        borderRadius: '8px',
-        // --- Label Styling ---
-        '& .MuiInputLabel-root': { 
-          color: '#000000', // Black color when resting
-        },
-        '& .MuiInputLabel-root.Mui-focused': { 
-          color: '#000000', // Keeps label black when clicked/focused
-        },
-        // --- Input Border and Text Styling ---
-        '& .MuiOutlinedInput-root': {
-          '& fieldset': { borderColor: '#CED4DA' },
-          '&:hover fieldset': { borderColor: '#228BE6' },
-          '&.Mui-focused fieldset': { borderColor: '#228BE6' }, // Border turns blue on focus
-        },
-        '& .MuiInputBase-input': { 
-          fontWeight: 500,
-          color: '#000000' // Ensures the typed text is also black
-        }
-      }}
-     />
-   </Grid>
- 
-   {/* 5. Actions (Add/Remove) */}
-   <Grid item xs={2} md={1} sx={{ display: 'flex', alignItems: 'center', height: '40px' }}>
-     {index === medications.length - 1 ? (
-       <IconButton 
-         color="primary" 
-         onClick={() => setMedications([...medications, { name: "", dose: "", frequency: "", lastDose: "", locked: false }])}
-       >
-         <AddCircleOutlineIcon />
-       </IconButton>
-     ) : (
-       <IconButton 
-         color="error" 
-         onClick={() => setMedications(medications.filter((_, i) => i !== index))}
-       >
-         <DeleteOutlineIcon fontSize="small" />
-       </IconButton>
-     )}
-   </Grid>
- </Grid>
+    />
+  </Grid>
+
+  {/* 2. Dose */}
+  <Grid item xs={6} md={2}>
+    <TextField
+      fullWidth
+      label="Dose"
+      size="small"
+      placeholder="500mg"
+      value={med.dose}
+      onChange={(e) => updateMedication(index, "dose", e.target.value)}
+      sx={{
+  backgroundColor: '#F8F9FA', // A lighter, cleaner grey
+  borderRadius: '8px',
+  '& .MuiInputLabel-root': { 
+      color: '#000000', // Black color when resting
+    },
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': { borderColor: '#CED4DA' },
+    '&:hover fieldset': { borderColor: '#228BE6' },
+  },
+  '& .MuiInputBase-input': { fontWeight: 500 }
+}}
+    />
+  </Grid>
+
+  {/* 3. Frequency */}
+  <Grid item xs={6} md={2}>
+    <TextField
+      fullWidth
+      label="Frequency"
+      size="small"
+      placeholder="BD / TDS"
+      value={med.frequency}
+      onChange={(e) => updateMedication(index, "frequency", e.target.value)}
+      sx={{
+  backgroundColor: '#F8F9FA', // A lighter, cleaner grey
+  borderRadius: '8px',
+  '& .MuiInputLabel-root': { 
+      color: '#000000', // Black color when resting
+    },
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': { borderColor: '#CED4DA' },
+    '&:hover fieldset': { borderColor: '#228BE6' },
+  },
+  '& .MuiInputBase-input': { fontWeight: 500 }
+}}
+    />
+  </Grid>
+
+  {/* 4. Date/Time */}
+  <Grid item xs={10} md={3.5}>
+    <TextField
+      fullWidth
+     
+      type="datetime-local"
+      size="small"
+      InputLabelProps={{ shrink: true }}
+      value={med.lastDose}
+      onChange={(e) => updateMedication(index, "lastDose", e.target.value)}
+      sx={{
+  backgroundColor: '#F8F9FA', // A lighter, cleaner grey
+  borderRadius: '8px',
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': { borderColor: '#CED4DA' },
+    '&:hover fieldset': { borderColor: '#228BE6' },
+  },
+  '& .MuiInputBase-input': { fontWeight: 500 }
+}}
+    />
+  </Grid>
+
+  {/* 5. Actions (Add/Remove) */}
+  <Grid item xs={2} md={1} sx={{ display: 'flex', alignItems: 'center', height: '40px' }}>
+    {index === medications.length - 1 ? (
+      <IconButton 
+        color="primary" 
+        onClick={() => setMedications([...medications, { name: "", dose: "", frequency: "", lastDose: "", locked: false }])}
+      >
+        <AddCircleOutlineIcon />
+      </IconButton>
+    ) : (
+      <IconButton 
+        color="error" 
+        onClick={() => setMedications(medications.filter((_, i) => i !== index))}
+      >
+        <DeleteOutlineIcon fontSize="small" />
+      </IconButton>
+    )}
+  </Grid>
+</Grid>
   ))}
   
-  <Button 
-    startIcon={<AddIcon />} 
-    onClick={() => setMedications([...medications, { name: "", dose: "", frequency: "", lastDose: "", locked: false }])}
-  >
-    Add Another Medication
-  </Button>
+ 
+   <Button
+        variant="contained"
+        onClick={() => handleNext("diagnosis", "treatment")}
+        sx={{
+          textTransform: "none",
+          backgroundColor: "#228BE6",
+          px: 4
+        }}
+      >
+        Next
+      </Button>
 </AccordionDetails>
 </Accordion>
 
@@ -2172,11 +2188,21 @@ const updatePatient = (field: string, value: string) => {
   {assessment && (
      <>
      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-  <Button variant="contained" color="primary" onClick={downloadPdf} sx={{ mb: 2 }}>
+  {/* <Button variant="contained" color="primary" onClick={downloadPdf} sx={{ mb: 2 }}>
     Download 
-  </Button>
-</Box>
+  </Button> */}
+  <Button 
+  variant="outlined"
+   sx={{ mb: 2 }}
+   
+  onClick={downloadPdf} 
+  disabled={isDownloading}
+  startIcon={isDownloading ? <CircularProgress size={20} /> : <DownloadIcon />}
+>
 
+</Button>
+</Box>
+  {/* {isDownloading ? "Generating..." : "Download"} */}
     <Card 
   className="pdf-page" 
   sx={{ 
@@ -2230,7 +2256,7 @@ const updatePatient = (field: string, value: string) => {
       </Box>
 
       {/* PATIENT INFO SECTION */}
-     <Box sx={{ border: '1px solid #000' }}>
+     <Box sx={{ mb:2,border: '1px solid #000' }}>
   {/* ROW 1: Name & Sex */}
   <Grid container sx={{ borderBottom: '1px solid #000' }}>
     <Grid item xs={7} sx={{ borderRight: '1px solid #000', p: 0.5, display: 'flex' }}>
@@ -2330,8 +2356,13 @@ const updatePatient = (field: string, value: string) => {
 </Box>
 
  
-      <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 1,color:'black' }}>Valuables / Belongings</Typography>
-      <Table size="small" sx={{ border: '1px solid #000' }}>
+    
+
+       <Box sx={{ border: '1px solid #000', mb: 1 }}>
+  <Typography variant="caption" sx={{ backgroundColor: '#ccc', color: 'black', display: 'block', px: 1, fontWeight: 'bold' }}>
+   Valuables / Belongings
+  </Typography>
+  <Table size="small" >
         <TableBody>
           {["Dentures", "Hearing Aid", "Jewellery"].map((item) => (
             <TableRow key={item}>
@@ -2343,20 +2374,22 @@ const updatePatient = (field: string, value: string) => {
           ))}
         </TableBody>
       </Table>
-
-      
-      <Box sx={{ border: '1px solid #000', mt: 1, p: 0.5 }}>
-        <Typography variant="caption" fontWeight="bold" sx={{color:'black'}}>Orientation to Patient Environment:</Typography>
-        <Grid container spacing={1}>
+</Box>
+  <Box sx={{ border: '1px solid #000', mb: 1 }}>
+  <Typography variant="caption" sx={{ backgroundColor: '#ccc', color: 'black', display: 'block', px: 1, fontWeight: 'bold' }}>
+Orientation to Patient Environment:
+  </Typography>
+ <Grid container spacing={1}>
           {["Room", "Nurse Call", "Telephone", "Service Directory", "Visitors Policy", "Bed Controls", "Bathroom"].map(item => (
             <Grid item xs={3} key={item} sx={{ fontSize: '10px' ,color:'black'}}>
               <Tick checked /> {item}
             </Grid>
           ))}
         </Grid>
-      </Box>
+</Box>
+     
        <Box sx={{ border: '1px solid #000', mb: 1 }}>
-  <Typography variant="caption" sx={{ backgroundColor: '#ccc', color: 'black', display: 'block', px: 1, fontWeight: 'bold', borderBottom: '1px solid #000', fontSize: '11px' }}>
+  <Typography variant="caption" sx={{ backgroundColor: '#ccc', color: 'black', display: 'block', px: 1, fontWeight: 'bold' }}>
     Allergies / Adverse Reaction
   </Typography>
   <Table size="small">
@@ -2440,9 +2473,7 @@ const updatePatient = (field: string, value: string) => {
           <Grid item xs={3} sx={{ fontSize: '11px',color:'black' }}>Other: ________</Grid>
         </Grid>
       </Box>
-      <Box sx={{ textAlign: 'center', pt: 1, borderTop: '1px solid #eee' }}>
-    <Typography variant="caption" sx={{ color: '#888' }}>Page 1 of 2</Typography>
-  </Box>
+      
       {/* <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 1,color:'black' }}>Ability to Perform ADL</Typography>
       <Table size="small" sx={{ border: '1px solid #000' }}>
         <TableHead sx={{ backgroundColor: '#eee' }}>
@@ -2465,11 +2496,7 @@ const updatePatient = (field: string, value: string) => {
         </TableBody>
       </Table> */}
 
-      
-    </Card>
-    <Card className="pdf-page" sx={{ ...A4_PAGE_STYLE, border: "1px solid #000",mb: 2}}>
-        
-      <Box sx={{ border: '1px solid #000', mb: 1, p: 1 }}>
+        <Box sx={{ border: '1px solid #000', mb: 1, p: 1 }}>
         <Typography variant="subtitle2" fontWeight="bold" sx={{color:'black'}}>Assessment of Pain:</Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1 }}>
           <Typography variant="caption" sx={{color:'black'}}>Score: 0 - 2</Typography>
@@ -2477,7 +2504,13 @@ const updatePatient = (field: string, value: string) => {
           <Typography variant="caption" sx={{color:'black'}}>Mild Pain</Typography>
         </Box>
       </Box>
-
+<Box sx={{ textAlign: 'center', pt: 1, borderTop: '1px solid #eee' }}>
+    <Typography variant="caption" sx={{ color: '#888' }}>Page 1 of 2</Typography>
+  </Box>
+    </Card>
+    <Card className="pdf-page" sx={{ ...A4_PAGE_STYLE, border: "1px solid #000",mb: 2}}>
+        
+    
     
      <Typography variant="subtitle2" fontWeight="bold" sx={{mb: 1, fontSize: '13px',color:'black' }}>
   Current Medication
@@ -2643,11 +2676,11 @@ const updatePatient = (field: string, value: string) => {
   </TableBody>
 </Table>
       
-      <Box sx={{ border: '2px solid #000', p: 1, backgroundColor: '#f9f9f9' }}>
+      <Box sx={{ border: '1px solid #000', p: 1, backgroundColor: '#f9f9f9' }}>
         <Typography variant="caption" fontWeight="bold" sx={{ color:' black',borderBottom: '1px solid #000', display: 'block', mb: 1 }}>Form Completed By</Typography>
         <Grid container spacing={2}>
           <Grid item xs={4}>
-            <Typography variant="caption"sx={{color:' black'}}><b>Name:</b> {props.UserRole}</Typography>
+            <Typography variant="caption"sx={{color:' black'}}><b>Name:</b>{props.UserRole}</Typography>
           </Grid>
           <Grid item xs={4}>
             <Typography variant="caption" sx={{color:' black'}}><b>Signature:</b> ___________</Typography>
@@ -2669,6 +2702,9 @@ const updatePatient = (field: string, value: string) => {
 
         </Grid>
       </Box>
+      <Box sx={{ textAlign: 'center', pt: 1, borderTop: '1px solid #eee' }}>
+    <Typography variant="caption" sx={{ color: '#888' }}>Page 2 of 2</Typography>
+  </Box>
     </Card>
     {/* <Box
             sx={{
@@ -2823,6 +2859,9 @@ const updatePatient = (field: string, value: string) => {
                   </Typography>
                 ))}
               </Box>
+
+
+              
               <Box sx={{ border: "1px solid #000", mt: 1, p: 1 }}>
                 <Typography fontSize={13} fontWeight={600}>
                   Nursing Needs
@@ -2850,7 +2889,7 @@ const updatePatient = (field: string, value: string) => {
   open={snackbar.open} 
   autoHideDuration={4000} 
   onClose={handleCloseSnackbar}
-  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
 >
   <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
     {snackbar.message}
