@@ -305,8 +305,8 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
                 patient_resource_id={patientResourceId}  
                   patient_name={patientName} 
                   patient_id={patientId}
-                  birth_date={birthDate}
-                  gestational_age= {gestationAge}
+                  // birth_date={birthDate}
+                  // gestational_age= {gestationAge}
               />
             </ProtectedModule>
           )}
