@@ -349,7 +349,12 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
           {selectedMenuItemId === 'feeds' && (
             <ProtectedModule module="Vitals & Trends">
               <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
-                <FeedsScreen />
+                <FeedsScreen  UserRole={props.UserRole} 
+                  patient_resource_id={patientResourceId}  
+                  patient_name={patientName} 
+                  patient_id={patientId}
+                  birth_date={birthDate}
+                  gestational_age= {gestationAge}   />
               </Box>
             </ProtectedModule>
           )}

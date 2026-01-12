@@ -113,7 +113,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   
   const [isSaving, setIsSaving] = useState(false);
   const [savedReports, setSavedReports] = useState<any[]>([]);
-const [isLoadingReports, setIsLoadingReports] = useState(false);
+  const [isLoadingReports, setIsLoadingReports] = useState(false);
 
   const captureAndProcess = async () => {
     if (!webcamRef.current) return;
@@ -434,8 +434,6 @@ const [isLoadingReports, setIsLoadingReports] = useState(false);
       </Box>
     );
   };
-
-
 
  */
   
@@ -875,6 +873,7 @@ const handleSaveCBCResults = async () => {
 
     // 2. Clone and update the resource
     const updatedResource = {
+      
       ...activeOrder.fullResource,
       status: "final", // Status is now final as results are ready
       conclusion: `RESULTS:\n${resultsString}\n\n${activeOrder.fullResource.conclusion}`,
@@ -1562,8 +1561,7 @@ const formatFHIRDate = (dateString: string | undefined) => {
         borderRadius: "8px",
         "&.Mui-selected": {
           backgroundColor: alpha("#228BE6", 0.1),
-          color: "#228BE6",
-          
+          color: "#228BE6", 
         },
       }}
     >
@@ -1742,8 +1740,7 @@ const formatFHIRDate = (dateString: string | undefined) => {
              backgroundColor: "#FFFFFF",
     borderRadius: "8px",
     
-    "& td": {
-      
+    "& td": {  
     },
               "&:hover": { backgroundColor: "#FAFAFA" },
             }}
@@ -1948,12 +1945,7 @@ const formatFHIRDate = (dateString: string | undefined) => {
   fullWidth
   variant="contained"
   disabled={isSaving}
-  sx={{
-    textTransform: "none",
-    backgroundColor: "#228BE6",
-    color: "#fff",
-    borderRadius: "10px",
-  }}
+  sx={{textTransform: "none",backgroundColor: "#228BE6",color: "#fff",borderRadius: "10px",}}
   onClick={handleSaveCBCResults} // Call the FHIR update function
 >
   {isSaving ? "Saving..." : "Proceed →"}

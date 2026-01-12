@@ -18,10 +18,11 @@ import {
   Chip,
   CircularProgress,
   Skeleton,
+  Divider,
 
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowTrendUp,  faChevronRight,  faPrescription } from "@fortawesome/free-solid-svg-icons";
+import { faArrowTrendUp,  faPrescription } from "@fortawesome/free-solid-svg-icons";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import OpacityIcon from "@mui/icons-material/Opacity";
 import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat";
@@ -352,7 +353,75 @@ const patientData = {
     setIsLoadingReports(false);
   }
 };
+const [chartData, setChartData] = React.useState<any[]>([]);
+const fetchEntries = async () => {
+  console.log("Fetching I/O entries for Patient:", props.patient_resource_id);
+  
+  try {
+    const url = `${import.meta.env.VITE_FHIRAPI_URL}/Observation?subject=${props.patient_resource_id}&code=fluid-intake-output&_sort=-date`;
+    
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Authorization": "Basic " + btoa("fhiruser:change-password"),
+      },
+    });
+    
+    const data = await response.json();
+    console.log("Raw FHIR Response Data:", data);
 
+    if (data.entry) {
+      const formatted = data.entry.map((item: any) => {
+        const obs = item.resource;
+        
+        // Helper to extract value from component array
+        const getVal = (text: string) => {
+          const component = obs.component?.find((c: any) => c.code.text === text);
+          // Log specific component search for debugging if needed
+          // console.log(`Searching for ${text}:`, component);
+          return component;
+        };
+
+        const row =  {
+          id: obs.id,
+          time: new Date(obs.effectiveDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          temp: getVal("Temperature")?.valueQuantity?.value || "-",
+          pulse: getVal("Heart Rate")?.valueQuantity?.value || "-",
+          resp: getVal("Respiratory Rate")?.valueQuantity?.value || "-",
+          spo2: getVal("SpO2")?.valueQuantity?.value || "-",
+          ivFluid: getVal("IV Fluid")?.valueQuantity?.value || "-",
+          byMouth: getVal("By Mouth")?.valueQuantity?.value || "-",
+          rtFeed: getVal("RT Feed")?.valueQuantity?.value || "-",
+          
+          // Update these to fetch the volume number instead of a boolean
+          aspiration: getVal("Aspiration Volume")?.valueQuantity?.value ?? "-",
+          urine: getVal("Urine Volume")?.valueQuantity?.value ?? "-",
+          stool: getVal("Drain / Stool Volume")?.valueQuantity?.value ?? "-",
+          
+          remark: obs.note?.[0]?.text || "-"
+        };
+        return row;
+      });
+
+      console.log("Formatted Table Data:", formatted);
+      setChartData(formatted);
+    } 
+    
+    
+    
+    
+    else {
+      console.warn("No entries found in FHIR bundle.");
+      setChartData([]); // Clear table if no data
+    }
+  } catch (error) {
+    console.error("Critical Fetch Error:", error);
+  }
+};
+
+useEffect(() => {
+  fetchEntries();
+}, [props.patient_resource_id]);
   const parseConclusionToTable = (conclusion: string) => {
     const lines = conclusion.split('\n');
     return lines.map(line => {
@@ -374,7 +443,24 @@ const patientData = {
   useEffect(() => {
     fetchPatientReports();
   }, [props.patient_resource_id]);
-
+  const totals = chartData.reduce((acc, row) => {
+    // Helper to convert "-" or "NBM" to 0 for calculation
+    const parse = (val: any) => isNaN(parseFloat(val)) ? 0 : parseFloat(val);
+  
+    acc.iv += parse(row.ivFluid);
+    acc.rt += parse(row.rtFeed);
+    acc.oral += parse(row.byMouth);
+    acc.urine += parse(row.urine);
+    acc.aspiration += parse(row.aspiration);
+    acc.stool += parse(row.stool);
+  
+    return acc;
+  }, { iv: 0, rt: 0, oral: 0, urine: 0, aspiration: 0, stool: 0 });
+  
+  const totalInput = totals.iv + totals.rt + totals.oral;
+  const totalOutput = totals.urine + totals.aspiration + totals.stool;
+  const balance = totalInput - totalOutput;
+  
   const ReportViewer = ({ report }: { report: any }) => {
     const tests = parseConclusionToTable(report.resource.conclusion);
   
@@ -497,27 +583,6 @@ const patientData = {
   };
   
  
-
-  const fluidData = {
-    totalFluid: 450,
-    remainingFluid: 170,
-    enteral: 180,
-    parenteral: 180,
-    deficits: {
-      vitaminD: -20,
-      calcSyrup: -45,
-      iron: -69,
-      vitaminA: -120,
-    },
-  };
-
-  const deficits = [
-    { label: "Vitamin D", value: -20 },
-    { label: "Calc Syrup", value: -45 },
-    { label: "Iron", value: -69 },
-    { label: "Vitamin A", value: -120 },
-  ];
-
   useEffect(() => {
     fetchPrescription();
    //Fetch Procedure on component mount or when `patient_resource_id` changes
@@ -547,6 +612,17 @@ const patientData = {
     nextTime.setHours(start.getHours() + intervalHours * med.administeredCount);
     return nextTime;
   };
+
+  const BalanceStat = ({ label, value }: { label: string, value: number }) => (
+    <Box sx={{ textAlign: 'center', minWidth: '50px' }}>
+      <Typography variant="caption" sx={{ display: 'block', color: '#6B7280', fontSize: '0.6rem', fontWeight: 600 }}>
+        {label}
+      </Typography>
+      <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#000' }}>
+        {value}
+      </Typography>
+    </Box>
+  );
   const filteredMedications = prescriptionHistory.filter((med) => {
     const now = new Date();
     const start = new Date(med.startDate);
@@ -693,23 +769,9 @@ const patientData = {
             </IconButton>
           </>
         ) : (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              width: "100%",
-              height: "100%",
-            }}
+          <Box sx={{ display: "flex", justifyContent: "center",alignItems: "center",width: "100%", height: "100%"}}
           >
-            <Typography
-              variant="body1"
-              sx={{
-                color: "#9BA1AE",
-                fontWeight: 500,
-                textAlign: "center",
-              }}
-            >
+            <Typography variant="body1" sx={{color: "#9BA1AE",fontWeight: 500,textAlign: "center"}}>
               No Data Available
             </Typography>
           </Box>
@@ -722,39 +784,19 @@ const patientData = {
 
 
 <Box
-  sx={{
-    borderRadius: "15px",
-    padding: "16px 20px",
-    mt: 3,
-    backgroundColor: "#FFFFFF",
-  }}
+  sx={{ borderRadius: "15px", padding: "16px 20px", mt: 3, backgroundColor: "#FFFFFF", }}
 >
   {/* 🔹 Header */}
-  <Stack
-  direction="row"
-  justifyContent="space-between"
-  alignItems="center"
-  sx={{
-    borderBottom: "2px solid #E6EAF0",
-   
-   
-  }}
->
+  <Stack direction="row" justifyContent="space-between" alignItems="center"
+  sx={{ borderBottom: "2px solid #E6EAF0"}}>
   {/* 🩺 Title */}
-  <Typography
-    variant="h6"
-    sx={{
-      fontWeight: 700,
-      color: "#124D81",
-    }}
-  >
+  <Typography variant="h6"
+    sx={{fontWeight: 700,color: "#124D81" }}>
     Medication
   </Typography>
 
   {/* 📈 Trend Icon */}
-  <IconButton
-    sx={{
-      mb:1,
+  <IconButton sx={{ mb:1,
       backgroundColor: "#F2FBFF",
       color: "#124D81",
       border: "1px solid #E0E0E0",
@@ -770,9 +812,6 @@ const patientData = {
     />
   </IconButton>
 </Stack>
-
-
-
  {/* 🔹 Content */}
 {filteredMedications.length === 0 ? (
   <Box
@@ -917,81 +956,76 @@ const patientData = {
 {/* Feeds */}
      {/* Fluid Summary Section */}
      <Box sx={{ backgroundColor: "#FFFFFF", mb: 2,mt: 2, borderRadius: 3,  }}>
-        <Grid style={{padding:15}} container alignItems="center" >
-          {/* Fluid Overview */}
-          <Grid item xs={7} style={{backgroundColor:'#DBFFD9',borderTopLeftRadius:6,borderBottomLeftRadius:6}}>
-            <Typography variant="h6" sx={{ fontWeight: "bold",paddingLeft:1, color: "#124D81" }}>
-              {fluidData.totalFluid} ml/day
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#6c757d",paddingLeft:1, }}>
-              Total fluid
-            </Typography>
-          </Grid>
-          <Grid item xs={5} style={{backgroundColor:'#F2F4FB',borderTopRightRadius:6,borderBottomRightRadius:6}}>
-            <Typography variant="h6" sx={{ fontWeight: "bold",paddingRight:1, color: "#124D81", textAlign: "right" }}>
-              {fluidData.remainingFluid} ml/day
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#6c757d",paddingRight:1, textAlign: "right" }}>
-              Remaining
-            </Typography>
-          </Grid>
-        </Grid>
-        <Grid container  sx={{paddingLeft:2,paddingRight:2}}>
-          <Grid item xs={2}>
-    <Stack style={{ alignItems: "center"}} >
-                  <Typography variant="subtitle2" sx={{ color: "#A7B3CD" }}>Enteral</Typography>
-                  <Typography variant="subtitle1" sx={{ color: "#124D81" }}>450 ml/day</Typography>
-                   </Stack></Grid>
-          <Grid item xs={2}>
-        <Stack style={{ alignItems: "center"}} >
-                        <Typography variant="subtitle2" sx={{ color: "#A7B3CD" }}> Parenteral</Typography>
-                        <Typography variant="subtitle1" sx={{ color: "#124D81" }}> 180 ml/day</Typography></Stack>
-                       </Grid>
-          <Grid item xs={8}>
-            <Button variant="outlined" size="small" color="primary" sx={{ float: "right", textTransform: "none" }}>
-              Feeds
-            </Button>
-          </Grid>
-        </Grid>
-        <Grid style={{padding:'10px'}} container > 
-        <TableContainer
-      component={Paper}
-      elevation={0}
-      sx={{ backgroundColor: "#FFFFFF", }}>
-      {/* Header */}
-      <Typography variant="subtitle2" sx={{color: "#A7B3CD", }} > Deficit </Typography>
+        
+        <Paper
+  elevation={3}
+  sx={{
+    bottom: 20,
+    width: '98%',
+    borderRadius: '12px',
+    p: 1.5,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    border: '1px solid #E5E7EB',
+   
+  }}
+>
+  {/* Total Input Section */}
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flex: 2 }}>
+    <Box>
+      <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.65rem',color:'grey' }}>Total Input</Typography>
+      <Typography variant="h6" sx={{ color: '#0284C7', fontWeight: 'bold', lineHeight: 1 }}>
+        {totalInput} <span style={{ fontSize: '0.75rem' ,color:'grey'}}>mL</span>
+      </Typography>
+    </Box>
 
-      {/* Table */}
-      <Table>
-        <TableBody>
-          <TableRow >
-            {/* Iterate over deficits */}
-            {deficits.map((item, index) => (
-              <TableCell
-                key={index}
-                sx={{ borderBottom: "none", textAlign: "center", padding:0, color: "#124D81",}}>
-                <Typography variant="subtitle1" component="span">{item.label}</Typography>{" "}
-                <Typography component="span"sx={{ color: "red"}}  > {item.value}
-                </Typography>
-              </TableCell>
-            ))}
-            {/* Arrow Icon */}
-            <TableCell
-              sx={{ borderBottom: "none",width: "40px", textAlign: "center", }} >
-              <IconButton
-                sx={{  color: "#124D81", width: 10, height: 10, borderRadius: "8px","&:hover": {  backgroundColor: "#CCE6FF",  },  }}   >
-                <FontAwesomeIcon icon={faChevronRight} />
-              </IconButton>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </TableContainer>
-        </Grid>
-        <Box width="100%" sx={{ display: "flex",justifyContent: "space-around",  }}>
-<Button sx={{ backgroundColor:'#F2FBFF', color:'#124D81  ', flex: "1 1 50%", maxWidth: "50%", }} > Current</Button>
-  <Button sx={{backgroundColor:'#F2F4FB', color:'#9BA1AE', flex: "1 1 50%", maxWidth: "50%",}} >Last Feed </Button>
-      </Box> </Box>
+    <Box sx={{ display: 'flex', gap: 2, backgroundColor: '#F9FAFB', p: 1, borderRadius: '8px' }}>
+      <BalanceStat label="IV" value={totals.iv} />
+      <BalanceStat label="NG/RT" value={totals.rt} />
+      <BalanceStat label="ORAL" value={totals.oral} />
+    </Box>
+  </Box>
+
+  {/* Divider */}
+  <Divider orientation="vertical" flexItem sx={{ mx: 2 }} />
+
+  {/* Total Output Section */}
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flex: 2 }}>
+    <Box>
+      <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.65rem',color:'grey' }}>Total Output</Typography>
+      <Typography variant="h6" sx={{ color: '#EF4444', fontWeight: 'bold', lineHeight: 1 }}>
+        {totalOutput} <span style={{ fontSize: '0.75rem' ,color:'grey'}}>mL</span>
+      </Typography>
+    </Box>
+
+    <Box sx={{ display: 'flex', gap: 2, backgroundColor: '#F9FAFB', p: 1, borderRadius: '8px' }}>
+      <BalanceStat label="Urine" value={totals.urine} />
+      <BalanceStat label="Aspiration" value={totals.aspiration} />
+      <BalanceStat label="Stool" value={totals.stool} />
+    </Box>
+  </Box>
+
+  {/* Fluid Balance Status */}
+  <Box sx={{ 
+    flex: 1, 
+    ml: 2, 
+    p: 1.5, 
+    borderRadius: '8px', 
+    backgroundColor: balance >= 0 ? '#F0FDF4' : '#FEF2F2',
+    textAlign: 'center',
+    border: `1px solid ${balance >= 0 ? '#BBF7D0' : '#FECACA'}`
+  }}>
+    <Typography variant="caption" sx={{ color: balance >= 0 ? '#166534' : '#991B1B', fontWeight: 'bold' }}>
+      Fluid Balance
+    </Typography>
+    <Typography variant="h6" sx={{ color: balance >= 0 ? '#166534' : '#991B1B', fontWeight: 'bold' }}>
+      {balance} mL
+    </Typography>
+  </Box>
+</Paper>
+         </Box>
 
  <Box sx={{ display: "flex", justifyContent: "space-around",backgroundColor:'#FFFFFF', alignItems: "center",borderRadius:3, mt: 2 }}>
          

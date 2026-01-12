@@ -14,9 +14,12 @@ import {
 } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import AddIcon from '@mui/icons-material/Add';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+//import MoreVertIcon from '@mui/icons-material/MoreVert';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
+import BedIcon from '@mui/icons-material/Bed';
+import AccountCircleIcon from '@mui/icons-material/AccountCircleOutlined';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useNavigate } from "react-router-dom";
 
 interface PatientProps {
@@ -1056,71 +1059,98 @@ console.log("✅ FINAL patientRef:", patientRef);
     flexDirection: "column"
   }}
 > */}
-    <Table sx={{ minWidth: 600 }}>
-      <TableHead>
-        <TableRow sx={{ backgroundColor: "lightgrey" }}>
-          {[
-            "Patient Name",
-            "Patient ID",
-            "Bed No",
-            "Assignee",
-            "Birth Date and Time",
-          ].map((header) => (
-            <TableCell
-              key={header}
-              sx={{ fontWeight: "bold", color: "#868E96", whiteSpace: "nowrap" }}
-            >
-              {header}
-            </TableCell>
-          ))}
-          <TableCell sx={{ fontWeight: "bold", color: "#868E96", whiteSpace: "nowrap" }}>
-            {activeTab === "current" ? "Action" : "Discharged Date"}
-          </TableCell>
-        </TableRow>
-      </TableHead>
-
-      <TableBody>
-        {filteredPatients.map((patient) => (
-          <TableRow
-          key={patient.id || patient.patientId}
-           onClick={() => navigate(`/patient-profile/${patient.id}`)}
-          sx={{
-            backgroundColor: "#FFFFFF",
-            "&:hover": {
-              backgroundColor: "#f5f5f5",
-              cursor: "pointer",
-            },
+    <Table 
+  sx={{ 
+    minWidth: 600, 
+    borderCollapse: 'separate', 
+    borderSpacing: '0 10px', // Creates the gap between rows
+    mt: -1 
+  }}
+>
+  <TableHead>
+    <TableRow>
+      {["Patient Name", "Bed No", "UHID", "DOA"].map((header) => (
+        <TableCell
+          key={header}
+          sx={{ 
+            fontWeight: "bold", 
+            color: "#868E96", 
+            borderBottom: "none", // Remove default line
+            px: 3 
           }}
         >
-            <TableCell sx={{ color: "#000000" }}>{patient.name}</TableCell>
-            <TableCell sx={{ color: "#000000" }}>{patient.patientId}</TableCell>
-            <TableCell sx={{ color: "#000000" }}>{patient.bed}</TableCell>
-            <TableCell sx={{ color: "#000000" }}>{patient.assignee}</TableCell>
-            <TableCell sx={{ color: "#000000" }}>{patient.birthDateTime}</TableCell>
+          {header} {header === "DOA" && "↑"}
+        </TableCell>
+      ))}
+      <TableCell sx={{ fontWeight: "bold", color: "#868E96", borderBottom: "none" }}>
+        Actions
+      </TableCell>
+    </TableRow>
+  </TableHead>
 
-            <TableCell sx={{ color: "#333", width: 120 }}>
-              {activeTab === "discharged" ? (
-                patient.dischargedDate
-              ) : (
-                <IconButton
-                  aria-label="actions"
-                  sx={{
-                    color: "#555",
-                    padding: "6px",
-                    "&:hover": {
-                      backgroundColor: "rgba(0, 0, 0, 0.04)",
-                    },
-                  }}
-                  onClick={(e) => handleMenuOpen(e, patient)}
-                >
-                  <MoreVertIcon fontSize="small" />
-                </IconButton>
-              )}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+  <TableBody>
+    {filteredPatients.map((patient) => (
+      <TableRow
+        key={patient.id || patient.patientId}
+        onClick={() => navigate(`/patient-profile/${patient.id}`)}
+        sx={{
+          backgroundColor: "#FFFFFF",
+          boxShadow: "0px 2px 4px rgba(0,0,0,0.05)", // Optional subtle shadow
+          "&:hover": { backgroundColor: "#f9f9f9", cursor: "pointer" },
+        }}
+      >
+        {/* Patient Name with Blue Pill Styling */}
+        <TableCell sx={{ borderBottom: "none", borderTopLeftRadius: "8px", borderBottomLeftRadius: "8px" }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              backgroundColor: "#5B9BD5",
+              color: "white",
+              borderRadius: "20px",
+              px: 2,
+              py: 0.5,
+              width: "fit-content",
+              fontWeight: 500
+            }}
+          >
+            <AccountCircleIcon sx={{ mr: 1, fontSize: 18, opacity: 0.8 }} />
+            B/O {patient.name}
+          </Box>
+        </TableCell>
+
+        {/* Bed No with Icon */}
+        <TableCell sx={{ borderBottom: "none", color: "#5B9BD5", fontWeight: "bold" }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <BedIcon fontSize="small" />
+            {patient.bed}
+          </Box>
+        </TableCell>
+
+        <TableCell sx={{ borderBottom: "none", color: "#444", fontWeight: 500 }}>
+          {patient.patientId}
+        </TableCell>
+
+        <TableCell sx={{ borderBottom: "none", color: "#888" }}>
+          {patient.birthDateTime}
+        </TableCell>
+
+        <TableCell sx={{ borderBottom: "none", borderTopRightRadius: "8px", borderBottomRightRadius: "8px" }}>
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent row click
+              handleMenuOpen(e, patient);
+            }}
+            sx={{ backgroundColor: '#F8F9FA' }}
+          >
+            <MoreVertIcon fontSize="small"  sx={{color:'grey'}}/>
+          </IconButton>
+        </TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
   {/* </Paper> */}
 
   {/* Menu */}
