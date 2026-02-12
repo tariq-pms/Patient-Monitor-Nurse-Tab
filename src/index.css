@@ -4,13 +4,171 @@
 
 
 html {
-/* background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(black), to(white)); */
+  /* background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(black), to(white)); */
   /* background: radial-gradient(circle, rgba(51, 62, 101, 1) 0%, rgba(0, 0, 0, 1) 100%); */
   background: #F5F5F5;
 
   /* background: linear-gradient(top, black, white); */
-/* background-color: #121726; */
-font-family: Arial, Helvetica, sans-serif;
-height: 100vh;
+  /* background-color: #121726; */
+  font-family: Arial, Helvetica, sans-serif;
+  height: 100vh;
 }
 
+/* ===== PRINT STYLES ===== */
+@media print {
+
+  /* Hide browser UI and navigation elements */
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+
+  /* Remove default page margins to allow full-width headers */
+  @page {
+    margin: 0;
+    size: A4;
+  }
+
+  /* Add padding to body to simulate margins for content */
+  body {
+    margin: 1cm !important;
+  }
+
+  /* Hide non-essential UI during print */
+  body>*:not(.MuiDialog-root) {
+    display: none !important;
+  }
+
+  /* Make dialog take full page */
+  .MuiDialog-root {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .MuiDialog-container {
+    height: 100% !important;
+    /* Ensure container fills height */
+    display: block !important;
+  }
+
+  .MuiDialog-paper {
+    box-shadow: none !important;
+    min-height: 100% !important;
+    /* Force paper to fill the page */
+    max-height: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Adjust content padding for print */
+  .MuiDialogContent-root {
+    padding: 0 1cm !important;
+    overflow: visible !important;
+    flex: 1 !important;
+    /* Allow content to grow and fill space */
+  }
+
+  /* Hide close buttons and back arrows in print */
+  .MuiIconButton-root {
+    display: none !important;
+  }
+
+  /* Ensure tables print properly */
+  table {
+    page-break-inside: auto;
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  /* Clean table styling for print */
+  .MuiTableCell-root {
+    border: 1px solid rgba(128, 128, 128, 0.3) !important;
+    padding: 8px 12px !important;
+  }
+
+  /* Table header - adding background for visibility */
+  .MuiTableHead-root .MuiTableCell-root {
+    font-weight: 700 !important;
+    border-width: 2px !important;
+    background-color: rgba(128, 128, 128, 0.1) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ensure Paper elements don't create box shadows */
+  .MuiPaper-root {
+    box-shadow: none !important;
+  }
+
+  /* Force visible content colors for printing */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Auto-Summary box - transparent background with border */
+  .print-auto-summary {
+    background-color: transparent !important;
+    border: 1px solid rgba(128, 128, 128, 0.3) !important;
+    border-radius: 8px !important;
+    padding: 16px !important;
+    margin-top: 24px !important;
+  }
+}
+
+/* Print-specific class for the report header */
+.print-report-header {
+  display: none;
+}
+
+@media print {
+  .print-report-header {
+    display: block !important;
+    text-align: center;
+    padding: 40px 0 20px 0;
+    /* Increased top padding to avoid clipping */
+    margin-bottom: 20px;
+    background-color: rgba(34, 139, 230, 0.1) !important;
+    /* Default light blue tint */
+    border-bottom: 2px solid currentColor;
+    /* Full bleed header */
+    margin-left: -1cm;
+    margin-right: -1cm;
+    margin-top: -1cm;
+    /* Offset the body margin */
+  }
+
+  .print-report-header h1 {
+    font-size: 26px;
+    margin: 0 0 5px 0;
+  }
+
+  .print-report-header p {
+    font-size: 12px;
+    opacity: 0.8;
+    margin: 0;
+  }
+}

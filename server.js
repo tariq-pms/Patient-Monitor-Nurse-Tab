@@ -5,6 +5,8 @@ import { ImageAnnotatorClient } from '@google-cloud/vision';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fetch from 'node-fetch';
+import { spawn } from 'child_process';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,13 +44,13 @@ const FIELD_CONFIG = {
     extractRegex: /(?:dob|date of birth|birth date):?\s*([0-9]{2}[-/][0-9]{2}[-/][0-9]{4})/i,
     valuePattern: /\d{2}[-/]\d{2}[-/]\d{4}/,
   },
-  
+
   gender: {
     patterns: ['gender', 'sex'],
     extractRegex: /(?:gender|sex):?\s*(male|female|m|f)/i,
     valuePattern: /^(male|female|m|f)$/i,
   },
-  
+
 };
 
 const IGNORE_SECTIONS = [
@@ -368,15 +370,15 @@ function tryLocalParsing(text) {
 
   for (let i = 0; i < lines.length - 3; i++) {
     if (testNamePattern.test(lines[i]) &&      // Strict test name check
-        resultPattern.test(lines[i+1]) &&      // Numeric result
-        unitPattern.test(lines[i+2]) &&        // Valid unit
-        rangePattern.test(lines[i+3])) {       // Valid reference range
-      
+      resultPattern.test(lines[i + 1]) &&      // Numeric result
+      unitPattern.test(lines[i + 2]) &&        // Valid unit
+      rangePattern.test(lines[i + 3])) {       // Valid reference range
+
       results.push({
         test: lines[i],
-        result: lines[i+1],
-        unit: lines[i+2],
-        referenceRange: lines[i+3]
+        result: lines[i + 1],
+        unit: lines[i + 2],
+        referenceRange: lines[i + 3]
       });
       i += 3; // Skip processed lines
     }
@@ -470,7 +472,7 @@ ${text.split('\n').filter(l => l.trim()).join('\n')}`;
 // }
 // async function parseLabReportToTable(text) {
 //   console.log('🔍 Starting parseLabReportToTable...');
-  
+
 //   const prompt = `
 // You are an expert in analyzing lab reports.
 // From the following text, extract tabular data with:
@@ -541,6 +543,205 @@ ${text.split('\n').filter(l => l.trim()).join('\n')}`;
 
 
 
+
+
+// === PaddleOCR Route ===
+app.post('/api/scan-paddle', async (req, res) => {
+  console.log('\n--- PaddleOCR Scan Endpoint (Fixed) ---');
+  const { imageBase64, orderType } = req.body;
+
+  console.log('Request Body Keys:', Object.keys(req.body));
+  console.log('Received orderType:', orderType);
+
+  if (!imageBase64) {
+    return res.status(400).json({ error: 'Missing imageBase64' });
+  }
+
+  // 1. Save base64 to temp file
+  const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+  const buffer = Buffer.from(base64Data, 'base64');
+  const tempFilePath = path.join(__dirname, `temp_ocr_${Date.now()}.png`);
+
+  try {
+    fs.writeFileSync(tempFilePath, buffer);
+    console.log(`📸 Saved temp image to: ${tempFilePath}`);
+
+    // 2. Select Script
+    let scriptName = 'pattern_1.py'; // Default to CBC
+    if (orderType && orderType.toLowerCase().includes('electrolyte')) {
+      scriptName = 'pattern_3.py';
+    } else if (orderType && orderType.toLowerCase().includes('bilirubin')) {
+      scriptName = 'pattern_4.py';
+    }
+    console.log(`Using OCR script: ${scriptName} for orderType: ${orderType}`);
+
+    const pythonScript = path.join(__dirname, scriptName);
+    const pythonExecutable = path.join(__dirname, '.venv', 'Scripts', 'python.exe'); // Use local venv
+
+    console.log(`🐍 Executing Python script: ${pythonScript} using ${pythonExecutable}`);
+
+    const pythonProcess = spawn(pythonExecutable, [pythonScript, tempFilePath]);
+
+    let dataString = '';
+    let errorString = '';
+
+    pythonProcess.stdout.on('data', (data) => {
+      dataString += data.toString();
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      errorString += data.toString();
+    });
+
+    pythonProcess.on('close', (code) => {
+      console.log(`🐍 Python process exited with code ${code}`);
+
+      // Cleanup temp file
+      try {
+        if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+      } catch (e) {
+        console.error("Failed to delete temp file:", e);
+      }
+
+      if (code !== 0) {
+        console.error('❌ Python Error:', errorString);
+        return res.status(500).json({ error: 'OCR Processing Failed', details: errorString });
+      }
+
+      if (errorString) {
+        console.warn('🐍 Python Stderr:', errorString);
+      }
+
+      try {
+        console.log('🐍 Python Output:', dataString);
+
+        // Robust JSON extraction:
+        // 1. Try splitting by lines and finding the last valid JSON array
+        // (This handles logs like [Timestamp] ... JSON ...)
+        const lines = dataString.trim().split('\n');
+        let jsonResult = null;
+
+        for (let i = lines.length - 1; i >= 0; i--) {
+          try {
+            const potentialJson = JSON.parse(lines[i]);
+            // Ensure it looks like our table result (array or object with table key)
+            if (Array.isArray(potentialJson) || (potentialJson && potentialJson.table)) {
+              jsonResult = potentialJson;
+              break;
+            }
+          } catch (ignore) { }
+        }
+
+        // 2. Fallback: Regex scan
+        if (!jsonResult) {
+          const jsonMatch = dataString.match(/(\[.*\]|\{.*\})/s);
+          if (jsonMatch) {
+            try {
+              jsonResult = JSON.parse(jsonMatch[0]);
+            } catch (e) { }
+          }
+        }
+
+        if (jsonResult) {
+          const finalResponse = Array.isArray(jsonResult) ? { table: jsonResult } : jsonResult;
+          finalResponse.debug = errorString; // Send stderr to frontend
+          res.json(finalResponse);
+        } else {
+          throw new Error("No valid JSON found in output");
+        }
+
+      } catch (e) {
+        console.error('JSON Parse Error:', e);
+        res.json({
+          table: [],
+          raw: dataString,
+          debug: errorString, // Send stderr even on failure
+          error: "Failed to parse Python output"
+        });
+      }
+    });
+
+
+  } catch (err) {
+    console.error('❌ Server Error:', err);
+    if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+// PaddleOCR Scan Endpoint
+app.post('/api/scan-paddle', async (req, res) => {
+  const { imageBase64, orderType } = req.body;
+
+  console.log('--- Scan Request Received ---');
+  console.log('Request Body Keys:', Object.keys(req.body));
+  console.log('Received orderType:', orderType);
+
+  if (!imageBase64) {
+    return res.status(400).json({ error: 'Missing imageBase64' });
+  }
+
+  const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+  const tempPath = path.join(__dirname, `temp_scan_${Date.now()}.png`);
+
+  try {
+    fs.writeFileSync(tempPath, base64Data, 'base64');
+
+    // Determine which script to run based on orderType
+    let scriptName = 'pattern_1.py'; // Default to CBC
+    if (orderType && orderType.toLowerCase().includes('electrolyte')) {
+      scriptName = 'pattern_3.py';
+    }
+
+    console.log(`Using OCR script: ${scriptName} for orderType: ${orderType}`);
+
+    const pythonProcess = spawn('python', [scriptName, tempPath]);
+
+    let dataString = '';
+    let errorString = '';
+
+    pythonProcess.stdout.on('data', (data) => {
+      dataString += data.toString();
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      errorString += data.toString();
+    });
+
+    pythonProcess.on('close', (code) => {
+      // Clean up temp file
+      if (fs.existsSync(tempPath)) {
+        fs.unlinkSync(tempPath);
+      }
+
+      if (code !== 0) {
+        console.error('Python script error:', errorString);
+        return res.status(500).json({ error: 'OCR script failed', details: errorString });
+      }
+
+      // Log stderr (warnings/debug) even on success
+      if (errorString) {
+        console.warn('Python script stderr:', errorString);
+      }
+
+      try {
+        const result = JSON.parse(dataString);
+        // Both pattern_1 and pattern_3 should return a list of records
+        res.json({ table: result });
+      } catch (e) {
+        console.error('JSON Parse Error:', e, 'Raw:', dataString);
+        res.status(500).json({ error: 'Invalid response from OCR engine', raw: dataString });
+      }
+    });
+
+  } catch (err) {
+    console.error('Server Error:', err);
+    if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 app.listen(port, () => {
   console.log(`🚀 Server running on http://localhost:${port}`);

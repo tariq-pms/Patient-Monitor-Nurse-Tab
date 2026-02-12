@@ -17,7 +17,10 @@ import AddIcon from '@mui/icons-material/Add';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useNavigate } from "react-router-dom";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 interface PatientProps {
   userOrganization: string;
@@ -389,6 +392,126 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
       ...prev,
       [name]: value
     }));
+  };
+
+  // --- UPLOAD STATE (Renamed to avoid conflicts) ---
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
+
+  // --- HANDLERS (Fixed TypeScript 'any' error) ---
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setUploadFile(event.target.files[0]);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!uploadFile) return;
+
+    setUploadLoading(true);
+    const formDataPayload = new FormData();
+    formDataPayload.append("file", uploadFile);
+
+    try {
+      const response = await fetch("http://localhost:5001/upload", {
+        method: "POST",
+        body: formDataPayload,
+      });
+
+      const data = await response.json();
+      console.log("Parsed Data:", data);
+
+      // --- HELPER 1: Date Formatter (DD-MM-YYYY -> YYYY-MM-DD) ---
+      const formatDate = (dateStr: string) => {
+        if (!dateStr) return "";
+        const parts = dateStr.split(/[-/]/);
+        if (parts.length === 3 && parts[2].length === 4) {
+             const day = parts[0].padStart(2, "0");
+             const month = parts[1].padStart(2, "0");
+             const year = parts[2];
+             return `${year}-${month}-${day}`;
+        }
+        return dateStr;
+      };
+
+      // --- HELPER 2: Normalize Gender (MALE/male -> Male) ---
+      // ✅ This fixes the issue!
+      const normalizeGender = (val: string) => {
+        if (!val) return "";
+        const lower = val.toLowerCase().trim();
+        
+        if (lower === "male" || lower === "m") return "Male";
+        if (lower === "female" || lower === "f") return "Female";
+        
+        // Fallback: just Capitalize first letter (e.g. "Unknown" -> "Unknown")
+        return lower.charAt(0).toUpperCase() + lower.slice(1);
+      };
+
+      // --- HELPER 3: Time Formatter ---
+      const formatTime = (timeStr: string) => {
+        if (!timeStr) return "";
+        const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (!match) return timeStr; 
+        let [_, hours, minutes, modifier] = match;
+        let h = parseInt(hours, 10);
+        if (modifier.toUpperCase() === "PM" && h < 12) h += 12;
+        if (modifier.toUpperCase() === "AM" && h === 12) h = 0;
+        return `${h.toString().padStart(2, "0")}:${minutes}`;
+      };
+
+      // --- HELPER 4: Split Date & Time ---
+      const splitDateTime = (dateTimeStr: string) => {
+        if (!dateTimeStr) return { date: "", time: "" };
+        const firstSpaceIndex = dateTimeStr.indexOf(" ");
+        if (firstSpaceIndex === -1) {
+            return { date: formatDate(dateTimeStr), time: "" };
+        }
+        const datePart = dateTimeStr.substring(0, firstSpaceIndex);
+        const timePart = dateTimeStr.substring(firstSpaceIndex + 1);
+        return {
+            date: formatDate(datePart),
+            time: formatTime(timePart)
+        };
+      };
+
+      const doa = splitDateTime(data["Date Of Admission"]);
+
+      // --- AUTO-FILL FORM ---
+      setFormData((prev) => ({
+        ...prev,
+        mothersName: data["Name"] || "",
+        patientId: data["Uhid"] || "",
+        birthDate: formatDate(data["Date Of Birth"]) || "",
+        
+        // ✅ Apply the gender normalization here
+        gender: normalizeGender(data["Gender"]),
+        
+        bedNo: data["Bed Number"] || "",
+        age: data["Age"] ? `${data["Age"]} ${data["Age Unit"] || ""}`.trim() : "",
+        adminNo: data["Admission Number"] || "",
+        mobile: data["Mobile Number"] || "",
+        nationality: data["Nationality"] || "",
+        address: data["Address"] || "",
+        kinName: data["Kin Name"] || "",
+        kinPhone: data["Kin Phone"] || "",
+        relationship: data["Relationship"] || "",
+        kinAddress: data["Kin Address"] || "",
+        doaDate: doa.date,
+        doaTime: doa.time,
+        treatingDr: data["Treating Doctor"] || "",
+        admittingDr: data["Admitting Doctor"] || "",
+        refHospital: data["Referring Doctor"] || "",
+      }));
+
+      setUploadOpen(false); 
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Failed to process PDF");
+    } finally {
+      setUploadLoading(false);
+      setUploadFile(null);
+    }
   };
 
   const handleAssignClick = (type: string) => {
@@ -1767,44 +1890,44 @@ console.log("✅ FINAL patientRef:", patientRef);
         <Typography sx={{ fontWeight: 500 }}>Treating Dr</Typography>
         <TextField
           fullWidth
-          select
+          // REMOVED "select" prop here
           name="treatingDr"
           value={formData.treatingDr}
           onChange={handleChange}
+          // Kept your existing styling
           InputProps={{
-            sx: { backgroundColor: "#F5F5F5", borderRadius: 1 ,
-              "& .MuiInputBase-input": { color: "#000", opacity: 1 }
+            sx: { 
+               backgroundColor: "#F5F5F5", 
+               borderRadius: 1,
+               "& .MuiInputBase-input": { color: "#000", opacity: 1 }
             }
           }}
-        >
-          <MenuItem value="Dr Kedar Shriram M">Dr Kedar Shriram M</MenuItem>
-        </TextField>
+        />
+        {/* REMOVED <MenuItem> children */}
       </Box>
     </Box>
 
     {/* --- ADMITTING DR + REFERRING HOSPITAL --- */}
     <Box sx={{ display: "flex", gap: 2 }}>
+      {/* ADMITTING DOCTOR (Now a standard Text Field) */}
       <Box sx={{ flex: 1 }}>
-        <Typography sx={{ fontWeight: 500,
-          "& .MuiInputBase-input": {
-      color: "#000",       // BLACK PLACEHOLDER
-      opacity: 1,          // MAKE IT FULLY VISIBLE
-    }
-         }}>Admitting Dr</Typography>
+        <Typography sx={{ fontWeight: 500 }}>Admitting Dr</Typography>
         <TextField
           fullWidth
-          select
+          // REMOVED "select" prop
           name="admittingDr"
           value={formData.admittingDr}
           onChange={handleChange}
+          // Kept your styling
           InputProps={{
-            sx: { backgroundColor: "#F5F5F5", borderRadius: 1 ,
-              "& .MuiInputBase-input": { color: "#000", opacity: 1 }
+            sx: { 
+               backgroundColor: "#F5F5F5", 
+               borderRadius: 1,
+               "& .MuiInputBase-input": { color: "#000", opacity: 1 }
             }
           }}
-        >
-          <MenuItem value="Dr Kedar Shriram M">Dr Kedar Shriram M</MenuItem>
-        </TextField>
+        /> 
+        {/* REMOVED <MenuItem> children */}
       </Box>
 
       <Box sx={{ flex: 1 }}>
@@ -2106,214 +2229,402 @@ console.log("✅ FINAL patientRef:", patientRef);
   </DialogContent>
 
   {/* ---- FOOTER BUTTONS ---- */}
-  <DialogActions sx={{ alignContent:"center",justifyContent: "center", p: 2 }}>
+      <DialogActions sx={{ alignContent: "center", justifyContent: "center", p: 2 }}>
+        <Box>
+          {step === 1 && (
+            <Button
+              sx={{
+                textTransform: "none",
+                marginRight: "18px",
+                background: "#228BE61A",
+                color: "#228BE6",
+                fontWeight: 600,
+              }}
+              // ✅ CHANGED: Now opens the upload dialog instead of a new tab
+              onClick={() => setUploadOpen(true)}
+            >
+              Admission Form
+            </Button>
+          )}
 
-     {/* Next / Back / Save logic */}
-    <Box>
-      {step == 1 && (
-        <Button
-          
-          sx={{
-            textTransform: "none",
-            marginRight:"18px",
-            background:"#228BE61A"
+          {step > 1 && (
+            <Button
+              onClick={() => setStep(step - 1)}
+              sx={{ mr: 1, textTransform: "none" }}
+            >
+              Back
+            </Button>
+          )}
+
+          {step < 3 ? (
+            <Button
+              onClick={() => {
+                if (!isFormComplete(formData)) {
+                  setSnackbar({
+                    open: true,
+                    severity: "error",
+                    message: "Fill all the fields",
+                  });
+                  return;
+                }
+                setStep(step + 1);
+              }}
+              sx={{
+                backgroundColor: "#228BE6",
+                color: "#fff",
+                textTransform: "none",
+                "&:hover": {
+                  backgroundColor: "#228BE6 !important",
+                  color: "#fff",
+                },
+              }}
+            >
+              Add
+            </Button>
+          ) : (
+            <Button
+              disabled={!isVerified}
+              onClick={() => {
+                handleSubmit();
+              }}
+              sx={{
+                backgroundColor: isVerified ? "#228BE6" : "#A7B3CD",
+                color: "#fff",
+                textTransform: "none",
+                "&:hover": {
+                  backgroundColor: "#228BE6 !important",
+                  color: "#fff",
+                },
+              }}
+            >
+              Save Admission
+            </Button>
+          )}
+        </Box>
+      </DialogActions>
+      {/* ---- ENHANCED UPLOAD DIALOG ---- */}
+      <Dialog
+        open={uploadOpen}
+        onClose={() => setUploadOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        sx={{ zIndex: 1400 }}
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+          }
+        }}
+      >
+        <DialogTitle 
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            pb: 1,
+            pt: 2.5,
+            px: 3
           }}
         >
-          Admission Form 
-        </Button>
-      )}
-      {step > 1 && (
-        <Button
-          onClick={() => setStep(step - 1)}
-          sx={{ mr: 1, textTransform: "none" }}
-        >
-          Back
-        </Button>
-      )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <DescriptionIcon sx={{ color: '#228BE6', fontSize: 20 }} />
+            <Typography variant="h6" fontWeight={600} fontSize="1.1rem">
+              Upload Admission Form
+            </Typography>
+          </Box>
+          <IconButton 
+            onClick={() => setUploadOpen(false)} 
+            size="small"
+            sx={{ 
+              color: '#666',
+              '&:hover': { bgcolor: '#f5f5f5' }
+            }}
+          >
+            <CloseIcon sx={{ fontSize: 20 }} />
+          </IconButton>
+        </DialogTitle>
 
-      {step < 3 ? (
-        <Button
-        onClick={() => {
-    if (!isFormComplete(formData)) {
-      setSnackbar({
-        open:true,
-        severity:"error",
-        message:"Fill all the fields"
+        <DialogContent sx={{ px: 3, py: 2.5 }}>
+          <Box
+            sx={{
+              border: uploadFile ? '2px solid #51cf66' : '2px dashed #dee2e6',
+              backgroundColor: uploadFile ? '#f0fdf4' : '#fafafa',
+              borderRadius: '12px',
+              p: 4,
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              '&:hover': { 
+                backgroundColor: uploadFile ? '#f0fdf4' : '#f5f5f5',
+                borderColor: uploadFile ? '#51cf66' : '#228BE6'
+              },
+            }}
+            onClick={() => document.getElementById("pdf-upload-input")?.click()}
+          >
+            <input
+              type="file"
+              id="pdf-upload-input"
+              accept="application/pdf"
+              hidden
+              onChange={handleFileChange}
+            />
+            
+            {!uploadFile ? (
+              <Box>
+                <Box
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: '50%',
+                    backgroundColor: '#e7f5ff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 16px',
+                  }}
+                >
+                  <CloudUploadIcon sx={{ fontSize: 28, color: '#228BE6' }} />
+                </Box>
+                
+                <Typography variant="subtitle1" fontWeight={600} color="#1a1a1a" mb={0.5} fontSize="1rem">
+                  Click to Upload PDF
+                </Typography>
 
-      });
-      return;
-    }
-    setStep(step+1);
-  }}
+                <Typography variant="body2" color="#4a5568" fontSize="0.9rem" fontWeight={500}>
+                  or drag and drop your file here
+                </Typography>
+
+                <Typography variant="caption" color="#6b7280" sx={{ mt: 1.5, display: 'block', fontSize: '0.8rem' }}>
+                  Supports PDF files only
+                </Typography>
+              </Box>
+            ) : (
+              <Box>
+                <Box
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: '50%',
+                    backgroundColor: '#d3f9d8',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 16px',
+                  }}
+                >
+                  <CheckCircleIcon sx={{ fontSize: 28, color: '#51cf66' }} />
+                </Box>
+                
+                <Typography variant="subtitle1" fontWeight={600} color="#2f9e44" mb={0.5} fontSize="1rem">
+                  {uploadFile.name}
+                </Typography>
+
+                <Typography variant="body2" color="#4a5568" fontSize="0.9rem" fontWeight={500}>
+                  Ready to extract data
+                </Typography>
+                
+                <Button
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setUploadFile(null);
+                  }}
+                  sx={{ 
+                    mt: 2,
+                    textTransform: 'none',
+                    color: '#6b7280',
+                    fontSize: '0.85rem',
+                    fontWeight: 500,
+                    '&:hover': {
+                      bgcolor: 'transparent',
+                      color: '#374151'
+                    }
+                  }}
+                >
+                  Choose different file
+                </Button>
+              </Box>
+            )}
+          </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
+          <Button 
+            onClick={() => setUploadOpen(false)} 
+            sx={{ 
+              textTransform: 'none',
+              color: '#666',
+              fontWeight: 500,
+              px: 2,
+              '&:hover': {
+                bgcolor: '#f5f5f5'
+              }
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleUpload}
+            variant="contained"
+            disabled={!uploadFile || uploadLoading}
+            sx={{ 
+              textTransform: 'none',
+              bgcolor: '#228BE6',
+              fontWeight: 500,
+              minWidth: 120,
+              px: 3,
+              boxShadow: '0 2px 8px rgba(34, 139, 230, 0.25)',
+              '&:hover': {
+                bgcolor: '#1c7ed6',
+                boxShadow: '0 4px 12px rgba(34, 139, 230, 0.35)',
+              },
+              '&:disabled': {
+                bgcolor: '#e9ecef',
+                color: '#adb5bd'
+              }
+            }}
+          >
+            {uploadLoading ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              'Extract Data'
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      </Dialog>
+
+      <Dialog open={assignDialog.open} onClose={handleAssignDialogClose}>
+        <DialogTitle>
+          {assignDialog.type === "user" ? "Assign User" : "Assign Bed"}
+        </DialogTitle>
+        <DialogContent>
+          {assignDialog.type === "user" ? (
+            <>
+              <InputLabel>Select Practitioner</InputLabel>
+              <TextField
+                select
+                fullWidth
+                value={assignDialog.selectedValue}
+                onChange={(e) => setAssignDialog(prev => ({ ...prev, selectedValue: e.target.value }))}
+                sx={{ mt: 1 }}
+              >
+                {/* {practitioners.map((practitioner) => (
+                  <MenuItem key={practitioner.id} value={practitioner.id}>
+                    {practitioner.name}
+                  </MenuItem>
+                ))} */}
+              </TextField>
+            </>
+          ) : (
+            <>
+              <InputLabel>Select Bed</InputLabel>
+              <TextField
+                select
+                fullWidth
+                value={assignDialog.selectedValue}
+                onChange={(e) => setAssignDialog(prev => ({ ...prev, selectedValue: e.target.value }))}
+                sx={{ mt: 1 }}
+              >
+                {/* {locations.map((location) => (
+                  <MenuItem key={location.id} value={location.id}>
+                    {location.identifier} ({location.type === "bd" ? "Bed" : "Room"})
+                  </MenuItem>
+                ))} */}
+              </TextField>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleAssignDialogClose}>Cancel</Button>
+          <Button 
+            onClick={handleAssignSubmit} 
+            disabled={!assignDialog.selectedValue}
+            variant="contained"
+          >
+            Assign
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openPatientDialog}
+        onClose={() => setOpenPatientDialog(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle
           sx={{
-    backgroundColor: "#228BE6",
-    color: "#fff",
-    textTransform: "none",
-    "&:hover": {
-      backgroundColor: "#228BE6 !important",  // <- FIX HOVER FADE
-      color: "#fff",
-    }
-  }}
+            fontWeight: 600,
+            color: "#124D81",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
         >
-          Add
-        </Button>
-      ) : (
-        <Button
-        disabled={!isVerified}
-          onClick={() => {
-    
-    handleSubmit();
-  }}
+          Patient Details
+          <IconButton onClick={() => setOpenPatientDialog(false)}>
+            ✕
+          </IconButton>
+        </DialogTitle>
 
-          sx={{
-     backgroundColor: isVerified ? "#228BE6" : "#A7B3CD",
-    color: "#fff",
-    textTransform: "none",
-    "&:hover": {
-      backgroundColor: "#228BE6 !important",  // <- FIX HOVER FADE
-      color: "#fff",
-    }
-  }}
-        >
-          Save Admission
-        </Button>
-      )}
-    </Box>
+        <DialogContent dividers>
+          {selectedPatient && (
+            <Stack spacing={3}>
+              {/* 🔹 Top Summary */}
+              <Stack direction="row" spacing={4}>
+                <Typography><b>Mother’s Name:</b> {selectedPatient.motherName}</Typography>
+                <Typography><b>UHID:</b> {selectedPatient.patientId}</Typography>
+                <Typography><b>Admission No:</b> {selectedPatient.admissionNo}</Typography>
+              </Stack>
 
-  </DialogActions>
-</Dialog>
+              {/* 🔹 Baby Info */}
+              <Stack direction="row" spacing={4}>
+                <Typography><b>DOB:</b> {selectedPatient.birthDateTime}</Typography>
+                <Typography><b>Gender:</b> {selectedPatient.gender}</Typography>
+                <Typography><b>GA:</b> {selectedPatient.gestationalAge}</Typography>
+                <Typography><b>Birth Weight:</b> {selectedPatient.birthWeight} g</Typography>
+              </Stack>
 
-<Dialog open={assignDialog.open} onClose={handleAssignDialogClose}>
-  <DialogTitle>
-    {assignDialog.type === "user" ? "Assign User" : "Assign Bed"}
-  </DialogTitle>
-  <DialogContent>
-    {assignDialog.type === "user" ? (
-      <>
-        <InputLabel>Select Practitioner</InputLabel>
-        <TextField
-          select
-          fullWidth
-          value={assignDialog.selectedValue}
-          onChange={(e) => setAssignDialog(prev => ({ ...prev, selectedValue: e.target.value }))}
-          sx={{ mt: 1 }}
-        >
-          {/* {practitioners.map((practitioner) => (
-            <MenuItem key={practitioner.id} value={practitioner.id}>
-              {practitioner.name}
-            </MenuItem>
-          ))} */}
-        </TextField>
-      </>
-    ) : (
-      <>
-        <InputLabel>Select Bed</InputLabel>
-        <TextField
-          select
-          fullWidth
-          value={assignDialog.selectedValue}
-          onChange={(e) => setAssignDialog(prev => ({ ...prev, selectedValue: e.target.value }))}
-          sx={{ mt: 1 }}
-        >
-          {/* {locations.map((location) => (
-            <MenuItem key={location.id} value={location.id}>
-              {location.identifier} ({location.type === "bd" ? "Bed" : "Room"})
-            </MenuItem>
-          ))} */}
-        </TextField>
-      </>
-    )}
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={handleAssignDialogClose}>Cancel</Button>
-    <Button 
-      onClick={handleAssignSubmit} 
-      disabled={!assignDialog.selectedValue}
-      variant="contained"
-    >
-      Assign
-    </Button>
-  </DialogActions>
-</Dialog>
-<Dialog
-  open={openPatientDialog}
-  onClose={() => setOpenPatientDialog(false)}
-  fullWidth
-  maxWidth="md"
->
-  <DialogTitle
-    sx={{
-      fontWeight: 600,
-      color: "#124D81",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-    }}
-  >
-    Patient Details
-    <IconButton onClick={() => setOpenPatientDialog(false)}>
-      ✕
-    </IconButton>
-  </DialogTitle>
+              {/* 🔹 Admission Details */}
+              <Box>
+                <Typography fontWeight={600} mb={1}>
+                  Admission Details
+                </Typography>
 
-  <DialogContent dividers>
-    {selectedPatient && (
-      <Stack spacing={3}>
-        {/* 🔹 Top Summary */}
-        <Stack direction="row" spacing={4}>
-          <Typography><b>Mother’s Name:</b> {selectedPatient.motherName}</Typography>
-          <Typography><b>UHID:</b> {selectedPatient.patientId}</Typography>
-          <Typography><b>Admission No:</b> {selectedPatient.admissionNo}</Typography>
-        </Stack>
+                <Stack spacing={1}>
+                  <Typography><b>Bed No:</b> {selectedPatient.bed}</Typography>
+                  <Typography><b>DOA:</b> {selectedPatient.admissionDate}</Typography>
+                  <Typography><b>Treating Doctor:</b> {selectedPatient.treatingDoctor}</Typography>
+                  <Typography><b>Admitting Doctor:</b> {selectedPatient.admittingDoctor}</Typography>
+                  <Typography><b>Referring Hospital:</b> {selectedPatient.refHospital}</Typography>
+                </Stack>
+              </Box>
 
-        {/* 🔹 Baby Info */}
-        <Stack direction="row" spacing={4}>
-          <Typography><b>DOB:</b> {selectedPatient.birthDateTime}</Typography>
-          <Typography><b>Gender:</b> {selectedPatient.gender}</Typography>
-          <Typography><b>GA:</b> {selectedPatient.gestationalAge}</Typography>
-          <Typography><b>Birth Weight:</b> {selectedPatient.birthWeight} g</Typography>
-        </Stack>
+              {/* 🔹 Contact */}
+              <Box>
+                <Typography fontWeight={600} mb={1}>
+                  Contact Details
+                </Typography>
 
-        {/* 🔹 Admission Details */}
-        <Box>
-          <Typography fontWeight={600} mb={1}>
-            Admission Details
-          </Typography>
+                <Typography><b>Mobile:</b> {selectedPatient.mobile}</Typography>
+                <Typography><b>Address:</b> {selectedPatient.address}</Typography>
+                <Typography><b>Nationality:</b> {selectedPatient.nationality}</Typography>
+              </Box>
 
-          <Stack spacing={1}>
-            <Typography><b>Bed No:</b> {selectedPatient.bed}</Typography>
-            <Typography><b>DOA:</b> {selectedPatient.admissionDate}</Typography>
-            <Typography><b>Treating Doctor:</b> {selectedPatient.treatingDoctor}</Typography>
-            <Typography><b>Admitting Doctor:</b> {selectedPatient.admittingDoctor}</Typography>
-            <Typography><b>Referring Hospital:</b> {selectedPatient.refHospital}</Typography>
-          </Stack>
-        </Box>
+              {/* 🔹 Next of Kin */}
+              <Box>
+                <Typography fontWeight={600} mb={1}>
+                  Next of Kin
+                </Typography>
 
-        {/* 🔹 Contact */}
-        <Box>
-          <Typography fontWeight={600} mb={1}>
-            Contact Details
-          </Typography>
-
-          <Typography><b>Mobile:</b> {selectedPatient.mobile}</Typography>
-          <Typography><b>Address:</b> {selectedPatient.address}</Typography>
-          <Typography><b>Nationality:</b> {selectedPatient.nationality}</Typography>
-        </Box>
-
-        {/* 🔹 Next of Kin */}
-        <Box>
-          <Typography fontWeight={600} mb={1}>
-            Next of Kin
-          </Typography>
-
-          <Typography><b>Name:</b> {selectedPatient.kinName}</Typography>
-          <Typography><b>Relation:</b> {selectedPatient.kinRelation}</Typography>
-          <Typography><b>Mobile:</b> {selectedPatient.kinMobile}</Typography>
-        </Box>
-      </Stack>
-    )}
-  </DialogContent>
-</Dialog>
+                <Typography><b>Name:</b> {selectedPatient.kinName}</Typography>
+                <Typography><b>Relation:</b> {selectedPatient.kinRelation}</Typography>
+                <Typography><b>Mobile:</b> {selectedPatient.kinMobile}</Typography>
+              </Box>
+            </Stack>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Snackbar
         open={snackbar.open}

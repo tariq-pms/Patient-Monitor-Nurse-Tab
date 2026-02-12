@@ -1,5 +1,5 @@
-import  { useState, useEffect, useRef, SetStateAction, useCallback } from 'react';
-import { Box, Typography, Stack, Button, DialogContent, DialogActions, Dialog, TextField, DialogTitle, Snackbar, Alert, Tabs, Tab, useTheme, useMediaQuery} from '@mui/material';
+import { useState, useEffect, useRef, SetStateAction, useCallback } from 'react';
+import { Box, Typography, Stack, Button, DialogContent, DialogActions, Dialog, TextField, DialogTitle, Snackbar, Alert, Tabs, Tab, useTheme, useMediaQuery, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
 import { useAuth0 } from '@auth0/auth0-react';
 import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -8,12 +8,13 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import { NurseTaskList } from '../components/NurseTaskList';
+// import { NurseTaskList } from '../components/NurseTaskList';
+import { PatientTaskContainer } from '../components/MyTasks/PatientTaskContainer';
 
 type PatientMonitorProps = {
   userOrganization: string;
   currentRoom: any;
-  darkTheme: boolean; 
+  darkTheme: boolean;
   // selectedIcon: string;
 };
 
@@ -35,9 +36,9 @@ type Patient = {
     system: string;
     value: string;
   }[];
-  birthDate:string,
-  birthWeight:string,
-  gender:string;
+  birthDate: string,
+  birthWeight: string,
+  gender: string;
   managingOrganization: {
     reference: string;
   };
@@ -52,8 +53,8 @@ interface State {
   [patientId: string]: DataEntity[];
 }
 
-  export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, currentRoom ,darkTheme}) => {
-  
+export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, currentRoom, darkTheme }) => {
+
   //console.log("in patient Monitor Page rooms",currentRoom);
   //console.log("in patient Monitor Page",userOrganization);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -72,6 +73,8 @@ interface State {
   const [mothersName, setMothersName] = useState('');
   const [id, setId] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [searchQuery, setSearchQuery] = useState(""); // Added search state
+  const [sortBy, setSortBy] = useState<string>('name'); // Added sort state
   const triggerRef = useRef<HTMLDivElement | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -109,7 +112,7 @@ interface State {
   const handleCloseSnackbar = () => setSnackbarOpen(false);
 
   const fetchObservations = useCallback(async (patient: { id: any }) => {
-    const url = `${import.meta.env.VITE_FHIRAPI_URL as string}/Observation?patient=${patient.id}`;
+    const url = `${import.meta.env.VITE_FHIRAPI_URL as string}/Observation?patient=${patient.id}&_sort=-date&_count=50`;
     return fetchWithRetry(url, {
       credentials: 'omit',
       headers: {
@@ -171,7 +174,7 @@ interface State {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient?_count=100&organization=${userOrganization}`, {
+        const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient?_count=1000&organization=${userOrganization}`, {
           credentials: 'omit',
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -182,8 +185,8 @@ interface State {
           if (data.entry) {
             const patients = data.entry.map((entry: { resource: any }) => entry.resource);
             setPatientList(patients);
-            console.log('patient list in patient monitoring',patients);
-            
+            console.log('patient list in patient monitoring', patients);
+
           }
         } else {
           throw new Error('Network response was not ok');
@@ -346,127 +349,202 @@ interface State {
   const handleCloseDialog = () => setOpenDialog(false);
 
   // const containerStyles = {
-    
+
   //   justifyContent: 'center',
   //   alignItems: 'center',
-    
+
   // };
-  
-  
+
+
   const tabConfig = [
     { label: "My Tasks", icon: <AssignmentIcon /> },
     { label: "Patients", icon: <EmojiEmotionsIcon /> },
     { label: "Assessments", icon: <AssessmentIcon /> },
     { label: "Reports", icon: <BarChartIcon /> },
-  
+
   ];
   return (
 
-    
+
     <div >
       {isAuthenticated && (
         <Box>
-          <Box sx={{  borderColor: "divider",border:'0.1px solid #DEE2E6'}}>
-          <Tabs
-value={selectedIndex}
-  onChange={handleTabChange}
-  textColor="secondary"
-  indicatorColor="primary"
-  variant="fullWidth"
-  scrollButtons
-  allowScrollButtonsMobile
->
-{tabConfig.map((tab, index) => (
-    <Tab
-      key={index}
-      icon={
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 1,
-            width: "100%",
-          }}
-        >
-          {tab.icon}
-          {!isMobile && <Typography variant="body2">{tab.label}</Typography>}
-        </Box>
-      }
-      sx={{
-        textTransform: "none",
-        fontWeight: "bold",
-        minWidth: isMobile ? 58 : 120,
-        color: "black",
-        padding: isMobile ? 1 : 2,
-      }}
-    />
-  ))}
-</Tabs>
-          </Box>
-          <Box sx={{ alignItems: 'center', justifyContent: 'center',p:1 }}>
-          {(() => {
-          switch (selectedIndex) {
-            // case 0:
-            //   return <Typography>My Tasks will Come Here</Typography>;
-            case 0:
-                return (
-                  <Box >
-                 {patientList.map(patient => (
-              <NurseTaskList
-                key={String(patient.id)}
-                patient_resource_id={String(patient.id)}
-                patient_name={String(patient.extension[0]?.valueString)}
-                gestational_age={String(patient.extension[1]?.valueString)}
-                birthDate={String(patient.birthDate)}
-                patient_id={String(patient.identifier[0]?.value)}
-                device={parentDevice[String(patient.id)]}
-                gender={String(patient.gender)}
-                darkTheme={darkTheme}
-                // selectedIcon={selectedIcon}
-                onClick={() => handlePatientCardClick(patient)}
-              />
-            ))}
-                </Box>
-                
-              )
-            case 1:
-                return (
-                  <Box >
-                 {patientList.map(patient => (
-              <PatientCard
-                key={String(patient.id)}
-                patient_resource_id={String(patient.id)}
-                patient_name={String(patient.extension[0]?.valueString)}
-                gestational_age={String(patient.extension[1]?.valueString)}
-                birthDate={String(patient.birthDate)}
-                birthWeight={String(patient.birthWeight)}
-                gender={String(patient.gender)}
-                patient_id={String(patient.identifier[0]?.value)}
-                device={parentDevice[String(patient.id)]}
-                observation_resource={parentObs[String(patient.id)]}
-                communication_resource={parentComm[String(patient.id)]}
-                darkTheme={darkTheme}
-                // selectedIcon={selectedIcon}
-                onClick={() => handlePatientCardClick(patient)}
-              />
-            ))}
-                </Box>
-                
-              )
+          <Box sx={{ position: 'sticky', top: 0, zIndex: 1000, backgroundColor: theme.palette.background.paper || "#FFFFFF", pb: 1 }}>
+            <Box sx={{ borderColor: "divider", border: '0.1px solid #DEE2E6' }}>
+              <Tabs
+                value={selectedIndex}
+                onChange={handleTabChange}
+                textColor="secondary"
+                indicatorColor="primary"
+                variant="fullWidth"
+                scrollButtons
+                allowScrollButtonsMobile
+              >
+                {tabConfig.map((tab, index) => (
+                  <Tab
+                    key={index}
+                    icon={
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: isMobile ? "column" : "row",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          gap: 1,
+                          width: "100%",
+                        }}
+                      >
+                        {tab.icon}
+                        {!isMobile && <Typography variant="body2">{tab.label}</Typography>}
+                      </Box>
+                    }
+                    sx={{
+                      textTransform: "none",
+                      fontWeight: "bold",
+                      minWidth: isMobile ? 58 : 120,
+                      color: "black",
+                      padding: isMobile ? 1 : 2,
+                    }}
+                  />
+                ))}
+              </Tabs>
+            </Box>
 
-            default:
-              return (
-                <Box sx={{ textAlign: "center", mt: 4 }}>
-                  <Typography variant="h5">🚧 Page Under Construction</Typography>
-                  <Typography variant="body2">We're working to bring this page to life.</Typography>
-                </Box>
-              );
-          }
-        })()}
-          
-           
+            {/* Search and Filters Toolbar */}
+            {selectedIndex === 1 && (
+              <Stack
+                direction={{ xs: "column", md: "row" }}
+                spacing={2}
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ px: 3, mb: 1, mt: 2 }}
+              >
+                {/* Search Bar */}
+                <TextField
+                  placeholder="Search Patient Name, ID or Bed Number"
+                  variant="outlined"
+                  size="small"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  sx={{
+                    flex: 1,
+                    backgroundColor: "#FFFFFF",
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: "12px",
+                      '& fieldset': { borderColor: '#E2E8F0' },
+                      '&:hover fieldset': { borderColor: '#CBD5E1' },
+                    }
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <Box sx={{ mr: 1, color: "#94A3B8" }}>
+                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </Box>
+                    )
+                  }}
+                />
+
+                {/* Filters / Sort Dropdown */}
+                <FormControl size="small" sx={{ minWidth: 200 }}>
+                  <InputLabel id="sort-select-label">Sort By</InputLabel>
+                  <Select
+                    labelId="sort-select-label"
+                    value={sortBy}
+                    label="Sort By"
+                    onChange={(e) => setSortBy(e.target.value)}
+                    sx={{ backgroundColor: "#FFFFFF", borderRadius: "8px" }}
+                  >
+                    <MenuItem value="name">Sort by: Patient Name</MenuItem>
+                    <MenuItem value="date">Sort by: Admission Date</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
+            )}
+          </Box>
+
+          <Box sx={{ alignItems: 'center', justifyContent: 'center', p: 1 }}>
+            {(() => {
+              switch (selectedIndex) {
+                // case 0:
+                //   return <Typography>My Tasks will Come Here</Typography>;
+                case 0:
+                  return (
+                    <Box >
+                      {patientList.map(patient => (
+                        <PatientTaskContainer
+                          key={String(patient.id)}
+                          patient_resource_id={String(patient.id)}
+                          patient_name={String(patient.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "Unknown")}
+                          birthDate={String(patient.birthDate)}
+                          patient_id={String(patient.identifier?.[0]?.value || "Unknown")}
+                          birthWeight={String(patient.birthWeight)}
+                          observations={parentObs[String(patient.id)]}
+                          communications={parentComm[String(patient.id)]}
+                          gender={String(patient.gender)}
+                          darkTheme={darkTheme}
+                        />
+                      ))}
+                    </Box>
+
+                  )
+                case 1:
+                  return (
+                    <Box >
+                      {patientList
+                        .filter((patient) => {
+                          const name = patient.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "";
+                          const pid = patient.identifier?.[0]?.value || "";
+                          const query = searchQuery.toLowerCase();
+                          return name.toLowerCase().includes(query) || pid.toLowerCase().includes(query);
+                        })
+                        .sort((a, b) => {
+                          if (sortBy === 'name') {
+                            const nameA = a.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "";
+                            const nameB = b.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "";
+                            return nameA.localeCompare(nameB);
+                          } else if (sortBy === 'date') {
+                            // Sort by meta.lastUpdated or birthDate as fallback
+                            const dateA = new Date(a.meta?.lastUpdated || a.birthDate || 0).getTime();
+                            const dateB = new Date(b.meta?.lastUpdated || b.birthDate || 0).getTime();
+                            return dateB - dateA; // Descending
+                          }
+                          return 0;
+                        })
+                        .map(patient => (
+                          <PatientCard
+                            key={String(patient.id)}
+                            patient_resource_id={String(patient.id)}
+                            patient_name={String(patient.extension[0]?.valueString)}
+                            gestational_age={String(patient.extension[1]?.valueString)}
+                            birthDate={String(patient.birthDate)}
+                            birthWeight={String(patient.birthWeight)}
+                            gender={String(patient.gender)}
+                            patient_id={String(patient.identifier[0]?.value)}
+                            device={parentDevice[String(patient.id)]}
+                            observation_resource={parentObs[String(patient.id)]}
+                            communication_resource={parentComm[String(patient.id)]}
+                            darkTheme={darkTheme}
+                            // selectedIcon={selectedIcon}
+                            onClick={() => handlePatientCardClick(patient)}
+                          />
+                        ))}
+                    </Box>
+
+                  );
+
+                default:
+                  return (
+                    <Box sx={{ textAlign: "center", mt: 4 }}>
+                      <Typography variant="h5">🚧 Page Under Construction</Typography>
+                      <Typography variant="body2">We're working to bring this page to life.</Typography>
+                    </Box>
+                  );
+              }
+            })()}
+
+
           </Box>
           {/* <Box>
             <Button variant="contained" color="primary" sx={floatingButtonStyles} onClick={handleOpenDialog}>

@@ -1,5 +1,5 @@
-import  { useState, useEffect, useRef, SetStateAction, useCallback } from 'react';
-import { Box, Typography, Stack, Button, DialogContent, DialogActions, Dialog, TextField, DialogTitle, Snackbar, Alert, Tabs, Tab, useTheme, useMediaQuery} from '@mui/material';
+import { useState, useEffect, useRef, SetStateAction, useCallback } from 'react';
+import { Box, Typography, Stack, Button, DialogContent, DialogActions, Dialog, TextField, DialogTitle, Snackbar, Alert, Tabs, Tab, useTheme, useMediaQuery } from '@mui/material';
 import { useAuth0 } from '@auth0/auth0-react';
 import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -8,11 +8,12 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import { MyTasks } from '../components/MyTasks/MyTasks';
 
 type PatientMonitorProps = {
   userOrganization: string;
   currentRoom: any;
-  darkTheme: boolean; 
+  darkTheme: boolean;
   // selectedIcon: string;
 };
 
@@ -48,8 +49,8 @@ interface State {
   [patientId: string]: DataEntity[];
 }
 
-  export const NurseMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, currentRoom ,darkTheme}) => {
-  
+export const NurseMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, currentRoom, darkTheme }) => {
+
   //console.log("in patient Monitor Page rooms",currentRoom);
   //console.log("in patient Monitor Page",userOrganization);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -68,6 +69,7 @@ interface State {
   const [mothersName, setMothersName] = useState('');
   const [id, setId] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [searchQuery, setSearchQuery] = useState(""); // Added search state
   const triggerRef = useRef<HTMLDivElement | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -178,8 +180,8 @@ interface State {
           if (data.entry) {
             const patients = data.entry.map((entry: { resource: any }) => entry.resource);
             setPatientList(patients);
-            console.log('patient list in patient monitoring',patients);
-            
+            console.log('patient list in patient monitoring', patients);
+
           }
         } else {
           throw new Error('Network response was not ok');
@@ -342,99 +344,120 @@ interface State {
   const handleCloseDialog = () => setOpenDialog(false);
 
   // const containerStyles = {
-    
+
   //   justifyContent: 'center',
   //   alignItems: 'center',
-    
+
   // };
   const tabConfig = [
     { label: "My Tasks", icon: <AssignmentIcon /> },
     { label: "Patients", icon: <EmojiEmotionsIcon /> },
     { label: "Assessments", icon: <AssessmentIcon /> },
     { label: "Reports", icon: <BarChartIcon /> },
-  
+
   ];
   return (
 
-    
+
     <div >
       {isAuthenticated && (
         <Box>
-          <Box sx={{  borderColor: "divider",border:'0.1px solid #DEE2E6'}}>
-          <Tabs
-value={selectedIndex}
-  onChange={handleTabChange}
-  textColor="secondary"
-  indicatorColor="primary"
-  variant="fullWidth"
-  scrollButtons
-  allowScrollButtonsMobile
->
-{tabConfig.map((tab, index) => (
-    <Tab
-      key={index}
-      icon={
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 1,
-            width: "100%",
-          }}
-        >
-          {tab.icon}
-          {!isMobile && <Typography variant="body2">{tab.label}</Typography>}
-        </Box>
-      }
-      sx={{
-        textTransform: "none",
-        fontWeight: "bold",
-        minWidth: isMobile ? 58 : 120,
-        color: "black",
-        padding: isMobile ? 1 : 2,
-      }}
-    />
-  ))}
-</Tabs>
+          <Box sx={{ borderColor: "divider", border: '0.1px solid #DEE2E6' }}>
+            <Tabs
+              value={selectedIndex}
+              onChange={handleTabChange}
+              textColor="secondary"
+              indicatorColor="primary"
+              variant="fullWidth"
+              scrollButtons
+              allowScrollButtonsMobile
+            >
+              {tabConfig.map((tab, index) => (
+                <Tab
+                  key={index}
+                  icon={
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: isMobile ? "column" : "row",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 1,
+                        width: "100%",
+                      }}
+                    >
+                      {tab.icon}
+                      {!isMobile && <Typography variant="body2">{tab.label}</Typography>}
+                    </Box>
+                  }
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: "bold",
+                    minWidth: isMobile ? 58 : 120,
+                    color: "black",
+                    padding: isMobile ? 1 : 2,
+                  }}
+                />
+              ))}
+            </Tabs>
           </Box>
-          <Box sx={{ alignItems: 'center', justifyContent: 'center',p:1 }}>
-          {(() => {
-          switch (selectedIndex) {
-            // case 0:
-            //   return <Typography>My Tasks will Come Here</Typography>;
-            case 1:
-                return (
-                  <Box >
-                 {patientList.map(patient => (
-              <PatientCard
-                     key={String(patient.id)}
-                     patient_resource_id={String(patient.id)}
-                     patient_name={String(patient.extension[0].valueString)}
-                     patient_id={String(patient.identifier[0].value)}
-                     device={parentDevice[String(patient.id)]}
-                     observation_resource={parentObs[String(patient.id)]}
-                     communication_resource={parentComm[String(patient.id)]}
-                     darkTheme={darkTheme}
-                     // selectedIcon={selectedIcon}
-                     onClick={() => handlePatientCardClick(patient)} gestational_age={''} birthDate={''} gender={''} birthWeight={''}              />
-            ))}
-                </Box>
-                
-              )
+          {/* Search Bar */}
+          {selectedIndex === 1 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+              <TextField
+                label="Search Patients"
+                variant="outlined"
+                size="small"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                sx={{ width: { xs: '90%', sm: '60%', md: '40%' } }}
+              />
+            </Box>
+          )}
 
-            default:
-              return (
-                <Box sx={{ textAlign: "center", mt: 4 }}>
-                  <Typography variant="h5">🚧 Page Under Construction</Typography>
-                  <Typography variant="body2">We're working to bring this page to life.</Typography>
-                </Box>
-              );
-          }
-        })()}
-          
-           
+          <Box sx={{ alignItems: 'center', justifyContent: 'center', p: 1 }}>
+            {(() => {
+              switch (selectedIndex) {
+                case 0:
+                  return <MyTasks />;
+                case 1:
+                  return (
+                    <Box >
+                      {patientList
+                        .filter((patient) => {
+                          const name = patient.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "";
+                          const pid = patient.identifier?.[0]?.value || "";
+                          const query = searchQuery.toLowerCase();
+                          return name.toLowerCase().includes(query) || pid.toLowerCase().includes(query);
+                        })
+                        .map(patient => (
+                          <PatientCard
+                            key={String(patient.id)}
+                            patient_resource_id={String(patient.id)}
+                            patient_name={String(patient.extension[0].valueString)}
+                            patient_id={String(patient.identifier[0].value)}
+                            device={parentDevice[String(patient.id)]}
+                            observation_resource={parentObs[String(patient.id)]}
+                            communication_resource={parentComm[String(patient.id)]}
+                            darkTheme={darkTheme}
+                            // selectedIcon={selectedIcon}
+                            onClick={() => handlePatientCardClick(patient)} gestational_age={''} birthDate={''} gender={''} birthWeight={''} />
+                        ))}
+                    </Box>
+
+                  )
+
+                default:
+                  return (
+                    <Box sx={{ textAlign: "center", mt: 4 }}>
+                      <Typography variant="h5">🚧 Page Under Construction</Typography>
+                      <Typography variant="body2">We're working to bring this page to life.</Typography>
+                    </Box>
+                  );
+              }
+            })()}
+
+
           </Box>
           {/* <Box>
             <Button variant="contained" color="primary" sx={floatingButtonStyles} onClick={handleOpenDialog}>

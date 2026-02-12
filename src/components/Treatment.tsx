@@ -1,87 +1,3272 @@
-import { useState } from 'react';
-import { Box, Tabs, Tab, Typography } from '@mui/material';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import {
+  Box, Typography, Button, IconButton, Stack, Chip, TextField, Paper, Divider,
+  Grid, Accordion, AccordionSummary, AccordionDetails, ToggleButton, ToggleButtonGroup, Tooltip,
+  useTheme, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions,
+  Checkbox, List, ListItem, ListItemButton, ListItemText, InputAdornment
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import VaccinesIcon from '@mui/icons-material/Vaccines';
+import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
+import PersonIcon from '@mui/icons-material/Person';
+import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import ScienceIcon from '@mui/icons-material/Science';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import CloseIcon from '@mui/icons-material/Close';
+import GroupIcon from '@mui/icons-material/Group';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
+import EditIcon from '@mui/icons-material/Edit';
+
+import DownloadIcon from '@mui/icons-material/Download';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
+import ViewStreamIcon from '@mui/icons-material/ViewStream';
+import { useAuth0 } from '@auth0/auth0-react';
+import { format, subDays, isSameDay, parseISO } from 'date-fns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
+
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import SearchIcon from '@mui/icons-material/Search';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+// Consolidated imports moved to top
+import { PrescriptionScreen } from './PrescriptionScreen';
+import { DiagnosticOrderDialog } from './DiagnosticOrderDialog';
+import { SampleCollectionDialog } from './SampleCollectionDialog';
+import { ResultEntryDialog } from './ResultEntryDialog';
+
+
+// --- Interfaces ---
 
 interface TreatmentProps {
   patient_name: string;
   patient_id: string;
-  patient_resource_id: string;
+  patient_resource_id?: string;
+  birth_date?: string;
+  gestational_age?: string;
+  location?: string;
 }
 
-// Dummy components for each treatment tab
-const MedicationsTab = () => (
-  <Box sx={{ p: 2 }}>
-    <Typography variant="h6" gutterBottom>Diagnosis</Typography>
-    <Typography>medication data for demonstration:</Typography>
-    <ul>
-      <li>Paracetamol - 500mg - Every 6 hours</li>
-      <li>Amoxicillin - 250mg - Twice daily</li>
-      <li>Vitamin D - 400IU - Once daily</li>
-    </ul>
-  </Box>
-);
+interface Medication {
+  id: number;
+  name: string;
+  status: string;
+  dose?: string;
+  frequency?: string;
+  route?: string;
+  fhirId?: string; // Store FHIR ID for deletion tracking
+  pendingPrescriptionData?: any; // Stores FHIR payload for deferred saving
+}
 
-const ProceduresTab = () => (
-  <Box sx={{ p: 2 }}>
-    <Typography variant="h6" gutterBottom>Treatement</Typography>
-    <Typography>Recent procedures:</Typography>
-    <ul>
-      <li>Blood transfusion - 2023-10-15</li>
-      <li>IV line insertion - 2023-10-10</li>
-      <li>Umbilical catheterization - 2023-10-05</li>
-    </ul>
-  </Box>
-);
+interface Therapy {
+  id: number;
+  type: string; // e.g., "Phototherapy", "CPAP"
+  details: string; // e.g., "Bili lights ON, TcB 8.5 mg/dL", "6/6 cm, FiO₂ 35%"
+}
 
-const TherapyTab = () => (
-  <Box sx={{ p: 2 }}>
-    <Typography variant="h6" gutterBottom>Therapy Plans</Typography>
-    <Typography>Current therapy plans:</Typography>
-    <ul>
-      <li>Physical therapy - 3 sessions/week</li>
-      <li>Respiratory therapy - Daily</li>
-      <li>Occupational therapy - 2 sessions/week</li>
-    </ul>
-  </Box>
-);
+interface Feed {
+  mode: string; // e.g., "Breast milk"
+  volumeFreq: string; // e.g., "40 mL every 2 hours (480 mL/24h)"
+}
 
-export const Treatment = ({  }: TreatmentProps) => {
-  const [activeTab, setActiveTab] = useState(0);
+interface Fluid {
+  type: string; // e.g., "5% DNS @ 20 mL/h (480 mL/24h)"
+  electrolytes: string; // e.g., "Na 130, K 4.5, Cl 101"
+}
 
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
+interface FeedsAndFluids {
+  enteralFeeds: Feed | null;
+  ivFluids: Fluid | null;
+}
+
+interface Injection {
+  id: number;
+  name: string; // e.g., "Vitamin K (2CG)"
+  time: string; // e.g., "10:30 AM"
+  site: string; // e.g., "Antero-lateral thigh"
+  status?: 'pending' | 'administered';
+}
+
+interface Consultant {
+  id: string;
+  name: string;
+  role: string;
+  isAutoGenerated?: boolean;
+}
+
+interface VitalsData {
+  temp: string; tempPrev: string;
+  hr: string; hrPrev: string;
+  rr: string; rrPrev: string;
+  bp: string; bpPrev: string;
+  spo2: string; spo2Prev: string;
+  bsl: string; bslPrev: string;
+  weight: string; weightPrev: string;
+}
+
+interface SystemicData {
+  [key: string]: {
+    status: string;
+    note: string;
+    selectedConditions?: string[]; // Array of selected condition names
+    conditionDescriptions?: Record<string, string>; // Map of condition name to description
+  };
+}
+
+interface NoteData {
+  id: string;
+  timestamp: string; // ISO string
+  author: string;
+  attendingConsultants?: string;
+  attachments?: { name: string; type: string; url?: string }[];
+  historyText: string;
+  selectedConditions: string[];
+  vitals: VitalsData;
+  additionalOENotes: string; // Additional O/E Notes
+  systemicFindings: SystemicData;
+  medications: Medication[];
+  therapies: Therapy[];
+  feedsAndFluids: FeedsAndFluids;
+  injections: Injection[];
+  orderAdditionalComments?: string; // New field for additional comments on orders
+  orders?: any[]; // Orders to be displayed in the note
+}
+
+// --- Constants ---
+
+const CONDITION_TAGS = [
+  'RDS', 'MSL', 'Preterm', 'LBW', 'Sepsis', 'Risk of Sepsis',
+  'Birth Asphyxia', 'Hypoglycemia', 'Feeding Intolerance', 'Jaundice', 'Seizures'
+];
+
+const SYSTEMIC_SECTIONS = [
+  'Respiratory', 'Cardiovascular', 'Gastrointestinal & Abdomen', 'Central Nervous System', 'Genitourinary', 'Musculoskeletal', 'General'
+];
+
+const SYSTEMIC_CONDITIONS: Record<string, string[]> = {
+  'Respiratory': [
+    'Grunting', 'Nasal Flaring', 'Apnea', 'Stridor', 'Tachypnea(60>/min)', 'Subcostal Retraction',
+    'Intercostal Retraction', 'Suprasternal Retraction', 'Diminished Air Entry', 'Crackles/Crepitations', 'Wheeze'
+  ],
+  'Cardiovascular': [
+    'Heart Murmur', 'Abnormal S1 S2', 'Tachycardia >160bpm', 'Bradycardia <100bpm', 'CRT > 3 Secs', 'Bounding Pulses',
+    'Irregular Rhythm', 'Weak Pulses', 'Hypotension', 'Active Precordium'
+  ],
+  'Gastrointestinal & Abdomen': [
+    'Abdominal Distension', 'Abdominal Tenderness', 'Scaphoid Abdomen', 'Discolored Abdominal wall', 'Visible Bowel loops',
+    'Hepatomegaly >2cm', 'Splenomegaly', 'Abdominal Mass', 'Umbilical Hernia', 'Omphalitis/Infected Cord',
+    'Umbilical Granuloma', 'Imperforate Anus', 'Bloody Stool', 'Bilious Vomiting', 'Hyperactive Bowel Sounds'
+  ],
+  'Central Nervous System': [
+    'Lethargic', 'Irritability/High-pitch Cry', 'Hypotonia', 'Hypertonia', 'Jitteriness',
+    'Seizures (Focal)', 'Seizures (Generalized)', 'Absent/Weak Reflex', 'Posturing', 'Weak Cry',
+    'Bulging Fontanelle', 'Sunken Fontanelle', 'Pupils Fixed /Dilated'
+  ],
+  'Genitourinary': [
+    'Undescended Testis Right', 'Undescended Testis Left', 'Bilateral Undescended Testis', 'Hypospadias', 'Epispadias',
+    'Hydrocele', 'Inguinal Hernia', 'Micropenis', 'Clitoromegaly', 'Fused Labia',
+    'Palpably Full Bladder', 'Ambiguous Genitalia', 'Vaginal Discharge(Bloody)'
+  ],
+  'Musculoskeletal': [
+    'Skeletal Deformity/Fracture', 'Decreased Arm Movement', 'Single Palmar Crease', 'Hip Instability', 'Scoliosis',
+    'Spinal Defect/Dimple', 'Asymmetric Movement', 'Syndactyly', 'Clinodactyly', 'Polydactyly',
+    'Spinal Hair Tuft', 'Spina Bifida'
+  ],
+  'General': ['Active', 'Lethargic', 'Irritable']
+};
+
+
+export const Treatment = ({
+  patient_name,
+  patient_id,
+  patient_resource_id,
+  birth_date,
+  gestational_age,
+  location
+}: TreatmentProps) => {
+  const { user } = useAuth0();
+
+  // --- State ---
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [activeInputTab, setActiveInputTab] = useState('Conditions');
+  const [objectiveViewMode, setObjectiveViewMode] = useState<'current' | 'previous'>('current');
+  const [expandedSystem, setExpandedSystem] = useState<string | false>('General');
+  const [activeTreatmentTab, setActiveTreatmentTab] = useState('Medications');
+  const [deletedMedicationIds, setDeletedMedicationIds] = useState<string[]>([]); // Track deleted meds for FHIR update
+  const [layoutMode, setLayoutMode] = useState<'stack' | 'side-by-side'>('stack'); // UI Toggle
+  // Preview Modal State
+  const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
+  const [panelRatio, setPanelRatio] = useState(40); // Percentage for Top Panel in Stack Mode
+  const [isResizing, setIsResizing] = useState(false); // Track dragging state for smooth updates
+  const isDraggingRef = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [openPrescribeModal, setOpenPrescribeModal] = useState(false);
+  // Diagnostic Orders State
+  const [openOrderDialog, setOpenOrderDialog] = useState(false);
+  const [pendingOrders, setPendingOrders] = useState<any[]>([]); // New draft orders not yet saved to FHIR
+
+  // Sample Collection State
+  const [openSampleDialog, setOpenSampleDialog] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+
+  // Result Entry State
+  const [openResultDialog, setOpenResultDialog] = useState(false);
+  const [selectedOrderForResult, setSelectedOrderForResult] = useState<any | null>(null);
+
+  // Responsive Design State
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md')); // < 900px
+  const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg')); // 900px - 1200px
+
+
+  // --- Resizer Handlers ---
+  const handleMouseDown = () => {
+    isDraggingRef.current = true;
+    setIsResizing(true); // Enable "fast mode" (no transitions)
+    document.body.style.cursor = 'row-resize';
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDraggingRef.current || !containerRef.current) return;
+
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const newHeight = e.clientY - containerRect.top;
+    const newRatio = (newHeight / containerRect.height) * 100;
+
+    // Constrain ratio between 10% and 90%
+    if (newRatio > 10 && newRatio < 90) {
+      setPanelRatio(newRatio);
+    }
+  };
+
+  const handleMouseUp = () => {
+    isDraggingRef.current = false;
+    setIsResizing(false); // Re-enable transitions
+    document.body.style.cursor = 'default';
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+  };
+
+  // Date Filter State
+  const [selectedDateFilter, setSelectedDateFilter] = useState<Date>(new Date());
+
+  // Date Picker Ref for correct positioning
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  // We use a specific button ref to anchor the picker
+
+  const datePickerAnchorRef = useRef<HTMLButtonElement>(null);
+
+  // --- Consultants & Attachments State ---
+  const [consultantDialogOpen, setConsultantDialogOpen] = useState(false);
+  const [openAttachDialog, setOpenAttachDialog] = useState(false);
+  const [availableConsultants, setAvailableConsultants] = useState<Consultant[]>([
+    { id: '1', name: 'Dr. Meiardhar', role: 'Neonatologist', isAutoGenerated: true },
+    { id: '2', name: 'Dr. Sharma', role: 'Pediatrician', isAutoGenerated: true },
+    { id: '3', name: 'Dr. Kumar', role: 'Consultant', isAutoGenerated: true },
+    { id: '4', name: 'Dr. Patel', role: 'Senior Resident', isAutoGenerated: true },
+  ]);
+  const [selectedConsultantIds, setSelectedConsultantIds] = useState<string[]>([]);
+  const [consultantSearch, setConsultantSearch] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load Consultants from LocalStorage
+  useEffect(() => {
+    const savedConsultants = localStorage.getItem('available_consultants');
+    if (savedConsultants) {
+      setAvailableConsultants(JSON.parse(savedConsultants));
+    }
+  }, []);
+
+  // Save Consultants to LocalStorage whenever list changes
+  useEffect(() => {
+    localStorage.setItem('available_consultants', JSON.stringify(availableConsultants));
+  }, [availableConsultants]);
+
+
+  const handleOpenConsultants = () => {
+    if (formState) {
+      // Parse current string back to IDs if possible, or just reset. 
+      // Since we stored it as a string name list before, we might need to match names.
+      // For this MVP step, we'll try to match names to IDs.
+      const currentNames = (formState.attendingConsultants || '').split(', ').map(s => s.trim());
+      const matchedIds = availableConsultants.filter(c => currentNames.includes(c.name)).map(c => c.id);
+      setSelectedConsultantIds(matchedIds);
+      setConsultantDialogOpen(true);
+    }
+  };
+
+  const handleToggleConsultant = (id: string) => {
+    setSelectedConsultantIds(prev =>
+      prev.includes(id) ? prev.filter(cid => cid !== id) : [...prev, id]
+    );
+  };
+
+  const handleAddNewConsultant = () => {
+    if (consultantSearch.trim()) {
+      const newConsultant: Consultant = {
+        id: Date.now().toString(),
+        name: consultantSearch.trim(),
+        role: 'Consultant' // Default role
+      };
+      setAvailableConsultants(prev => [...prev, newConsultant]);
+      setSelectedConsultantIds(prev => [...prev, newConsultant.id]);
+      setConsultantSearch(''); // Clear search after adding
+    }
+  };
+
+  const handleSaveConsultants = () => {
+    if (formState) {
+      // Convert Selected IDs back to String Name List for the Note Record
+      const selectedNames = availableConsultants
+        .filter(c => selectedConsultantIds.includes(c.id))
+        .map(c => c.name)
+        .join(', ');
+
+      setFormState({ ...formState, attendingConsultants: selectedNames });
+      setConsultantDialogOpen(false);
+    }
+  };
+
+  const handleAttachClick = () => {
+    setOpenAttachDialog(true);
+  };
+
+  const removeAttachment = (index: number) => {
+    if (formState) {
+      const newAttachments = [...(formState.attachments || [])];
+      newAttachments.splice(index, 1);
+      setFormState({ ...formState, attachments: newAttachments });
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && formState) {
+      const newFiles = Array.from(event.target.files).map(file => ({
+        name: file.name,
+        type: file.type,
+        url: URL.createObjectURL(file)
+      }));
+      setFormState({
+        ...formState,
+        attachments: [...(formState.attachments || []), ...newFiles]
+      });
+    }
+  };
+
+  // Notes List
+  const [notes, setNotes] = useState<NoteData[]>([]);
+
+  // --- FHIR Integration & Persistence ---
+  const FHIR_URL = import.meta.env.VITE_FHIRAPI_URL as string;
+  const FHIR_AUTH = 'Basic ' + btoa('fhiruser:change-password');
+
+  const blobToBase64 = (blobUrl: string): Promise<string> => {
+    return new Promise(async (resolve) => {
+      try {
+        if (!blobUrl) {
+          resolve("");
+          return;
+        }
+        const response = await fetch(blobUrl);
+        if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = () => resolve("");
+        reader.readAsDataURL(blob);
+      } catch (e) {
+        console.warn("Error converting blob to base64:", e);
+        resolve("");
+      }
+    });
+  };
+
+  const uploadAttachmentToFHIR = async (file: { name: string, type: string, url?: string }) => {
+    if (!file.url || !file.url.startsWith('blob:')) return null;
+    try {
+      const base64Full = await blobToBase64(file.url);
+      const base64Data = base64Full.split(',')[1];
+      const response = await fetch(`${FHIR_URL}/Binary`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/fhir+json', 'Authorization': FHIR_AUTH },
+        body: JSON.stringify({ resourceType: 'Binary', contentType: file.type, data: base64Data })
+      });
+      if (!response.ok) throw new Error('Binary upload failed');
+      const data = await response.json();
+      return data.id;
+    } catch (e) {
+      console.error("Upload failed", e);
+      return null;
+    }
+  };
+
+  const saveNoteToFHIR = async (note: NoteData) => {
+    try {
+      let processedAttachments: any[] = [];
+      let contentAttachments: any[] = [];
+
+      if (note.attachments) {
+        for (const att of note.attachments) {
+          let binId = (att as any).binaryId;
+          if (!binId && att.url?.startsWith('blob:')) {
+            binId = await uploadAttachmentToFHIR(att);
+          }
+
+          if (binId) {
+            processedAttachments.push({ ...att, binaryId: binId });
+            contentAttachments.push({
+              attachment: {
+                contentType: att.type,
+                url: `Binary/${binId}`,
+                title: att.name
+              }
+            });
+          } else {
+            processedAttachments.push(att);
+          }
+        }
+      }
+
+      const noteToSave = { ...note, attachments: processedAttachments };
+      const noteTimestamp = note.timestamp ? new Date(note.timestamp).toISOString() : new Date().toISOString();
+      const noteBase64 = btoa(JSON.stringify(noteToSave));
+
+      const docRef = {
+        resourceType: "DocumentReference",
+        status: "current",
+        docStatus: "final",
+        type: { coding: [{ system: "http://loinc.org", code: "11506-3", display: "Progress note" }] },
+        subject: { reference: `Patient/${patient_id}` },
+        date: noteTimestamp,
+        author: [{ display: note.author }],
+        content: [
+          { attachment: { contentType: "application/json", data: noteBase64, title: "Note Data" } },
+          ...contentAttachments
+        ],
+        identifier: [{ system: "urn:oid:clinical-note-id", value: note.id }]
+      };
+
+      const search = await fetch(`${FHIR_URL}/DocumentReference?subject=Patient/${patient_id}&identifier=${note.id}`, {
+        headers: { Authorization: FHIR_AUTH }
+      });
+      const searchRes = await search.json();
+
+      let url = `${FHIR_URL}/DocumentReference`;
+      let method = 'POST';
+
+      if (searchRes.entry && searchRes.entry.length > 0) {
+        url += `/${searchRes.entry[0].resource.id}`;
+        method = 'PUT';
+        (docRef as any).id = searchRes.entry[0].resource.id;
+      }
+
+      await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/fhir+json', Authorization: FHIR_AUTH },
+        body: JSON.stringify(docRef)
+      });
+
+      return noteToSave;
+
+    } catch (e) {
+      console.error("Failed to save note", e);
+      return note;
+    }
+  };
+
+  // Load from FHIR
+  useEffect(() => {
+    if (!patient_id) return;
+    const fetchNotes = async () => {
+      try {
+        const res = await fetch(`${FHIR_URL}/DocumentReference?subject=Patient/${patient_id}&_sort=-date`, {
+          headers: { Authorization: FHIR_AUTH }
+        });
+        const bundle = await res.json();
+        if (bundle.entry) {
+          const loadedNotes = await Promise.all(bundle.entry.map(async (entry: any) => {
+            const content = entry.resource.content;
+            const jsonAtt = content.find((c: any) => c.attachment.contentType === 'application/json');
+            if (jsonAtt && jsonAtt.attachment.data) {
+              try {
+                const note = JSON.parse(atob(jsonAtt.attachment.data));
+                if (note.attachments) {
+                  note.attachments = await Promise.all(note.attachments.map(async (att: any) => {
+                    if (att.binaryId) {
+                      const binRes = await fetch(`${FHIR_URL}/Binary/${att.binaryId}`, { headers: { Authorization: FHIR_AUTH } });
+                      if (binRes.ok) {
+                        const blob = await binRes.blob();
+                        return { ...att, url: URL.createObjectURL(blob) };
+                      }
+                    }
+                    return att;
+                  }));
+                }
+                return note;
+              } catch (e) { return null; }
+            }
+            return null;
+          }));
+          setNotes(loadedNotes.filter(n => n));
+        } else { setNotes([]); }
+      } catch (e) { console.error("Load failed", e); }
+    };
+    fetchNotes();
+  }, [patient_id]);
+
+  // Active Form State
+  const [formState, setFormState] = useState<NoteData | null>(null);
+
+  // Debug Render (Removed)
+
+
+  // --- Computed ---
+
+  const dol = useMemo(() => {
+    if (!birth_date) return '--';
+    const birth = new Date(birth_date);
+    const today = new Date();
+    birth.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const diffTime = today.getTime() - birth.getTime();
+    if (diffTime < 0) return '0';
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  }, [birth_date]);
+
+  // Filter notes based on selectedDateFilter
+  const filteredNotes = useMemo(() => {
+    return notes.filter(note => isSameDay(parseISO(note.timestamp), selectedDateFilter));
+  }, [notes, selectedDateFilter]);
+
+  // --- Helpers ---
+
+  const fetchLatestVitals = async (pid: string) => {
+    console.log("--- DEBUG: fetchLatestVitals START ---");
+    console.log("PID:", pid);
+    try {
+      // Use category=vital-signs to match Trends1.tsx
+      const url = `${FHIR_URL}/Observation?subject=Patient/${pid}&category=vital-signs&_sort=-date&_count=1`;
+      console.log("Fetching URL:", url);
+
+      const res = await fetch(url, {
+        headers: { Authorization: FHIR_AUTH }
+      });
+      console.log("Response Status:", res.status);
+
+      const data = await res.json();
+      console.log("Raw Response Data:", data);
+
+      const result = { hr: '0', spo2: '0', temp: '0', rr: '0' }; // Default to '0'
+
+      if (data.entry && data.entry.length > 0) {
+        const obs = data.entry[0].resource;
+        console.log("Fetched Vitals Obs Resource:", obs);
+
+        if (obs.component) {
+          let foundHr = '0', foundPr = '0', foundRr = '0', foundSpo2 = '0';
+          let foundTempSkin = '0', foundTempCore = '0';
+
+          obs.component.forEach((c: any) => {
+            const coding = c.code?.coding?.[0];
+            const display = coding?.display || c.code?.text || "";
+            const val = c.valueQuantity?.value ?? c.valueString;
+
+            console.log(`Processing Component: Display="${display}", Code="${coding?.code}", Value="${val}"`);
+
+            if (val === undefined || val === null) return;
+
+            const valStr = String(val);
+
+            // Match logic from Trends1.tsx (based on display/code)
+            if (display === "Heart Rate" || c.code?.coding?.some((x: any) => x.code === "8867-4")) {
+              foundHr = valStr;
+              console.log("-> Matched Heart Rate:", valStr);
+            } else if (display === "Pulse Rate" || c.code?.coding?.some((x: any) => x.code === "8888-4")) {
+              foundPr = valStr;
+              console.log("-> Matched Pulse Rate:", valStr);
+            } else if (display === "Respiratory Rate" || c.code?.coding?.some((x: any) => x.code === "9279-1")) {
+              foundRr = valStr;
+              console.log("-> Matched Respiratory Rate:", valStr);
+            } else if (display === "SpO₂" || display === "SpO2" || c.code?.coding?.some((x: any) => x.code === "20564-1")) {
+              foundSpo2 = valStr;
+              console.log("-> Matched SpO2:", valStr);
+            } else if (display === "Skin Temperature" || c.code?.coding?.some((x: any) => x.code === "60839-8" && display.includes("Skin"))) {
+              foundTempSkin = valStr;
+              console.log("-> Matched Skin Temp:", valStr);
+            } else if (display === "Core Temperature" || c.code?.coding?.some((x: any) => x.code === "60839-8" && display.includes("Core"))) {
+              foundTempCore = valStr;
+              console.log("-> Matched Core Temp:", valStr);
+            }
+          });
+
+          // Priorities
+          result.hr = (foundHr !== '0' ? foundHr : foundPr !== '0' ? foundPr : '0');
+          result.rr = foundRr;
+          result.spo2 = foundSpo2;
+          result.temp = (foundTempCore !== '0' ? foundTempCore : foundTempSkin !== '0' ? foundTempSkin : '0');
+
+          console.log("Final Parsed Result:", result);
+        } else {
+          console.log("No components found in observation resource.");
+        }
+      } else {
+        console.log("No observation entries found.");
+      }
+      console.log("--- DEBUG: fetchLatestVitals END ---");
+      return result;
+    } catch (e) {
+      console.error("Error fetching vitals:", e);
+      return { hr: '0', spo2: '0', temp: '0', rr: '0' };
+    }
+  };
+
+  const fetchLatestGrowth = async (pid: string) => {
+    try {
+      const res = await fetch(`${FHIR_URL}/Observation?patient=${pid}&code=8331-1&_sort=-date&_count=1`, {
+        headers: { Authorization: FHIR_AUTH }
+      });
+      const data = await res.json();
+      const result = { weight: '', bsl: '' };
+
+      if (data.entry && data.entry.length > 0) {
+        const obs = data.entry[0].resource;
+        console.log("Fetched Growth Obs:", obs);
+        if (obs.component) {
+          const weightComp = obs.component.find((c: any) => c.code?.text?.includes('Weight') || c.code?.text?.includes('Body weight'));
+          if (weightComp?.valueQuantity?.value) {
+            result.weight = String(weightComp.valueQuantity.value);
+            console.log("Found Weight:", result.weight);
+          }
+
+          // BSL logic (assuming it's still needed from the original code)
+          const bslComp = obs.component.find((c: any) => c.code?.text?.includes('BSL') || c.code?.text?.includes('SUGAR'));
+          if (bslComp?.valueQuantity?.value) {
+            result.bsl = String(bslComp.valueQuantity.value);
+            console.log("Found BSL:", result.bsl);
+          }
+        }
+      }
+      return result;
+    } catch (e) {
+      console.error("Error fetching growth:", e);
+      return { weight: '', bsl: '' };
+    }
+  };
+
+
+
+  // Fetch Orders on Mount (Removed unused fetchPatientOrders)
+
+
+  const createEmptyNote = (lastNote?: NoteData): NoteData => {
+    // Inherit CURRENT values of lastNote as PREVIOUS values of newNote
+    const prevVitals = lastNote
+      ? {
+        tempPrev: lastNote.vitals?.temp || '',
+        hrPrev: lastNote.vitals?.hr || '',
+        rrPrev: lastNote.vitals?.rr || '',
+        bpPrev: lastNote.vitals?.bp || '',
+        spo2Prev: lastNote.vitals?.spo2 || '',
+        bslPrev: lastNote.vitals?.bsl || '',
+        weightPrev: lastNote.vitals?.weight || ''
+      }
+      : {
+        tempPrev: '', hrPrev: '', rrPrev: '', bpPrev: '', spo2Prev: '', bslPrev: '', weightPrev: ''
+      };
+    const newNote: NoteData = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      author: user?.name || 'Dr. Unknown',
+      attendingConsultants: lastNote?.attendingConsultants || 'Dr. Tariq & Dr. Ankit Mittal',
+      attachments: [],
+      historyText: '', // Start fresh
+      selectedConditions: lastNote?.selectedConditions || [], // COPY conditions
+      vitals: {
+        temp: '', hr: '', rr: '', bp: '', spo2: '', bsl: '', weight: '',
+        ...prevVitals
+      },
+      additionalOENotes: '',
+      systemicFindings: SYSTEMIC_SECTIONS.reduce((acc, sys) => ({ ...acc, [sys]: { status: 'NAD', note: '' } }), {}) as SystemicData,
+      medications: [],
+      therapies: [],
+      feedsAndFluids: {
+        enteralFeeds: null,
+        ivFluids: null
+      },
+      injections: [],
+      orders: [] // Initialize with empty orders array for new notes
+    };
+    return newNote;
+  };
+
+  // --- Handlers ---
+
+  const handleAddNewNote = async () => {
+    const lastNote = notes.length > 0 ? notes[0] : undefined;
+
+    // Switch filter to Today so the new note is visible
+    setSelectedDateFilter(new Date());
+
+    const emptyNote = createEmptyNote(lastNote);
+
+    // Clear any pending orders from previous editing session
+    setPendingOrders([]);
+
+    // Immediately set form state and enter editing mode for instant UI response
+    setFormState(emptyNote);
+    setIsEditing(true);
+
+    // Auto-populate Vitals and Growth data in the background
+    try {
+      const targetId = patient_resource_id || patient_id;
+      const [vitals, growth] = await Promise.all([
+        fetchLatestVitals(targetId),
+        fetchLatestGrowth(targetId)
+      ]);
+
+      // Update form state with fetched data (if component is still mounted)
+      setFormState(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          vitals: {
+            ...prev.vitals,
+            hr: vitals.hr || prev.vitals.hr,
+            spo2: vitals.spo2 || prev.vitals.spo2,
+            temp: vitals.temp || prev.vitals.temp,
+            rr: vitals.rr || prev.vitals.rr,
+            weight: growth.weight || prev.vitals.weight,
+            bsl: growth.bsl || prev.vitals.bsl,
+          }
+        };
+      });
+
+    } catch (e) {
+      console.error("Failed to auto-fetch external data", e);
+    }
+  };
+
+  const handleEditNote = (note: NoteData) => {
+    // Migrate legacy systemic findings to new structure
+    const migratedSystemic = SYSTEMIC_SECTIONS.reduce((acc, sys) => {
+      let data = note.systemicFindings?.[sys];
+
+      // Fallback for renamed keys
+      if (!data && note.systemicFindings) {
+        if (sys === 'Cardiovascular' && note.systemicFindings['CVS']) data = note.systemicFindings['CVS'];
+        else if (sys === 'Gastrointestinal & Abdomen' && note.systemicFindings['Abdomen']) data = note.systemicFindings['Abdomen'];
+        else if (sys === 'Central Nervous System' && note.systemicFindings['CNS']) data = note.systemicFindings['CNS'];
+        else if (sys === 'Musculoskeletal' && note.systemicFindings['MSK / Skin']) data = note.systemicFindings['MSK / Skin'];
+      }
+
+      // Initialize if missing or incomplete
+      if (!data) {
+        data = { status: 'NAD', note: '', selectedConditions: [], conditionDescriptions: {} };
+      } else {
+        // Ensure new fields exist
+        if (!data.selectedConditions) data.selectedConditions = [];
+        if (!data.conditionDescriptions) data.conditionDescriptions = {};
+      }
+
+      acc[sys] = data;
+      return acc;
+    }, {} as SystemicData);
+
+    setFormState({ ...note, systemicFindings: migratedSystemic });
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    if (window.confirm('Are you sure you want to discard changes?')) {
+      setIsEditing(false);
+      setFormState(null);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!formState) return;
+
+    // 🛑 NEW: Save any pending medications to FHIR before saving the note
+    const updatedMedications = [...formState.medications];
+    let medsChanged = false;
+
+    // We use a for-loop to allow awaiting async calls sequentially
+    for (let i = 0; i < updatedMedications.length; i++) {
+      const med = updatedMedications[i];
+      if (med.pendingPrescriptionData) {
+        try {
+          console.log(`💊 Saving pending medication: ${med.name}`);
+          const response = await fetch(`${FHIR_URL}/MedicationRequest`, {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json', 'Authorization': FHIR_AUTH },
+            body: JSON.stringify(med.pendingPrescriptionData),
+          });
+
+          if (response.ok) {
+            const text = await response.text();
+            const savedResource = text ? JSON.parse(text) : {};
+            console.log("✅ Saved med:", savedResource.id);
+
+            // Remove the pending payload so we don't store it in the note blob
+            // We could also store the FHIR ID here if needed: med.fhirId = savedResource.id
+            med.fhirId = savedResource.id; // Store FHIR ID
+            delete med.pendingPrescriptionData;
+            medsChanged = true;
+          } else {
+            console.error(`Failed to save medication ${med.name}`);
+            alert(`Failed to save medication: ${med.name}. It will be saved in the note but not as a separate order.`);
+            // We choose NOT to delete pending data so logic could retry? 
+            // For now, let's leave it, but it might bloat the note. 
+            // Better to maybe strip it if we want to enforce consistency? 
+            // Let's just alert.
+          }
+        } catch (e) {
+          console.error(`Error saving medication ${med.name}`, e);
+          alert(`Error saving medication: ${med.name}`);
+        }
+      }
+    }
+
+    // Process Deletions
+    if (deletedMedicationIds.length > 0) {
+      console.log("🗑 Processing deleted medications:", deletedMedicationIds);
+      for (const fhirId of deletedMedicationIds) {
+        try {
+          // Ideally we update status to 'entered-in-error' or 'stopped'
+          // checking if we should DELETE or PUT. Let's try PUTting an update if we knew the resource, 
+          // but we just have ID. Simplest is DELETE or Patch. 
+          // Let's try DELETE for now as per user request to "remove" it.
+          const deleteResponse = await fetch(`${FHIR_URL}/MedicationRequest/${fhirId}`, {
+            method: "DELETE",
+            headers: { 'Authorization': FHIR_AUTH },
+          });
+          if (deleteResponse.ok) {
+            console.log(`✅ Deleted med: ${fhirId}`);
+          } else {
+            console.error(`Failed to delete med: ${fhirId}`);
+          }
+        } catch (e) {
+          console.error(`Error deleting med: ${fhirId}`, e);
+        }
+      }
+      // Clear deleted IDs after processing
+      setDeletedMedicationIds([]);
+    }
+
+    // Create a cleanup copy if we modified objects (delete mutates)
+    // Process Pending Orders
+    // IMPORTANT: Start with orders from the current note, NOT all orders from FHIR
+    let finalOrders = [...(formState.orders || [])];
+
+    if (pendingOrders.length > 0) {
+      console.log("Processing pending orders:", pendingOrders.length);
+      try {
+        const orderPromises = pendingOrders.map(async (order) => {
+          // Remove temp ID before saving
+          const { id, ...rest } = order;
+
+          // Ensure dates are current at time of saving
+          const finalOrder = {
+            ...rest,
+            resourceType: 'DiagnosticReport',
+            status: 'registered',
+            effectiveDateTime: new Date().toISOString(),
+            issued: new Date().toISOString(),
+            performer: [{ display: user?.name || "Dr. System" }]
+          };
+
+          console.log("Saving order to FHIR:", finalOrder);
+
+          const res = await fetch(`${FHIR_URL}/DiagnosticReport`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/fhir+json',
+              'Authorization': FHIR_AUTH
+            },
+            body: JSON.stringify(finalOrder)
+          });
+
+          if (!res.ok) {
+            const errorText = await res.text();
+            console.error("FHIR POST failed:", res.status, errorText);
+            throw new Error(`FHIR Error (${res.status}): ${errorText}`);
+          }
+
+          // Handle empty responses
+          const responseText = await res.text();
+          if (!responseText || responseText.trim() === '') {
+            console.log("Empty response from FHIR, using sent order");
+            return finalOrder;
+          }
+
+          try {
+            const savedOrder = JSON.parse(responseText);
+            console.log("Order saved successfully:", savedOrder);
+            return savedOrder;
+          } catch (parseError) {
+            console.error("Failed to parse FHIR response:", responseText);
+            // Return the order we sent if we can't parse the response
+            return finalOrder;
+          }
+        });
+
+        const savedNewOrders = await Promise.all(orderPromises);
+        console.log("✅ All pending orders saved:", savedNewOrders.length);
+
+        // Add new orders to the list for the note snapshot
+        finalOrders = [...finalOrders, ...savedNewOrders];
+
+        setPendingOrders([]); // Clear pending queue
+      } catch (e) {
+        console.error("Error saving pending orders:", e);
+        alert(`Failed to save orders: ${e instanceof Error ? e.message : 'Unknown error'}`);
+        return; // Don't save the note if orders failed to save
+      }
+    }
+
+    // Include orders in the note to save
+    const noteToSave = {
+      ...(medsChanged ? { ...formState, medications: updatedMedications } : formState),
+      orders: finalOrders
+    };
+
+    const savedNote = await saveNoteToFHIR(noteToSave);
+    if (!savedNote) return;
+
+    setNotes(prev => {
+      const existingIndex = prev.findIndex(n => n.id === savedNote.id);
+      let updated;
+      if (existingIndex >= 0) {
+        updated = [...prev];
+        updated[existingIndex] = savedNote;
+      } else {
+        updated = [savedNote, ...prev];
+      }
+      return updated;
+    });
+
+    setIsEditing(false);
+    setFormState(null);
+    // Refresh lists
+    // if (patient_resource_id || patient_id) {
+    //   fetchPatientOrders(patient_resource_id || patient_id);
+    // }
+  };
+
+  const handleCopyNote = (noteToCopy: NoteData) => {
+    // 1. Create a copy with a new ID and current timestamp
+    const copiedNote: NoteData = {
+      ...noteToCopy,
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      author: user?.name || 'Unknown',
+      vitals: {
+        ...noteToCopy.vitals,
+        // Shift Current Current values to Previous values for the new draft
+        tempPrev: noteToCopy.vitals?.temp || '',
+        hrPrev: noteToCopy.vitals?.hr || '',
+        rrPrev: noteToCopy.vitals?.rr || '',
+        bpPrev: noteToCopy.vitals?.bp || '',
+        spo2Prev: noteToCopy.vitals?.spo2 || '',
+        bslPrev: noteToCopy.vitals?.bsl || '',
+        weightPrev: noteToCopy.vitals?.weight || ''
+      }
+    };
+
+    // 2. Switch date filter to today so the editor is visible
+    setSelectedDateFilter(new Date());
+
+    // 3. Clear any pending queues to avoid cross-contamination
+    setPendingOrders([]);
+    setDeletedMedicationIds([]);
+
+    // 4. Set form state and enter edit mode
+    setFormState(copiedNote);
+    setIsEditing(true);
+  };
+
+  const handleDownloadPDF = async () => {
+    // Convert all attachment images to base64
+    const notesWithBase64 = await Promise.all(
+      filteredNotes.map(async (note) => {
+        if (!note.attachments?.length) return { ...note, attachmentsBase64: [] };
+
+        const attachmentsBase64 = await Promise.all(
+          note.attachments.map(async (att) => ({
+            ...att,
+            base64: att.type?.startsWith('image/') ? await blobToBase64(att.url || '') : ''
+          }))
+        );
+
+        return { ...note, attachmentsBase64 };
+      })
+    );
+
+    const formatDose = (dose: string) => {
+      if (!dose) return '-';
+      return dose.replace(/(\d+(\.\d+)?)/g, (match) => {
+        const num = parseFloat(match);
+        if (isNaN(num)) return match;
+        return Number(num.toFixed(2)).toString();
+      });
+    };
+
+    // Create a clean HTML document with only the notes
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Please allow popups to download PDF');
+      return;
+    }
+
+    // Generate clean HTML for the notes
+    const notesHTML = notesWithBase64.map((note: any) => `
+      <div class="report-container">
+        <!-- Header -->
+        <div class="header">
+           <div class="header-left">
+              <h1 class="brand-title">CLINICAL NOTES</h1>
+              <div class="brand-subtitle">NICU REPORT</div>
+           </div>
+           <div class="header-right">
+              <div class="meta-item"><strong>Date:</strong> ${note.timestamp ? format(parseISO(note.timestamp), 'MMM d, yyyy') : '--'}</div>
+              <div class="meta-item"><strong>Time:</strong> ${note.timestamp ? format(parseISO(note.timestamp), 'hh:mm a') : '--:--'}</div>
+              <div class="meta-item"><strong>Author:</strong> ${note.author}</div>
+           </div>
+        </div>
+
+        <!-- Patient Details -->
+        <table class="patient-table">
+          <tr>
+             <td width="50%">
+                <div class="label">PATIENT NAME</div>
+                <div class="value">${patient_name}</div>
+             </td>
+             <td width="25%">
+                <div class="label">MRN</div>
+                <div class="value">${patient_id}</div>
+             </td>
+             <td width="25%">
+                <div class="label">LOCATION</div>
+                <div class="value">${location || 'N/A'}</div>
+             </td>
+          </tr>
+          <tr>
+             <td>
+                <div class="label">GA</div>
+                <div class="value">${gestational_age || 'N/A'}</div>
+             </td>
+             <td>
+                <div class="label">DOL</div>
+                <div class="value">${dol}</div>
+             </td>
+             <td><!-- Empty cell --></td>
+          </tr>
+        </table>
+        
+        <!-- Patient History -->
+        <div class="section">
+           <div class="section-title">PATIENT HISTORY</div>
+           <div class="history-content">
+             ${note.historyText ? `<div style="margin-bottom:8px;"><strong>History:</strong> ${note.historyText}</div>` : ''}
+             <div><strong>Conditions:</strong> ${note.selectedConditions?.length > 0 ? note.selectedConditions.join(', ') : 'None'}</div>
+           </div>
+        </div>
+        
+        <!-- Vitals -->
+        <div class="section">
+           <div class="section-title">OBJECTIVE (O/E)</div>
+           <table class="data-table vitals-table">
+             <thead>
+               <tr>
+                 <th>TEMP</th><th>HR</th><th>RR</th><th>BP</th><th>SPO2</th><th>BSL</th><th>WEIGHT</th>
+               </tr>
+             </thead>
+             <tbody>
+               <tr>
+                 <td>${note.vitals?.temp || '-'} °C</td>
+                 <td>${note.vitals?.hr || '-'} bpm</td>
+                 <td>${note.vitals?.rr || '-'} /min</td>
+                 <td>${note.vitals?.bp || '-'}</td>
+                 <td>${note.vitals?.spo2 || '-'} %</td>
+                 <td>${note.vitals?.bsl || '-'} mg/dL</td>
+                 <td>${note.vitals?.weight || '-'} g</td>
+               </tr>
+             </tbody>
+           </table>
+           ${note.additionalOENotes ? `<div class="additional-notes"><strong>Additional O/E Notes:</strong> ${note.additionalOENotes}</div>` : ''}
+        </div>
+
+        <!-- Systemic Review -->
+        <div class="section">
+           <div class="section-title">SYSTEMIC REVIEW</div>
+           <table class="data-table systemic-table">
+             <thead>
+               <tr><th width="20%">System</th><th width="15%">Status</th><th>Findings / Notes</th></tr>
+             </thead>
+             <tbody>
+                ${(() => {
+        const abnormalSystems = SYSTEMIC_SECTIONS.filter(sys => {
+          const data = note.systemicFindings?.[sys];
+          return data && data.status !== 'NAD';
+        });
+
+        if (abnormalSystems.length === 0) {
+          return `<tr><td colspan="3" style="text-align:center; color:#64748b; font-style:italic; padding:15px;">All systems are NAD.</td></tr>`;
+        }
+
+        const abnormalRows = abnormalSystems.map(sys => {
+          const data = note.systemicFindings?.[sys];
+          let badgeClass = 'badge-nad';
+          if (data.status === 'Abnormal') badgeClass = 'badge-abnormal';
+          else if (data.status === 'Mild' || data.status === 'Improved') badgeClass = 'badge-warning';
+
+          const conditions = data.selectedConditions?.map((c: string) => {
+            const desc = data.conditionDescriptions?.[c] ? ` <span class="text-muted">(${data.conditionDescriptions[c]})</span>` : '';
+            return `<div>• <strong>${c}</strong>${desc}</div>`;
+          }).join('') || '';
+
+          const noteText = data.note ? `<div class="note-text"><em>Note: ${data.note}</em></div>` : '';
+          const content = conditions + noteText || '-';
+
+          return `<tr>
+                      <td><strong>${sys}</strong></td>
+                      <td><span class="badge ${badgeClass}">${data.status}</span></td>
+                      <td>${content}</td>
+                    </tr>`;
+        }).join('');
+
+        const othersNadRow = (SYSTEMIC_SECTIONS.length > abnormalSystems.length)
+          ? `<tr><td colspan="3" style="text-align:center; color:#94a3b8; font-size:9pt; padding:8px;">All others are NAD</td></tr>`
+          : '';
+
+        return abnormalRows + othersNadRow;
+      })()}
+             </tbody>
+           </table>
+        </div>
+
+        <!-- Treatments -->
+        <div class="section">
+           <div class="section-title">TREATMENTS & ADVICE</div>
+           
+           ${note.medications?.length > 0 ? `
+             <div class="subsection">
+               <div class="subsection-title">Medications</div>
+               <table class="data-table">
+                 <thead><tr><th>Drug Name</th><th>Dose</th><th>Frequency</th><th>Route</th></tr></thead>
+                 <tbody>
+                   ${note.medications.map((m: any) => `<tr>
+                     <td><strong>${m.name}</strong></td>
+                     <td>${formatDose(m.dose)}</td>
+                     <td>${m.frequency || '-'}</td>
+                     <td>${m.route || '-'}</td>
+                   </tr>`).join('')}
+                 </tbody>
+               </table>
+             </div>` : ''}
+
+           ${note.injections?.length > 0 ? `
+             <div class="subsection">
+               <div class="subsection-title">Injections</div>
+               <table class="data-table">
+                 <thead><tr><th>Name</th><th>Time</th><th>Site</th></tr></thead>
+                 <tbody>
+                   ${note.injections.map((i: any) => `<tr>
+                     <td><strong>${i.name}</strong></td>
+                     <td>${i.time}</td>
+                     <td>${i.site}</td>
+                   </tr>`).join('')}
+                 </tbody>
+               </table>
+             </div>` : ''}
+
+           ${(note.feedsAndFluids?.enteralFeeds || note.feedsAndFluids?.ivFluids) ? `
+             <div class="subsection">
+               <div class="subsection-title">Feeds & Fluids</div>
+               <table class="data-table">
+                 ${note.feedsAndFluids.enteralFeeds ? `<tr><td><strong>Enteral Feeds</strong></td><td>${note.feedsAndFluids.enteralFeeds.mode} - ${note.feedsAndFluids.enteralFeeds.volumeFreq}</td></tr>` : ''}
+                 ${note.feedsAndFluids.ivFluids ? `<tr><td><strong>IV Fluids</strong></td><td>${note.feedsAndFluids.ivFluids.type} ${note.feedsAndFluids.ivFluids.electrolytes ? `(${note.feedsAndFluids.ivFluids.electrolytes})` : ''}</td></tr>` : ''}
+               </table>
+             </div>` : ''}
+
+           ${note.therapies?.length > 0 ? `
+             <div class="subsection">
+               <div class="subsection-title">Therapies</div>
+               <ul class="bullet-list">
+                 ${note.therapies.map((t: any) => `<li><strong>${t.type}</strong>: ${t.details}</li>`).join('')}
+               </ul>
+             </div>` : ''}
+
+           ${note.orders?.length > 0 ? `
+             <div class="subsection">
+               <div class="subsection-title">Orders</div>
+               <table class="data-table">
+                 <thead><tr><th>Test</th><th>Status</th><th>Details</th></tr></thead>
+                 <tbody>
+                   ${note.orders.map((o: any) => `<tr>
+                     <td><strong>${o.code?.text || 'Order'}</strong></td>
+                     <td><span class="badge ${o.status === 'final' ? 'badge-success' : 'badge-warning'}">${o.status}</span></td>
+                     <td>${o.conclusion || '-'}</td>
+                   </tr>`).join('')}
+                 </tbody>
+               </table>
+             </div>` : ''}
+        </div>
+        
+        <!-- Attachments -->
+        ${note.attachmentsBase64?.length > 0 ? `
+        <div class="section avoid-break">
+           <div class="section-title">ATTACHMENTS</div>
+           <div class="attachments-grid">
+             ${note.attachmentsBase64.map((a: any) => `
+               <div class="attachment-item">
+                 ${a.base64 ? `<img src="${a.base64}" />` : `<div>📎 Attachment</div>`}
+               </div>
+             `).join('')}
+           </div>
+        </div>` : ''}
+
+        <div class="footer">
+           Attending Consultants: ${note.attendingConsultants || 'Not specified'}
+        </div>
+      </div>
+    `).join('<div class="page-break"></div>');
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Clinical Notes - ${format(selectedDateFilter, 'dd MMM yyyy')}</title>
+        <style>
+          @page { margin: 15mm; size: A4; }
+          body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10pt; line-height: 1.4; color: #333; margin: 0; padding: 0; }
+          .report-container { padding: 20px; max-width: 210mm; margin: 0 auto; }
+          
+          /* Header */
+          .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #3b82f6; padding-bottom: 15px; margin-bottom: 20px; }
+          .brand-title { font-size: 18pt; color: #1e40af; margin: 0; font-weight: 800; letter-spacing: -0.5px; }
+          .brand-subtitle { font-size: 10pt; color: #64748b; font-weight: 600; letter-spacing: 1px; margin-top: 4px; }
+          .header-right { text-align: right; font-size: 9pt; }
+          .meta-item { margin-bottom: 3px; }
+
+          /* Typography */
+          .section-title { font-size: 12pt; font-weight: 700; color: #1e40af; border-bottom: 1px solid #cbd5e1; margin: 25px 0 10px 0; padding-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+          .subsection-title { font-size: 10pt; font-weight: 700; color: #475569; margin: 15px 0 8px 0; text-transform: uppercase; }
+          .history-content { font-size: 10pt; color: #333; margin-bottom: 10px; }
+          .label { font-size: 7pt; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+          .value { font-size: 10pt; font-weight: 500; color: #0f172a; }
+
+          /* Tables */
+          .patient-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-bottom: 10px; }
+          .patient-table td { vertical-align: top; }
+          
+          .data-table { width: 100%; border-collapse: collapse; font-size: 9pt; margin-bottom: 10px; }
+          .data-table th { background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 8pt; }
+          .data-table td { border: 1px solid #e2e8f0; padding: 6px 8px; vertical-align: top; }
+          
+          /* Badges */
+          .badge { padding: 2px 6px; border-radius: 4px; font-size: 7.5pt; font-weight: 700; text-transform: uppercase; display: inline-block; }
+          .badge-nad { background: #f1f5f9; color: #64748b; }
+          .badge-abnormal { background: #fee2e2; color: #991b1b; }
+          .badge-warning { background: #ffedd5; color: #9a3412; }
+          .badge-success { background: #dcfce7; color: #166534; }
+
+          /* Misc */
+          .additional-notes { background: #f8fafc; padding: 10px; border-left: 3px solid #64748b; font-size: 9pt; margin-top: 5px; }
+          .bullet-list { padding-left: 20px; margin: 5px 0; }
+          .bullet-list li { margin-bottom: 4px; }
+          .page-break { page-break-after: always; }
+          .avoid-break { page-break-inside: avoid; }
+          
+          .attachments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 10px; }
+          .attachment-item { border: 1px solid #e2e8f0; padding: 5px; text-align: center; }
+          .attachment-item img { max-width: 100%; height: auto; display: block; }
+          .footer { margin-top: 30px; border-top: 1px dashed #cbd5e1; padding-top: 10px; font-size: 8pt; color: #94a3b8; text-align: center; }
+        </style>
+      </head>
+      <body>${notesHTML || '<p style="text-align:center; color:#999;">No notes found for this date.</p>'}</body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+
+    // Wait for content to load, then print
+    printWindow.onload = () => {
+      printWindow.print();
+    };
+  };
+
+  // Form Field Updaters
+  const updateFormCondition = (condition: string) => {
+    if (!formState) return;
+    const prev = formState.selectedConditions;
+    const newList = prev.includes(condition) ? prev.filter(c => c !== condition) : [...prev, condition];
+    setFormState({ ...formState, selectedConditions: newList });
+  };
+  const updateFormHistory = (text: string) => { if (formState) setFormState({ ...formState, historyText: text }); };
+  const updateFormVital = (field: keyof VitalsData, value: string) => { if (formState) setFormState({ ...formState, vitals: { ...formState.vitals, [field]: value } }); };
+  const updateFormSystemicStatus = (system: string, status: string) => { if (formState && status) setFormState({ ...formState, systemicFindings: { ...formState.systemicFindings, [system]: { ...formState.systemicFindings[system], status } } }); };
+
+
+  // Handle prescription confirmation from PrescriptionScreen
+  const handlePrescriptionConfirm = (prescription: any) => {
+    if (formState) {
+      const newMedication = {
+        id: Date.now(),
+        name: prescription.drug,
+        dose: prescription.dose,
+        frequency: prescription.frequency,
+        route: prescription.route,
+        status: 'ACTIVE',
+        pendingPrescriptionData: prescription.pendingPrescriptionData
+      };
+      setFormState({
+        ...formState,
+        medications: [...formState.medications, newMedication]
+      });
+    }
+  };
+
+  const addMedication = () => {
+    setOpenPrescribeModal(true);
+  };
+  const removeMedication = (id: number) => {
+    if (!formState) return;
+
+    // Find the medication to check if it has a stored FHIR ID (we will need to store this on save)
+    // For now, if we are removing a pending one, we just remove it. 
+    // If we are removing one that was part of a previous save, we might need to track it.
+    // However, the current `id` is just a timestamp for new ones, but might be different for fetched ones?
+    // Let's assume for now we just track it. But wait, `id` in `medications` is number (timestamp).
+    // We need to know if it has a real FHIR ID. 
+    // Let's look at how medications are loaded. 
+    // If it's a new medication, it won't have a FHIR ID yet (or `id` is timestamp).
+    // If it's existing, does it have a FHIR ID?
+
+    // Let's just track the ID for now, and in handleSave we will filter.
+    // Actually, we need to inspect the object being removed.
+    const medToRemove = formState.medications.find(m => m.id === id);
+    if (medToRemove) {
+      if (medToRemove.fhirId) {
+        console.log(`🗑 Marking medication for deletion: ${medToRemove.name} (FHIR ID: ${medToRemove.fhirId})`);
+        setDeletedMedicationIds(prev => [...prev, medToRemove.fhirId!]);
+      } else {
+        console.warn(`⚠️ Removing medication ${medToRemove.name} but it has NO FHIR ID.It will be removed from the note but cannot be deleted from the server.`);
+      }
+    }
+
+    setFormState({ ...formState, medications: formState.medications.filter(m => m.id !== id) });
+  };
+
+  const handleAddPendingOrders = (orders: any[]) => {
+    // Add to pending state
+    // We add a temp ID if needed, but FHIR layout doesn't use it much. 
+    // Let's add a temp 'id' for React keys
+    const newOrders = orders.map(o => ({ ...o, id: `temp-${Date.now()}-${Math.random()}` }));
+    setPendingOrders([...pendingOrders, ...newOrders]);
+    setOpenOrderDialog(false);
+  };
+
+  const handleDeleteOrder = async (order: any) => {
+    if (order.id && String(order.id).startsWith('temp-')) {
+      // It's a pending order, just remove from state
+      setPendingOrders(prev => prev.filter(o => o.id !== order.id));
+    } else {
+      // It's a saved FHIR order. We should delete it.
+      if (confirm(`Are you sure you want to delete this ${order.code?.text} order?`)) {
+        try {
+          const res = await fetch(`${FHIR_URL}/DiagnosticReport/${order.id}`, {
+            method: 'DELETE',
+            headers: { Authorization: FHIR_AUTH }
+          });
+          if (res.ok) {
+            // Re-fetch or update state if needed, but fetchPatientOrders is removed.
+            // For now, we'll just alert or assume the UI will reflect changes on next load if diagnosticOrders state is gone.
+            alert("Order deleted successfully.");
+          } else {
+            alert("Failed to delete order from server.");
+          }
+        } catch (e) {
+          console.error("Error deleting order", e);
+          alert("Error deleting order.");
+        }
+      }
+    }
+  };
+
+  // --- Render Component for Note Card ---
+  const renderNoteCard = (note: NoteData, isPreview = false) => (
+    <Paper
+      key={note.id}
+      className={`note - card ${!isPreview ? 'printable-card' : ''} `}
+      elevation={0}
+      sx={{
+        borderRadius: '16px',
+        border: '1px solid #e2e8f0',
+        bgcolor: '#fff',
+        p: 3,
+        position: 'relative',
+        height: isPreview && !isEditing ? '100%' : 'auto', // If just viewing list, auto height. If preview pane, 100% of parent
+        overflowY: isPreview ? 'visible' : 'visible', // Inner scroll handled by parent if needed? 
+        mb: isPreview ? 0 : 3,
+        breakInside: 'avoid',
+        pageBreakInside: 'avoid'
+      }}
+    >
+      {/* Card Content with data checks to avoid crashes */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          {/* Time & Date Block */}
+          <Stack spacing={0} sx={{ alignItems: 'center' }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', lineHeight: 1 }}>
+              {note.timestamp ? format(parseISO(note.timestamp), 'hh:mm a') : '--:--'}
+            </Typography>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', fontSize: '0.7rem' }}>
+              {note.timestamp ? format(parseISO(note.timestamp), 'MMM d') : '--'}
+            </Typography>
+          </Stack>
+
+          <Divider orientation="vertical" flexItem sx={{ borderRightWidth: 2, borderColor: '#e2e8f0', height: '30px', alignSelf: 'center' }} />
+
+          {/* Author Name */}
+          <Typography variant="body1" sx={{ fontWeight: 600, color: '#334155' }}>
+            {note.author}
+          </Typography>
+        </Box>
+
+        {/* Action Buttons */}
+        {!isEditing && (
+          <Box className="no-print" sx={{ display: 'flex', gap: 1 }}>
+            <IconButton
+              onClick={() => handleCopyNote(note)}
+              size="small"
+              sx={{ bgcolor: '#eff6ff', color: '#3b82f6', borderRadius: '8px', border: '1px solid #dbeafe', '&:hover': { bgcolor: '#dbeafe' } }}
+            >
+              <ContentCopyIcon fontSize="small" sx={{ fontSize: '1.1rem' }} />
+            </IconButton>
+            <IconButton
+              onClick={() => handleEditNote(note)}
+              size="small"
+              sx={{ bgcolor: '#eff6ff', color: '#3b82f6', borderRadius: '8px', border: '1px solid #dbeafe', '&:hover': { bgcolor: '#dbeafe' } }}
+            >
+              <EditIcon fontSize="small" sx={{ fontSize: '1.1rem' }} />
+            </IconButton>
+          </Box>
+        )}
+      </Box>
+
+      {/* Patient Details */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#3b82f6', mb: 1.5, textTransform: 'uppercase' }}><strong>PATIENT DETAILS</strong></Typography>
+        <Typography variant="body2" sx={{ color: '#334155', mb: 1 }}>
+          <span style={{ color: '#64748b' }}>Patient:</span> <b>{patient_name}</b> <span style={{ color: '#cbd5e1', margin: '0 8px' }}>|</span> <span style={{ color: '#64748b' }}>MRN:</span> {patient_id}
+        </Typography>
+        <Typography variant="body2" sx={{ color: '#334155' }}>
+          <span style={{ color: '#64748b' }}>DOL:</span> {dol} <span style={{ color: '#cbd5e1', margin: '0 8px' }}>|</span> <span style={{ color: '#64748b' }}>GA:</span> {gestational_age || '--'} <span style={{ color: '#cbd5e1', margin: '0 8px' }}>|</span> <span style={{ color: '#64748b' }}>Location:</span> {location || '--'} {location?.includes('NICU') ? '' : ''}
+        </Typography>
+      </Box>
+
+      {/* Conditions */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#3b82f6', mb: 1.5, textTransform: 'uppercase' }}><strong>CONDITIONS & HISTORY</strong></Typography>
+        <Box sx={{ mb: 1.5 }}>
+          <Typography variant="body2" sx={{ color: '#64748b', display: 'inline', mr: 1 }}>History:</Typography>
+          <Typography variant="body2" sx={{ color: '#334155', display: 'inline' }}>{note.historyText || '(No history entered)'}</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          <Typography variant="body2" sx={{ color: '#64748b' }}>Conditions:</Typography>
+          {note.selectedConditions && note.selectedConditions.length > 0 ? note.selectedConditions.map(c => (
+            <Chip key={c} label={c} size="small" sx={{ borderRadius: '6px', fontWeight: 600, bgcolor: '#f1f5f9', color: '#475569' }} />
+          )) : <Typography variant="caption" sx={{ color: '#cbd5e1', fontStyle: 'italic' }}>None selected</Typography>}
+        </Box>
+      </Box>
+
+      {/* O/E */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5, alignItems: 'center' }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase' }}><strong>OBJECTIVE (O/E)</strong></Typography>
+          <Stack direction="row" spacing={0} sx={{ bgcolor: '#f1f5f9', borderRadius: '8px', p: 0.5 }} className="no-print">
+            <Box onClick={() => setObjectiveViewMode('previous')} sx={{ cursor: 'pointer', px: 1.5, py: 0.5, borderRadius: '6px', bgcolor: objectiveViewMode === 'previous' ? '#fff' : 'transparent', boxShadow: objectiveViewMode === 'previous' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none' }}>
+              <Typography variant="caption" sx={{ color: objectiveViewMode === 'previous' ? '#0f172a' : '#94a3b8', fontWeight: 700 }}>◯ PREVIOUS</Typography>
+            </Box>
+            <Box onClick={() => setObjectiveViewMode('current')} sx={{ cursor: 'pointer', px: 1.5, py: 0.5, borderRadius: '6px', bgcolor: objectiveViewMode === 'current' ? '#fff' : 'transparent', boxShadow: objectiveViewMode === 'current' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none' }}>
+              <Typography variant="caption" sx={{ color: objectiveViewMode === 'current' ? '#3b82f6' : '#94a3b8', fontWeight: 700 }}>● CURRENT</Typography>
+            </Box>
+          </Stack>
+        </Box>
+        <Paper elevation={0} sx={{ bgcolor: '#fcfcfc', border: '1px solid #f1f5f9', borderRadius: '12px' }}>
+          <Grid container>
+            {[
+              { label: 'TEMP', val: note.vitals?.temp, prev: note.vitals?.tempPrev, unit: '°C' },
+              { label: 'HR', val: note.vitals?.hr, prev: note.vitals?.hrPrev, unit: 'bpm', alert: parseInt(note.vitals?.hr || '0') > 140 },
+              { label: 'RR', val: note.vitals?.rr, prev: note.vitals?.rrPrev, unit: '/min' },
+              { label: 'BP', val: note.vitals?.bp, prev: note.vitals?.bpPrev, unit: '' },
+              { label: 'SPO2', val: note.vitals?.spo2, prev: note.vitals?.spo2Prev, unit: '%' },
+              { label: 'BSL', val: note.vitals?.bsl, prev: note.vitals?.bslPrev, unit: 'mg/dL' },
+              { label: 'WEIGHT', val: note.vitals?.weight ? note.vitals.weight + 'g' : '', prev: note.vitals?.weightPrev, unit: '', isWeight: true },
+            ].map((item, index) => (
+              <Grid item xs={12 / 7} key={item.label} sx={{ borderRight: index !== 6 ? '1px solid #f1f5f9' : 'none', p: 1.5 }}>
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 700, color: '#475569', display: 'block', mb: 0.5 }}>{item.label}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: item.alert ? '#ef4444' : item.isWeight ? '#3b82f6' : '#0f172a', lineHeight: 1, fontSize: '0.9rem' }}>
+                  {item.val || '-'} <span style={{ fontSize: '0.7em', fontWeight: 500 }}>{item.unit}</span>
+                </Typography>
+                {(objectiveViewMode === 'previous') && (
+                  <Typography variant="caption" sx={{ color: item.isWeight ? '#10b981' : '#94a3b8', mt: 0.5, display: 'block', fontSize: '0.65rem', fontWeight: item.isWeight ? 600 : 400 }}>
+                    {item.prev || '-'}
+                  </Typography>
+                )}
+              </Grid>
+            ))}
+          </Grid>
+        </Paper>
+      </Box>
+
+      {/* Additional O/E Notes */}
+      {note.additionalOENotes && (
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', mb: 1.5, display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}><strong>ADDITIONAL O/E NOTES</strong></Typography>
+          <Paper elevation={0} sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <Typography variant="body2" sx={{ color: '#334155', whiteSpace: 'pre-wrap' }}>{note.additionalOENotes}</Typography>
+          </Paper>
+        </Box>
+      )}
+
+      {/* Systemic */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', mb: 1.5, display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}><strong>SYSTEMIC REVIEW</strong></Typography>
+        {/* Systemic Review - Vertical List Layout */}
+        <Box sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
+          {(() => {
+            const abnormalSystems = SYSTEMIC_SECTIONS.filter(sys => {
+              const data = note.systemicFindings?.[sys];
+              return data && data.status !== 'NAD';
+            });
+
+            if (abnormalSystems.length === 0) {
+              return (
+                <Box sx={{ p: 3, textAlign: 'center', bgcolor: '#f8fafc', fontStyle: 'italic', color: '#64748b' }}>
+                  All systems are NAD.
+                </Box>
+              );
+            }
+
+            return (
+              <>
+                {abnormalSystems.map((sys, idx) => {
+                  const data = note.systemicFindings![sys];
+                  // const isNAD = false; // By definition these are not NAD
+
+                  let statusColor = '#ef4444'; // Red 500 (Abnormal default)
+                  let statusBg = '#fef2f2';    // Red 50
+                  let statusBadgeBg = '#fee2e2'; // Red 100
+
+                  if (data.status === 'Mild') {
+                    statusColor = '#d97706';
+                    statusBg = '#fffbeb';
+                    statusBadgeBg = '#fef3c7';
+                  } else if (data.status === 'Improved') {
+                    statusColor = '#3b82f6';
+                    statusBg = '#eff6ff';
+                    statusBadgeBg = '#dbeafe';
+                  }
+
+                  const hasConditions = data.selectedConditions && data.selectedConditions.length > 0;
+
+                  return (
+                    <Box key={sys} sx={{
+                      p: 1.5,
+                      borderBottom: idx !== abnormalSystems.length - 1 ? '1px solid #f1f5f9' : 'none',
+                      bgcolor: statusBg
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: hasConditions || data.note ? 1 : 0 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          {sys}
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: statusColor, bgcolor: statusBadgeBg, px: 1, py: 0.25, borderRadius: '4px' }}>
+                          {data.status}
+                        </Typography>
+                      </Box>
+
+                      {/* Findings List */}
+                      {hasConditions && (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, pl: 0 }}>
+                          {data.selectedConditions!.map((condition, i) => (
+                            <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                              <Box sx={{ minWidth: 4, width: 4, height: 4, borderRadius: '50%', bgcolor: statusColor, mt: 0.8 }} />
+                              <Typography variant="body2" sx={{ fontSize: '0.8rem', color: '#1e293b' }}>
+                                <span style={{ fontWeight: 600 }}>{condition}</span>
+                                {data.conditionDescriptions?.[condition] && (
+                                  <span style={{ color: '#475569' }}>: {data.conditionDescriptions[condition]}</span>
+                                )}
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Box>
+                      )}
+
+                      {/* Notes */}
+                      {data.note && (
+                        <Typography variant="caption" sx={{ display: 'block', color: '#64748b', fontSize: '0.75rem', mt: hasConditions ? 0.5 : 0, fontStyle: 'italic' }}>
+                          Note: {data.note}
+                        </Typography>
+                      )}
+                    </Box>
+                  );
+                })}
+                {SYSTEMIC_SECTIONS.length > abnormalSystems.length && (
+                  <Box sx={{ p: 1.5, textAlign: 'center', bgcolor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+                    <Typography variant="caption" sx={{ color: '#94a3b8', fontStyle: 'italic' }}>All others are NAD</Typography>
+                  </Box>
+                )}
+              </>
+            );
+          })()}
+        </Box>
+
+        {/* Systemic Descriptions Details (Outside Grid) */}
+
+      </Box>
+
+      {/* Treatments */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#3b82f6', mb: 2, textTransform: 'uppercase' }}><strong>TREATMENTS & ADVICE</strong></Typography>
+        <Box sx={{ display: 'flex', mb: 2, flexDirection: 'column', gap: 1 }}>
+          {note.medications && note.medications.map(med => (
+            <Paper key={med.id} elevation={0} sx={{ bgcolor: '#fff', p: 1.5, display: 'flex', alignItems: 'center', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+
+              {/* Icon */}
+              <Box sx={{ minWidth: 40, width: 40, height: 40, borderRadius: '50%', bgcolor: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', mr: 2 }}>
+                <Typography variant="body2" sx={{ fontWeight: 900, fontFamily: 'serif' }}>Rx</Typography>
+              </Box>
+
+              {/* Content Grid */}
+              <Grid container alignItems="center" spacing={1}>
+                {/* Name */}
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="body1" sx={{ fontWeight: 500, color: '#1e293b' }}>{med.name}</Typography>
+                </Grid>
+
+                {/* Details */}
+                <Grid item xs={3} sm={2}>
+                  <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 500 }}>
+                    {med.dose ? (() => {
+                      const num = parseFloat(med.dose);
+                      if (isNaN(num)) return med.dose;
+                      return num.toFixed(2) + med.dose.replace(/[0-9.]/g, '');
+                    })() : '-'}
+                  </Typography>
+                </Grid>
+                <Grid item xs={3} sm={2}>
+                  <Typography variant="body2" sx={{ color: '#64748b' }}>{med.frequency || '-'}</Typography>
+                </Grid>
+                <Grid item xs={3} sm={2}>
+                  <Typography variant="body2" sx={{ color: '#64748b' }}>{med.route || '-'}</Typography>
+                </Grid>
+
+
+              </Grid>
+            </Paper>
+          ))}
+          {note.medications && note.medications.length === 0 && <Typography variant="caption" sx={{ color: '#94a3b8' }}>No active medications.</Typography>}
+        </Box>
+
+        {/* Therapies */}
+        {note.therapies && note.therapies.length > 0 && (
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#3b82f6', mb: 2, textTransform: 'uppercase' }}><strong>THERAPIES</strong></Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              {note.therapies.map(therapy => (
+                <Paper key={therapy.id} elevation={0} sx={{
+                  bgcolor: '#fff',
+                  p: 2,
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0',
+                  borderLeft: '4px solid #f59e0b', // Amber accent
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#b45309', mb: 0.5 }}>{therapy.type}</Typography>
+                    <Typography variant="body2" sx={{ color: '#475569' }}>{therapy.details}</Typography>
+                  </Box>
+                </Paper>
+              ))}
+            </Box>
+          </Box>
+        )}
+
+        {/* Feeds & Fluids */}
+        {(note.feedsAndFluids?.enteralFeeds || note.feedsAndFluids?.ivFluids) && (
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#3b82f6', mb: 2, textTransform: 'uppercase' }}><strong>FEEDS & FLUIDS</strong></Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 2 }}>
+              {/* Enteral Feeds */}
+              {note.feedsAndFluids.enteralFeeds && (
+                <Paper elevation={0} sx={{
+                  bgcolor: '#fff', p: 2, borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                  borderLeft: '4px solid #ec4899', // Pink accent
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#be185d' }}>ENTERAL FEEDS</Typography>
+                  </Box>
+                  <Box sx={{ pl: 0.5 }}>
+                    <Box sx={{ mb: 1 }}>
+                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>MODE</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>{note.feedsAndFluids.enteralFeeds.mode}</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>VOLUME / FREQUENCY</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>{note.feedsAndFluids.enteralFeeds.volumeFreq}</Typography>
+                    </Box>
+                  </Box>
+                </Paper>
+              )}
+
+              {/* IV Fluids */}
+              {note.feedsAndFluids.ivFluids && (
+                <Paper elevation={0} sx={{
+                  bgcolor: '#fff', p: 2, borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                  borderLeft: '4px solid #3b82f6', // Blue accent
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1d4ed8' }}>IV FLUIDS</Typography>
+                  </Box>
+                  <Box sx={{ pl: 0.5 }}>
+                    <Box sx={{ mb: 1 }}>
+                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>TYPE</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>{note.feedsAndFluids.ivFluids.type}</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>ELECTROLYTES</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>{note.feedsAndFluids.ivFluids.electrolytes}</Typography>
+                    </Box>
+                  </Box>
+                </Paper>
+              )}
+            </Box>
+          </Box>
+        )}
+
+        {/* Injections */}
+        {note.injections && note.injections.length > 0 && (
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#3b82f6', mb: 2, textTransform: 'uppercase' }}><strong>INJECTIONS</strong></Typography>
+            <Paper elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
+              {note.injections.map((injection, idx) => (
+                <Box key={injection.id} sx={{
+                  p: 1.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 1,
+                  bgcolor: '#fff',
+                  borderBottom: idx !== note.injections.length - 1 ? '1px solid #f1f5f9' : 'none'
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ minWidth: 28, width: 28, height: 28, borderRadius: '50%', bgcolor: '#d1fae5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Typography sx={{ color: '#059669', fontSize: '0.8rem', fontWeight: 700 }}>✓</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155' }}>{injection.name}</Typography>
+                      <Typography variant="caption" sx={{ color: '#64748b' }}>{injection.site}</Typography>
+                    </Box>
+                  </Box>
+                  <Chip label={injection.time} size="small" sx={{ bgcolor: '#f1f5f9', color: '#475569', fontWeight: 600, height: 24 }} />
+                </Box>
+              ))}
+            </Paper>
+          </Box>
+        )}
+      </Box>
+
+      {/* Orders or Investigations */}
+      {note.orders && note.orders.length > 0 && (
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#3b82f6', mb: 2, textTransform: 'uppercase' }}><strong>INVESTIGATIONS</strong></Typography>
+          <Paper elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
+            {note.orders.map((order: any, idx: number) => (
+              <Box key={idx} sx={{
+                p: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 2,
+                bgcolor: '#fff',
+                borderBottom: idx !== note.orders!.length - 1 ? '1px solid #f1f5f9' : 'none',
+                '&:hover': { bgcolor: '#f8fafc' } // Hover effect
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <Box sx={{ minWidth: 32, width: 32, height: 32, borderRadius: '8px', bgcolor: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 0.5 }}>
+                    <ScienceIcon sx={{ color: '#3b82f6', fontSize: '1.1rem' }} />
+                  </Box>
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b', fontSize: '0.95rem' }}>
+                      {order.code?.text || 'Order'}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.5 }}>
+                      {order.conclusion || 'No details specified'}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Chip
+                  label={order.status}
+                  size="small"
+                  sx={{
+                    height: 24,
+                    textTransform: 'capitalize',
+                    fontWeight: 600,
+                    bgcolor: order.status === 'registered' ? '#f1f5f9' : order.status === 'final' ? '#dcfce7' : '#fff7ed',
+                    color: order.status === 'registered' ? '#64748b' : order.status === 'final' ? '#166534' : '#9a3412'
+                  }}
+                />
+              </Box>
+            ))}
+          </Paper>
+        </Box>
+      )}
+
+      {/* Additional Order Comments */}
+      {note.orderAdditionalComments && (
+        <Box sx={{ mt: 2, mb: 4, p: 2, bgcolor: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
+          <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', mb: 1, display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Additional Order Comments</Typography>
+          <Typography variant="body2" sx={{ color: '#334155', whiteSpace: 'pre-wrap' }}>{note.orderAdditionalComments}</Typography>
+        </Box>
+      )}
+
+      <Divider sx={{ borderStyle: 'dashed', mb: 3 }} />
+      <Divider sx={{ borderStyle: 'dashed', mb: 3 }} />
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#64748b' }}>
+        <GroupIcon fontSize="small" />
+        <Typography variant="caption" sx={{ fontWeight: 700 }}>Attending Consultants: {note.attendingConsultants || 'Dr. Tariq & Dr. Ankit Mittal'}</Typography>
+      </Box>
+
+      {/* Attachments Display */}
+      {
+        note.attachments && note.attachments.length > 0 && (
+          <Box sx={{ mt: 2, p: 1.5, bgcolor: '#f1f5f9', borderRadius: '8px' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <AttachFileIcon fontSize="small" sx={{ color: '#64748b' }} />
+              <Typography variant="caption" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                {note.attachments.length} attachment{note.attachments.length > 1 ? 's' : ''} • File Attached
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              {note.attachments.map((file, idx) => (
+                <Paper key={idx} elevation={0} sx={{ border: '1px solid #e2e8f0', bgcolor: '#fff', borderRadius: '6px', p: 1, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box sx={{ bgcolor: '#ef4444', color: 'white', borderRadius: '4px', px: 0.8, py: 0.2, fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                    {file.name.split('.').pop() || 'FILE'}
+                  </Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#334155', maxWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{file.name}</Typography>
+                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: '#94a3b8' }}>{format(new Date(), 'dd MMM yyyy')}</Typography>
+                  </Box>
+                  {file.url && (
+                    <>
+                      {file.type?.startsWith('image/') && (
+                        <IconButton
+                          size="small"
+                          onClick={() => setPreviewImage({ url: file.url!, name: file.name })}
+                          sx={{ color: '#64748b', '&:hover': { color: '#10b981', bgcolor: '#ecfdf5' } }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                      <IconButton size="small" href={file.url} download={file.name} sx={{ color: '#64748b', '&:hover': { color: '#3b82f6', bgcolor: '#eff6ff' } }}>
+                        <DownloadIcon fontSize="small" />
+                      </IconButton>
+                    </>
+                  )}
+                </Paper>
+              ))}
+            </Box>
+          </Box>
+        )
+      }
+    </Paper>
+  );
+
   return (
-    <Box sx={{ width: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs 
-          value={activeTab} 
-          onChange={handleTabChange}
+    <Box sx={{ width: '100%', height: isEditing && layoutMode === 'stack' ? 'calc(100vh - 72px)' : 'auto', minHeight: '100vh', bgcolor: '#f8fafc', overflow: isEditing && layoutMode === 'stack' ? 'hidden' : 'visible', display: 'flex', flexDirection: 'column' }}>
+
+      {/* Print Styles */}
+      <style>
+        {`
+@media print {
+  /* RESET MAIN CONTAINERS to allow unrestricted printing */
+  #root, .App, .main-content, .MuiBox-root, .MuiPaper-root {
+    height: auto!important;
+    overflow: visible!important;
+    position: static!important;
+    display: block!important;
+    width: 100 % !important;
+    margin: 0!important;
+  }
+
+           /* Hide Specific Logic Elements */
+           .no - print { display: none!important; }
+
+  /* Hide Sidebar - assuming class name or role */
+  nav, aside, .sidebar, .MuiDrawer - root, .MuiDialog - root { display: none!important; }
+
+  /* Hide Global Headers */
+  header, .MuiAppBar - root { display: none!important; }
+
+           /* Hide the Input Panel explicitly */
+           .right - panel - input { display: none!important; }
+
+           /* Styles for the content we catch */
+           body {
+    background: white!important;
+    color: #000!important;
+    font - size: 11pt!important;
+  }
+
+           .printable - content {
+    display: block!important;
+    width: 100 % !important;
+    max - width: 100 % !important;
+    margin: 0!important;
+    padding: 15mm!important;
+  }
+
+           .note - card {
+    box - shadow: none!important;
+    border: 1px solid #ddd!important;
+    border - radius: 0!important;
+    margin - bottom: 15mm!important;
+    padding: 10mm!important;
+    break-inside: avoid!important;
+    page -break-inside: avoid!important;
+    background: white!important;
+  }
+
+           /* Clean section headers */
+           .note - card strong {
+    color: #000!important;
+    font - weight: 700!important;
+    font - size: 10pt!important;
+  }
+
+           /* Vitals Grid - make it print nicely */
+           .MuiGrid - container {
+    display: flex!important;
+    flex - wrap: nowrap!important;
+    border: 1px solid #ddd!important;
+    background: #fafafa!important;
+  }
+
+           .MuiGrid - item {
+    border - right: 1px solid #ddd!important;
+    padding: 3mm!important;
+    flex: 1!important;
+  }
+
+           .MuiGrid - item: last - child {
+    border - right: none!important;
+  }
+
+           /* Systemic Review - force inline layout */
+           .note - card > div > div[style *= "display: flex"][style *= "border"] {
+    display: flex!important;
+    flex - direction: row!important;
+    border: 1px solid #ddd!important;
+    background: #fafafa!important;
+    margin: 2mm 0!important;
+  }
+
+           .note - card > div > div[style *= "display: flex"][style *= "border"] > div {
+    flex: 1!important;
+    border - right: 1px solid #ddd!important;
+    padding: 2mm!important;
+    text - align: center!important;
+  }
+
+           .note - card > div > div[style *= "display: flex"][style *= "border"] > div: last - child {
+    border - right: none!important;
+  }
+
+           /* Chips should be inline */
+           .MuiChip - root {
+    display: inline - block!important;
+    margin: 1mm!important;
+    padding: 1mm 2mm!important;
+    border: 1px solid #ddd!important;
+    border - radius: 2mm!important;
+    background: #f0f0f0!important;
+    font - size: 9pt!important;
+  }
+
+           /* Dividers */
+           hr {
+    border: none!important;
+    border - top: 1px dashed #ccc!important;
+    margin: 3mm 0!important;
+  }
+
+  /* Typography cleanup */
+  h1, h2, h3, h4, h5, h6 {
+    color: #000!important;
+    margin: 2mm 0!important;
+  }
+
+  /* Spacing */
+  p, div {
+    margin - bottom: 1mm!important;
+  }
+
+  /* Page breaks */
+  @page {
+    margin: 15mm;
+    size: A4;
+  }
+}
+`}
+      </style >
+
+      <Box
+        className="no-print"
+        sx={{
+          flexShrink: 0, // Prevent header from shrinking
+          px: 4, pt: 3, pb: 2,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          bgcolor: '#f8fafc',
+          borderBottom: isEditing ? 'none' : '1px solid transparent',
+          width: '75%', mx: 'auto'
+        }}
+      >
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <Typography sx={{ color: '#64748b', fontSize: '1rem' }}>Continuation Sheet</Typography>
+          <Typography sx={{ color: '#0f172a', fontWeight: 700, fontSize: '1.25rem' }}>Clinical notes</Typography>
+        </Stack>
+
+        <Stack direction="row" spacing={2} alignItems="center">
+
+          {/* View Mode Toggle - Visible when Editing or viewing */}
+          {isEditing && (
+            <>
+              <Box sx={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '8px', bgcolor: '#fff', overflow: 'hidden', mr: 2 }}>
+                <Tooltip title="Side by Side">
+                  <IconButton
+                    size="small"
+                    onClick={() => setLayoutMode('side-by-side')}
+                    sx={{ borderRadius: 0, bgcolor: layoutMode === 'side-by-side' ? '#eff6ff' : 'transparent', color: layoutMode === 'side-by-side' ? '#3b82f6' : '#94a3b8' }}
+                  >
+                    <ViewColumnIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Divider orientation="vertical" flexItem />
+                <Tooltip title="Stacked View">
+                  <IconButton
+                    size="small"
+                    onClick={() => setLayoutMode('stack')}
+                    sx={{ borderRadius: 0, bgcolor: layoutMode === 'stack' ? '#eff6ff' : 'transparent', color: layoutMode === 'stack' ? '#3b82f6' : '#94a3b8' }}
+                  >
+                    <ViewStreamIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant="outlined" color="inherit"
+                  startIcon={<CancelIcon />}
+                  onClick={handleCancel}
+                  size="small"
+                  sx={{ borderRadius: '8px', textTransform: 'none', color: '#64748b', borderColor: '#cbd5e1', bgcolor: '#fff' }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<SaveIcon />}
+                  onClick={handleSave}
+                  size="small"
+                  sx={{ borderRadius: '8px', textTransform: 'none', bgcolor: '#10b981', '&:hover': { bgcolor: '#059669' } }}
+                >
+                  Save
+                </Button>
+              </Stack>
+            </>
+          )}
+
+          {/* Date Filter Pills - Hidden on mobile */}
+          {!isEditing && !isMobile && (
+            <Paper elevation={0} sx={{ p: 0.5, borderRadius: '20px', display: 'flex', bgcolor: '#fff', border: '1px solid #e2e8f0' }}>
+              {[0, 1, 2].map(daysAgo => {
+                const date = subDays(new Date(), daysAgo);
+                const isSelected = isSameDay(date, selectedDateFilter);
+                return (
+                  <Box
+                    key={daysAgo}
+                    onClick={() => setSelectedDateFilter(date)}
+                    sx={{
+                      px: 2, py: 0.5, borderRadius: '16px', cursor: 'pointer',
+                      bgcolor: isSelected ? '#eff6ff' : 'transparent',
+                      color: isSelected ? '#2563eb' : '#64748b'
+                    }}
+                  >
+                    <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                      {daysAgo === 0 ? 'Today' : format(date, 'dd/MM')}
+                      {daysAgo === 0 && <span style={{ fontWeight: 400, marginLeft: 4 }}>- {format(date, 'dd/MM')}</span>}
+                    </Typography>
+                  </Box>
+                );
+              })}
+            </Paper>
+          )}
+
+          {/* Mobile Date Display - Shows current filter */}
+          {!isEditing && isMobile && (
+            <Chip
+              label={format(selectedDateFilter, 'MMM dd, yyyy')}
+              onClick={() => setIsDatePickerOpen(true)}
+              sx={{
+                bgcolor: '#eff6ff',
+                color: '#2563eb',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            />
+          )}
+
+          {/* Actions */}
+          {!isEditing && (
+            <>
+              <Box sx={{ position: 'relative' }}>
+                <IconButton
+                  ref={datePickerAnchorRef}
+                  onClick={() => setIsDatePickerOpen(true)}
+                  sx={{
+                    bgcolor: '#fff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    display: isMobile ? 'none' : 'flex' // Hide duplicate on mobile
+                  }}
+                >
+                  <CalendarTodayIcon fontSize="small" sx={{ color: '#3b82f6' }} />
+                </IconButton>
+                {/* The actual picker - invisible but anchored */}
+                <DatePicker
+                  open={isDatePickerOpen}
+                  onClose={() => setIsDatePickerOpen(false)}
+                  value={dayjs(selectedDateFilter)}
+                  onChange={(newValue) => {
+                    setSelectedDateFilter(newValue ? newValue.toDate() : new Date());
+                    setIsDatePickerOpen(false);
+                  }}
+                  slots={{
+                    textField: (params) => <TextField {...params} sx={{ display: 'none' }} />
+                  }}
+                  slotProps={{
+                    popper: {
+                      anchorEl: datePickerAnchorRef.current,
+                      placement: 'bottom-end'
+                    }
+                  }}
+                />
+              </Box>
+
+              <IconButton onClick={handleDownloadPDF} sx={{ bgcolor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                <DownloadIcon fontSize="small" sx={{ color: '#3b82f6' }} />
+              </IconButton>
+              <Button
+                variant="contained"
+                startIcon={!isMobile && <AddIcon />}
+                onClick={handleAddNewNote}
+                sx={{
+                  bgcolor: '#3b82f6',
+                  borderRadius: '10px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  height: 40,
+                  px: isMobile ? 2 : 3,
+                  minWidth: isMobile ? '56px' : 'auto',
+                  boxShadow: '0 4px 6px -1px rgb(59 130 246 / 0.1)',
+                  '&:hover': { bgcolor: '#2563eb' }
+                }}
+              >
+                {isMobile ? <AddIcon /> : 'Note'}
+              </Button>
+            </>
+          )}
+        </Stack>
+      </Box>
+
+      {/* Content Area */}
+      <Box
+        sx={{
+          flex: 1, // Take remaining height
+          width: isMobile || isTablet ? '100%' : '75%', // Full width on mobile/tablet
+          mx: 'auto',
+          display: 'flex',
+          gap: isMobile ? 0 : 3,
+          px: isMobile ? 1 : 0.5,
+          pb: 2,
+          // Layout Toggle Logic
+          flexDirection: (isEditing && layoutMode === 'stack') || isMobile ? 'column' : 'row',
+          height: '100%', // Ensure it fills the fixed parent
+          minHeight: 0    // Prevent overflow growth
+        }}
+        ref={containerRef}
+      >
+
+        {/* ---------------- LEFT: VISUAL (FEED or CURRENT DRAFT PREVIEW) ---------------- */}
+        <Box
+          className="printable-content"
           sx={{
-            '& .MuiTabs-indicator': {
-              backgroundColor: '#124D81',
-            },
-            '& .MuiTab-root': {
-              color: '#757575',
-              '&.Mui-selected': {
-                color: '#124D81',
-                fontWeight: 'bold',
-              },
-            },
+            transition: isResizing ? 'none' : 'flex 0.3s ease', // Disable transition during drag for smoothness
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 3,
+            // Layout Toggle Logic
+            flex: isEditing ? (layoutMode === 'stack' ? `0 0 ${panelRatio}% ` : '0 0 45%') : 1, // Use ratio in stack
+            width: '100%', // Let flex control dimensions, but ensure width is full in stack
+            overflowY: isEditing && layoutMode === 'stack' ? 'auto' : 'visible', // Scroll internally ONLY in stack
+            pr: 1
           }}
         >
-          <Tab label="Diagnosis" />
-          <Tab label="Treatment" />
-          <Tab label="Care plan" />
-        </Tabs>
+          {isEditing && formState ? (
+            // 1. IF EDITING: Show Preview of Current Form State
+            // Show only this note's orders + any pending orders being added
+            renderNoteCard({ ...formState, orders: [...(formState.orders || []), ...pendingOrders] }, true)
+          ) : (
+            // 2. IF VIEWING: Show Filtered Notes
+            <>
+              {filteredNotes.length === 0 && (
+                <Typography sx={{ color: '#94a3b8', textAlign: 'center', mt: 5 }}>
+                  No notes for {format(selectedDateFilter, 'MMM do')}.
+                </Typography>
+              )}
+              {filteredNotes.map(note => renderNoteCard(note))}
+            </>
+          )}
+        </Box>
+
+        {/* ---------------- RESIZER (Stack Mode Only) ---------------- */}
+        {isEditing && layoutMode === 'stack' && (
+          <Box
+            onMouseDown={handleMouseDown}
+            className="no-print"
+            sx={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              height: '12px', cursor: 'row-resize',
+              bgcolor: '#f1f5f9', borderRadius: '4px',
+              flexShrink: 0,
+              '&:hover': { bgcolor: '#e2e8f0' }
+            }}
+          >
+            <Box sx={{ width: '40px', height: '4px', bgcolor: '#cbd5e1', borderRadius: '2px' }} />
+          </Box>
+        )}
+
+        {/* ---------------- RIGHT: INPUT AREA - Stacked on Mobile, Panel on Desktop ---------------- */}
+        {isEditing && formState && (
+          <Paper
+            className="no-print right-panel-input"
+            elevation={0}
+            sx={{
+              // Layout Toggle Logic
+              flex: 1, // Fill remaining space
+              // STACK MODE: Hidden overflow on parent (so Scrollbar is on CHILD). DEFAULT: Visible (let it grow)
+              overflow: isEditing && layoutMode === 'stack' ? 'hidden' : 'visible',
+              borderLeft: isEditing && layoutMode === 'stack' ? 'none' : '1px solid #e2e8f0',
+              borderTop: isEditing && layoutMode === 'stack' ? '1px solid #e2e8f0' : 'none',
+
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: 0 // CRITICAL: Ensures flex item can shrink to trigger scroll
+            }}
+          >
+
+
+            <Box sx={{ p: 1.5, borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#fff', position: 'sticky', top: 0, zIndex: 20 }}>
+              <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto' }}>
+                {[
+                  { label: 'Conditions', icon: <MedicalServicesIcon /> },
+                  { label: 'Objective', icon: <MonitorHeartIcon /> },
+                  { label: 'Systemic', icon: <PersonIcon /> },
+                  { label: 'Treatment', icon: <VaccinesIcon /> },
+                  { label: 'Investigations', icon: <ScienceIcon /> },
+                ].map((tab) => (
+                  <Button
+                    key={tab.label}
+                    startIcon={tab.icon}
+                    onClick={() => setActiveInputTab(tab.label)}
+                    sx={{
+                      textTransform: 'none', borderRadius: '24px', px: 2, py: 0.5, whiteSpace: 'nowrap',
+                      border: '1px solid',
+                      borderColor: activeInputTab === tab.label ? '#3b82f6' : '#e2e8f0',
+                      bgcolor: activeInputTab === tab.label ? '#eff6ff' : '#fff',
+                      color: activeInputTab === tab.label ? '#3b82f6' : '#64748b',
+                      fontWeight: activeInputTab === tab.label ? 600 : 500,
+                      boxShadow: 'none',
+                      '&:hover': { bgcolor: activeInputTab === tab.label ? '#dbeafe' : '#f8fafc' }
+                    }}
+                  >
+                    {tab.label}
+                  </Button>
+                ))}
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <IconButton onClick={handleOpenConsultants} size="small" sx={{ color: '#3b82f6' }}><PersonAddIcon /></IconButton>
+                <IconButton onClick={handleAttachClick} size="small" sx={{ color: '#3b82f6' }}><AttachFileIcon /></IconButton>
+              </Box>
+            </Box>
+
+            {/* Independent Scroller Container */}
+            <Box sx={{ p: 0, flex: '1 1 0', overflowY: 'auto', minHeight: 0 }}>
+              {activeInputTab === 'Conditions' && (
+                <Stack spacing={3} sx={{ p: 3 }}>
+                  <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1e293b' }}>Patient History</Typography>
+                      <Typography variant="caption" sx={{ color: '#3b82f6', cursor: 'pointer', fontWeight: 500 }}>Fetch Previous</Typography>
+                    </Box>
+                    <TextField
+                      fullWidth multiline minRows={3}
+                      placeholder="Overnight events, feeds tolerance, urine/stool output..."
+                      value={formState.historyText}
+                      onChange={(e) => updateFormHistory(e.target.value)}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#f8fafc' } }}
+                    />
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1e293b', mb: 1.5 }}>
+                      Diagnosis <Box component="span" sx={{ color: '#475569' }}>/ Conditions</Box>
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {CONDITION_TAGS.map((condition) => {
+                        const isSelected = formState.selectedConditions.includes(condition);
+                        return (
+                          <Chip
+                            key={condition} label={condition} onClick={() => updateFormCondition(condition)}
+                            sx={{
+                              borderRadius: '8px', fontWeight: 500,
+                              bgcolor: isSelected ? '#eff6ff' : '#f1f5f9', color: isSelected ? '#1d4ed8' : '#475569',
+                              border: '1px solid', borderColor: isSelected ? '#bfdbfe' : 'transparent'
+                            }}
+                          />
+                        );
+                      })}
+                    </Box>
+                  </Box>
+                </Stack>
+              )}
+              {activeInputTab === 'Objective' && (
+                <Box sx={{ p: 3 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1e293b', mb: 2 }}>Vital Signs (O/E)</Typography>
+                  <Grid container spacing={2}>
+                    {[
+                      { label: 'Temp', unit: '°C', key: 'temp' },
+                      { label: 'HR', unit: 'bpm', key: 'hr' },
+                      { label: 'RR', unit: 'bpm', key: 'rr' },
+                      { label: 'BP', unit: 'mmHg', key: 'bp' },
+                      { label: 'SpO2', unit: '%', key: 'spo2' },
+                      { label: 'BSL', unit: 'mg/dL', key: 'bsl' },
+                      { label: 'Weight', unit: 'g', key: 'weight' },
+                    ].map((item) => (
+                      <Grid item xs={6} sm={4} key={item.key}>
+                        <TextField
+                          label={item.label}
+                          value={formState.vitals[item.key as keyof VitalsData]}
+                          onChange={(e) => updateFormVital(item.key as keyof VitalsData, e.target.value)}
+                          InputProps={{ endAdornment: <Typography variant="caption" sx={{ color: '#94a3b8' }}>{item.unit}</Typography> }}
+                          fullWidth
+                          size="small"
+                          sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                        />
+                      </Grid>
+                    ))}
+                  </Grid>
+
+                  {/* Additional O/E Notes */}
+                  <Box sx={{ mt: 3 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1e293b', mb: 1.5 }}>Additional O/E Notes</Typography>
+                    <TextField
+                      fullWidth
+                      multiline
+                      minRows={3}
+                      placeholder="Additional observations, clinical findings, or examination notes..."
+                      value={formState.additionalOENotes}
+                      onChange={(e) => setFormState({ ...formState, additionalOENotes: e.target.value })}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#f8fafc' } }}
+                    />
+                  </Box>
+                </Box>
+              )}
+              {activeInputTab === 'Systemic' && (
+                <Box sx={{ bgcolor: '#f1f5f9', pb: 2 }}>
+                  {SYSTEMIC_SECTIONS.map((system) => (
+                    <Accordion
+                      key={system}
+                      expanded={expandedSystem === system}
+                      onChange={(_, isExpanded) => setExpandedSystem(isExpanded ? system : false)}
+                      elevation={0}
+                      disableGutters
+                      sx={{ borderBottom: '1px solid #e2e8f0', '&:before': { display: 'none' } }}
+                    >
+                      <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 3 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', pr: 2 }}>
+                          <Typography sx={{ fontWeight: 600, color: '#334155' }}>{system}</Typography>
+                          <Chip
+                            label={formState.systemicFindings[system].status}
+                            size="small"
+                            sx={{
+                              bgcolor: formState.systemicFindings[system].status === 'NAD' ? '#dcfce7' : '#fee2e2',
+                              color: formState.systemicFindings[system].status === 'NAD' ? '#166534' : '#991b1b',
+                              fontWeight: 600, borderRadius: '6px'
+                            }}
+                          />
+                        </Box>
+                      </AccordionSummary>
+                      <AccordionDetails sx={{ px: 3, pb: 3, bgcolor: '#f8fafc', borderTop: '1px solid #f1f5f9' }}>
+                        <Stack spacing={2}>
+                          {/* Status Selection */}
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Status:</Typography>
+                            <ToggleButtonGroup
+                              value={formState.systemicFindings[system].status}
+                              exclusive
+                              onChange={(_, val) => {
+                                if (val) updateFormSystemicStatus(system, val);
+                              }}
+                              size="small"
+                              sx={{ height: 28 }}
+                            >
+                              <ToggleButton value="NAD" sx={{ borderRadius: '8px !important', mr: 0.5, border: '1px solid #cbd5e1 !important', px: 1.5, py: 0.5, fontSize: '0.75rem', '&.Mui-selected': { bgcolor: '#dcfce7', color: '#166534', borderColor: '#86efac !important' }, textTransform: 'none' }}>NAD</ToggleButton>
+                              <ToggleButton value="Mild" sx={{ borderRadius: '8px !important', mr: 0.5, border: '1px solid #cbd5e1 !important', px: 1.5, py: 0.5, fontSize: '0.75rem', '&.Mui-selected': { bgcolor: '#fff7ed', color: '#c2410c', borderColor: '#fdba74 !important' }, textTransform: 'none' }}>Mild</ToggleButton>
+                              <ToggleButton value="Improved" sx={{ borderRadius: '8px !important', mr: 0.5, border: '1px solid #cbd5e1 !important', px: 1.5, py: 0.5, fontSize: '0.75rem', '&.Mui-selected': { bgcolor: '#eff6ff', color: '#2563eb', borderColor: '#93c5fd !important' }, textTransform: 'none' }}>Improved</ToggleButton>
+                              <ToggleButton value="Abnormal" sx={{ borderRadius: '8px !important', border: '1px solid #cbd5e1 !important', px: 1.5, py: 0.5, fontSize: '0.75rem', '&.Mui-selected': { bgcolor: '#fee2e2', color: '#991b1b', borderColor: '#fca5a5 !important' }, textTransform: 'none' }}>Abnormal</ToggleButton>
+                            </ToggleButtonGroup>
+                          </Box>
+
+                          {/* Condition Buttons Grid */}
+                          {SYSTEMIC_CONDITIONS[system] && (
+                            <Box sx={{ p: 2, bgcolor: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                {SYSTEMIC_CONDITIONS[system].map((condition) => {
+                                  const isSelected = formState.systemicFindings[system].selectedConditions?.includes(condition);
+                                  return (
+                                    <Button
+                                      key={condition}
+                                      variant={isSelected ? 'contained' : 'outlined'}
+                                      size="small"
+                                      onClick={() => {
+                                        const currentConditions = formState.systemicFindings[system].selectedConditions || [];
+                                        const newConditions = isSelected
+                                          ? currentConditions.filter(c => c !== condition)
+                                          : [...currentConditions, condition];
+
+                                        // Auto-update status only if adding a condition and status is currently NAD
+                                        let newStatus = formState.systemicFindings[system].status;
+                                        if (!isSelected && newConditions.length > 0) {
+                                          const isNormal = condition.includes('Clear') || condition.includes('Normal') || condition.includes('Soft') || condition.includes('Alert') || condition.includes('Active');
+                                          if (!isNormal) newStatus = 'Abnormal';
+                                        }
+
+                                        setFormState({
+                                          ...formState,
+                                          systemicFindings: {
+                                            ...formState.systemicFindings,
+                                            [system]: {
+                                              ...formState.systemicFindings[system],
+                                              selectedConditions: newConditions,
+                                              status: newStatus
+                                            }
+                                          }
+                                        });
+                                      }}
+                                      sx={{
+                                        textTransform: 'none',
+                                        borderRadius: '8px',
+                                        px: 1.5,
+                                        py: 0.5,
+                                        bgcolor: isSelected ? '#3b82f6' : 'transparent',
+                                        color: isSelected ? '#fff' : '#475569',
+                                        borderColor: isSelected ? '#3b82f6' : '#cbd5e1',
+                                        fontSize: '0.75rem',
+                                        '&:hover': {
+                                          bgcolor: isSelected ? '#2563eb' : '#f1f5f9',
+                                          borderColor: isSelected ? '#2563eb' : '#94a3b8'
+                                        }
+                                      }}
+                                    >
+                                      {condition}
+                                    </Button>
+                                  );
+                                })}
+                              </Box>
+                            </Box>
+                          )}
+
+                          {/* Selected Findings List (Below the grid) */}
+                          {formState.systemicFindings[system].selectedConditions && formState.systemicFindings[system].selectedConditions!.length > 0 && (
+                            <Box sx={{ mt: 2 }}>
+                              <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', mb: 1, display: 'block', textTransform: 'uppercase' }}>Selected Findings:</Typography>
+                              <Stack spacing={1}>
+                                {formState.systemicFindings[system].selectedConditions!.map((condition) => (
+                                  <Paper key={condition} elevation={0} sx={{ p: 1.5, bgcolor: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155', minWidth: 150 }}>
+                                      {condition}
+                                    </Typography>
+                                    <TextField
+                                      fullWidth
+                                      size="small"
+                                      placeholder="Add description (e.g., mild, severe, location)..."
+                                      value={formState.systemicFindings[system].conditionDescriptions?.[condition] || ''}
+                                      onChange={(e) => {
+                                        setFormState({
+                                          ...formState,
+                                          systemicFindings: {
+                                            ...formState.systemicFindings,
+                                            [system]: {
+                                              ...formState.systemicFindings[system],
+                                              conditionDescriptions: {
+                                                ...formState.systemicFindings[system].conditionDescriptions,
+                                                [condition]: e.target.value
+                                              }
+                                            }
+                                          }
+                                        });
+                                      }}
+                                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px', bgcolor: '#f8fafc' }, '& input': { py: 1 } }}
+                                    />
+                                    <IconButton
+                                      size="small"
+                                      sx={{ color: '#94a3b8', hover: { color: '#ef4444' } }}
+                                      onClick={() => {
+                                        const current = formState.systemicFindings[system].selectedConditions || [];
+                                        setFormState({
+                                          ...formState,
+                                          systemicFindings: {
+                                            ...formState.systemicFindings,
+                                            [system]: {
+                                              ...formState.systemicFindings[system],
+                                              selectedConditions: current.filter(c => c !== condition)
+                                            }
+                                          }
+                                        });
+                                      }}
+                                    >
+                                      <CloseIcon fontSize="small" />
+                                    </IconButton>
+                                  </Paper>
+                                ))}
+                              </Stack>
+                            </Box>
+                          )}
+
+                          {/* Type Other Findings */}
+                          <Box sx={{ display: 'flex', gap: 2 }}>
+                            <TextField
+                              placeholder="Type Other Findings..."
+                              size="small"
+                              sx={{ flex: 1, bgcolor: '#fff', '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                              id={`other - finding - ${system} `}
+                            />
+                            <TextField
+                              placeholder="Description"
+                              size="small"
+                              sx={{ flex: 2, bgcolor: '#fff', '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                              id={`other - description - ${system} `}
+                            />
+                            <IconButton
+                              size="small"
+                              sx={{ bgcolor: '#64748b', color: '#fff', '&:hover': { bgcolor: '#475569' } }}
+                              onClick={() => {
+                                const findingInput = document.getElementById(`other - finding - ${system} `) as HTMLInputElement;
+                                const descInput = document.getElementById(`other - description - ${system} `) as HTMLInputElement;
+                                if (findingInput.value) {
+                                  const currentConditions = formState.systemicFindings[system].selectedConditions || [];
+                                  setFormState({
+                                    ...formState,
+                                    systemicFindings: {
+                                      ...formState.systemicFindings,
+                                      [system]: {
+                                        ...formState.systemicFindings[system],
+                                        selectedConditions: [...currentConditions, findingInput.value],
+                                        conditionDescriptions: {
+                                          ...formState.systemicFindings[system].conditionDescriptions,
+                                          [findingInput.value]: descInput.value
+                                        }
+                                      }
+                                    }
+                                  });
+                                  findingInput.value = '';
+                                  descInput.value = '';
+                                }
+                              }}
+                            >
+                              <AddIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </Stack>
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
+                </Box>
+              )}
+              {activeInputTab === 'Treatment' && (
+                <Box sx={{ p: 3 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#3b82f6', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box component="span" sx={{ transform: 'rotate(-45deg)' }}>🔗</Box> TREATMENTS & MANAGEMENT
+                  </Typography>
+                  <Box sx={{ bgcolor: '#f1f5f9', p: 0.5, borderRadius: '12px', display: 'inline-flex', mb: 3 }}>
+                    {['Medications', 'Therapies', 'Feeds & Fluids', 'Injections'].map((tab) => (
+                      <Button
+                        key={tab}
+                        onClick={() => setActiveTreatmentTab(tab)}
+                        sx={{
+                          textTransform: 'none', borderRadius: '8px', px: 2, py: 0.5,
+                          bgcolor: activeTreatmentTab === tab ? '#fff' : 'transparent',
+                          color: activeTreatmentTab === tab ? '#0f172a' : '#64748b',
+                          boxShadow: activeTreatmentTab === tab ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                          fontWeight: 600,
+                          '&:hover': { bgcolor: activeTreatmentTab === tab ? '#fff' : '#e2e8f0' }
+                        }}
+                      >
+                        {tab}
+                      </Button>
+                    ))}
+                  </Box>
+                  <Paper variant="outlined" sx={{ borderRadius: '12px', bgcolor: '#f8fafc', overflow: 'hidden' }}>
+                    {activeTreatmentTab === 'Medications' ? (
+                      <Box>
+                        {formState.medications.map((med, index) => (
+                          <Box key={med.id} sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: index !== formState.medications.length - 1 ? '1px solid #e2e8f0' : 'none' }}>
+                            <Box>
+                              <Typography sx={{ fontWeight: 600, color: '#334155' }}>{med.name}</Typography>
+                            </Box>
+                            <IconButton size="small" onClick={() => removeMedication(med.id)} sx={{ color: '#ef4444' }}>
+                              <CloseIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        ))}
+                        {formState.medications.length === 0 && <Box sx={{ p: 4, textAlign: 'center', color: '#94a3b8' }}>No medications added.</Box>}
+                        <Button fullWidth startIcon={<AddIcon />} sx={{ py: 1.5, borderTop: '1px solid #e2e8f0', textTransform: 'none', fontWeight: 600 }} onClick={addMedication}>Add treatment</Button>
+                      </Box>
+                    ) : activeTreatmentTab === 'Therapies' ? (
+                      <Box>
+                        {formState.therapies.map((therapy, index) => (
+                          <Box key={therapy.id} sx={{ p: 2, display: 'flex', gap: 2, borderBottom: index !== formState.therapies.length - 1 ? '1px solid #e2e8f0' : 'none' }}>
+                            <Box sx={{ flex: 1 }}>
+                              <Typography sx={{ fontWeight: 600, color: '#334155', mb: 0.5 }}>{therapy.type}</Typography>
+                              <Typography sx={{ fontSize: '0.875rem', color: '#64748b' }}>{therapy.details}</Typography>
+                            </Box>
+                            <IconButton size="small" onClick={() => {
+                              setFormState({ ...formState, therapies: formState.therapies.filter(t => t.id !== therapy.id) });
+                            }} sx={{ color: '#ef4444' }}>
+                              <CloseIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        ))}
+                        {formState.therapies.length === 0 && <Box sx={{ p: 4, textAlign: 'center', color: '#94a3b8' }}>No therapies added.</Box>}
+                        <Box sx={{ p: 2, borderTop: '1px solid #e2e8f0', display: 'flex', gap: 2 }}>
+                          <TextField
+                            placeholder="Therapy type (e.g., Phototherapy, CPAP)"
+                            size="small"
+                            sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                            id="therapy-type-input"
+                          />
+                          <TextField
+                            placeholder="Details (e.g., Bili lights ON, TcB 8.5 mg/dL)"
+                            size="small"
+                            sx={{ flex: 2, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                            id="therapy-details-input"
+                          />
+                          <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            sx={{ textTransform: 'none', borderRadius: '8px', bgcolor: '#3b82f6', '&:hover': { bgcolor: '#2563eb' } }}
+                            onClick={() => {
+                              const typeInput = document.getElementById('therapy-type-input') as HTMLInputElement;
+                              const detailsInput = document.getElementById('therapy-details-input') as HTMLInputElement;
+                              if (typeInput.value && detailsInput.value) {
+                                setFormState({
+                                  ...formState,
+                                  therapies: [...formState.therapies, { id: Date.now(), type: typeInput.value, details: detailsInput.value }]
+                                });
+                                typeInput.value = '';
+                                detailsInput.value = '';
+                              }
+                            }}
+                          >
+                            Add
+                          </Button>
+                        </Box>
+                      </Box>
+                    ) : activeTreatmentTab === 'Feeds & Fluids' ? (
+                      <Box sx={{ p: 3 }}>
+                        {/* Enteral Feeds */}
+                        <Box sx={{ mb: 3 }}>
+                          <Typography sx={{ fontWeight: 600, color: '#334155', mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                            ENTERAL FEEDS
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                            <TextField
+                              label="Mode"
+                              placeholder="e.g., Breast milk"
+                              size="small"
+                              value={formState.feedsAndFluids.enteralFeeds?.mode || ''}
+                              onChange={(e) => setFormState({
+                                ...formState,
+                                feedsAndFluids: {
+                                  ...formState.feedsAndFluids,
+                                  enteralFeeds: { mode: e.target.value, volumeFreq: formState.feedsAndFluids.enteralFeeds?.volumeFreq || '' }
+                                }
+                              })}
+                              sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                            />
+                            <TextField
+                              label="Volume/Freq"
+                              placeholder="e.g., 40 mL every 2 hours (480 mL/24h)"
+                              size="small"
+                              value={formState.feedsAndFluids.enteralFeeds?.volumeFreq || ''}
+                              onChange={(e) => setFormState({
+                                ...formState,
+                                feedsAndFluids: {
+                                  ...formState.feedsAndFluids,
+                                  enteralFeeds: { mode: formState.feedsAndFluids.enteralFeeds?.mode || '', volumeFreq: e.target.value }
+                                }
+                              })}
+                              sx={{ flex: 2, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                            />
+                          </Box>
+                        </Box>
+
+                        <Divider sx={{ my: 2 }} />
+
+                        {/* IV Fluids & Electrolytes */}
+                        <Box>
+                          <Typography sx={{ fontWeight: 600, color: '#334155', mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                            IV FLUIDS & ELECTROLYTES
+                          </Typography>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <TextField
+                              label="Fluids"
+                              placeholder="e.g., 5% DNS @ 20 mL/h (480 mL/24h)"
+                              size="small"
+                              value={formState.feedsAndFluids.ivFluids?.type || ''}
+                              onChange={(e) => setFormState({
+                                ...formState,
+                                feedsAndFluids: {
+                                  ...formState.feedsAndFluids,
+                                  ivFluids: { type: e.target.value, electrolytes: formState.feedsAndFluids.ivFluids?.electrolytes || '' }
+                                }
+                              })}
+                              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                            />
+                            <TextField
+                              label="Electrolytes"
+                              placeholder="e.g., Na 130, K 4.5, Cl 101"
+                              size="small"
+                              value={formState.feedsAndFluids.ivFluids?.electrolytes || ''}
+                              onChange={(e) => setFormState({
+                                ...formState,
+                                feedsAndFluids: {
+                                  ...formState.feedsAndFluids,
+                                  ivFluids: { type: formState.feedsAndFluids.ivFluids?.type || '', electrolytes: e.target.value }
+                                }
+                              })}
+                              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                            />
+                          </Box>
+                        </Box>
+                      </Box>
+                    ) : activeTreatmentTab === 'Injections' ? (
+                      <Box>
+                        {formState.injections.map((injection, index) => (
+                          <Box key={injection.id} sx={{ p: 2, display: 'flex', gap: 2, alignItems: 'center', borderBottom: index !== formState.injections.length - 1 ? '1px solid #e2e8f0' : 'none' }}>
+                            <Box sx={{ flex: 1 }}>
+                              <Typography sx={{ fontWeight: 600, color: '#334155' }}>{injection.name}</Typography>
+                              <Typography sx={{ fontSize: '0.875rem', color: '#64748b' }}>
+                                {injection.time} • {injection.site}
+                              </Typography>
+                            </Box>
+                            <IconButton size="small" onClick={() => {
+                              setFormState({ ...formState, injections: formState.injections.filter(i => i.id !== injection.id) });
+                            }} sx={{ color: '#ef4444' }}>
+                              <CloseIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        ))}
+                        {formState.injections.length === 0 && <Box sx={{ p: 4, textAlign: 'center', color: '#94a3b8' }}>No injections scheduled.</Box>}
+                        <Box sx={{ p: 2, borderTop: '1px solid #e2e8f0' }}>
+                          <Typography sx={{ fontWeight: 600, color: '#334155', mb: 2 }}>SCHEDULE NEW INJECTION</Typography>
+                          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                            <TextField
+                              placeholder="Injection Name (e.g., Vit K)"
+                              size="small"
+                              sx={{ flex: 2, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                              id="injection-name-input"
+                            />
+                            <TextField
+                              type="time"
+                              size="small"
+                              sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                              id="injection-time-input"
+                              InputLabelProps={{ shrink: true }}
+                            />
+                          </Box>
+                          <Box sx={{ display: 'flex', gap: 2 }}>
+                            <TextField
+                              placeholder="Site (e.g., Antero-lateral thigh)"
+                              size="small"
+                              sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                              id="injection-site-input"
+                            />
+                            <Button
+                              variant="contained"
+                              sx={{ textTransform: 'none', borderRadius: '8px', bgcolor: '#10b981', '&:hover': { bgcolor: '#059669' } }}
+                              onClick={() => {
+                                const nameInput = document.getElementById('injection-name-input') as HTMLInputElement;
+                                const timeInput = document.getElementById('injection-time-input') as HTMLInputElement;
+                                const siteInput = document.getElementById('injection-site-input') as HTMLInputElement;
+                                if (nameInput.value && timeInput.value && siteInput.value) {
+                                  setFormState({
+                                    ...formState,
+                                    injections: [...formState.injections, {
+                                      id: Date.now(),
+                                      name: nameInput.value,
+                                      time: (() => {
+                                        const [h, m] = timeInput.value.split(':');
+                                        const hour = parseInt(h);
+                                        const ampm = hour >= 12 ? 'PM' : 'AM';
+                                        const hour12 = hour % 12 || 12;
+                                        return `${hour12}:${m} ${ampm}`;
+                                      })(),
+                                      site: siteInput.value,
+                                      status: 'pending'
+                                    }]
+                                  });
+                                  nameInput.value = '';
+                                  timeInput.value = '';
+                                  siteInput.value = '';
+                                }
+                              }}
+                            >
+                              Add
+                            </Button>
+                          </Box>
+                        </Box>
+                      </Box>
+                    ) : null}
+                  </Paper>
+                </Box>
+              )}
+              {activeInputTab === 'Investigations' && (
+                <Box>
+                  {/* Orders List */}
+                  <Paper variant="outlined" sx={{ borderRadius: '12px', bgcolor: '#f8fafc', overflow: 'hidden', mb: 2 }}>
+                    {((formState?.orders || []).length > 0 || pendingOrders.length > 0) ? (
+                      <Box>
+                        {[...(formState?.orders || []), ...pendingOrders].map((order, index) => (
+                          <Box key={order.id || index} sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0' }}>
+                            <Box flex={1}>
+                              <Box display="flex" alignItems="center" gap={1}>
+                                <Typography sx={{ fontWeight: 600, color: '#334155' }}>{order.code?.text || 'Test Order'}</Typography>
+                              </Box>
+                              <Typography variant="caption" sx={{ color: '#64748b' }}>
+                                {order.conclusion || 'No details'}
+                              </Typography>
+                            </Box>
+                            <Box display="flex" gap={1} alignItems="center">
+                              <Chip
+                                label={order.status || 'registered'}
+                                size="small"
+                                sx={{
+                                  bgcolor: order.status === 'registered' ? '#eff6ff' : order.status === 'preliminary' ? '#fef3c7' : '#d1fae5',
+                                  color: order.status === 'registered' ? '#1e40af' : order.status === 'preliminary' ? '#92400e' : '#065f46',
+                                  fontWeight: 600,
+                                  textTransform: 'capitalize'
+                                }}
+                              />
+
+                              {order.status === 'preliminary' && (
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  onClick={() => {
+                                    setSelectedOrderForResult(order);
+                                    setOpenResultDialog(true);
+                                  }}
+                                  sx={{
+                                    textTransform: 'none',
+                                    borderRadius: '8px',
+                                    borderColor: '#f59e0b',
+                                    color: '#f59e0b',
+                                    fontWeight: 600,
+                                    fontSize: '0.75rem',
+                                    '&:hover': {
+                                      borderColor: '#d97706',
+                                      bgcolor: '#fef3c7'
+                                    }
+                                  }}
+                                >
+                                  Add Result
+                                </Button>
+                              )}
+
+                              <IconButton size="small" onClick={() => handleDeleteOrder(order)} sx={{ color: '#94a3b8', '&:hover': { color: '#ef4444' } }}>
+                                <CloseIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          </Box>
+                        ))}
+                      </Box>
+                    ) : (
+                      <Box sx={{ p: 4, textAlign: 'center', color: '#94a3b8' }}>No diagnostic orders placed.</Box>
+                    )}
+                  </Paper>
+
+
+
+                  {/* Additional Comments for Orders */}
+                  <Box sx={{ mt: 2, mb: 2 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1e293b', mb: 1 }}>Additional Comments</Typography>
+                    <TextField
+                      fullWidth
+                      multiline
+                      minRows={2}
+                      placeholder="Add any additional comments or instructions for these orders..."
+                      value={formState.orderAdditionalComments || ''}
+                      onChange={(e) => setFormState({ ...formState, orderAdditionalComments: e.target.value })}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#f8fafc' } }}
+                    />
+                  </Box>
+
+                  {/* New Order Button */}
+                  <Button
+                    variant="contained"
+                    startIcon={<ScienceIcon />}
+                    onClick={() => setOpenOrderDialog(true)}
+                    sx={{
+                      py: 1.5,
+                      px: 3,
+                      borderRadius: '12px',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      bgcolor: '#3b82f6',
+                      '&:hover': { bgcolor: '#2563eb' }
+                    }}
+                  >
+                    New Order
+                  </Button>
+                  <DiagnosticOrderDialog
+                    open={openOrderDialog}
+                    onClose={() => setOpenOrderDialog(false)}
+                    onReturnDraftOrders={handleAddPendingOrders}
+                    patientResourceId={patient_resource_id || patient_id || ''}
+                  />
+                </Box>
+              )}
+            </Box>
+            {/* Consultants Dialog - NEW UI */}
+            <Dialog open={consultantDialogOpen} onClose={() => setConsultantDialogOpen(false)} maxWidth="sm" fullWidth>
+              <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>Mention Consultant</Typography>
+                <IconButton onClick={() => setConsultantDialogOpen(false)} size="small"><CloseIcon /></IconButton>
+              </DialogTitle>
+              <DialogContent dividers sx={{ p: 2 }}>
+                <Typography variant="body2" sx={{ color: '#64748b', mb: 2 }}>Select consultants involved in this care episode</Typography>
+
+                <TextField
+                  fullWidth
+                  placeholder="Search consultants..."
+                  variant="outlined"
+                  size="small"
+                  value={consultantSearch}
+                  onChange={(e) => setConsultantSearch(e.target.value)}
+                  sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: '8px', bgcolor: '#f8fafc' } }}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start"><SearchIcon color="disabled" /></InputAdornment>,
+                  }}
+                />
+
+                <List sx={{ maxHeight: 300, overflow: 'auto' }}>
+                  {availableConsultants
+                    .filter(c => c.name.toLowerCase().includes(consultantSearch.toLowerCase()))
+                    .map((consultant) => (
+                      <ListItem key={consultant.id} disablePadding>
+                        <ListItemButton onClick={() => handleToggleConsultant(consultant.id)} dense>
+                          <Checkbox
+                            edge="start"
+                            checked={selectedConsultantIds.includes(consultant.id)}
+                            tabIndex={-1}
+                            icon={<CheckBoxOutlineBlankIcon />}
+                            checkedIcon={<CheckBoxIcon />}
+                          />
+                          <ListItemText
+                            primary={consultant.name}
+                            secondary={consultant.role}
+                            primaryTypographyProps={{ fontWeight: 600, color: '#0f172a' }}
+                          />
+                          {consultant.isAutoGenerated && <Chip label="Auto-generated" size="small" sx={{ height: 20, fontSize: '0.65rem', bgcolor: '#f1f5f9', color: '#94a3b8' }} />}
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  {/* Option to Add New if search has value but no exact match */}
+                  {consultantSearch && !availableConsultants.some(c => c.name.toLowerCase() === consultantSearch.toLowerCase().trim()) && (
+                    <ListItem disablePadding>
+                      <ListItemButton onClick={handleAddNewConsultant}>
+                        <PersonAddIcon sx={{ mr: 2, color: '#3b82f6' }} />
+                        <ListItemText primary={`Add "${consultantSearch}" as new consultant`} sx={{ color: '#3b82f6' }} />
+                      </ListItemButton>
+                    </ListItem>
+                  )}
+                </List>
+              </DialogContent>
+              <DialogActions sx={{ p: 2 }}>
+                <Button onClick={() => setConsultantDialogOpen(false)} sx={{ color: '#64748b', fontWeight: 600 }}>Cancel</Button>
+                <Button onClick={handleSaveConsultants} variant="contained" sx={{ bgcolor: '#0f172a', borderRadius: '8px', textTransform: 'none' }}>Confirm Selection</Button>
+              </DialogActions>
+            </Dialog>
+          </Paper>
+        )}
       </Box>
-      
-      <Box sx={{ pt: 2 }}>
-        {activeTab === 0 && <MedicationsTab />}
-        {activeTab === 1 && <ProceduresTab />}
-        {activeTab === 2 && <TherapyTab />}
+
+      {/* Attachment Management Dialog */}
+      <Dialog
+        open={openAttachDialog}
+        onClose={() => setOpenAttachDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        sx={{ "& .MuiDialog-paper": { borderRadius: "16px" } }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: "#1e293b", borderBottom: "1px solid #f1f5f9" }}>
+          Manage Attachments
+        </DialogTitle>
+        <DialogContent sx={{ p: 3 }}>
+          <Typography variant="body2" sx={{ color: "#64748b", mb: 3 }}>
+            Only images like <strong>png, jpg, jpeg</strong> can be uploaded.
+          </Typography>
+
+          <Stack spacing={2}>
+            {formState?.attachments && formState.attachments.length > 0 ? (
+              formState.attachments.map((file, idx) => (
+                <Paper
+                  key={idx}
+                  elevation={0}
+                  sx={{
+                    border: "1px solid #e2e8f0",
+                    p: 1.5,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    borderRadius: "12px",
+                    bgcolor: "#f8fafc"
+                  }}
+                >
+                  <Box
+                    sx={{
+                      bgcolor: "#ef4444",
+                      color: "white",
+                      borderRadius: "6px",
+                      px: 1,
+                      py: 0.5,
+                      fontSize: "0.75rem",
+                      fontWeight: 800,
+                      textTransform: "uppercase"
+                    }}
+                  >
+                    {file.name.split(".").pop() || "FILE"}
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 600,
+                        color: "#334155",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis"
+                      }}
+                    >
+                      {file.name}
+                    </Typography>
+                  </Box>
+                  <IconButton
+                    size="small"
+                    onClick={() => removeAttachment(idx)}
+                    sx={{ color: "#94a3b8", "&:hover": { color: "#ef4444", bgcolor: "#fee2e2" } }}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Paper>
+              ))
+            ) : (
+              <Box sx={{ py: 4, textAlign: "center", border: "2px dashed #e2e8f0", borderRadius: "16px" }}>
+                <Typography sx={{ color: "#94a3b8" }}>No files attached yet.</Typography>
+              </Box>
+            )}
+
+            <Button
+              variant="outlined"
+              fullWidth
+              startIcon={<AddIcon />}
+              onClick={() => fileInputRef.current?.click()}
+              sx={{
+                mt: 2,
+                borderRadius: "10px",
+                textTransform: "none",
+                fontWeight: 600,
+                py: 1.5,
+                border: "2px solid #e2e8f0",
+                color: "#64748b",
+                "&:hover": { border: "2px solid #3b82f6", color: "#3b82f6", bgcolor: "#eff6ff" }
+              }}
+            >
+              Upload New File
+            </Button>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, borderTop: "1px solid #f1f5f9" }}>
+          <Button
+            onClick={() => setOpenAttachDialog(false)}
+            sx={{ textTransform: "none", fontWeight: 600, borderRadius: "8px", px: 3 }}
+          >
+            Done
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Hidden File Input */}
+      <input
+        type="file"
+        multiple
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={handleFileChange}
+        accept="image/png, image/jpeg, image/jpg"
+      />
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <Box
+          onClick={() => setPreviewImage(null)}
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            bgcolor: "rgba(0, 0, 0, 0.85)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            p: 4
+          }}
+        >
+          <Box sx={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh" }}>
+            <IconButton
+              onClick={() => setPreviewImage(null)}
+              sx={{
+                position: "absolute",
+                top: -40,
+                right: 0,
+                color: "#fff",
+                bgcolor: "rgba(255,255,255,0.1)",
+                "&:hover": { bgcolor: "rgba(255,255,255,0.2)" }
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+            <img
+              src={previewImage.url}
+              alt={previewImage.name}
+              style={{
+                maxWidth: "90vw",
+                maxHeight: "85vh",
+                objectFit: "contain",
+                borderRadius: "8px",
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+              }}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <Typography
+              sx={{
+                color: "#fff",
+                textAlign: "center",
+                mt: 2,
+                fontWeight: 500
+              }}
+            >
+              {previewImage.name}
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
+      {/* Prescription Dialog - Shared with PrescriptionScreen */}
+      <Box sx={{ display: "none" }}>
+        <PrescriptionScreen
+          patient_name={patient_name}
+          patient_id={patient_id}
+          patient_resource_id={patient_resource_id || patient_id}
+          birth_date={birth_date || ""}
+          gestational_age={gestational_age || ""}
+          UserRole="Nurse"
+          current_weight={formState?.vitals?.weight || ""}
+          externalOpenPrescribeModal={openPrescribeModal}
+          externalSetOpenPrescribeModal={setOpenPrescribeModal}
+          onPrescriptionConfirm={handlePrescriptionConfirm}
+          saveOnConfirm={false}
+        />
       </Box>
+
+      {/* Sample Collection Dialog */}
+      <SampleCollectionDialog
+        open={openSampleDialog}
+        onClose={() => {
+          setOpenSampleDialog(false);
+          setSelectedReportId(null);
+        }}
+        onCollectionSuccess={() => {
+          // Callback if needed
+        }}
+        reportId={selectedReportId || ""}
+        isDarkMode={false}
+      />
+
+      {/* Result Entry Dialog */}
+      <ResultEntryDialog
+        open={openResultDialog}
+        onClose={() => {
+          setOpenResultDialog(false);
+          setSelectedOrderForResult(null);
+        }}
+        onResultSuccess={() => {
+          // Callback if needed
+        }}
+        order={selectedOrderForResult}
+        patientName={patient_name}
+        patientAgeDays={
+          birth_date
+            ? Math.floor((new Date().getTime() - new Date(birth_date).getTime()) / (1000 * 60 * 60 * 24))
+            : 0
+        }
+        patientGender="unknown"
+        isDarkMode={false}
+      />
     </Box>
   );
 };
+
+export default Treatment;
 

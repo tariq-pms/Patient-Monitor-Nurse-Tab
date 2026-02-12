@@ -5,6 +5,7 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
+  useTheme,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,14 +14,14 @@ import {
   faBell,
   faClipboardCheck,
   faDroplet,
-  faBaby,
+  faWeightHanging,
   faTasks,
   faHeartPulse,
   faInbox,
-  faHeartCircleBolt,
-  faTableColumns,
-  faFileSignature
   
+  faTableColumns,
+  faFileSignature,
+  faNotesMedical
 } from "@fortawesome/free-solid-svg-icons";
 import { usePermissions } from "../contexts/PermissionContext";
 
@@ -58,12 +59,12 @@ export const SidebarOg: FC<SidebarProps> = ({
     { id: 'feeds', label: "Feeds&Nutrition", icon: faInbox, fhirModuleName: "Clinical Notes" },
     { id: 'trends', label: "Trends", icon: faHeartPulse, fhirModuleName: "Vitals & Trends" },
     { id: 'diagnostics', label: "Diagnostics", icon: faDroplet, fhirModuleName: "Diagnostics" },
-    { id: 'treatment', label: "Treatment", icon: faHeartCircleBolt, fhirModuleName: "Patients Clinical List" }, // Changed to Patients Clinical List
+    { id: 'treatment', label: "Treatment", icon: faNotesMedical, fhirModuleName: "Patients Clinical List" }, // Changed to Patients Clinical List
     { id: 'notes', label: "Notes", icon: faFile, fhirModuleName: "Clinical Notes" },
-    { id: 'assessments', label: "Assessments", icon: faClipboardCheck, fhirModuleName: "Assessments" }, 
-    { id: 'growthchart', label: "Growth Chart", icon: faBaby, fhirModuleName: "Diagnostics" },
+    { id: 'assessments', label: "Assessments", icon: faClipboardCheck, fhirModuleName: "Assessments" },
+    { id: 'growthchart', label: "Growth Chart", icon: faWeightHanging, fhirModuleName: "Diagnostics" },
     { id: 'consentforms', label: "Consent Forms", icon: faFileSignature, fhirModuleName: "Consent Forms" },
-  
+
   ];
 
   const nicuNurseItems: MenuItem[] = [
@@ -71,8 +72,9 @@ export const SidebarOg: FC<SidebarProps> = ({
   ];
 
   const otherRoleItems: MenuItem[] = [
-   
+
     { id: 'alarms', label: "Monitoring & Alarm", icon: faBell, fhirModuleName: "Vitals & Trends" },
+    { id: 'newPage', label: "New Page", icon: faFile, fhirModuleName: "Patients Overview" },
   ];
 
   // Combine menu items based on user role
@@ -93,10 +95,10 @@ export const SidebarOg: FC<SidebarProps> = ({
   }, [loading, allMenuItems]);
 
   // Filter menu items based on user permissions
-  const filteredMenuItems = loading 
-    ? [] 
+  const filteredMenuItems = loading
+    ? []
     : allMenuItems.filter(item => canViewModule(item.fhirModuleName));
-// const filteredMenuItems = allMenuItems;
+  // const filteredMenuItems = allMenuItems;
 
   // Debug: Show what's being filtered
   useEffect(() => {
@@ -105,17 +107,21 @@ export const SidebarOg: FC<SidebarProps> = ({
     }
   }, [filteredMenuItems, loading]);
 
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+
   if (loading) {
     return (
       <Box
         sx={{
           width: isSidebarCollapsed ? 237 : 60,
-          backgroundColor: "#FFFFFF",
+          backgroundColor: isDarkMode ? '#21262D' : "#FFFFFF",
           height: '100vh',
           borderRadius: '10px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          color: theme.palette.text.secondary,
         }}
       >
         <div>Loading permissions...</div>
@@ -127,13 +133,14 @@ export const SidebarOg: FC<SidebarProps> = ({
     <Box
       sx={{
         width: isSidebarCollapsed ? 237 : 60,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: isDarkMode ? '#21262D' : "#FFFFFF",
         display: "flex",
         height: '100vh',
         flexDirection: "column",
         alignItems: "center",
         borderRadius: '10px',
-        transition: "width 0.3s",
+        transition: "width 0.3s, background-color 0.3s",
+        borderRight: isDarkMode ? `1px solid ${theme.palette.divider}` : 'none',
       }}
     >
       {/* Debug info - remove in production */}
@@ -158,16 +165,22 @@ export const SidebarOg: FC<SidebarProps> = ({
                 height: 40,
                 fontSize: '1.3rem',
                 paddingX: 1,
-                backgroundColor: selectedId === item.id ? "#CCE6FF" : "transparent",
+                backgroundColor: selectedId === item.id
+                  ? (isDarkMode ? 'rgba(88, 166, 255, 0.15)' : "#CCE6FF")
+                  : "transparent",
                 marginBottom: 2,
                 cursor: "pointer",
-                "&:hover": { backgroundColor: "#E6F2FF" },
+                "&:hover": {
+                  backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : "#E6F2FF"
+                },
               }}
               onClick={() => onIconClick(item.id)}
             >
               <ListItemIcon
                 sx={{
-                  color: selectedId === item.id ? "#124D81" : "#757575",
+                  color: selectedId === item.id
+                    ? (isDarkMode ? '#58A6FF' : "#124D81")
+                    : (isDarkMode ? theme.palette.text.secondary : "#757575"),
                   minWidth: 36,
                   justifyContent: "center",
                 }}
@@ -177,7 +190,9 @@ export const SidebarOg: FC<SidebarProps> = ({
               <ListItemText
                 primary={item.label}
                 sx={{
-                  color: selectedId === item.id ? "#124D81" : "#757575",
+                  color: selectedId === item.id
+                    ? (isDarkMode ? '#58A6FF' : "#124D81")
+                    : (isDarkMode ? theme.palette.text.secondary : "#757575"),
                   fontWeight: selectedId === item.id ? "bold" : "normal",
                   marginLeft: 2,
                   opacity: isSidebarCollapsed ? 1 : 0,

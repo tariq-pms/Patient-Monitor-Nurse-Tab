@@ -1,11 +1,11 @@
 import React, { FC, useEffect, useState } from 'react';
-import {AppBar, Divider,IconButton,Switch,Menu, Stack, useMediaQuery, useTheme} from '@mui/material';
+import { AppBar, Divider, IconButton, Switch, Menu, Stack, useMediaQuery, useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 
 
 import Button from '@mui/material/Button';
-import { useNavigate,useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import pmsLogo from '../assets/image 135.png';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography } from '@material-ui/core';
@@ -27,22 +27,22 @@ export interface HeaderProps {
   toggleDarkTheme: () => void;
   onToggleSidebar: () => void;
   isSidebarCollapsed: boolean;
-  setSearchQuery: (query: string) => void; 
+  setSearchQuery: (query: string) => void;
 }
 
 
 export const Header: FC<HeaderProps> = (props) => {
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const {user, isLoading, isAuthenticated, logout, getIdTokenClaims} = useAuth0();
-  const[UserRole, setUserRole] = useState("");
-  const[UserOrganization, setUserOrganization] = useState("");
- 
- 
-  
+  const { user, isLoading, isAuthenticated, logout, getIdTokenClaims } = useAuth0();
+  const [UserRole, setUserRole] = useState("");
+  const [UserOrganization, setUserOrganization] = useState("");
+
+
+
   // const [notHome, setNotHome] = useState(true);
   const [temproom, settemproom] = useState([
     {
@@ -64,131 +64,138 @@ export const Header: FC<HeaderProps> = (props) => {
     },
   ]);
 
- 
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const state = Boolean(anchorEl);
 
- const { darkTheme, toggleDarkTheme } = props;
+  const { darkTheme, toggleDarkTheme } = props;
 
- useEffect(() => {
+  useEffect(() => {
     getIdTokenClaims()
-    .then((res) => {
-      console.log('Role:', res);
-      // console.log('notHome:', notHome);
-      console.log('temproom:', temproom);
-
-      setUserRole(res?.role);
-      setUserOrganization(res?.organization);
-       console.log("organization is here",UserOrganization )
-       if (isAuthenticated) {
-       fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?organization=${UserOrganization}`, {
-          credentials: 'omit',
-          headers: {
-            Authorization: 'Basic ' + btoa('fhiruser:change-password'),
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.entry) {
-              settemproom(data.entry);
-            }
+      .then((res) => {
+        console.log('Role:', res);
+        // console.log('notHome:', notHome);
+        console.log('temproom:', temproom);
+        console.log('dark mode true or false : ', darkTheme);
+        setUserRole(res?.role);
+        setUserOrganization(res?.organization);
+        console.log("organization is here", UserOrganization)
+        if (isAuthenticated) {
+          fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?organization=${UserOrganization}`, {
+            credentials: 'omit',
+            headers: {
+              Authorization: 'Basic ' + btoa('fhiruser:change-password'),
+            },
           })
-          .catch((error) => {
-            console.error('Failed to fetch locations:', error);
-          });
-      }
-    })
-    .catch((error) => {
-      console.error('Failed to fetch role:', error);
-    });
-}, [isAuthenticated,UserOrganization ]);
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.entry) {
+                settemproom(data.entry);
+              }
+            })
+            .catch((error) => {
+              console.error('Failed to fetch locations:', error);
+            });
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to fetch role:', error);
+      });
+  }, [isAuthenticated, UserOrganization]);
 
-useEffect(() => {
-  if (UserRole === 'Hospital Clinician' && 
-      (location.pathname === '/rooms' || location.pathname === '/Admin' || 
-       location.pathname === '/organization' || location.pathname === '/device-monitor')) {
-    navigate('/patient-monitor');
-  }
-  
-  if (UserRole === 'Hospital Technician' && 
+  useEffect(() => {
+    if (UserRole === 'Hospital Clinician' &&
+      (location.pathname === '/rooms' || location.pathname === '/Admin' ||
+        location.pathname === '/organization' || location.pathname === '/device-monitor')) {
+      navigate('/patient-monitor');
+    }
+
+    if (UserRole === 'Hospital Technician' &&
       (location.pathname === '/patient-monitor' || location.pathname === '/organization')) {
-    navigate('/administration');
-  }
+      navigate('/administration');
+    }
 
-  if (UserRole === 'Phoenix' && location.pathname !== '/organization') {
-    navigate('/organization');
-  }
- 
-
-}, [isAuthenticated, UserRole, location.pathname, navigate]);
+    if (UserRole === 'Phoenix' && location.pathname !== '/organization') {
+      navigate('/organization');
+    }
 
 
-// const handleBackButtonClick = () => {
-//   setNotHome(true);
+  }, [isAuthenticated, UserRole, location.pathname, navigate]);
 
-//   if (UserRole === 'Hospital Technician') {
-//       navigate('/patient-monitor');
-//   } else {
-//       navigate('/patient-monitor');
-//   }
 
-  
-// };
+  // const handleBackButtonClick = () => {
+  //   setNotHome(true);
+
+  //   if (UserRole === 'Hospital Technician') {
+  //       navigate('/patient-monitor');
+  //   } else {
+  //       navigate('/patient-monitor');
+  //   }
+
+
+  // };
 
   return (
-   <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" style={{ background: '#F5F5F5', boxShadow: 'none' }} >
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar
+        position="static"
+        sx={{
+          background: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#F5F5F5',
+          boxShadow: 'none',
+          borderBottom: theme.palette.mode === 'dark' ? `1px solid ${theme.palette.divider}` : 'none',
+        }}
+      >
         <Toolbar>
           {!isLoading && isAuthenticated && (
             <>
               <div style={{ marginRight: 'auto' }}>
-              <Box sx={{ width:'55%',maxWidth: '55%', display:'flex'}}>
-               
-          {/* <IconButton    onClick={handleBackButtonClick}   sx={{height:'40px',  cursor: 'pointer'}}>
+                <Box sx={{ width: '55%', maxWidth: '55%', display: 'flex' }}>
+
+                  {/* <IconButton    onClick={handleBackButtonClick}   sx={{height:'40px',  cursor: 'pointer'}}>
               <ArrowBackIcon style={{color: darkTheme ? 'white' : '#124D81' }} />        */}
-        {/* < DehazeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} /> */}
-{/*        
+                  {/* < DehazeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} /> */}
+                  {/*        
       </IconButton> */}
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              flexDirection: 'column',
-              minWidth: isMobile ? '80px' : '120px'
-            }}
-            
-          >
-            <img 
-              src={pmsLogo} // Replace with your logo path
-              alt="Logo" 
-              style={{ 
-                width: isMobile ? '60px' : '120px', 
-                height: 'auto'
-              }} 
-            />
-            <Typography
-              variant="h2"
-              style={{
-                color: props.darkTheme ? 'white' : '#124D81',
-                fontSize: isMobile ? '0.9rem' : '1.5rem',
-                fontWeight: 400,
-                lineHeight: 1,
-              }}
-            >
-              <span style={{ color: '#185284' }}>Neo</span>
-              <span style={{ color: '#01AEEE', marginLeft: '2px' }}>Life</span>
-            </Typography>
-          </Box>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      minWidth: isMobile ? '80px' : '120px'
+                    }}
+
+                  >
+                    <img
+                      src={pmsLogo} // Replace with your logo path
+                      alt="Logo"
+                      style={{
+                        width: isMobile ? '60px' : '120px',
+                        height: 'auto'
+                      }}
+                    />
+                    <Typography
+                      variant="h2"
+                      style={{
+                        color: props.darkTheme ? 'white' : '#124D81',
+                        fontSize: isMobile ? '0.9rem' : '1.5rem',
+                        fontWeight: 400,
+                        lineHeight: 1,
+                      }}
+                    >
+                      <span style={{ color: '#185284' }}>Neo</span>
+                      <span style={{ color: '#01AEEE', marginLeft: '2px' }}>Life</span>
+                    </Typography>
                   </Box>
-                  
-                
-                  
-                 
-            </div>
-               <Stack direction={'row'} justifyContent={'center'} textAlign={'center'} >
-                    {/* {notHome && UserRole === 'Hospital Technician' && (
+                </Box>
+
+
+
+
+              </div>
+              <Stack direction={'row'} justifyContent={'center'} textAlign={'center'} >
+                {/* {notHome && UserRole === 'Hospital Technician' && (
                       <>
                        
                        <FormControl
@@ -264,96 +271,96 @@ useEffect(() => {
                         
                       </>
                     )} */}
-                    <Divider orientation="vertical" flexItem sx={{backgroundColor: darkTheme ? '#1C1C1E' : '#D6D6D6' }} />
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-             
-              <IconButton   onClick={handleMenu}   sx={{height:'40px'}}>
-              <AccountCircleRoundedIcon style={{color: darkTheme ? 'white' : '#124D81' }} />       
-        {/* < DehazeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} /> */}
-        <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
-    {user?.name}
-    
-    </Typography>
-      </IconButton>
-     
-      <Menu
-  anchorEl={anchorEl}
-  open={state}
-  onClose={() => { setAnchorEl(null); }}
-  MenuListProps={{ disablePadding: true }}
-  sx={{
-    '& .MuiPaper-root': {
-      borderRadius: '16px'
-    }
-  }}
->
-      <Box  width={'270px'} sx={{ backgroundColor: darkTheme ? '#000000' : '#F3F2F7', color: darkTheme ? '' : '#124D81',border:'4px solid  #AEAEAE',borderRadius:'16px' }}>
-     
-        <Stack direction={'row'} width={'100%'} padding={'5px'} alignItems="center">
-  <Box alignContent={'center'} sx={{ marginRight: '8px',marginTop:'0px' }}>
-    <AccountCircleRoundedIcon style={{ fontSize: '44px', color: darkTheme ? 'white' : '#124D81' }} />
-  </Box>
-  <Stack justifyContent="center">
-    <Typography variant="h6" style={{ color: darkTheme ? 'white' : '#124D81' }}>
-    {user?.nickname}
-    
-    </Typography>
-    <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
-    {user?.email}
-   
-    </Typography>
-    <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
-    {user?.role}
-    </Typography>
-  </Stack>
-</Stack>
+                <Divider orientation="vertical" flexItem sx={{ backgroundColor: darkTheme ? '#1C1C1E' : '#D6D6D6' }} />
+                <div style={{ display: 'flex', alignItems: 'center' }}>
 
-        <Stack direction="row" justifyContent="flex-end" paddingBottom="12px" paddingRight="22px">
-          <Button
-            onClick={() => logout()}
-            sx={{ backgroundColor: '#124D81', color: 'white', textTransform: 'capitalize' }}
-          >
-            <Typography variant="caption">Sign out</Typography>
-          </Button>
-        </Stack>
+                  <IconButton onClick={handleMenu} sx={{ height: '40px' }}>
+                    <AccountCircleRoundedIcon style={{ color: darkTheme ? 'white' : '#124D81' }} />
+                    {/* < DehazeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} /> */}
+                    <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
+                      {user?.name}
 
-        <Divider sx={{ border: '0.3px solid #AEAEAE' }} />
-      
-        {/* <Divider sx={{ border: '0.3px solid grey' }} /> */}
-        <Stack direction="row" width="100%" justifyContent="space-around"   >
-          <Typography variant="subtitle1" style={{marginRight:'50px',marginTop:'4px'}}>Dark Mode</Typography>
-          <Switch
-            onChange={toggleDarkTheme}
-            checked={darkTheme}
-            sx={{
-              
-              '& .MuiSwitch-switchBase.Mui-checked': {
-                color: '#FFFFFF',
-                '&:hover': {
-                  backgroundColor: 'rgba(18, 77, 129, 0.08)',
-                },
-              },
-              '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                backgroundColor: '#00AEEE',
-              },
-              '& .MuiSwitch-track': {
-                backgroundColor: 'grey',
-              },
-            }}
-          />
-        </Stack>
-      </Box>
-    </Menu>
+                    </Typography>
+                  </IconButton>
+
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={state}
+                    onClose={() => { setAnchorEl(null); }}
+                    MenuListProps={{ disablePadding: true }}
+                    sx={{
+                      '& .MuiPaper-root': {
+                        borderRadius: '16px'
+                      }
+                    }}
+                  >
+                    <Box width={'270px'} sx={{ backgroundColor: darkTheme ? '#000000' : '#F3F2F7', color: darkTheme ? '' : '#124D81', border: '4px solid  #AEAEAE', borderRadius: '16px' }}>
+
+                      <Stack direction={'row'} width={'100%'} padding={'5px'} alignItems="center">
+                        <Box alignContent={'center'} sx={{ marginRight: '8px', marginTop: '0px' }}>
+                          <AccountCircleRoundedIcon style={{ fontSize: '44px', color: darkTheme ? 'white' : '#124D81' }} />
+                        </Box>
+                        <Stack justifyContent="center">
+                          <Typography variant="h6" style={{ color: darkTheme ? 'white' : '#124D81' }}>
+                            {user?.nickname}
+
+                          </Typography>
+                          <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
+                            {user?.email}
+
+                          </Typography>
+                          <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
+                            {user?.role}
+                          </Typography>
+                        </Stack>
+                      </Stack>
+
+                      <Stack direction="row" justifyContent="flex-end" paddingBottom="12px" paddingRight="22px">
+                        <Button
+                          onClick={() => logout()}
+                          sx={{ backgroundColor: '#124D81', color: 'white', textTransform: 'capitalize' }}
+                        >
+                          <Typography variant="caption">Sign out</Typography>
+                        </Button>
+                      </Stack>
+
+                      <Divider sx={{ border: '0.3px solid #AEAEAE' }} />
+
+                      {/* <Divider sx={{ border: '0.3px solid grey' }} /> */}
+                      <Stack direction="row" width="100%" justifyContent="space-around"   >
+                        <Typography variant="subtitle1" style={{ marginRight: '50px', marginTop: '4px' }}>Dark Mode</Typography>
+                        <Switch
+                          onChange={toggleDarkTheme}
+                          checked={darkTheme}
+                          sx={{
+
+                            '& .MuiSwitch-switchBase.Mui-checked': {
+                              color: '#FFFFFF',
+                              '&:hover': {
+                                backgroundColor: 'rgba(18, 77, 129, 0.08)',
+                              },
+                            },
+                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                              backgroundColor: '#00AEEE',
+                            },
+                            '& .MuiSwitch-track': {
+                              backgroundColor: 'grey',
+                            },
+                          }}
+                        />
+                      </Stack>
+                    </Box>
+                  </Menu>
                 </div>
-                    </Stack>
-                   
-                      
-                     
+              </Stack>
+
+
+
             </>
           )}
         </Toolbar>
       </AppBar>
     </Box>
-    
+
   );
 };

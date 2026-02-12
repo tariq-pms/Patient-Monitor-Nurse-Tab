@@ -2,12 +2,13 @@ import "./App.css";
 import { Routes, Route } from "react-router-dom";
 import { Home } from "./pages/Home";
 // import { Rooms } from "./pages/Rooms";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material/styles";
+import { CssBaseline } from "@mui/material";
 import { Header } from "./components/Header";
 import { Backdrop, CircularProgress } from "@mui/material";
 import { useAuth0 } from "@auth0/auth0-react";
 import { UserInfo } from "./pages/UserInfo";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import "@fontsource/noto-sans";
 import { PatientMonitor } from "./pages/PatientMonitor";
 import { NurseMonitor } from "./pages/NurseMonitor";
@@ -18,28 +19,16 @@ import { Organization } from "./pages/Organization";
 import { DeviceProvider } from "./contexts/DeviceContext";
 
 import { NotificationProvider } from "./contexts/NotificationContext";
-import {PatientDetailView } from "./pages/PatientDetails";
+import { PatientDetailView } from "./pages/PatientDetails";
 import { Administration } from "./pages/Administration";
 
 import { PermissionProvider } from './contexts/PermissionContext';
-import{ PatientProfile } from "./pages/PatientProfile";
-const theme = createTheme({
-    typography: {
-        allVariants: {
-            userSelect: 'none'
-        }
-    },
-    palette: {
-        mode: 'dark',
-        background: { default: '#000000' },
-        primary: {
-            main: "#2BA0E0",
-        },
-        secondary: {
-            main: "#00A0E3"
-        }
-    },
-});
+import { PatientProfile } from "./pages/PatientProfile";
+import { createAppTheme } from './theme';
+
+
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 function App() {
     const { isLoading, getIdTokenClaims, isAuthenticated } = useAuth0();
@@ -47,13 +36,20 @@ function App() {
     // const [roomAltered, setRoomAltered] = useState(false);
     const [UserOrganization, setUserOrganization] = useState("");
     const [searchQuery, setSearchQuery] = useState<string>('');
-    const [darkTheme, setDarkTheme] = useState(false);
-    
-    const[UserRole, setUserRole] = useState("");
+    // set mode based on system theme
+
+    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    console.log('systemTheme', systemTheme);
+    const [darkTheme, setDarkTheme] = useState(systemTheme); // Default to dark mode
+
+    // Create theme dynamically based on darkTheme state
+    const theme = useMemo(() => createAppTheme(darkTheme ? 'dark' : 'light'), [darkTheme]);
+
+    const [UserRole, setUserRole] = useState("");
     const [openDialog, setOpenDialog] = useState(false);
 
-  const handleOpenDialog = () => setOpenDialog(true);
-  const handleCloseDialog = () => setOpenDialog(false);
+    const handleOpenDialog = () => setOpenDialog(true);
+    const handleCloseDialog = () => setOpenDialog(false);
 
 
     useEffect(() => {
@@ -65,8 +61,8 @@ function App() {
                     //setUserRole(res?.role);
                     setUserRole(res?.name || "");
 
-                    console.log('fetched UserRole',res?.role);
-                    console.log('searchQuery',searchQuery);
+                    console.log('fetched UserRole', res?.role);
+                    console.log('searchQuery', searchQuery);
                     console.log('fetched UserOrganization', res?.organization);
                 })
                 .catch((error) => {
@@ -75,7 +71,7 @@ function App() {
         }
     }, [isAuthenticated]);
 
-    
+
 
     const toggleDarkTheme = () => {
         setDarkTheme((prevTheme) => !prevTheme);
@@ -92,39 +88,42 @@ function App() {
 
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  const toggleSidebar = () => {
-    setIsSidebarCollapsed(prev => !prev);
-  };
+    const toggleSidebar = () => {
+        setIsSidebarCollapsed(prev => !prev);
+    };
 
     return (
-        <ThemeProvider theme={theme}>
-             <NotificationProvider>
-                
-            <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
-                <CircularProgress color="inherit" />
-            </Backdrop>
-            <Header darkTheme={darkTheme} setSearchQuery={setSearchQuery} toggleDarkTheme={toggleDarkTheme} currentRoom={currentRoom} roomChange={roomChange} onToggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} onAddClick={handleOpenDialog} userOrganization={""}               />
-            <DeviceProvider>
-            <PermissionProvider>
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/user" element={<UserInfo />} />
-                    {/* <Route path="/rooms" element={<Rooms roomModified={roomModified} userOrganization={UserOrganization} darkTheme={darkTheme} />} /> */}
-                    <Route path="/patient-monitor" element={<PatientMonitor currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
-                    <Route path="/nurse-monitor" element={<NurseMonitor currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
-                    {/* <Route path="/all-patient" element={<AllPatient searchQuery={searchQuery} currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} /> */}
-                    
-                    <Route path="/admin" element={<AdminPage userOrganization={UserOrganization} darkTheme={darkTheme} />} />
-                    <Route path="/administration" element={<Administration  isSidebarCollapsed={isSidebarCollapsed} openDialog={openDialog} userOrganization={UserOrganization} darkTheme={darkTheme} onCloseDialog={handleCloseDialog}/>} />
-                    <Route path="/organization" element={<Organization darkTheme={darkTheme} userOrganization={UserOrganization} />} /> 
-                    <Route path="/patient-profile/:patientId" element={<PatientProfile UserRole={UserRole} userOrganization={UserOrganization} />} />
-                     <Route path="/patient/:id" element={<PatientDetailView  isSidebarCollapsed={isSidebarCollapsed} key={""} newData={false} userOrganization={UserOrganization} patient_id={""} device={[]} patient_resource_id={""} observation_resource={[]} communication_resource={[]} patient_name={""} darkTheme={false} UserRole={UserRole} selectedIcon={""} gestational_age={""} birthDate={""} gender={""} />} />
-                </Routes>
-                </PermissionProvider>
-            </DeviceProvider>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <NotificationProvider>
 
-            </NotificationProvider>
-        </ThemeProvider>
+                    <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
+                        <CircularProgress color="inherit" />
+                    </Backdrop>
+                    <Header darkTheme={darkTheme} setSearchQuery={setSearchQuery} toggleDarkTheme={toggleDarkTheme} currentRoom={currentRoom} roomChange={roomChange} onToggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} onAddClick={handleOpenDialog} userOrganization={""} />
+                    <DeviceProvider>
+                        <PermissionProvider>
+                            <Routes>
+                                <Route path="/" element={<Home />} />
+                                <Route path="/user" element={<UserInfo />} />
+                                {/* <Route path="/rooms" element={<Rooms roomModified={roomModified} userOrganization={UserOrganization} darkTheme={darkTheme} />} /> */}
+                                <Route path="/patient-monitor" element={<PatientMonitor currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
+                                <Route path="/nurse-monitor" element={<NurseMonitor currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
+                                {/* <Route path="/all-patient" element={<AllPatient searchQuery={searchQuery} currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} /> */}
+
+                                <Route path="/admin" element={<AdminPage userOrganization={UserOrganization} darkTheme={darkTheme} />} />
+                                <Route path="/administration" element={<Administration isSidebarCollapsed={isSidebarCollapsed} openDialog={openDialog} userOrganization={UserOrganization} darkTheme={darkTheme} onCloseDialog={handleCloseDialog} />} />
+                                <Route path="/organization" element={<Organization darkTheme={darkTheme} userOrganization={UserOrganization} />} />
+                                <Route path="/patient-profile/:patientId" element={<PatientProfile UserRole={UserRole} userOrganization={UserOrganization} />} />
+                                <Route path="/patient/:id" element={<PatientDetailView isSidebarCollapsed={isSidebarCollapsed} key={""} newData={false} userOrganization={UserOrganization} patient_id={""} device={[]} patient_resource_id={""} observation_resource={[]} communication_resource={[]} patient_name={""} darkTheme={darkTheme} toggleTheme={toggleDarkTheme} UserRole={UserRole} selectedIcon={""} gestational_age={""} birthDate={""} gender={""} />} />
+                            </Routes>
+                        </PermissionProvider>
+                    </DeviceProvider>
+
+                </NotificationProvider>
+            </ThemeProvider>
+        </LocalizationProvider>
     );
 }
 

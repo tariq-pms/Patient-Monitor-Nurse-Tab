@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Button, Grid, Paper, Stack,  Table, TableCell, TableBody, TableHead, TableRow, TableContainer, Snackbar, Alert } from "@mui/material";
+import { Box, Typography, Button, Grid, Paper, Stack, Table, TableCell, TableBody, TableHead, TableRow, TableContainer, Snackbar, Alert } from "@mui/material";
 import { ProtectedModule } from "./ProtectedModule";
 
 interface Procedure {
@@ -63,7 +63,7 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
     {
       label: "Cyanosis",
       options: ["No Cyanosis", "Cyanosis Relieved by O2", "Cyanosis on O2"],
-    },  
+    },
     {
       label: "Air_Entry",
       options: ["Good Bilateral Air Entry", "Mild Decrease in Air Entry", "No Air Entry"],
@@ -78,7 +78,7 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
   // Calculate total score
   const totalScore = selectedOptions.reduce((total, value) => total + value, 0);
 
-  
+
   const handleSelect = (categoryIndex: number, optionIndex: number) => {
     const updatedSelections = [...selectedOptions];
     updatedSelections[categoryIndex] = optionIndex;
@@ -99,7 +99,7 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
   const [procedureResourceId, setProcedureResourceId] = useState<string | null>(null);
   const [procedureHistory, setProcedureHistory] = useState([]);
   const [loading, setLoading] = useState<boolean>(true);
-  
+
   const fetchProcedure = async () => {
     setLoading(true); // Show loading state
     try {
@@ -111,15 +111,22 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
           Authorization: "Basic " + btoa("fhiruser:change-password"),
         },
       });
-  
+
       if (response.ok) {
         const searchData = await response.json();
         console.log("Fetched Procedures:", searchData);
-  
+
         if (searchData?.entry && searchData.entry.length > 0) {
-          const existingProcedureId = searchData.entry[0].resource.id;
-          setProcedureResourceId(existingProcedureId); // Set the Procedure ID
-          console.log("Procedure Resource ID fetched:", existingProcedureId);
+          // ⭐ Filter for "Downe Score" specifically
+          const downeEntry = searchData.entry.find((e: any) =>
+            e.resource.code?.text === "Downe Score" ||
+            e.resource.code?.coding?.some((c: any) => c.display === "Downe score")
+          );
+          if (downeEntry) {
+            const existingProcedureId = downeEntry.resource.id;
+            setProcedureResourceId(existingProcedureId);
+            console.log("Downe Procedure Resource ID fetched:", existingProcedureId);
+          }
         }
       } else {
         console.error("Failed to fetch Procedure resource.");
@@ -130,73 +137,73 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
       setLoading(false); // Hide loading state
     }
   };
-  
+
   // Fetch procedure history
   useEffect(() => {
     fetchProcedure(); // Fetch Procedure on component mount or when `patient_resource_id` changes
   }, [props.patient_resource_id]);
-  
- 
-  
-  
-   const fetchProcedureHistory = async () => {
-      if (!procedureResourceId) {
-        console.log("Procedure ID is not available.");
-        return; // Exit if procedureResourceId is not available
+
+
+
+
+  const fetchProcedureHistory = async () => {
+    if (!procedureResourceId) {
+      console.log("Procedure ID is not available.");
+      return; // Exit if procedureResourceId is not available
+    }
+
+    setLoading(true); // Set loading state
+
+    try {
+      const searchUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Procedure/${procedureResourceId}/_history?_count=10`;
+      const response = await fetch(searchUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Basic " + btoa("fhiruser:change-password"),
+        },
+      });
+
+      if (response.ok) {
+        const searchData = await response.json();
+        console.log("Fetched Procedure History:", searchData);
+
+        // Filter procedure history based on the Downe score
+        const filteredHistory = (searchData.entry || []).filter(
+          (entry: { resource: { code: { coding: any[]; text: string } } }) =>
+            entry.resource.code?.coding?.some(
+              (coding) =>
+                coding.system === "http://snomed.info/sct" &&
+                coding.code === "8480-9" &&
+                coding.display === "Downe score"
+            ) && entry.resource.code.text === "Downe Score"
+        );
+
+        console.log("Filtered Procedure History:", filteredHistory);
+        setProcedureHistory(filteredHistory); // Update the state with filtered history
+      } else {
+        console.error("Failed to fetch Procedure resource history.");
       }
-  
-      setLoading(true); // Set loading state
-  
-      try {
-        const searchUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Procedure/${procedureResourceId}/_history?_count=10`;
-        const response = await fetch(searchUrl, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Basic " + btoa("fhiruser:change-password"),
-          },
-        });
-  
-        if (response.ok) {
-          const searchData = await response.json();
-          console.log("Fetched Procedure History:", searchData);
-  
-          // Filter procedure history based on the Downe score
-          const filteredHistory = (searchData.entry || []).filter(
-            (entry: { resource: { code: { coding: any[]; text: string } } }) =>
-              entry.resource.code?.coding?.some(
-                (coding) =>
-                  coding.system === "http://snomed.info/sct" &&
-                  coding.code === "8480-9" &&
-                  coding.display === "Downe score"
-              ) && entry.resource.code.text === "Downe Score"
-          );
-  
-          console.log("Filtered Procedure History:", filteredHistory);
-          setProcedureHistory(filteredHistory); // Update the state with filtered history
-        } else {
-          console.error("Failed to fetch Procedure resource history.");
-        }
-      } catch (error) {
-        console.error("Error fetching Procedure history:", error);
-      } finally {
-        setLoading(false); // Hide loading state
-      }
-    };
-  
-  
+    } catch (error) {
+      console.error("Error fetching Procedure history:", error);
+    } finally {
+      setLoading(false); // Hide loading state
+    }
+  };
+
+
   useEffect(() => {
-   
+
     // Trigger fetch when procedureResourceId changes
     fetchProcedureHistory();
   }, [procedureResourceId]); // Dependency array now depends on procedureResourceId
-  
+
   const handleSave = async () => {
     setLoading(true);
-  
+
     // ⭐ Load latest procedure before saving (important!)
-    await fetchProcedure();  
-  
+    await fetchProcedure();
+
     const procedureData: Procedure = {
       resourceType: "Procedure",
       id: procedureResourceId || undefined,
@@ -254,7 +261,7 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
         },
       })),
     };
-  
+
     try {
       const requestConfig = {
         method: procedureResourceId ? "PUT" : "POST",
@@ -264,41 +271,41 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
         },
         body: JSON.stringify(procedureData),
       };
-  
+
       const url = procedureResourceId
         ? `${import.meta.env.VITE_FHIRAPI_URL}/Procedure/${procedureResourceId}`
         : `${import.meta.env.VITE_FHIRAPI_URL}/Procedure`;
-  
+
       const response = await fetch(url, requestConfig);
-  
+
       if (!response.ok) {
         const errorBody = await response.text();
         console.error("Error response body:", errorBody);
         throw new Error(`Request failed: ${response.statusText}`);
       }
-  
+
       const contentType = response.headers.get("content-type");
       let responseData = null;
       if (contentType && contentType.includes("application/json")) {
         responseData = await response.json();
       }
-  
+
       if (procedureResourceId) {
         console.log("Procedure updated successfully:", responseData);
         setSnackbarMessage("Procedure updated successfully!");
-  
+
         // ⭐ Refresh after update (important!)
         await fetchProcedureHistory();
-  
+
       } else {
         setProcedureResourceId(responseData?.id || null);
         console.log("Procedure saved successfully:", responseData);
         setSnackbarMessage("Procedure saved successfully!");
       }
-  
+
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-  
+
     } catch (error) {
       console.error("Error saving Procedure resource:", error);
       setSnackbarMessage("An error occurred while saving the procedure.");
@@ -308,181 +315,181 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
       setLoading(false);
     }
   };
-  
-  
-  
+
+
+
   return (
     <><ProtectedModule module="Assessments" action="create">
-    <Box sx={{borderRadius: '25px', padding: 2 }}>
+      <Box sx={{ borderRadius: '25px', padding: 2 }}>
 
-    
-      {categories.map((category, categoryIndex) => (
-        <Box
-          key={category.label}
 
-          sx={{ marginBottom: 2, padding: 2 }}
-        >
-          <Typography variant="h6" sx={{ marginBottom: 1, color: '#0F3B61' }}>
-            {category.label}
-          </Typography>
-          <Grid container spacing={2}>
-            {category.options.map((option, optionIndex) => (
-              <Grid item xs={4} key={option}>
-                <Box
-                  sx={{
-                    padding: "8px",
-                    borderRadius: "25px",
-                    alignContent: 'center',
-                    textAlign: "center",
+        {categories.map((category, categoryIndex) => (
+          <Box
+            key={category.label}
 
-                    height: '30px',
-                    cursor: "pointer",
-                    backgroundColor: selectedOptions[categoryIndex] === optionIndex
-                      ? "#124D81"
-                      : "#FFFFFF",
-                    color: selectedOptions[categoryIndex] === optionIndex
-                      ? "#FFFFFF"
-                      : "#000000",
-                    "&:hover": {
+            sx={{ marginBottom: 2, padding: 2 }}
+          >
+            <Typography variant="h6" sx={{ marginBottom: 1, color: '#0F3B61' }}>
+              {category.label}
+            </Typography>
+            <Grid container spacing={2}>
+              {category.options.map((option, optionIndex) => (
+                <Grid item xs={4} key={option}>
+                  <Box
+                    sx={{
+                      padding: "8px",
+                      borderRadius: "25px",
+                      alignContent: 'center',
+                      textAlign: "center",
+
+                      height: '30px',
+                      cursor: "pointer",
                       backgroundColor: selectedOptions[categoryIndex] === optionIndex
+                        ? "#124D81"
+                        : "#FFFFFF",
+                      color: selectedOptions[categoryIndex] === optionIndex
                         ? "#FFFFFF"
-                        : "#E0E0E0",
-                    },
-                  }}
-                  onClick={() => handleSelect(categoryIndex, optionIndex)}
-                >
-                  {option}
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      ))}
-         <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-around",
-          alignItems: "center",
-          padding: 2,
-        }}
-      >
-        <Typography
-          variant="h4"
+                        : "#000000",
+                      "&:hover": {
+                        backgroundColor: selectedOptions[categoryIndex] === optionIndex
+                          ? "#FFFFFF"
+                          : "#E0E0E0",
+                      },
+                    }}
+                    onClick={() => handleSelect(categoryIndex, optionIndex)}
+                  >
+                    {option}
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        ))}
+        <Box
           sx={{
-            color: "#0F3B61",
-
-            padding: 1,
-            borderRadius: "8px",
+            display: "flex",
+            justifyContent: "space-around",
+            alignItems: "center",
+            padding: 2,
           }}
         >
-          Total Score: {totalScore}
-        </Typography>
-        <Stack direction={'row'} spacing={3}>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={handleReset}
-
+          <Typography
+            variant="h4"
             sx={{
-              border: "1px solid #0F3B61",
               color: "#0F3B61",
-              "&:hover": {
-                backgroundColor: "#E0E0E0",
-                color: "#0F3B61",
-              },
+
+              padding: 1,
+              borderRadius: "8px",
             }}
           >
-            Reset
-          </Button>
-          <Button variant="contained" onClick={handleSave} color="primary">
-            Save
-          </Button>
-        </Stack>
-          </Box> </Box>
-    </ProtectedModule>
-    <ProtectedModule module="Assessments" action="view">
-    <Box marginTop={5}>
-  {loading ? (
-    <Typography>Loading...</Typography>
-  ) : 
-  procedureHistory.length > 0 ? (
+            Total Score: {totalScore}
+          </Typography>
+          <Stack direction={'row'} spacing={3}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleReset}
 
-    <TableContainer
-      component={Paper}
-      elevation={0}
-      sx={{
-        backgroundColor: "#FFFFFF",
-        borderRadius: 3,
-        boxShadow: "0px 1px 4px rgba(0, 0, 0, 0.1)",
-      }}
-    >
-      <Table>
-        <TableHead>
-          <TableRow>
-          <TableCell align="center" sx={{ color: "#124D81", fontWeight: "bold" }}>
-              TimeStamp
-            </TableCell>
-            <TableCell align="center" sx={{ color: "#124D81", fontWeight: "bold" }}>
-              Details
-            </TableCell>
-            <TableCell align="center" sx={{ color: "#124D81", fontWeight: "bold" }}>
-              Downe Score
-            </TableCell>
-            <TableCell align="center" sx={{ color: "#124D81", fontWeight: "bold" }}>
-              Done by
-            </TableCell>
-            
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {procedureHistory.map((entry: any, index: number) => (
-            <TableRow key={index}>
-              <TableCell align="center" sx={{ color: "#124D81" }}>
-                {entry.resource.performedDateTime
-                  ? new Date(entry.resource.performedDateTime).toLocaleString()
-                  : "N/A"}
-              </TableCell>
-              <TableCell align="center" sx={{ color: "#124D81" }}>
-  {entry.resource.extension
-    ?.map((ext: any, index: number) => (
-      <Typography key={index}>
-        {ext.valueCodeableConcept?.coding?.[0]?.display}
-      </Typography>
-    )) || "N/A"}
-</TableCell>
-              <TableCell align="center" sx={{ color: "#124D81" }}>
-                {entry.resource.note?.map((note: any, noteIndex: React.Key) => (
-                  <Typography key={noteIndex}>{note.text}</Typography>
-                )) || "N/A"}
-              </TableCell>
-            
-<TableCell align="center" sx={{ color: "#124D81" }}>
-                {entry.resource.performer
-                  ?.map((performer: any) => performer.actor?.display)
-                  .filter(Boolean)
-                  .join(" ") || "N/A"}
-              </TableCell>
-              
-              
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  ) : (
-    <Typography>No Data available.</Typography>
-  )}
-</Box></ProtectedModule>
-<Snackbar
-    open={snackbarOpen}
-    autoHideDuration={6000}
-    onClose={handleCloseSnackbar}
-   
-  >
-    <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: "100%" }}>
-      {snackbarMessage}
-    </Alert>
-  </Snackbar>
+              sx={{
+                border: "1px solid #0F3B61",
+                color: "#0F3B61",
+                "&:hover": {
+                  backgroundColor: "#E0E0E0",
+                  color: "#0F3B61",
+                },
+              }}
+            >
+              Reset
+            </Button>
+            <Button variant="contained" onClick={handleSave} color="primary">
+              Save
+            </Button>
+          </Stack>
+        </Box> </Box>
+    </ProtectedModule>
+      <ProtectedModule module="Assessments" action="view">
+        <Box marginTop={5}>
+          {loading ? (
+            <Typography>Loading...</Typography>
+          ) :
+            procedureHistory.length > 0 ? (
+
+              <TableContainer
+                component={Paper}
+                elevation={0}
+                sx={{
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: 3,
+                  boxShadow: "0px 1px 4px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell align="center" sx={{ color: "#124D81", fontWeight: "bold" }}>
+                        TimeStamp
+                      </TableCell>
+                      <TableCell align="center" sx={{ color: "#124D81", fontWeight: "bold" }}>
+                        Details
+                      </TableCell>
+                      <TableCell align="center" sx={{ color: "#124D81", fontWeight: "bold" }}>
+                        Downe Score
+                      </TableCell>
+                      <TableCell align="center" sx={{ color: "#124D81", fontWeight: "bold" }}>
+                        Done by
+                      </TableCell>
+
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {procedureHistory.map((entry: any, index: number) => (
+                      <TableRow key={index}>
+                        <TableCell align="center" sx={{ color: "#124D81" }}>
+                          {entry.resource.performedDateTime
+                            ? new Date(entry.resource.performedDateTime).toLocaleString()
+                            : "N/A"}
+                        </TableCell>
+                        <TableCell align="center" sx={{ color: "#124D81" }}>
+                          {entry.resource.extension
+                            ?.map((ext: any, index: number) => (
+                              <Typography key={index}>
+                                {ext.valueCodeableConcept?.coding?.[0]?.display}
+                              </Typography>
+                            )) || "N/A"}
+                        </TableCell>
+                        <TableCell align="center" sx={{ color: "#124D81" }}>
+                          {entry.resource.note?.map((note: any, noteIndex: React.Key) => (
+                            <Typography key={noteIndex}>{note.text}</Typography>
+                          )) || "N/A"}
+                        </TableCell>
+
+                        <TableCell align="center" sx={{ color: "#124D81" }}>
+                          {entry.resource.performer
+                            ?.map((performer: any) => performer.actor?.display)
+                            .filter(Boolean)
+                            .join(" ") || "N/A"}
+                        </TableCell>
+
+
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            ) : (
+              <Typography>No Data available.</Typography>
+            )}
+        </Box></ProtectedModule>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: "100%" }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

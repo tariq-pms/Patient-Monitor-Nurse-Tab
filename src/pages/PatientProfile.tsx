@@ -1,31 +1,31 @@
-import {Box,Typography,Tabs,Tab,Paper,IconButton,Stack} from "@mui/material";
+import { Box, Typography, Tabs, Tab, Paper, IconButton, Stack } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useParams, useNavigate } from "react-router-dom";
 import { FC, useEffect, useState } from "react";
 import Avatar from "@mui/material/Avatar";
-import InitialAssessment from "../components/InitialAssessment";
+// import InitialAssessment from "../components/InitialAssessment";
 import AdmissionDetails from "../components/AdmissionDetails";
 import { NurseAssessment } from "../components/InitialAssessmentNurse";
 export interface PatientDetails {
   userOrganization: string;
-  UserRole:string;
-  
+  UserRole: string;
+
 }
 export const PatientProfile: FC<PatientDetails> = (props): JSX.Element => {
-// export default function PatientProfile() {
+  // export default function PatientProfile() {
 
   const navigate = useNavigate();
   const [patient, setPatient] = useState<any>(null);
   const [tabIndex, setTabIndex] = useState(0);
- const { patientId } = useParams<{ patientId: string }>();
- 
+  const { patientId } = useParams<{ patientId: string }>();
 
- const fetchPatientDetails = async (patientId: string) => {
+
+  const fetchPatientDetails = async (patientId: string) => {
     const BASE = import.meta.env.VITE_FHIRAPI_URL;
     const AUTH = {
       Authorization: "Basic " + btoa("fhiruser:change-password"),
     };
-  
+
     /* =========================
        1️⃣ PATIENT
     ========================= */
@@ -33,7 +33,7 @@ export const PatientProfile: FC<PatientDetails> = (props): JSX.Element => {
       headers: AUTH,
     });
     const patient = await patientRes.json();
-  
+
     /* =========================
        2️⃣ ACTIVE ENCOUNTER
     ========================= */
@@ -43,7 +43,7 @@ export const PatientProfile: FC<PatientDetails> = (props): JSX.Element => {
     );
     const encBundle = await encRes.json();
     const encounter = encBundle.entry?.[0]?.resource || null;
-  
+
     /* =========================
        3️⃣ RELATED PERSON
     ========================= */
@@ -53,7 +53,7 @@ export const PatientProfile: FC<PatientDetails> = (props): JSX.Element => {
     );
     const rpBundle = await rpRes.json();
     const kin = rpBundle.entry?.[0]?.resource || null;
-  
+
     /* =========================
        🔁 NORMALIZE FOR UI
     ========================= */
@@ -65,12 +65,12 @@ export const PatientProfile: FC<PatientDetails> = (props): JSX.Element => {
         patient.identifier?.find((i: any) =>
           i.system?.includes("uhid")
         )?.value || "-",
-  
+
       admissionNo:
         patient.identifier?.find((i: any) =>
           i.system?.includes("admission")
         )?.value || "-",
-  
+
       /* Baby */
       motherName:
         patient.extension?.find(
@@ -78,60 +78,60 @@ export const PatientProfile: FC<PatientDetails> = (props): JSX.Element => {
             e.url ===
             "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName"
         )?.valueString || "-",
-  
+
       name: patient.name?.[0]?.text || "-",
       gender: patient.gender || "-",
       birthDate: patient.birthDate || "-",
-  
+
       birthDateTime: patient.birthDate
         ? new Date(patient.birthDate).toLocaleDateString()
         : "-",
-  
+
       gestationalAge:
         patient.extension?.find((e: any) =>
           e.url.includes("gestationalAge")
         )?.valueString || "-",
-  
+
       birthWeight:
         patient.extension?.find((e: any) =>
           e.url.includes("birthWeight")
         )?.valueQuantity?.value || "-",
-  
+
       nationality:
         patient.extension?.find((e: any) =>
           e.url.includes("nationality")
         )?.valueString || "-",
-  
+
       /* Contact */
       mobile: patient.telecom?.[0]?.value || "-",
       address: patient.address?.[0]?.text || "-",
-  
+
       /* Admission */
       bed:
         encounter?.location?.[0]?.location?.display || "-",
-  
+
       admissionDate: encounter?.period?.start
         ? new Date(encounter.period.start).toLocaleString()
         : "-",
-  
+
       treatingDoctor:
         encounter?.participant?.[0]?.individual?.display || "-",
-  
+
       admittingDoctor:
         encounter?.participant?.[1]?.individual?.display || "-",
-  
-        refHospital:
+
+      refHospital:
         encounter?.hospitalization?.origin?.display || "-",
-      
-  
+
+
       /* Next of Kin */
       kinName: kin?.name?.[0]?.text || "-",
-  
+
       kinRelation:
         kin?.relationship?.[0]?.coding?.[0]?.display || "-",
-  
+
       kinMobile: kin?.telecom?.[0]?.value || "-",
-  
+
       kinAddress: kin?.address?.[0]?.text || "-",
     };
   };
@@ -139,19 +139,19 @@ export const PatientProfile: FC<PatientDetails> = (props): JSX.Element => {
   const [patientDetails, setPatientDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  if (!patientId) return;
+  useEffect(() => {
+    if (!patientId) return;
 
-  const load = async () => {
-    setLoading(true);
-    const data = await fetchPatientDetails(patientId);
-    console.log("🧾 Patient Details:", data);
-    setPatientDetails(data);
-    setLoading(false);
-  };
+    const load = async () => {
+      setLoading(true);
+      const data = await fetchPatientDetails(patientId);
+      console.log("🧾 Patient Details:", data);
+      setPatientDetails(data);
+      setLoading(false);
+    };
 
-  load();
-}, [patientId]);
+    load();
+  }, [patientId]);
 
   useEffect(() => {
     loadPatientData();
@@ -177,90 +177,90 @@ useEffect(() => {
   };
 
   if (!patient) return <Typography>{loading}</Typography>;
-  
+
   return (
     <Box sx={{ p: 0 }}>
       <Paper
-  sx={{
-    p: 1,
-    alignItems:"center",
-    justifyContent:'center',
-    
-    borderRadius: 2,
-    border: "1px solid #E0E6F1",
-    backgroundColor: "#FFFFFF",
-    boxShadow:"none"
-  }}
->
-  {/* TOP ROW */}
-     
-    <Box
-   
-    sx={{
-      display: "flex",
-      alignItems:'center',
-      justifyContent:'space-between',
-    }}
-  >
-     <IconButton onClick={() => navigate(-1)}>
-      <ArrowBackIcon sx={{color:'#124D81'}}/>
-    </IconButton>
-    <Stack direction="row" alignItems="center" spacing={2}>
-  <Avatar sx={{ width: 40, height: 40 }} />
-  <ProfileField
-    label="Patient Name"
-    value={`B/o ${patientDetails?.motherName}`}
-  />
-</Stack>
+        sx={{
+          p: 1,
+          alignItems: "center",
+          justifyContent: 'center',
 
-     
+          borderRadius: 2,
+          border: "1px solid #E0E6F1",
+          backgroundColor: "#FFFFFF",
+          boxShadow: "none"
+        }}
+      >
+        {/* TOP ROW */}
 
-    <ProfileField
-      label="UHID"
-    
-      value={patientDetails?.patientId}
-    />
+        <Box
 
-    <ProfileField
-      label="Admission no"
-      value={patientDetails?.admissionNo}
-    />
-
-    <ProfileField
-      label="Bed no"
-      value={patientDetails?.bed}
-    />
-
-    <ProfileField
-      label="DOB"
-      value={patientDetails?.birthDate}
-    />
-
-    <ProfileField
-      label="Gender"
-      value={patientDetails?.gender}
-    />
-
-    <ProfileField
-      label="GA"
-      value={patientDetails?.gestationalAge}
-    />
-
-    <ProfileField
-      label="Birth weight"
-      value={
-        patientDetails?.birthWeight
-          ? `${patientDetails.birthWeight} g`
-          : "--"
-      }
-    />
-  </Box>
+          sx={{
+            display: "flex",
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <IconButton onClick={() => navigate(-1)}>
+            <ArrowBackIcon sx={{ color: '#124D81' }} />
+          </IconButton>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <Avatar sx={{ width: 40, height: 40 }} />
+            <ProfileField
+              label="Patient Name"
+              value={`B/o ${patientDetails?.motherName}`}
+            />
+          </Stack>
 
 
 
+          <ProfileField
+            label="UHID"
 
-  {/* INFO STRIP */}
- 
+            value={patientDetails?.patientId}
+          />
+
+          <ProfileField
+            label="Admission no"
+            value={patientDetails?.admissionNo}
+          />
+
+          <ProfileField
+            label="Bed no"
+            value={patientDetails?.bed}
+          />
+
+          <ProfileField
+            label="DOB"
+            value={patientDetails?.birthDate}
+          />
+
+          <ProfileField
+            label="Gender"
+            value={patientDetails?.gender}
+          />
+
+          <ProfileField
+            label="GA"
+            value={patientDetails?.gestationalAge}
+          />
+
+          <ProfileField
+            label="Birth weight"
+            value={
+              patientDetails?.birthWeight
+                ? `${patientDetails.birthWeight} g`
+                : "--"
+            }
+          />
+        </Box>
+
+
+
+
+        {/* INFO STRIP */}
+
       </Paper>
 
       <Tabs
@@ -268,11 +268,10 @@ useEffect(() => {
         onChange={(_e, v) => setTabIndex(v)}
         sx={{ mt: 2, borderBottom: "1px solid #D9E1EE" }}
       >
-        <Tab sx={{color:"#000"}}label="Initial Assessments" />
-        <Tab sx={{color:"#000"}}label="Nurse Assessments"/>
-        <Tab sx={{color:"#000"}}label="Admission Details" />
-        <Tab sx={{color:"#000"}}label="Audit Logs" />
-        <Tab sx={{color:"#000"}} label="Other Docs" />
+        <Tab sx={{ color: "#000" }} label="Nurse Assessments" />
+        <Tab sx={{ color: "#000" }} label="Admission Details" />
+        <Tab sx={{ color: "#000" }} label="Audit Logs" />
+        <Tab sx={{ color: "#000" }} label="Other Docs" />
       </Tabs>
 
       {/* ---------------------- */}
@@ -280,31 +279,33 @@ useEffect(() => {
       {/* ---------------------- */}
 
       <Box sx={{ mt: 3 }}>
-      {tabIndex === 0 && (
-  <>
-    {patientDetails?.patientResourceId &&
-      patientDetails?.encounterId && (
-        <InitialAssessment
-        patient={patientDetails} patientId={patientDetails.patientResourceId} patientId1={patientDetails.patientId} patient_name={patientDetails.motherName}
-        encounterId={patientDetails.encounterId} gender={patientDetails.gender}     admission_date={patientDetails.admissionDate}
-        gestational_age= {patientDetails.gestationalAge} 
-        UserRole={props.UserRole} 
-       admissionNo={patientDetails.admissionNo}
-        birth_weight={patientDetails.birthWeight}
-        />
-      )}
-  </>
-)}
 
-        {tabIndex === 1 && <NurseAssessment  patient={patientDetails} patientId={patientDetails.patientResourceId} patientId1={patientDetails.patientId} patient_name={patientDetails.motherName}
-          encounterId={patientDetails.encounterId} gender={patientDetails.gender}     admission_date={patientDetails.admissionDate}
-          gestational_age= {patientDetails.gestationalAge} 
-          UserRole={props.UserRole} 
-         admissionNo={patientDetails.admissionNo}
+        {/* tabIndex === 0 && (
+          <>
+            {patientDetails?.patientResourceId &&
+              patientDetails?.encounterId && (
+                <InitialAssessment
+                  patient={patientDetails} patientId={patientDetails.patientResourceId} patientId1={patientDetails.patientId} patient_name={patientDetails.motherName}
+                  encounterId={patientDetails.encounterId} gender={patientDetails.gender} admission_date={patientDetails.admissionDate}
+                  gestational_age={patientDetails.gestationalAge}
+                  UserRole={props.UserRole}
+                  admissionNo={patientDetails.admissionNo}
+                  birth_weight={patientDetails.birthWeight}
+                />
+              )}
+          </>
+        ) */}
+
+        {tabIndex === 0 && <NurseAssessment patient={patientDetails} patientId={patientDetails.patientResourceId} patientId1={patientDetails.patientId} patient_name={patientDetails.motherName}
+          encounterId={patientDetails.encounterId} gender={patientDetails.gender} admission_date={patientDetails.admissionDate}
+          gestational_age={patientDetails.gestationalAge}
+          UserRole={props.UserRole}
+          admissionNo={patientDetails.admissionNo}
           birth_weight={patientDetails.birthWeight} />}
-        {tabIndex === 2 && <AdmissionDetails
-          patient={patientDetails} userOrganization={props.userOrganization}  userRole={props.UserRole}
-/>}
+        {tabIndex === 1 && <AdmissionDetails
+          patient={patientDetails} userOrganization={props.userOrganization} userRole={props.UserRole}
+        />}
+
         {tabIndex === 3 && <AuditLogs />}
         {tabIndex === 4 && <OtherDocs />}
       </Box>
@@ -486,7 +487,7 @@ const ProfileField = ({
 //     birthHistory.birthWeight.trim() !== "" &&
 //     birthHistory.vaccination.trim() !== "" &&
 //     birthHistory.apgar1 !== ""
- 
+
 //   );
 // };
 
@@ -516,7 +517,7 @@ const ProfileField = ({
 //       vitals.bp
 //     );
 //   };
-   
+
 //   const [exam, setExam] = useState({
 //     consciousness: "",
 //     color: [],
@@ -586,7 +587,7 @@ const ProfileField = ({
 //       "Content-Type": "application/fhir+json",
 //       Authorization: "Basic " + btoa("fhiruser:change-password"),
 //     };
-  
+
 //     try {
 //       /* ===============================
 //          1️⃣ BIRTH HISTORY OBSERVATION
@@ -609,19 +610,19 @@ const ProfileField = ({
 //           { code: { text: "APGAR 10 min" }, valueString: birthHistory.apgar10 },
 //         ],
 //       };
-  
+
 //       await fetch(`${BASE}/Observation`, {
 //         method: "POST",
 //         headers: AUTH,
 //         body: JSON.stringify(birthHistoryPayload),
 //       });
-  
+
 //       /* ===============================
 //          2️⃣ CHIEF COMPLAINT → CONDITION
 //       =============================== */
 //       if (chiefComplaint) {
 //         const complaints = chiefComplaint.split(",").map(c => c.trim());
-  
+
 //         for (const complaint of complaints) {
 //           const conditionPayload = {
 //             resourceType: "Condition",
@@ -630,7 +631,7 @@ const ProfileField = ({
 //             subject: { reference: `Patient/${patientId}` },
 //             encounter: { reference: `Encounter/${encounterId}` },
 //           };
-  
+
 //           await fetch(`${BASE}/Condition`, {
 //             method: "POST",
 //             headers: AUTH,
@@ -647,10 +648,10 @@ const ProfileField = ({
 //         { label: "Respiratory Rate", value: vitals.rr, unit: "breaths/min" },
 //         { label: "Oxygen Saturation", value: vitals.spo2, unit: "%" },
 //       ];
-  
+
 //       for (const v of vitalsMap) {
 //         if (!v.value) continue;
-  
+
 //         await fetch(`${BASE}/Observation`, {
 //           method: "POST",
 //           headers: AUTH,
@@ -667,7 +668,7 @@ const ProfileField = ({
 //           }),
 //         });
 //       }
-  
+
 //       /* ===============================
 //          4️⃣ ANTHROPOMETRY
 //       =============================== */
@@ -676,10 +677,10 @@ const ProfileField = ({
 //         { label: "Head Circumference", value: vitals.hc, unit: "cm" },
 //         { label: "Length", value: vitals.length, unit: "cm" },
 //       ];
-  
+
 //       for (const m of measurements) {
 //         if (!m.value) continue;
-  
+
 //         await fetch(`${BASE}/Observation`, {
 //           method: "POST",
 //           headers: AUTH,
@@ -696,7 +697,7 @@ const ProfileField = ({
 //           }),
 //         });
 //       }
-  
+
 //       /* ===============================
 //          5️⃣ BSL / BP
 //       =============================== */
@@ -717,7 +718,7 @@ const ProfileField = ({
 //           }),
 //         });
 //       }
-  
+
 //       if (vitals.bp) {
 //         await fetch(`${BASE}/Observation`, {
 //           method: "POST",
@@ -1009,15 +1010,15 @@ const ProfileField = ({
 //   body: JSON.stringify(carePlanPayload),
 // });
 
-  
+
 //       console.log("✅ Initial Assessment saved successfully");
-  
+
 //     } catch (err) {
 //       console.error("❌ Failed to save Initial Assessment", err);
 //       throw err;
 //     }
 //   };
-  
+
 //   // Reusable checkbox handler
 //   const toggleValue = (field, value) => {
 //     const arr = exam[field];
@@ -1056,7 +1057,7 @@ const ProfileField = ({
 //   sx={{
 //     backgroundColor: isBirthHistoryComplete() ? "#D9F7D9" : "#FFFFFF",
 //       borderRadius: "8px",
-      
+
 //     "& .MuiAccordionSummary-expandIconWrapper": {
 //       transform: "none !important",
 //     },
@@ -1259,7 +1260,7 @@ const ProfileField = ({
 //   onChange={(e) =>
 //     setBirthHistory({ ...birthHistory, birthWeight: e.target.value })
 //   }
-        
+
 //                   sx={{ backgroundColor: "#F9FBFF", "& .MuiInputBase-input": { color: "#000" } }}
 //                 />
 //               </Grid>
@@ -1311,7 +1312,7 @@ const ProfileField = ({
 //               </Button>
 //               <Button
 //                 variant="contained"
-                
+
 //                 sx={{ textTransform: "none", backgroundColor: "#228BE6", borderRadius: 2, px: 4 }}
 //               >
 //                 Next
@@ -1475,7 +1476,7 @@ const ProfileField = ({
 
 //           <Button
 //             variant="contained"
-            
+
 //             sx={{
 //               textTransform: "none",
 //               backgroundColor: "#228BE6",
@@ -1488,7 +1489,7 @@ const ProfileField = ({
 //         </Box>
 //       </AccordionDetails>
 //     </Accordion>
-  
+
 //      <Accordion sx={{
 //     background: "#FFFFFF",
 //     borderRadius: "12px",
@@ -1619,9 +1620,9 @@ const ProfileField = ({
 //           <Accordion sx={{ background: "#FFFFFF", borderRadius: "12px", mt: 3 }}>
 //   <AccordionSummary
 //     expandIcon={
-      
+
 //         <ExpandMoreIcon sx={{ color: "#228BE6", fontSize: 28 }} />
-      
+
 //     }
 //     sx={{
 //       backgroundColor : "#FFFFFF",
@@ -1710,9 +1711,9 @@ const ProfileField = ({
 //        <Accordion sx={{ background: "#FFFFFF", borderRadius: "12px", mt: 3 }}>
 //   <AccordionSummary
 //     expandIcon={
-    
+
 //         <ExpandMoreIcon sx={{ color: "#228BE6", fontSize: 28 }} />
-      
+
 //     }
 //     sx={{
 //       backgroundColor: "#FFFFFF",
@@ -1814,13 +1815,13 @@ const ProfileField = ({
 
 
 //           {/* EAR / NOSE / THROAT / EYES */}
-        
+
 //           <Accordion sx={{ background: "#FFFFFF", borderRadius: "12px", mt: 3 }}>
 //   <AccordionSummary
 //     expandIcon={
-    
+
 //         <ExpandMoreIcon sx={{ color: "#228BE6", fontSize: 28 }} />
-    
+
 //     }
 //     sx={{
 //       backgroundColor:  "#FFFFFF",
@@ -2028,7 +2029,7 @@ const ProfileField = ({
 //     </Grid>
 //   </AccordionDetails>
 
-  
+
 // </Accordion>
 // <Accordion sx={{ background: "#FFFFFF", borderRadius: "12px", mt: 3 }}>
 //   <AccordionSummary
@@ -2148,7 +2149,7 @@ const ProfileField = ({
 
 //             <Button
 //               variant="contained"
-              
+
 //               sx={{
 //                 textTransform: "none",
 //                 backgroundColor: "#228BE6",
@@ -2407,7 +2408,7 @@ const ProfileField = ({
 
 //           <Button
 //             variant="contained"
-            
+
 //             sx={{
 //               textTransform: "none",
 //               backgroundColor: "#228BE6",
@@ -2704,7 +2705,7 @@ const ProfileField = ({
 //       vitals.bp
 //     );
 //   };
-  
+
 //   const [relation,setRelation]=useState("");
 //   const [medications, setMedications] = useState([
 //   {
@@ -2969,9 +2970,9 @@ const ProfileField = ({
 //         <Typography sx={{ fontWeight: 600 }}>Relationship</Typography>
 //         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
 //             {/* Chief Complaints */}
-           
+
 //             <TextField
-  
+
 //   fullWidth
 //   multiline
 //   minRows={2}
@@ -3066,7 +3067,7 @@ const ProfileField = ({
 //           </Button>
 //           <Button
 //             variant="contained"
-            
+
 //             sx={{
 //               textTransform: "none",
 //               backgroundColor: "#228BE6",
@@ -3240,7 +3241,7 @@ const ProfileField = ({
 
 //           <Button
 //             variant="contained"
-            
+
 //             sx={{
 //               textTransform: "none",
 //               backgroundColor: "#228BE6",
@@ -3255,7 +3256,7 @@ const ProfileField = ({
 //     </Accordion>
 
 //       <Accordion
-      
+
 //   sx={{
 //     background: "#FFFFFF",
 //     borderRadius: "12px",
@@ -3267,7 +3268,7 @@ const ProfileField = ({
 //   <AccordionSummary
 //     expandIcon={<ExpandMoreIcon sx={{ color: "#228BE6", fontSize: 28 }} />}
 //     sx={{
-      
+
 //       "& .MuiAccordionSummary-content": {
 //         fontWeight: 600,
 //         color: "#0F2B45"
@@ -3400,7 +3401,7 @@ const ProfileField = ({
 
 //       <Button
 //         variant="contained"
-        
+
 //         sx={{
 //           textTransform: "none",
 //           backgroundColor: "#228BE6",
@@ -3513,7 +3514,7 @@ const ProfileField = ({
 
 //       <Button
 //         variant="contained"
-        
+
 //         sx={{
 //           textTransform: "none",
 //           backgroundColor: "#228BE6",
@@ -3652,36 +3653,36 @@ const ProfileField = ({
 //   if (!patient) return null;
 //   const generateAdmissionform = async (patient: any) => {
 //     const pdf = new jsPDF("p", "mm", "a4");
-   
+
 //     const pageWidth = 210;
 //     const margin = 12;
 //     let y = 40;
 //     let orgName = "Unknown Organization";
 //     let logoDataUrl: string | null = null;
-    
+
 //     try {
 //       // =========================
 //       // Fetch Organization
 //       // =========================
 //       const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/${props.userOrganization}`;
-     
 
-     
 
-  
+
+
+
 //       const res = await fetch(orgUrl, {
 //         headers: {
 //           Authorization: "Basic " + btoa("fhiruser:change-password"),
 //           Accept: "application/fhir+json",
 //         },
 //       });
-  
+
 //       if (!res.ok) throw new Error(`Organization fetch failed: ${res.status}`);
-  
+
 //       const orgData = await res.json();
 //       orgName = orgData.name || orgName;
 //       console.log("✅ Organization name fetched:", orgName);
-  
+
 //       // =========================
 //       // Fetch logo Binary if exists
 //       // =========================
@@ -3692,24 +3693,24 @@ const ProfileField = ({
 //       );
 //       const logoRef = logoExt?.valueReference?.reference;
 //       console.log("🔗 Logo Reference (fixed):", logoRef);
-  
+
 //       if (logoRef) {
 //         const binaryId = logoRef.replace("Binary/", "");
 //         const binaryUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Binary/${binaryId}`;
 //         console.log("🖼️ Fetching Binary from:", binaryUrl);
-  
+
 //         const binaryRes = await fetch(binaryUrl, {
 //           headers: {
 //             Authorization: "Basic " + btoa("fhiruser:change-password"),
 //             Accept: "application/fhir+json",
 //           },
 //         });
-  
+
 //         if (!binaryRes.ok) throw new Error(`Binary fetch failed: ${binaryRes.status}`);
-  
+
 //         const binaryData = await binaryRes.json();
 //         console.log("📦 Binary fetched:", binaryData);
-  
+
 //         if (binaryData.data && binaryData.contentType) {
 //           logoDataUrl = `data:${binaryData.contentType};base64,${binaryData.data}`;
 //           console.log("✅ Logo Data URL ready (first 50 chars):", logoDataUrl.slice(0, 50) + "...");
@@ -3726,28 +3727,28 @@ const ProfileField = ({
 //     const logoBoxSize = 60;
 //     const logoX = 40;
 //     const logoY = 20;
-  
+
 //     try {
 //       if (logoDataUrl) {
 //         const img = new Image();
 //         img.src = logoDataUrl;
-  
+
 //         await new Promise<void>((resolve, reject) => {
 //           img.onload = () => resolve();
 //           img.onerror = (e) => reject(e);
 //         });
 //         console.log("🖼️ Logo image loaded");
-  
+
 //         const aspectRatio = img.width / img.height;
 //         let drawWidth = logoBoxSize;
 //         let drawHeight = logoBoxSize;
-  
+
 //         if (aspectRatio > 1) drawHeight = logoBoxSize / aspectRatio;
 //         else drawWidth = logoBoxSize * aspectRatio;
-  
+
 //         const offsetX = logoX + (logoBoxSize - drawWidth) / 2;
 //         const offsetY = logoY + (logoBoxSize - drawHeight) / 2- 10;
-  
+
 //         pdf.addImage(img, "PNG", offsetX, offsetY, drawWidth, drawHeight);
 //         console.log("✅ Logo added to PDF");
 //       } else {
@@ -3762,7 +3763,7 @@ const ProfileField = ({
 //       pdf.setFillColor(200, 220, 255);
 //       pdf.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
 //     }
-  
+
 //     // pdf.addImage(
 //     //   logoDataUrl,
 //     //   "PNG",
@@ -3773,17 +3774,17 @@ const ProfileField = ({
 //     // );
 //     pdf.setFont("Times", "Normal");
 //     pdf.setFontSize(11);
-   
+
 //     // ===== HEADER =====
 //     pdf.setFontSize(14);
 //     pdf.text("ADMISSION RECORD", pageWidth / 2, y, { align: "center" });
 //     y += 6;
-   
+
 //     pdf.line(margin, y, pageWidth - margin, y);
 //     y += 6;
-   
+
 //     pdf.setFontSize(11);
-   
+
 //     // ===== ROW HELPER =====
 //     const row = (
 //       l1: string,
@@ -3793,16 +3794,16 @@ const ProfileField = ({
 //     ) => {
 //       pdf.text(l1, margin, y);
 //       pdf.text(v1 || "-", margin + 35, y);
-   
+
 //       if (l2 && v2) {
 //         pdf.text(l2, pageWidth / 2, y);
 //         pdf.text(v2 || "-", pageWidth / 2 + 35, y);
 //       }
-   
+
 //       y += 7;
-     
+
 //     };
-   
+
 //     // ===== PATIENT DETAILS =====
 //     row(
 //       "Name :",
@@ -3810,35 +3811,35 @@ const ProfileField = ({
 //       "UHID :",
 //       patient.patientId || "-"
 //     );
-   
+
 //     row(
 //       "Age / Gender :",
 //       `${patient.gestationalAge || "-"} / ${patient.gender || "-"}`,
 //       "Admission No :",
 //       patient.admissionNo || "-"
 //     );
-   
+
 //     row(
 //       "Mobile No :",
 //       patient.mobile || "-",
 //       "Nationality :",
 //       patient.nationality || "-"
 //     );
-   
+
 //     row(
 //       "DOB :",
 //       patient.birthDate || "-",
 //       "Marital Status :",
 //       patient.maritalStatus || "-"
 //     );
-   
+
 //     row(
 //       "Bed No / Ward :",
 //       patient.bed || "-",
 //       "Special Needs :",
 //       patient.specialNeeds ? "Yes" : "No"
 //     );
-   
+
 //     pdf.text("Address :", margin, y);
 //     pdf.text(
 //       patient.address || "-",
@@ -3846,16 +3847,16 @@ const ProfileField = ({
 //       y,
 //       { maxWidth: pageWidth - margin * 2 - 35 }
 //     );
-   
+
 //     y += 10;
 //     pdf.line(margin, y - 5, pageWidth - margin, y - 5);
-   
+
 //     // ===== NEXT OF KIN =====
 //     pdf.setFont("Times", "Bold");
 //     pdf.text("Next of Kin", margin, y);
 //     pdf.setFont("Times", "Normal");
 //     y += 6;
-   
+
 //     row("Name :", patient.kinName || "-");
 //     row("Relationship :", patient.kinRelation || "-");
 //     row("Address :", patient.kinAddress || "-");
@@ -3866,7 +3867,7 @@ const ProfileField = ({
 //     pdf.text("Admission Details", margin, y);
 //     pdf.setFont("Times", "Normal");
 //     y += 6;
-   
+
 //     row("Date of Admission :", patient.admissionDate || "-");
 //     row("Treating Doctor :", patient.treatingDoctor || "-");
 //     row("Admitting Doctor :", patient.admittingDoctor || "-");
@@ -3878,7 +3879,7 @@ const ProfileField = ({
 //     pdf.text("Consent for Admission & Treatment", margin+65, y);
 //     pdf.setFont("Times", "Normal");
 //     y += 6;
-   
+
 //     pdf.text(
 //       `I ____________________ request hospital authorities for my / ________ admission under the supervision of my attending Dr. ____________________.I hereby give my consent to my attending doctor or his/her designee to admit me under their care and decide the necessary treatment, operation or procedure required as per the situation.I have understood the expenses for my treatment and I agree to follow all hospital rules and regulations.`,
 //       margin,
@@ -3888,27 +3889,27 @@ const ProfileField = ({
 //         lineHeightFactor:2
 //       }
 //     );
-   
+
 //     y += 35;
-   
+
 //     // ===== SIGNATURES =====
 //     pdf.text("Name :", margin, y+2);
 //     pdf.text("Signature of Patient", margin, y + 10);
-   
+
 //     pdf.text("Name of Witness:", pageWidth / 2, y+2);
 //     pdf.text("Signature of Witness:", pageWidth / 2, y + 10);
-   
+
 //     y += 18;
 //     pdf.text("Admitted By : -", margin, y+28);
 //     pdf.text("Printed By : -", pageWidth / 2, y+28);
-   
+
 //     y += 8;
 //     pdf.text(
 //       `Print Date & Time : ${new Date().toLocaleString()}`,
 //       margin,
 //       y+32
 //     );
-   
+
 //     // ===== FOOTER =====
 //     y = 285;
 //     pdf.line(margin, y, pageWidth - margin, y);
@@ -3920,7 +3921,7 @@ const ProfileField = ({
 //       y,
 //       { align: "center" }
 //     );
-   
+
 //     pdf.save("Admission_Record.pdf");
 //   };
 //   return (
@@ -3933,7 +3934,7 @@ const ProfileField = ({
 //         border: "1px solid #E0E0E0",
 //       }}
 //     >
-    
+
 //       <Grid container spacing={2}>
 //         <Grid item display={'flex'} gap={3} xs={6}>
 //           <Typography variant="subtitle1" sx={{ color: "#6B7280" }}>
@@ -3966,7 +3967,7 @@ const ProfileField = ({
 
 //       <Divider sx={{ my: 2,backgroundColor:'grey' }} />
 
-   
+
 
 //       <Grid container spacing={2}>
 //         <Grid item display={'flex'} gap={2} xs={6}>
@@ -4007,7 +4008,7 @@ const ProfileField = ({
 //       </Grid>
 //       <Divider sx={{ my: 2,backgroundColor:'grey' }} />
 //       <Grid display={'flex'}  justifyContent={'space-between'}>
-       
+
 //         <Grid item display={'flex'} gap={3} xs={6}>
 //           <Typography variant="subtitle1" sx={{ color: "#6B7280" }}>
 //           DOA
@@ -4041,8 +4042,8 @@ const ProfileField = ({
 //           </Typography>
 //         </Grid>
 //       </Grid>
-     
- 
+
+
 //       <Box mt={3} >
 //         <Typography fontSize={12} sx={{ color: "#6B7280" }}>
 //           Filled by:Doctor Name

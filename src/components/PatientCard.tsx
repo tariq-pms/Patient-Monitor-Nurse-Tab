@@ -1,541 +1,475 @@
 
-import { Box,  Card, CardContent,  IconButton, Stack, Typography } from "@mui/material";
-import { isArray } from "chart.js/helpers";
+import { Box, Card, CardContent, IconButton, Stack, Typography } from "@mui/material";
+
 import { FC, useEffect, useState } from "react";
-import { faArrowTrendUp, faBed,  faDroplet,  faFlask, faHeartPulse, faLungs, faNotesMedical, faPrescription, faTemperatureHalf } from "@fortawesome/free-solid-svg-icons";
+import { faArrowTrendUp, faBed, faDroplet, faFlask, faHeartPulse, faNotesMedical, faPrescription, faTemperatureHalf, faWeightHanging } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 
 
 export interface PatientDetails {
-    onClick: () => void;
-    key: string;
-    patient_id: string;
-    gestational_age:string;
-    birthDate:string;
-    gender:string;
-    birthWeight:string,
-    device: {
-      "resourceType": string;
-      "id": string;
-      "meta": {
-          "versionId": string;
-          "lastUpdated": string;
-      };
-      "status": string;
-      "patient": {
-        "reference": string
-      };
-      "location": {
-        "reference": string
-      };
-      "identifier": 
-          {
-              "system": string;
-              "value": string;
-          }[];
-      
+  onClick: () => void;
+  key: string;
+  patient_id: string;
+  gestational_age: string;
+  birthDate: string;
+  gender: string;
+  birthWeight: string,
+  device: {
+    "resourceType": string;
+    "id": string;
+    "meta": {
+      "versionId": string;
+      "lastUpdated": string;
+    };
+    "status": string;
+    "patient": {
+      "reference": string
+    };
+    "location": {
+      "reference": string
+    };
+    "identifier":
+    {
+      "system": string;
+      "value": string;
     }[];
-    patient_resource_id: string;
-    observation_resource: {
-      "resourceType": string;
-      "id": string;
-      "meta": {
-          "versionId": string;
-          "lastUpdated": string;
-      },
-      "identifier": 
-          {
-              "value": string;
-          }[];
-      "status": string;
-      "category":
-          {
-              "coding":
-                  {
-                      "system": string;
-                      "code": string;
-                      "display": string;
-                  }[];
-          }[];
-      "code": {
-          "coding": 
-              {
-                  "system": string;
-                  "code": string;
-                  "display": string;
-              }[];
-          
-          "text": string;
-      };
-      "subject": {
-          "reference": string;
-      };
-      "device": {
-          "reference": string;
-      };
-      "component": 
-          {
-              "code": {
-                  "coding": 
-                      {
-                          "system": string;
-                          "code": string;
-                          "display": string;
-                      }[];
-                  "text": string;
-              };
-              "valueQuantity": {
-                  "value": number;
-                  "unit": string;
-                  "system": string;
-                  "code": string;
-              };
-          }[];
+
+  }[];
+  patient_resource_id: string;
+  observation_resource: {
+    "resourceType": string;
+    "id": string;
+    "meta": {
+      "versionId": string;
+      "lastUpdated": string;
+    },
+    "identifier":
+    {
+      "value": string;
     }[];
-    communication_resource: {
-      meta: any;
-      "id" : string;
-      "status" : string;
-      "resourceType": string;
-      "sent": string;
-      "category" : {
-      "coding" : {
-          "system" : string;
-          "code" : string;
-          }[];
-          "text" : string;
+    "status": string;
+    "category":
+    {
+      "coding":
+      {
+        "system": string;
+        "code": string;
+        "display": string;
       }[];
-      "subject": {
-          "reference": string;
-      };
-      "sender": {
-          "reference": string;};
-      "payload":{
-          "contentReference":{
-              "display": string;
-          };}[];
-      "extension":
-          {
-              "url": string;
-              "valueCodeableConcept": {
-                  "coding": {
-                      "system": string;
-                      "code": string;
-                      "display": string;
-                  }[];
-              };
-          }[];
     }[];
-    patient_name: string;
-    darkTheme:boolean;
-    // selectedIcon:string; 
-  }
+    "code": {
+      "coding":
+      {
+        "system": string;
+        "code": string;
+        "display": string;
+      }[];
+
+      "text": string;
+    };
+    "subject": {
+      "reference": string;
+    };
+    "device": {
+      "reference": string;
+    };
+    "component":
+    {
+      "code": {
+        "coding":
+        {
+          "system": string;
+          "code": string;
+          "display": string;
+        }[];
+        "text": string;
+      };
+      "valueQuantity"?: {
+        "value": number;
+        "unit": string;
+        "system": string;
+        "code": string;
+      };
+      "valueString"?: string;
+    }[];
+  }[];
+  communication_resource: {
+    meta: any;
+    "id": string;
+    "status": string;
+    "resourceType": string;
+    "sent": string;
+    "category": {
+      "coding": {
+        "system": string;
+        "code": string;
+      }[];
+      "text": string;
+    }[];
+    "subject": {
+      "reference": string;
+    };
+    "sender": {
+      "reference": string;
+    };
+    "payload": {
+      "contentReference": {
+        "display": string;
+      };
+    }[];
+    "extension":
+    {
+      "url": string;
+      "valueCodeableConcept": {
+        "coding": {
+          "system": string;
+          "code": string;
+          "display": string;
+        }[];
+      };
+    }[];
+  }[];
+  patient_name: string;
+  darkTheme: boolean;
+  // selectedIcon:string; 
+}
 
 
 export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
-    console.log('PatientCard props:', props);
-    const [obsResource, setObsResource] = useState<any[]>([])
-    const [isBlinking, setIsBlinking] = useState(false);
-    
-    const [alarmColor, setAlarmColor] = useState("")
-    const [obsmeta, setobsmeta] = useState<any[]>([])
-    const [commeta, setcommeta] = useState<any[]>([])
-    const [requiredForTimer, setRequiredForTimer] = useState(false)
-    const [borderRadiusForRerender, setBorderRadiusForRerender] = useState(true)
-    const [newData, setNewData] = useState(false)
-    const [, setDisplayAlarm] = useState("")
-    
-    
-    useEffect(() => {
-      const fetchLatestObservation = async () => {
-        try {
-          const baseUrl = import.meta.env.VITE_FHIRAPI_URL; // Your FHIR server base URL
-          const url = `${baseUrl}/Observation?subject=Patient/${props.patient_resource_id}&_sort=-_lastUpdated&_count=1`; 
-    
-          const response = await fetch(url, {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Basic " + btoa("fhiruser:change-password"),
-            },
-          });
-    
-          if (!response.ok) {
-            console.error("Failed to fetch latest Observation");
-            return;
-          }
-    
+  console.log('PatientCard props:', props);
+
+
+
+
+  // State for specific data
+  const [growthData, setGrowthData] = useState<{ weight: string, gain: string } | null>(null);
+  const [latestVitals, setLatestVitals] = useState<{ hr: string, spo2: string, temp: string, rr: string, lastUpdate: string }>({ hr: '--', spo2: '--', temp: '--', rr: '--', lastUpdate: '--' });
+
+  // Fetch Growth Chart Data (Weight & Gain)
+  useEffect(() => {
+    const fetchGrowthData = async () => {
+      try {
+        const baseUrl = import.meta.env.VITE_FHIRAPI_URL;
+        const url = `${baseUrl}/Observation?subject=Patient/${props.patient_resource_id}&category=growth-chart&_sort=-date&_count=1`;
+
+        const response = await fetch(url, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+          },
+        });
+
+        if (response.ok) {
           const data = await response.json();
-    
           if (data.entry && data.entry.length > 0) {
-            const latestObservation = data.entry[0].resource;
-            setObsResource([latestObservation]);
-          }
-        } catch (error) {
-          console.error("Error fetching latest Observation:", error);
-        }
-      };
-    
-      fetchLatestObservation();
-    
-      // Optional: refresh data every 10 seconds for real-time updates
-      const interval = setInterval(fetchLatestObservation, 10000);
-      return () => clearInterval(interval);
-    }, [props.patient_resource_id]);
-    
-    useEffect(() => {
-            if(isArray(props.observation_resource)){
-            if(props.observation_resource.length>0){
-                // console.log(props.observation_resource)
-                var change = false
-                    props.observation_resource.map((val, index) => {
-                        if(val.meta.versionId!=obsmeta[index]){
-                            // console.log(props.patient_id)
-                            
-                            var tempVar = obsmeta
-                            tempVar[index] = String(val.meta.versionId)
-                            setobsmeta(tempVar)
-                            change = true
-                            }
-                    })
-                    if(change){
-                        setBorderRadiusForRerender(!borderRadiusForRerender)
-                        setObsResource(props.observation_resource.flat())
-                        setRequiredForTimer(!requiredForTimer)
-                        setNewData(true);
-                    }
+            const obs = data.entry[0].resource;
+            const weightComp = obs.component?.find((c: any) => c.code?.text === "Current Weight");
+            const gainComp = obs.component?.find((c: any) => c.code?.text === "Gain/Loss in 24 hrs");
+            const prevWeightComp = obs.component?.find((c: any) => c.code?.text === "Previous Weight");
+
+            let displayGain = "--";
+            if (gainComp?.valueString) {
+              if (gainComp.valueString.includes("g/kg/d")) {
+                displayGain = gainComp.valueString;
+              } else if (weightComp?.valueQuantity?.value && prevWeightComp?.valueQuantity?.value) {
+                // Legacy format found, calculate g/kg/d on the fly
+                const curr = weightComp.valueQuantity.value;
+                const prev = prevWeightComp.valueQuantity.value;
+                const avgWeight = (curr + prev) / 2;
+                // Assuming 1 day duration for "Gain/Loss in 24 hrs"
+                const velocity = ((curr - prev) * 1000) / avgWeight;
+                const sign = velocity > 0 ? "+" : "";
+                displayGain = `${sign}${velocity.toFixed(2)} g/kg/d`;
+              } else {
+                // Fallback to old string if calculation impossible
+                displayGain = gainComp.valueString;
+              }
             }
 
-        }
-        
-        if(isArray(props.communication_resource)){
-            if(props.communication_resource.length>0 ){
-                var change = false
-                props.communication_resource.map((val, index) => {
-                    if(val.meta.versionId!=commeta[index]){
-                        var tempVar2 = commeta
-                        tempVar2[index] = String(val.meta.versionId)
-                        setcommeta(tempVar2)
-                        change=true
-                        
-                        if(val && val.extension){
-                            for(var i=0;i<val.extension[1].valueCodeableConcept.coding.length;i++){
-                                if(val.extension[1].valueCodeableConcept.coding[i].code=="High Priority"){
-                                    setDisplayAlarm(String(val.extension[0].valueCodeableConcept.coding[i].display))
-                                    setAlarmColor('red')
-                                    break
-                                }
-                                else {
-                                    setDisplayAlarm(String(val.extension[0].valueCodeableConcept.coding[i].display))
-                                    setAlarmColor('yellow')
-                                }
-                            } } }})}}
-},[props])
-        
-    useEffect(() => {
-      let intervalId: ReturnType<typeof setInterval> | undefined;
-
-    
-        if (newData) {
-          intervalId = setInterval(() => {
-            setIsBlinking((prevIsBlinking) => !prevIsBlinking);
-          }, 300); 
-        } else {
-            
-          clearInterval(intervalId);
-          setIsBlinking(false);
-        }
-    
-        return () => {
-          clearInterval(intervalId);
-        };
-      }, [alarmColor]);
-
-    useEffect(() => {
-      let timer: ReturnType<typeof setInterval> | undefined;
-   
-    if(newData){
-        timer = setInterval(() => {setNewData(false);setAlarmColor("#202020");clearInterval(timer)},2000)
-    }
-
-   return () => {
-        
-        clearInterval(timer); 
-    };
-    }, [requiredForTimer,newData])
-
-    function finddata(x: string) {
-      if (!obsResource.length) return { data: "--", unit: "--" };
-    
-      const obs = obsResource[0];
-      const component = obs.component?.find(
-        (item: { code: { text: string } }) => item.code.text === x
-      );
-    
-      if (component && component.valueQuantity) {
-        const data = Math.round(component.valueQuantity.value * 100) / 100;
-        const unit = component.valueQuantity.unit;
-        return { data, unit };
-      }
-    
-      return { data: "--", unit: "--" };
-    }
-    
-    const navigate = useNavigate();
-
-    const handleCardClick = () => {
-      navigate(`/patient/${props.patient_resource_id}`, {
-        state: {
-          patientName:  props.patient_name,
-          patientId: props.patient_id,
-          gestationAge:props. gestational_age,
-          gender:props.gender,
-          birthDate:props.birthDate,
-          deviceId:props.device,
-          observation:props.observation_resource,
-          patientResourceId:props.patient_resource_id
-        
-           },
+            setGrowthData({
+              weight: weightComp?.valueQuantity?.value ? String(Math.round(weightComp.valueQuantity.value * 100) / 100) : "--",
+              gain: displayGain
             });
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching growth data:", err);
+      }
     };
 
-   
-    return (
-      <Box
-      width="100%"
+    fetchGrowthData();
+    const interval = setInterval(fetchGrowthData, 10000);
+    return () => clearInterval(interval);
+  }, [props.patient_resource_id]);
+
+  // Fetch Latest Vitals directly (HR, SpO2, Temp, RR) using category=vital-signs
+  useEffect(() => {
+    const fetchLatestVitals = async () => {
+      try {
+        const baseUrl = import.meta.env.VITE_FHIRAPI_URL;
+        const url = `${baseUrl}/Observation?subject=Patient/${props.patient_resource_id}&category=vital-signs&_sort=-date&_count=1`;
+
+        const response = await fetch(url, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.entry && data.entry.length > 0) {
+            const obs = data.entry[0].resource;
+            const result = { hr: '--', spo2: '--', temp: '--', rr: '--', lastUpdate: '--' };
+
+            if (obs.component) {
+              let foundHr = '', foundPr = '', foundRr = '', foundSpo2 = '';
+              let foundTempSkin = '', foundTempCore = '';
+
+              obs.component.forEach((c: any) => {
+                const coding = c.code?.coding?.[0];
+                const display = coding?.display || c.code?.text || "";
+                const val = c.valueQuantity?.value ?? c.valueString;
+
+                if (val === undefined || val === null) return;
+                const valStr = String(Math.round(Number(val) * 100) / 100);
+
+                // Match by display name or LOINC code (same logic as Treatment.tsx)
+                if (display === "Heart Rate" || display === "CURRENT HEART RATE" || c.code?.coding?.some((x: any) => x.code === "8867-4")) {
+                  foundHr = valStr;
+                } else if (display === "Pulse Rate" || display === "CURRENT PULSE RATE" || c.code?.coding?.some((x: any) => x.code === "8888-4")) {
+                  foundPr = valStr;
+                } else if (display === "Respiratory Rate" || display === "CURRENT RESPIRATORY RATE" || c.code?.coding?.some((x: any) => x.code === "9279-1")) {
+                  foundRr = valStr;
+                } else if (display === "SpO₂" || display === "SpO2" || display === "CURRENT SPO2" || c.code?.coding?.some((x: any) => x.code === "20564-1")) {
+                  foundSpo2 = valStr;
+                } else if (display === "Skin Temperature" || display === "CURRENT SKIN TEMPERATURE" || (c.code?.coding?.some((x: any) => x.code === "60839-8") && display.includes("Skin"))) {
+                  foundTempSkin = valStr;
+                } else if (display === "Core Temperature" || display === "CURRENT CORE TEMPERATURE" || (c.code?.coding?.some((x: any) => x.code === "60839-8") && display.includes("Core"))) {
+                  foundTempCore = valStr;
+                }
+              });
+
+              result.hr = foundHr || foundPr || '--';
+              result.rr = foundRr || '--';
+              result.spo2 = foundSpo2 || '--';
+              result.temp = foundTempCore || foundTempSkin || '--';
+              result.lastUpdate = obs.meta?.lastUpdated
+                ? new Date(obs.meta.lastUpdated).toLocaleString("en-IN", {
+                  hour12: true,
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric"
+                })
+                : "--";
+            }
+
+            setLatestVitals(result);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching vitals:", err);
+      }
+    };
+
+    fetchLatestVitals();
+    const interval = setInterval(fetchLatestVitals, 10000);
+    return () => clearInterval(interval);
+  }, [props.patient_resource_id]);
+
+  // Derived display values
+  const currentWeight = growthData?.weight && growthData.weight !== "--" ? growthData.weight : "--";
+  const weightUnit = currentWeight !== "--" ? "g" : "";
+  const gainLoss = growthData?.gain && growthData.gain !== "--" ? growthData.gain : "--";
+
+  const heartRate = { data: latestVitals.hr, unit: "" };
+  const spo2 = { data: latestVitals.spo2, unit: "" };
+  const temp = { data: latestVitals.temp, unit: "" };
+
+  
+
+  const navigate = useNavigate();
+
+  const handleCardClick = (initialTab: string = 'overview') => {
+    navigate(`/patient/${props.patient_resource_id}`, {
+      state: {
+        patientName: props.patient_name,
+        patientId: props.patient_id,
+        gestationAge: props.gestational_age,
+        gender: props.gender,
+        birthDate: props.birthDate,
+        deviceId: props.device,
+        observation: props.observation_resource,
+        patientResourceId: props.patient_resource_id,
+        initialTab: initialTab // Pass the tab to open
+      },
+    });
+  };
+
+
+  return (
+    <Card
+      onClick={() => handleCardClick('overview')}
       sx={{
-        mb: 3,
-      height:'80px'
+        mb: 2,
+        borderRadius: "12px",
+        border: "1px solid #E2E8F0",
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
+        backgroundColor: "#FFFFFF",
+        cursor: "pointer",
+        transition: "all 0.2s ease-in-out",
+        '&:hover': {
+          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+          borderColor: "#CBD5E1",
+          transform: "translateY(-1px)"
+        }
       }}
     >
-      <Card
-        onClick={handleCardClick}
-        sx={{
-          backgroundColor: props.darkTheme ? "#1C1C1E" : "#FFFFFF",
-          borderRadius: "16px",
-          height: "100%",
-          display: "flex",
-        
-          flexDirection: "column",
-          border: `6px solid ${isBlinking ? alarmColor :'#FFFFFF'}`
-        }}
-      >
-        <CardContent
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", md: "row" },
-            p: 0,
-            height: "100%",
-            width: "100%",
-          }}
-        >
-          {/* First Section - Patient Info */}
-          <Box
-            sx={{
-              flex: { xs: "1 1 auto", md: "0 0 35%" },
-              backgroundColor: "#F9FAFF",
-              borderRight: { md: "1px solid #E0E0E0" },
-              borderBottom: { xs: "1px solid #E0E0E0", md: "none" },
-              display: "flex",
-              flexDirection: "column",
-              minHeight: { xs: "80px", md: "100%" },
-            }}
-          >
-            {/* Header */}
-            <Stack
-              direction="row"
-              sx={{
-                height: { xs: "40px", md: "60%" },
-                backgroundColor: "#2A6194",
-                px: 2,
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Typography variant="subtitle1" sx={{ color: "#FFFFFF", fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                B/O - {props.patient_name}
-              </Typography>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <FontAwesomeIcon icon={faBed} color="#BDC7DF" />
-                <Typography variant="subtitle1" color="#FFFFFF" sx={{ fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                  {props.patient_id}
-                </Typography>
-              </Stack>
-            </Stack>
-    
-            {/* Weight + GA */}
-            <Stack
-              sx={{
-                height: { xs: "40px", md: "50%" },
-                flexDirection: "row",
-                justifyContent: { xs: "space-around", md: "space-evenly" },
-                alignItems: "center",
-                backgroundColor: "#FFFFFF",
-                flexWrap: "wrap",
-                gap: { xs: 1, md: 0 },
-              
-              }}
-            >
-              <Typography
-                variant="h6"
-                color="#FF4A4A"
+      <CardContent sx={{ p: "16px !important" }}>
+        <Stack direction={{ xs: "column", md: "row" }} alignItems="center" spacing={2} width="100%">
+
+          {/* 1. Left: Avatar + Name + Weight */}
+          <Box sx={{ flex: 1.5, minWidth: 200 }}>
+            <Stack direction="row" spacing={2} alignItems="center" mb={1}>
+              {/* Avatar Circle */}
+              <Box
                 sx={{
-                  backgroundColor: "#FFEDED",
-                  borderRadius: 2,
-                  px: 1,
-                  textAlign: "center",
-                  fontSize: { xs: "0.875rem", md: "1.25rem" },
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  backgroundColor: "#2563EB", // Brand Blue
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#FFF"
                 }}
               >
-                2130{" "}
-                <Typography
-                  component="span"
-                  variant="subtitle2"
-                  color="#FF4A4A"
-                  sx={{ fontSize: { xs: "0.75rem", md: "0.875rem" } }}
-                >
-                  ↓ 125 g
-                </Typography>
-              </Typography>
-              <Typography variant="subtitle1" color="#124D81" sx={{ fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                G.A : {props.gestational_age}
+                <FontAwesomeIcon icon={faBed} style={{ fontSize: "18px" }} />
+                {/* Note: Image used a person icon, but Bed/Baby icon is fine. Using Bed for now or similar generic */}
+              </Box>
+              <Typography variant="subtitle1" fontWeight={700} color="#1E293B">
+                B/O {props.patient_name}
               </Typography>
             </Stack>
+
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography variant="body2" fontWeight={600} color="#059669" sx={{ fontSize: "0.95rem" }}>
+                {currentWeight !== "--" ? `${currentWeight}${weightUnit}` : "--"}
+              </Typography>
+              {gainLoss !== "--" && (
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <FontAwesomeIcon
+                    icon={gainLoss.includes("-") ? faArrowTrendUp : faArrowTrendUp}
+                    style={{
+                      color: gainLoss.includes("-") ? "#EF4444" : "#059669",
+                      fontSize: "12px",
+                      transform: gainLoss.includes("-") ? "rotate(180deg)" : "none"
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    fontWeight={600}
+                    color={gainLoss.includes("-") ? "#EF4444" : "#059669"}
+                  >
+                    {gainLoss}
+                  </Typography>
+                </Stack>
+              )}
+            </Stack>
           </Box>
-    
-          {/* Second Section - Vital Signs */}
-          <Box
-  sx={{
-    flex: { xs: "1 1 auto", md: "0 0 35%" },
-    display: "flex",
-    flexDirection: "column",
-    minHeight: { xs: "80px", md: "50%" },
-    borderRight: { md: "1px solid #E0E0E0" },
-    borderBottom: { xs: "1px solid #E0E0E0", md: "none" },
-    justifyContent: "space-between",
-  }}
->
-  {/* First Row */}
-  <Stack
-    direction="row"
-    sx={{
-      height: { xs: "40px", md: "50%" },
-      justifyContent: "space-evenly",
-      alignItems: "center",
-      flexWrap: "wrap",
-      gap: { xs: 1, md: 0 },
-      px: 1,
-    }}
-  >
-    <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
-      <FontAwesomeIcon icon={faHeartPulse} style={{ color: "red" }} />{" "}
-      {finddata("CURRENT PULSE RATE")?.data}
-    </Typography>
-    <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
-      <FontAwesomeIcon icon={faDroplet} style={{ color: "#0CB0D3" }} />{" "}
-      {finddata("CURRENT SPO2")?.data}
-    </Typography>
-  </Stack>
 
-  {/* Second Row */}
-  <Stack
-    direction="row"
-    sx={{
-      height: { xs: "40px", md: "50%" },
-      justifyContent: "space-between",
-      alignItems: "center",
-      flexWrap: "wrap",
-      gap: { xs: 1, md: 0 },
-      px: 1,
-    }}
-  >
-    <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
-      <FontAwesomeIcon icon={faTemperatureHalf} style={{ color: "#FF9D61" }} />{" "}
-      {(() => {
-        const t1 = finddata("CURRENT SKIN TEMPERATURE");
-        return t1?.data || "No Data";
-      })()}
-    </Typography>
-    <Typography variant="h6" sx={{ color: "#124D81", fontSize: { xs: "0.875rem", md: "1.25rem" } }}>
-      <FontAwesomeIcon icon={faLungs} style={{ color: "#EACB1C" }} /> 98
-    </Typography>
-  </Stack>
+          {/* 2. Center: Location + GA */}
+          <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: { xs: "flex-start", md: "center" } }}>
+            <Stack direction="row" spacing={1} alignItems="center" mb={0.5}>
+              <FontAwesomeIcon icon={faBed} color="#64748B" size="sm" />
+              <Typography variant="body2" fontWeight={600} color="#475569">
+                NICU 1 - A1 {/* Placeholder for Location */}
+              </Typography>
+            </Stack>
+            <Typography variant="caption" fontWeight={500} color="#64748B">
+              GA: {props.gestational_age}
+            </Typography>
+          </Box>
 
-  {/* Timestamp Row */}
-  {obsResource.length > 0 && (
-    <Typography
-      variant="caption"
-      sx={{
-        color: "#6C757D",
-        fontSize: "0.5rem",
-        textAlign: "center",
-        pb: 0.5,
-      }}
-    >
-      Last Updated:{" "}
-      {new Date(obsResource[0].meta.lastUpdated).toLocaleString("en-IN", {
-        hour12: true,
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })}
-    </Typography>
-  )}
-</Box>
+          {/* 3. Right: Vitals Grid */}
+          <Box sx={{ flex: 1.5 }}>
+            <Stack spacing={1}>
+              {/* Row 1: HR & SpO2 */}
+              <Stack direction="row" justifyContent="flex-end" spacing={3}>
+                <Stack direction="row" spacing={1} alignItems="center" width={70}>
+                  <FontAwesomeIcon icon={faHeartPulse} style={{ color: "#EF4444" }} />
+                  <Typography variant="body2" fontWeight={600} color="#334155">{heartRate.data}</Typography>
+                </Stack>
+                <Stack direction="row" spacing={1} alignItems="center" width={70}>
+                  <FontAwesomeIcon icon={faDroplet} style={{ color: "#0EA5E9" }} />
+                  <Typography variant="body2" fontWeight={600} color="#334155">{spo2.data}</Typography>
+                </Stack>
+              </Stack>
 
-    
-          {/* Third Section - Action Buttons */}
-          
-          <Box sx={{marginTop:'0.5%',
-              flex: { xs: "1 1 auto", md: "0 0 30%" },
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              
-            }}
-          >
-            <Stack 
-              direction="row" 
+              {/* Row 2: Temp & RR/Other */}
+              <Stack direction="row" justifyContent="flex-end" spacing={3}>
+                <Stack direction="row" spacing={1} alignItems="center" width={70}>
+                  <FontAwesomeIcon icon={faTemperatureHalf} style={{ color: "#F97316" }} />
+                  <Typography variant="body2" fontWeight={600} color="#334155">{temp.data}</Typography>
+                </Stack>
+                <Stack direction="row" spacing={1} alignItems="center" width={70}>
+                  <FontAwesomeIcon icon={faArrowTrendUp} style={{ color: "#EAB308" }} />
+                  <Typography variant="body2" fontWeight={600} color="#334155">{latestVitals.rr}</Typography>
+                </Stack>
+              </Stack>
+            </Stack>
+            {/* Last Update Timestamp */}
+            <Typography variant="caption" color="#94A3B8" sx={{ display: 'block', textAlign: 'right', mt: 1, fontSize: "0.7rem" }}>
+              Last Update: {latestVitals.lastUpdate}
+            </Typography>
+          </Box>
+
+          {/* 4. Far Right: Actions (2x2 Grid) */}
+          <Box>
+            <Box
               sx={{
-                flexWrap: "wrap",
-                justifyContent: "space-around",
-                gap: { xs: 1, md: 2 },
-                width: "100%",
-                px: 1,
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: 1
               }}
             >
-              {[faPrescription, faNotesMedical, faArrowTrendUp, faFlask].map((icon, idx) => (
+              {[
+                { icon: faPrescription, id: 'medication' },
+                { icon: faNotesMedical, id: 'treatment' },
+                { icon: faWeightHanging, id: 'growthchart' },
+                { icon: faFlask, id: 'diagnostics' }
+              ].map((item, idx) => (
                 <IconButton
                   key={idx}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCardClick(item.id);
+                  }}
+                  size="small"
                   sx={{
-                    backgroundColor: props.darkTheme ? "#3A3A3E" : "#E6F7FF",
-                    borderRadius: 2,
-                    width: { xs: "40px", sm: "50px", md: "60px" },
-                    height: { xs: "40px", sm: "50px", md: "60px" },
+                    borderRadius: "8px",
+                    backgroundColor: "#F1F5F9",
+                    color: "#64748B",
+                    width: 32,
+                    height: 32,
                     '&:hover': {
-                      backgroundColor: props.darkTheme ? "#4A4A4E" : "#D0F0FF",
+                      backgroundColor: "#E2E8F0",
+                      color: "#0F172A"
                     }
                   }}
                 >
-                  <FontAwesomeIcon 
-                    icon={icon} 
-                    style={{ 
-                      color: props.darkTheme ? "#228BE6" : "#228BE6",
-                     
-                    }} 
-                  />
+                  <FontAwesomeIcon icon={item.icon} size="sm" />
                 </IconButton>
               ))}
-            </Stack>
+            </Box>
           </Box>
-        </CardContent>
-      </Card>
-    </Box>
-    
 
-    )
+        </Stack>
+      </CardContent>
+    </Card>
+  );
 }
 
