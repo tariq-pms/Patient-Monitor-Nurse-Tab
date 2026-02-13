@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
 import { Box, Paper,  Typography, Button, useTheme, useMediaQuery, Container, Fab, Tooltip, Drawer, List, ListItem, ListItemText, IconButton } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
-
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import MenuIcon from '@mui/icons-material/Menu';
-
-// Types
 import { InitialAssessmentForm } from './InitialAssessmentSections/types';
-
-// Sections
 import BabyIdentifiersSection from './InitialAssessmentSections/BabyIdentifiers';
 import MaternalDetailsSection from './InitialAssessmentSections/MaternalDetails';
 import BirthDetailsSection from './InitialAssessmentSections/BirthDetails';
