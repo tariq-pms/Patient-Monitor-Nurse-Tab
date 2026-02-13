@@ -879,11 +879,11 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
                     </Stack>
                   )}
 
-                  {latestManual["SpO2"] && (
+                  {latestManual["SpO₂"] && (
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <OpacityIcon sx={{ color: "#03A9F4", fontSize: "30px" }} />
                       <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                        {latestManual["SpO2"]}
+                        {latestManual["SpO₂"]}
                       </Typography>
                     </Stack>
                   )}

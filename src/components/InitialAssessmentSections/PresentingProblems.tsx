@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, Typography, Grid, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Chip, Stack, Autocomplete, Alert } from '@mui/material';
+import { Card, CardContent, Typography, Grid, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Chip,  Autocomplete, Alert } from '@mui/material';
 import { PresentingProblems } from './types';
 
 interface Props {
@@ -16,7 +16,7 @@ const PresentingProblemsSection: React.FC<Props> = ({ data, onChange }) => {
         onChange(field, event.target.value);
     };
 
-    const handleComplaintsChange = (event: any, value: string[]) => {
+    const handleComplaintsChange = (_event: any, value: string[]) => {
         onChange('chiefComplaints', value);
     };
 

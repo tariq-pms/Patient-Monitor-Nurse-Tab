@@ -96,23 +96,23 @@ interface PrescriptionScreenProps {
 //   patientReference: string;
 //   requestReference: string;
 // };
-type AdministrationHistoryItem = {
-  id: string;
-  versionId: string;
-  name: string;
-  status: string;
-  effectiveDateTime: string;
-  performerName: string;
-  patientReference: string;
-  requestReference: string;
+// type AdministrationHistoryItem = {
+//   id: string;
+//   versionId: string;
+//   name: string;
+//   status: string;
+//   effectiveDateTime: string;
+//   performerName: string;
+//   patientReference: string;
+//   requestReference: string;
 
-  // NEW FIELDS
-  dosage: string;
-  route: string;
-  indication: string;
-  frequency: string;
-  duration: string;
-};
+//   // NEW FIELDS
+//   dosage: string;
+//   route: string;
+//   indication: string;
+//   frequency: string;
+//   duration: string;
+// };
 
 
 
@@ -223,7 +223,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
   const [selectedDrugData, setSelectedDrugData] = useState<any>(null);
   const [selectedDrugName, setSelectedDrugName] = useState("");
   const [selectedHeading, setSelectedHeading] = useState("");
-  const [availableRoutes, setAvailableRoutes] = useState<string[]>([]);
+  const [, setAvailableRoutes] = useState<string[]>([]);
   const [route, setRoute] = useState("");
   const [showDetails, setShowDetails] = useState(false);
 
@@ -246,7 +246,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
   const [gaDays, setGaDays] = useState(initialGA.days);
 
   // const [selectedDrugCategory, setSelectedDrugCategory] = useState("");
-  const [selectedDrugUse, setSelectedDrugUse] = useState("");
+  const [, setSelectedDrugUse] = useState("");
   const [dose, setDose] = useState<string>('');
   const [unit, setUnit] = useState("mg/kg");
   const [intervalUnit, setIntervalUnit] = useState("hrs");
@@ -255,10 +255,10 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
   const [frequency, setFrequency] = useState<string>('');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [days, setDays] = useState<number>(1);
-  const [indication, setIndication] = useState<string[]>([]);
+  const [days,] = useState<number>(1);
+  const [, setIndication] = useState<string[]>([]);
   //const [indications, setIndications] = useState<string[]>([]);
-  const [admin, setAdmin] = useState<string>('');
+  const [admin] = useState<string>('');
   const [intervalHours, setIntervalHours] = useState<string>(''); // optional
   const [infusionTime, setInfusionTime] = useState<string>('');
   const [conc, setConc] = useState<string>('');
@@ -266,7 +266,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
   const [durationDays, setDurationDays] = useState<string>(""); // New Duration State
   const [doseperday] = useState('N/A');
   // Store medications
-  const [drugOptions, setDrugOptions] = useState<any[]>([]);
+  const [, setDrugOptions] = useState<any[]>([]);
   const [internalOpenPrescribeModal, setInternalOpenPrescribeModal] = useState(false);
 
   // Use external control if provided, otherwise use internal state
@@ -329,17 +329,17 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
   // const [inputValue, setInputValue] = useState "";
 
   const [gestationalAge, setGestationalAge] = useState<string>('');
-  const [birthDate, setBirthDate] = useState<string>('');
+  const [birthDate] = useState<string>('');
   const [pnaDays, setPnaDays] = useState<string>("");
   const [pmaWeeks, setPmaWeeks] = useState<string>("");
   const [weight, setWeight] = useState(props.current_weight || "");
-  const [weightG, setWeightG] = useState<string>("");
+  // const [weightG, setWeightG] = useState<string>("");
   // e.g. "Q8H"
-  const [ivAdminBackup, setIvAdminBackup] = useState<string>(''); // stores last IV admin
+  // const [ivAdminBackup, setIvAdminBackup] = useState<string>(''); // stores last IV admin
   const [doseAmount, setDoseAmount] = useState<string>('');   // mg total
-  const [doseVolume, setDoseVolume] = useState<string>('');   // mL total
-  const [deliveryRate, setDeliveryRate] = useState<string>(''); // mL/hr
-  const [ordertype, setOrderType] = useState<string>('');
+  const [, setDoseVolume] = useState<string>('');   // mL total
+  const [, setDeliveryRate] = useState<string>(''); // mL/hr
+  // const [ordertype, setOrderType] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>("name");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusSearch, setStatusSearch] = useState("All");
@@ -365,8 +365,8 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
   const [infusionWarning, setInfusionWarning] = useState<string | null>(null);
   const [concWarning, setConcWarning] = useState<string | null>(null);
   const [intervalWarning, setIntervalWarning] = useState<string | null>(null);
-  const [selectedDrug, setSelectedDrug] = useState<any | null>(null); // Selected drug object
-  const [administrationHistory, setAdministrationHistory] = useState<AdministrationHistoryItem[]>([]);
+  const [selectedDrug] = useState<any | null>(null); // Selected drug object
+  // const [administrationHistory, setAdministrationHistory] = useState<AdministrationHistoryItem[]>([]);
   const [prescriptionHistory, setPrescriptionHistory] = useState<Medication[]>([]);
   const [step, setStep] = useState(1); // 🔹 step 1: details, step 2: capture image
   const [patientVerified, setPatientVerified] = useState(false);
@@ -1393,7 +1393,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
 
 
 
-  const [loading, setLoading] = useState<boolean>(true);
+  const [, setLoading] = useState<boolean>(true);
 
 
   const [administering, setAdministering] = useState(false);
@@ -1826,103 +1826,104 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
   //   return acc;
   // }, {} as Record<string, AdministrationHistoryItem[]>);
 
-  const fetchAdminister = async () => {
-    setLoading(true);
-    try {
-      const searchUrl = `${import.meta.env.VITE_FHIRAPI_URL}/MedicationAdministration?subject=Patient/${props.patient_resource_id}`;
+  // const fetchAdminister = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const searchUrl = `${import.meta.env.VITE_FHIRAPI_URL}/MedicationAdministration?subject=Patient/${props.patient_resource_id}`;
 
-      const response = await fetch(searchUrl, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Basic " + btoa("fhiruser:change-password"),
-        },
-      });
+  //     const response = await fetch(searchUrl, {
+  //       method: "GET",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //       },
+  //     });
 
-      if (response.ok) {
-        const searchData = await response.json();
-        console.log("Fetched MedicationAdministration:", searchData);
-        console.log("Fetched patient resource id:", props.patient_resource_id);
-        console.log("Fetched user role:", props.UserRole);
+  //     if (response.ok) {
+  //       const searchData = await response.json();
+  //       console.log("Fetched MedicationAdministration:", searchData);
+  //       console.log("Fetched patient resource id:", props.patient_resource_id);
+  //       console.log("Fetched user role:", props.UserRole);
 
 
-        if (searchData?.entry && searchData.entry.length > 0) {
-          const allHistories = await Promise.all(
-            searchData.entry.map(async (entry: { resource: any }) => {
-              const resourceId = entry.resource.id;
-              const historyUrl = `${import.meta.env.VITE_FHIRAPI_URL}/MedicationAdministration/${resourceId}/_history`;
+  //       if (searchData?.entry && searchData.entry.length > 0) {
+  //         // const allHistories = await Promise.all(
+  //         //   searchData.entry.map(async (entry: { resource: any }) => {
+  //         //     const resourceId = entry.resource.id;
+  //         //     const historyUrl = `${import.meta.env.VITE_FHIRAPI_URL}/MedicationAdministration/${resourceId}/_history`;
 
-              const historyResponse = await fetch(historyUrl, {
-                method: "GET",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: "Basic " + btoa("fhiruser:change-password"),
-                },
-              });
+  //         //     const historyResponse = await fetch(historyUrl, {
+  //         //       method: "GET",
+  //         //       headers: {
+  //         //         "Content-Type": "application/json",
+  //         //         Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //         //       },
+  //         //     });
 
-              if (historyResponse.ok) {
-                const historyData = await historyResponse.json();
-                return historyData.entry.map((historyEntry: { resource: any }) => {
-                  const medication = historyEntry.resource;
+  //         //     if (historyResponse.ok) {
+  //         //       const historyData = await historyResponse.json();
+  //         //       return historyData.entry.map((historyEntry: { resource: any }) => {
+  //         //         const medication = historyEntry.resource;
 
-                  // Dynamic dosage formatting
-                  const dose =
-                    medication.dosage?.dose?.value
-                      ? `${medication.dosage?.dose?.value} ${medication.dosage?.dose?.unit ?? ""}`
-                      : medication.dosage?.dose?.text || "N/A";
+  //         //         // Dynamic dosage formatting
+  //         //         const dose =
+  //         //           medication.dosage?.dose?.value
+  //         //             ? `${medication.dosage?.dose?.value} ${medication.dosage?.dose?.unit ?? ""}`
+  //         //             : medication.dosage?.dose?.text || "N/A";
 
-                  return {
-                    id: medication.id,
-                    versionId: medication.meta?.versionId || "N/A",
-                    name: medication.medicationCodeableConcept?.text || "N/A",
-                    status: medication.status || "N/A",
-                    effectiveDateTime: medication.effectiveDateTime || "N/A",
-                    performerName: medication.performer?.[0]?.actor?.display || "N/A",
-                    patientReference: medication.subject?.reference || "N/A",
-                    requestReference: medication.request?.reference || "N/A",
+  //         //         return {
+  //         //           id: medication.id,
+  //         //           versionId: medication.meta?.versionId || "N/A",
+  //         //           name: medication.medicationCodeableConcept?.text || "N/A",
+  //         //           status: medication.status || "N/A",
+  //         //           effectiveDateTime: medication.effectiveDateTime || "N/A",
+  //         //           performerName: medication.performer?.[0]?.actor?.display || "N/A",
+  //         //           patientReference: medication.subject?.reference || "N/A",
+  //         //           requestReference: medication.request?.reference || "N/A",
 
-                    // NEW FIELDS
-                    dosage: dose || "N/A",
-                    route: medication.dosage?.route?.text || "N/A",
-                    indication:
-                      medication.reasonCode?.[0]?.text ??
-                      medication.reasonReference?.[0]?.display ??
-                      "N/A",
-                    frequency:
-                      medication.dosage?.timing?.repeat?.frequency ??
-                      medication.dosage?.timing?.code?.text ??
-                      "N/A",
-                    duration:
-                      medication.dosage?.timing?.repeat?.boundsPeriod?.duration ??
-                      "N/A",
-                  } as AdministrationHistoryItem;
-                });
+  //         //           // NEW FIELDS
+  //         //           dosage: dose || "N/A",
+  //         //           route: medication.dosage?.route?.text || "N/A",
+  //         //           indication:
+  //         //             medication.reasonCode?.[0]?.text ??
+  //         //             medication.reasonReference?.[0]?.display ??
+  //         //             "N/A",
+  //         //           frequency:
+  //         //             medication.dosage?.timing?.repeat?.frequency ??
+  //         //             medication.dosage?.timing?.code?.text ??
+  //         //             "N/A",
+  //         //           duration:
+  //         //             medication.dosage?.timing?.repeat?.boundsPeriod?.duration ??
+  //         //             "N/A",
+  //         //         } as AdministrationHistoryItem;
+  //         //       });
 
-              } else {
-                console.error(
-                  `Failed to fetch history for MedicationAdministration ${resourceId}.`
-                );
-                return [];
-              }
-            })
-          );
+  //         //     } else {
+  //         //       console.error(
+  //         //         `Failed to fetch history for MedicationAdministration ${resourceId}.`
+  //         //       );
+  //         //       return [];
+  //         //     }
+  //         //   })
+  //         // );
 
-          // Flatten the nested array of histories
-          const flattenedHistories: AdministrationHistoryItem[] = allHistories.flat();
-          setAdministrationHistory(flattenedHistories);
-        } else {
-          setAdministrationHistory([]);
-          console.warn("No MedicationAdministration entries found.");
-        }
-      } else {
-        console.error("Failed to fetch MedicationAdministration resource.");
-      }
-    } catch (error) {
-      console.error("Error fetching MedicationAdministration:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //         // Flatten the nested array of histories
+  //         // const flattenedHistories: AdministrationHistoryItem[] = allHistories.flat();
+  //         // setAdministrationHistory(flattenedHistories);
+  //       } 
+  //       // else {
+  //       //   setAdministrationHistory([]);
+  //       //   console.warn("No MedicationAdministration entries found.");
+  //       // }
+  //     } else {
+  //       console.error("Failed to fetch MedicationAdministration resource.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching MedicationAdministration:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const fetchPrescription = async () => {
     setLoading(true);
@@ -3044,7 +3045,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
         );
         setSnackbarSeverity("success");
         fetchPrescription();
-        fetchAdminister();
+        // fetchAdminister();
       } else {
         console.error("Failed to administer medication:", await response.text());
         setSnackbarMessage("Failed to administer medication.");
@@ -3067,7 +3068,8 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
   useEffect(() => {
     fetchPrescription();
     setStatusFilter("ongoing");
-    fetchAdminister(); //Fetch Procedure on component mount or when `patient_resource_id` changes
+    // fetchAdminister(); 
+    //Fetch Procedure on component mount or when `patient_resource_id` changes
   }, [props.patient_resource_id]);
 
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, Typography, Grid, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Chip, Stack, Checkbox, FormGroup, InputAdornment } from '@mui/material';
+import { Card, CardContent, Typography, Grid, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio,  Stack, Checkbox, FormGroup, InputAdornment } from '@mui/material';
 import { BirthDetails } from './types';
 
 interface Props {

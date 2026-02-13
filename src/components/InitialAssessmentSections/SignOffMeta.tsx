@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Card, CardContent, Typography, Grid, TextField, Box } from '@mui/material';
+import { Card, CardContent, Typography, Grid, TextField } from '@mui/material';
 import { SignOff } from './types';
 
 interface Props {
@@ -8,7 +8,7 @@ interface Props {
     userRole?: string; // To potentially pre-fill designation
 }
 
-const SignOffMetaSection: React.FC<Props> = ({ data, onChange, userRole }) => {
+const SignOffMetaSection: React.FC<Props> = ({ data, onChange }) => {
     const handleChange = (field: keyof SignOff) => (event: React.ChangeEvent<HTMLInputElement>) => {
         onChange(field, event.target.value);
     };
