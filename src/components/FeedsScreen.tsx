@@ -664,9 +664,7 @@ const balance = totalInput - totalOutput;
 return (
   <Box>
   
-  <Box mt={2} mb={2}> <Typography variant="h6" sx={{ color: "#0F3B61", fontWeight: 600, mb: 2, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-           Input Output Chart
-          </Typography>
+  <Box mt={2} mb={2}><Typography variant="inherit" fontWeight={500}>Input Output Chart</Typography>
   <Box display={"flex"}  alignItems="center"
   justifyContent="flex-end"
   gap={1.5}>

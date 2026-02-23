@@ -317,7 +317,7 @@ export const Header: FC<HeaderProps> = (props) => {
 
                       <Stack direction="row" justifyContent="flex-end" paddingBottom="12px" paddingRight="22px">
                         <Button
-                          onClick={() => logout()}
+                          onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
                           sx={{ backgroundColor: '#124D81', color: 'white', textTransform: 'capitalize' }}
                         >
                           <Typography variant="caption">Sign out</Typography>

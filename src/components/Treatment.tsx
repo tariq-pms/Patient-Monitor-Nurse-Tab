@@ -549,26 +549,21 @@ export const Treatment = ({
   // --- Helpers ---
 
   const fetchLatestVitals = async (pid: string) => {
-    console.log("--- DEBUG: fetchLatestVitals START ---");
-    console.log("PID:", pid);
     try {
-      // Use category=vital-signs to match Trends1.tsx
+      // Use category=vital-signs to match Trends1.tsx & PatientCard.tsx
       const url = `${FHIR_URL}/Observation?subject=Patient/${pid}&category=vital-signs&_sort=-date&_count=1`;
-      console.log("Fetching URL:", url);
 
       const res = await fetch(url, {
         headers: { Authorization: FHIR_AUTH }
       });
-      console.log("Response Status:", res.status);
+
+      if (!res.ok) throw new Error("Failed to fetch vitals");
 
       const data = await res.json();
-      console.log("Raw Response Data:", data);
-
-      const result = { hr: '0', spo2: '0', temp: '0', rr: '0' }; // Default to '0'
+      const result = { hr: '0', spo2: '0', temp: '0', rr: '0' };
 
       if (data.entry && data.entry.length > 0) {
         const obs = data.entry[0].resource;
-        console.log("Fetched Vitals Obs Resource:", obs);
 
         if (obs.component) {
           let foundHr = '0', foundPr = '0', foundRr = '0', foundSpo2 = '0';
@@ -576,51 +571,51 @@ export const Treatment = ({
 
           obs.component.forEach((c: any) => {
             const coding = c.code?.coding?.[0];
-            const display = coding?.display || c.code?.text || "";
+            let display = coding?.display || c.code?.text || "";
+
+            // CLEANUP: Remove "CURRENT " prefix if present (to match PatientCard logic)
+            if (display.toUpperCase().startsWith("CURRENT ")) {
+              display = display.substring(8).trim();
+            }
+
             const val = c.valueQuantity?.value ?? c.valueString;
-
-            console.log(`Processing Component: Display="${display}", Code="${coding?.code}", Value="${val}"`);
-
             if (val === undefined || val === null) return;
-
             const valStr = String(val);
 
-            // Match logic from Trends1.tsx (based on display/code)
+            // Match logic from Trends1.tsx/PatientCard.tsx
+            // HEART RATE
             if (display === "Heart Rate" || c.code?.coding?.some((x: any) => x.code === "8867-4")) {
               foundHr = valStr;
-              console.log("-> Matched Heart Rate:", valStr);
-            } else if (display === "Pulse Rate" || c.code?.coding?.some((x: any) => x.code === "8888-4")) {
+            }
+            // PULSE RATE
+            else if (display === "Pulse Rate" || c.code?.coding?.some((x: any) => x.code === "8888-4")) {
               foundPr = valStr;
-              console.log("-> Matched Pulse Rate:", valStr);
-            } else if (display === "Respiratory Rate" || c.code?.coding?.some((x: any) => x.code === "9279-1")) {
+            }
+            // RESPIRATORY RATE
+            else if (display === "Respiratory Rate" || c.code?.coding?.some((x: any) => x.code === "9279-1")) {
               foundRr = valStr;
-              console.log("-> Matched Respiratory Rate:", valStr);
-            } else if (display === "SpO₂" || display === "SpO2" || c.code?.coding?.some((x: any) => x.code === "20564-1")) {
+            }
+            // SPO2
+            else if (display === "SpO₂" || display === "SpO2" || c.code?.coding?.some((x: any) => x.code === "20564-1")) {
               foundSpo2 = valStr;
-              console.log("-> Matched SpO2:", valStr);
-            } else if (display === "Skin Temperature" || c.code?.coding?.some((x: any) => x.code === "60839-8" && display.includes("Skin"))) {
+            }
+            // SKIN TEMP
+            else if (display === "Skin Temperature" || c.code?.coding?.some((x: any) => x.code === "60839-8" && display.includes("Skin"))) {
               foundTempSkin = valStr;
-              console.log("-> Matched Skin Temp:", valStr);
-            } else if (display === "Core Temperature" || c.code?.coding?.some((x: any) => x.code === "60839-8" && display.includes("Core"))) {
+            }
+            // CORE TEMP
+            else if (display === "Core Temperature" || c.code?.coding?.some((x: any) => x.code === "60839-8" && display.includes("Core"))) {
               foundTempCore = valStr;
-              console.log("-> Matched Core Temp:", valStr);
             }
           });
 
-          // Priorities
+          // Priorities: HR > PR, Core > Skin
           result.hr = (foundHr !== '0' ? foundHr : foundPr !== '0' ? foundPr : '0');
-          result.rr = foundRr;
-          result.spo2 = foundSpo2;
+          result.rr = foundRr !== '0' ? foundRr : '0';
+          result.spo2 = foundSpo2 !== '0' ? foundSpo2 : '0';
           result.temp = (foundTempCore !== '0' ? foundTempCore : foundTempSkin !== '0' ? foundTempSkin : '0');
-
-          console.log("Final Parsed Result:", result);
-        } else {
-          console.log("No components found in observation resource.");
         }
-      } else {
-        console.log("No observation entries found.");
       }
-      console.log("--- DEBUG: fetchLatestVitals END ---");
       return result;
     } catch (e) {
       console.error("Error fetching vitals:", e);
@@ -630,27 +625,56 @@ export const Treatment = ({
 
   const fetchLatestGrowth = async (pid: string) => {
     try {
-      const res = await fetch(`${FHIR_URL}/Observation?patient=${pid}&code=8331-1&_sort=-date&_count=1`, {
+      // Fetch last 10 entries to ensure we find both Weight and BSL if they were entered separately
+      const url = `${FHIR_URL}/Observation?subject=Patient/${pid}&category=growth-chart&_sort=-date&_count=10`;
+
+      const res = await fetch(url, {
         headers: { Authorization: FHIR_AUTH }
       });
+
+      if (!res.ok) throw new Error("Failed to fetch growth");
+
       const data = await res.json();
       const result = { weight: '', bsl: '' };
 
       if (data.entry && data.entry.length > 0) {
-        const obs = data.entry[0].resource;
-        console.log("Fetched Growth Obs:", obs);
-        if (obs.component) {
-          const weightComp = obs.component.find((c: any) => c.code?.text?.includes('Weight') || c.code?.text?.includes('Body weight'));
-          if (weightComp?.valueQuantity?.value) {
-            result.weight = String(weightComp.valueQuantity.value);
-            console.log("Found Weight:", result.weight);
+        // Sort explicitly by effectiveDateTime descending
+        const sortedEntries = data.entry.sort((a: any, b: any) => {
+          const dateA = new Date(a.resource.effectiveDateTime || 0).getTime();
+          const dateB = new Date(b.resource.effectiveDateTime || 0).getTime();
+          return dateB - dateA;
+        });
+
+        // Loop through history to find the LATEST available Weight and BSL independently
+        for (const entry of sortedEntries) {
+          // Stop if we found both
+          if (result.weight && result.bsl) break;
+
+          const obs = entry.resource;
+          if (!obs.component) continue;
+
+          // 1. Try to find Weight (if not already found)
+          if (!result.weight) {
+            const weightComp = obs.component.find((c: any) => {
+              const text = c.code?.text || "";
+              return text === "Current Weight" || text === "Weight" || text.includes("Body weight");
+            });
+            if (weightComp?.valueQuantity?.value) {
+              result.weight = String(weightComp.valueQuantity.value);
+            }
           }
 
-          // BSL logic (assuming it's still needed from the original code)
-          const bslComp = obs.component.find((c: any) => c.code?.text?.includes('BSL') || c.code?.text?.includes('SUGAR'));
-          if (bslComp?.valueQuantity?.value) {
-            result.bsl = String(bslComp.valueQuantity.value);
-            console.log("Found BSL:", result.bsl);
+          // 2. Try to find BSL (if not already found)
+          if (!result.bsl) {
+            const bslComp = obs.component.find((c: any) => {
+              const text = (c.code?.text || "").toUpperCase();
+              return text.includes("BSL") || text.includes("SUGAR") || text.includes("GLUCOSE");
+            });
+            if (bslComp?.valueQuantity?.value) {
+              result.bsl = String(bslComp.valueQuantity.value);
+            } else if (bslComp?.valueString) {
+              result.bsl = bslComp.valueString;
+            }
           }
         }
       }

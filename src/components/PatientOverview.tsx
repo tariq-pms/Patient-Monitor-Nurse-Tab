@@ -5,8 +5,14 @@ import {
   Typography,
   Grid,
   IconButton,
+  TableRow,
+  TableCell,
+  Table,
+  TableBody,
+  TableContainer,
   Paper,
   Stack,
+  TableHead,
   Chip,
   Skeleton,
   useTheme,
@@ -532,7 +538,13 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
         }
       );
       const data = await response.json();
-      const entries = data.entry || [];
+      const rawEntries = data.entry || [];
+
+      // Filter valid notes first (same logic as Treatment.tsx - only counts JSON clinical notes)
+      const entries = rawEntries.filter((entry: any) => {
+        const content = entry.resource.content || [];
+        return content.some((c: any) => c.attachment?.contentType === 'application/json');
+      });
 
       // 1. Set Latest Note info
       if (entries.length > 0) {
@@ -639,25 +651,56 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
           return { time: obs.effectiveDateTime, ...vals };
         };
 
-        const latest = processObs(entries[0].resource);
-        const previous = entries.length > 1 ? processObs(entries[1].resource) : null;
+        // Find latest valid entries independently
+        let latestWeight: any = null;
+        let latestBSL: any = null;
+        let previousWeight: any = null;
 
-        const weight = latest["Current Weight"] ? `${latest["Current Weight"]} g` : "N/A";
-        const bsl = latest["BSL"] ? `${latest["BSL"]} mg/dL` : "N/A";
-        const velocity = latest["Gain/Loss in 24 hrs"] || "N/A";
+        // 1. Find Latest Weight
+        const weightEntryIndex = entries.findIndex((e: any) => {
+          const vals = processObs(e.resource);
+          return vals["Current Weight"] != null;
+        });
+
+        if (weightEntryIndex !== -1) {
+          latestWeight = processObs(entries[weightEntryIndex].resource);
+
+          // 2. Find Previous Weight (starting after the latest weight index)
+          const prevWeightEntry = entries.slice(weightEntryIndex + 1).find((e: any) => {
+            const vals = processObs(e.resource);
+            return vals["Current Weight"] != null;
+          });
+          if (prevWeightEntry) {
+            previousWeight = processObs(prevWeightEntry.resource);
+          }
+        }
+
+        // 3. Find Latest BSL
+        const bslEntry = entries.find((e: any) => {
+          const vals = processObs(e.resource);
+          return vals["BSL"] != null;
+        });
+        if (bslEntry) {
+          latestBSL = processObs(bslEntry.resource);
+        }
+
+        // Construct Display Data
+        const weight = latestWeight ? `${latestWeight["Current Weight"]} g` : "N/A";
+        const bsl = latestBSL ? `${latestBSL["BSL"]} mg/dL` : "N/A";
+        const velocity = latestWeight ? (latestWeight["Gain/Loss in 24 hrs"] || "N/A") : "N/A";
 
         // Calculate Trend
         let trend: 'up' | 'down' | 'stable' | null = null;
-        if (latest["Current Weight"] && previous && previous["Current Weight"]) {
-          const diff = latest["Current Weight"] - previous["Current Weight"];
+        if (latestWeight && previousWeight) {
+          const diff = latestWeight["Current Weight"] - previousWeight["Current Weight"];
           trend = diff > 0 ? 'up' : diff < 0 ? 'down' : 'stable';
         }
 
         // Growth Tag (SGA/AGA/LGA)
         let tag = "N/A";
-        if (latest["Current Weight"] && props.birthDate && props.gestationAge) {
-          const pma = calculatePmaForFenton(props.birthDate, props.gestationAge, new Date(latest.time));
-          tag = getGrowthCategory(latest["Current Weight"], pma, props.gender || 'male') || "N/A";
+        if (latestWeight && props.birthDate && props.gestationAge) {
+          const pma = calculatePmaForFenton(props.birthDate, props.gestationAge, new Date(latestWeight.time));
+          tag = getGrowthCategory(latestWeight["Current Weight"], pma, props.gender || 'male') || "N/A";
         }
 
         setGrowthData({ weight, velocity, bsl, tag, trend });
@@ -879,11 +922,11 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
                     </Stack>
                   )}
 
-                  {latestManual["SpO₂"] && (
+                  {latestManual["SpO2"] && (
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <OpacityIcon sx={{ color: "#03A9F4", fontSize: "30px" }} />
                       <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                        {latestManual["SpO₂"]}
+                        {latestManual["SpO2"]}
                       </Typography>
                     </Stack>
                   )}

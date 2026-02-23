@@ -1,4 +1,4 @@
-import React, { FC,  useState } from 'react';
+import React, { FC, useState } from 'react';
 import {
   AppBar, Box, Toolbar, IconButton, Badge, Menu, MenuItem,
   TextField, InputAdornment, Button, Switch, Typography
@@ -8,9 +8,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNotification } from "../contexts/NotificationContext";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faCircleChevronLeft, faCircleChevronRight, 
-  faPlus, faUserCircle, faUserNurse 
+import {
+  faCircleChevronLeft, faCircleChevronRight,
+  faPlus, faUserCircle, faUserNurse
 } from '@fortawesome/free-solid-svg-icons';
 import SearchIcon from '@mui/icons-material/Search';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -30,11 +30,11 @@ export const Header: FC<HeaderProps> = (props) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { user, isAuthenticated, logout } = useAuth0();
-  
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { notifications, clearNotifications } = useNotification();
   const [anchorElNotification, setAnchorElNotification] = useState<null | HTMLElement>(null);
-  
+
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
   const handleNotificationsOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorElNotification(event.currentTarget);
@@ -42,51 +42,51 @@ export const Header: FC<HeaderProps> = (props) => {
 
   return (
     <AppBar position="static" sx={{ background: '#FFFFFF', boxShadow: 'none' }}>
-      <Toolbar sx={{ 
-        display: 'flex', 
+      <Toolbar sx={{
+        display: 'flex',
         justifyContent: 'space-between',
         padding: isMobile ? '8px 4px' : '16px'
       }}>
         {/* Left Side: Logo, Sidebar Toggle, Search */}
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
           gap: isMobile ? 1 : 2,
           flexGrow: 1,
           maxWidth: '800px'
         }}>
           {/* Sidebar Toggle */}
-          <IconButton 
-            onClick={props.onToggleSidebar} 
+          <IconButton
+            onClick={props.onToggleSidebar}
             size={isMobile ? 'small' : 'medium'}
             sx={{ mr: 1 }}
           >
             <FontAwesomeIcon
               icon={props.isSidebarCollapsed ? faCircleChevronRight : faCircleChevronLeft}
-              style={{ 
-                color: props.darkTheme ? '#BFDEFF' : '#124D81', 
-                fontSize: isMobile ? '1.2rem' : '1.6rem' 
+              style={{
+                color: props.darkTheme ? '#BFDEFF' : '#124D81',
+                fontSize: isMobile ? '1.2rem' : '1.6rem'
               }}
             />
           </IconButton>
 
           {/* Logo */}
-          <Box 
-            sx={{ 
-              display: 'flex', 
+          <Box
+            sx={{
+              display: 'flex',
               flexDirection: 'column',
               cursor: 'pointer',
               minWidth: isMobile ? '80px' : '100px'
             }}
             onClick={() => navigate('/')}
           >
-            <img 
+            <img
               src={pmsLogo} // Replace with your logo path
-              alt="Logo" 
-              style={{ 
-                width: isMobile ? '60px' : '80px', 
+              alt="Logo"
+              style={{
+                width: isMobile ? '60px' : '80px',
                 height: 'auto'
-              }} 
+              }}
             />
             <Typography
               variant="h2"
@@ -103,62 +103,62 @@ export const Header: FC<HeaderProps> = (props) => {
           </Box>
 
           {/* Search Bar */}
-          <Box sx={{ 
-                    minWidth: isMobile ? '150px' : '300px',
-                    flexGrow: isMobile ? 1 : 0
-                  }}>
-                    <TextField
-                      variant="outlined"
-                      size="small"
-                      fullWidth
-                      placeholder="Mothers Name / Patient ID / Bed Number"
-                      onChange={(e) => props.setSearchQuery(e.target.value)}
-                      sx={{
-                        backgroundColor:  '#FFFFFF',
-                        borderRadius: '25px',
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '25px',
-                          '& fieldset': {
-                            borderColor: '#CED4DA',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: '#124D81',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#124D81',
-                          },
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          color: '#124D81',
-                          padding: isMobile ? '6px 8px' : '10px 14px',
-                          fontSize: isMobile ? '0.7rem' : '1rem',
-                        },
-                      }}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <SearchIcon
-                              style={{
-                                color:'#124D81',
-                                fontSize: isMobile ? '1rem' : '1.5rem',
-                              }}
-                            />
-                          </InputAdornment>
-                        ),
+          <Box sx={{
+            minWidth: isMobile ? '150px' : '300px',
+            flexGrow: isMobile ? 1 : 0
+          }}>
+            <TextField
+              variant="outlined"
+              size="small"
+              fullWidth
+              placeholder="Mothers Name / Patient ID / Bed Number"
+              onChange={(e) => props.setSearchQuery(e.target.value)}
+              sx={{
+                backgroundColor: '#FFFFFF',
+                borderRadius: '25px',
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '25px',
+                  '& fieldset': {
+                    borderColor: '#CED4DA',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#124D81',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#124D81',
+                  },
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: '#124D81',
+                  padding: isMobile ? '6px 8px' : '10px 14px',
+                  fontSize: isMobile ? '0.7rem' : '1rem',
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon
+                      style={{
+                        color: '#124D81',
+                        fontSize: isMobile ? '1rem' : '1.5rem',
                       }}
                     />
-                  </Box>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
         </Box>
 
         {/* Right Side: Buttons, Notifications, User Menu */}
         {isAuthenticated && (
-          <Box sx={{ 
-            display: 'flex', 
+          <Box sx={{
+            display: 'flex',
             alignItems: 'center',
             gap: isMobile ? 0.5 : 1
           }}>
             {/* Add Patient Button */}
-           
+
             <Button
               sx={{
                 height: '40px',
@@ -188,23 +188,23 @@ export const Header: FC<HeaderProps> = (props) => {
               size={isMobile ? 'small' : 'medium'}
             >
               <Badge badgeContent={notifications.length} color="error">
-                <NotificationsIcon style={{ 
-                  color: props.darkTheme ? '#BFDEFF' : '#124D81', 
-                  fontSize: isMobile ? '1.2rem' : '1.5rem' 
+                <NotificationsIcon style={{
+                  color: props.darkTheme ? '#BFDEFF' : '#124D81',
+                  fontSize: isMobile ? '1.2rem' : '1.5rem'
                 }} />
               </Badge>
             </IconButton>
 
             {/* User Menu */}
-            <IconButton 
+            <IconButton
               onClick={handleMenuOpen}
               size={isMobile ? 'small' : 'medium'}
             >
               <FontAwesomeIcon
                 icon={faUserCircle}
-                style={{ 
-                  color: props.darkTheme ? '#BFDEFF' : '#124D81', 
-                  fontSize: isMobile ? '1.5rem' : '1.8rem' 
+                style={{
+                  color: props.darkTheme ? '#BFDEFF' : '#124D81',
+                  fontSize: isMobile ? '1.5rem' : '1.8rem'
                 }}
               />
             </IconButton>
@@ -220,7 +220,7 @@ export const Header: FC<HeaderProps> = (props) => {
             sx: {
               width: isMobile ? '90vw' : '400px',
               backgroundColor: props.darkTheme ? '#000000' : '#F3F2F7',
-          
+
               overflowY: 'auto',
             }
           }}
@@ -235,9 +235,9 @@ export const Header: FC<HeaderProps> = (props) => {
             ))
           )}
           <MenuItem>
-            <Button 
-              fullWidth 
-              onClick={clearNotifications} 
+            <Button
+              fullWidth
+              onClick={clearNotifications}
               disabled={notifications.length === 0}
               sx={{ backgroundColor: '#124D81', color: 'white' }}
             >
@@ -264,9 +264,9 @@ export const Header: FC<HeaderProps> = (props) => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
               <FontAwesomeIcon
                 icon={faUserNurse}
-                style={{ 
-                  color: props.darkTheme ? '#BFDEFF' : '#124D81', 
-                  fontSize: '1.5rem' 
+                style={{
+                  color: props.darkTheme ? '#BFDEFF' : '#124D81',
+                  fontSize: '1.5rem'
                 }}
               />
               <Box>
@@ -278,7 +278,7 @@ export const Header: FC<HeaderProps> = (props) => {
                 </Typography>
               </Box>
             </Box>
-            
+
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="body2" sx={{ color: props.darkTheme ? 'white' : '#124D81' }}>
                 Dark Mode
@@ -289,13 +289,13 @@ export const Header: FC<HeaderProps> = (props) => {
                 color="primary"
               />
             </Box>
-            
+
             <Button
               fullWidth
-              onClick={() => logout()}
-              sx={{ 
+              onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+              sx={{
                 mt: 1,
-                backgroundColor: '#124D81', 
+                backgroundColor: '#124D81',
                 color: 'white',
                 '&:hover': { backgroundColor: '#0d3a63' }
               }}

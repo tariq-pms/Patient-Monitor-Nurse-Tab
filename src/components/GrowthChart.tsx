@@ -18,9 +18,11 @@ import { BORNEO_LOGO } from './GrowthNimai_logo'; // Adjust path if needed
 // ... keep your existing imports ...
 import {
   Paper,
+  Tabs,
+  Tab,
   ToggleButton,
   ToggleButtonGroup,
-
+  Divider,
   IconButton // <--- Add this here
 } from '@mui/material';
 
@@ -63,7 +65,7 @@ ChartJS.register(
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import TableRowsIcon from '@mui/icons-material/TableRows';
-// import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import 'chartjs-adapter-date-fns';
 import CloseIcon from '@mui/icons-material/Close';
 // 1. For the Layout
@@ -261,8 +263,8 @@ export const GrowthChart: FC<PatientDetails> = (props): JSX.Element => {
   const [previousWeightDate, setPreviousWeightDate] = useState<Date | null>(null);
   const [currentWeight, setCurrentWeight] = useState("");
   const [gainLoss, setGainLoss] = useState("N/A");
-  // const [totalIntake, setTotalIntake] = useState("");
-  // const [totalOutput, setTotalOutput] = useState("");
+  const [totalIntake, setTotalIntake] = useState("");
+  const [totalOutput, setTotalOutput] = useState("");
   const { user } = useAuth0();
 
   // 1. STATE: Default range is Current Date +/- 3 Days
@@ -500,215 +502,215 @@ export const GrowthChart: FC<PatientDetails> = (props): JSX.Element => {
   // const [manualData, setManualData] = useState<any[]>([]);
   // const [entries, setEntries] = useState<any[]>( []);
 
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Removed "React." prefix -> requires "useState" to be in your imports at the top
   const [tabValue, setTabValue] = useState(0);
   const [viewMode, setViewMode] = useState<string>('chart');
-  // const [bsl, setBsl] = useState<string>("");
+  const [bsl, setBsl] = useState<string>("");
 
   // Removed "React." prefix -> You might need to add "SyntheticEvent" and "MouseEvent" to your top imports
-  const handleTabChange = (_event: any, newValue: number) => {
+  const handleTabChange = (event: any, newValue: number) => {
     setTabValue(newValue);
   };
 
   const handleViewModeChange = (
-    _event: any,
+    event: any,
     newMode: string | null
   ) => {
     if (newMode !== null) {
       setViewMode(newMode);
     }
   };
-  // const downloadTrendsPDF = async () => {
-  //   const doc = new jsPDF("p", "pt", "a4"); // Portrait A4
-  //   const pageWidth = doc.internal.pageSize.getWidth();
-  //   // const pageHeight = doc.internal.pageSize.getHeight();
-  //   let orgName = "Unknown Organization";
-  //   let logoDataUrl: string | null = null;
+  const downloadTrendsPDF = async () => {
+    const doc = new jsPDF("p", "pt", "a4"); // Portrait A4
+    const pageWidth = doc.internal.pageSize.getWidth();
+    // const pageHeight = doc.internal.pageSize.getHeight();
+    let orgName = "Unknown Organization";
+    let logoDataUrl: string | null = null;
 
-  //   try {
-  //     // =========================
-  //     // Fetch Organization
-  //     // =========================
-  //     const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/${props.userOrganization}`;
-  //     console.log("🏥 Fetching Organization from:", orgUrl);
-  //     console.log("🏥 Fetching gender from growth chart:", props.gender);
-
-
+    try {
+      // =========================
+      // Fetch Organization
+      // =========================
+      const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/${props.userOrganization}`;
+      console.log("🏥 Fetching Organization from:", orgUrl);
+      console.log("🏥 Fetching gender from growth chart:", props.gender);
 
 
-  //     const res = await fetch(orgUrl, {
-  //       headers: {
-  //         Authorization: "Basic " + btoa("fhiruser:change-password"),
-  //         Accept: "application/fhir+json",
-  //       },
-  //     });
-
-  //     if (!res.ok) throw new Error(`Organization fetch failed: ${res.status}`);
-
-  //     const orgData = await res.json();
-  //     orgName = orgData.name || orgName;
-  //     console.log("✅ Organization name fetched:", orgName);
-
-  //     // =========================
-  //     // Fetch logo Binary if exists
-  //     // =========================
-  //     const extensions = Array.isArray(orgData.extension) ? orgData.extension : [];
-  //     const logoExt = extensions.find(
-  //       (ext: any) =>
-  //         ext.url === "http://example.org/fhir/StructureDefinition/organization-logo"
-  //     );
-  //     const logoRef = logoExt?.valueReference?.reference;
-  //     console.log("🔗 Logo Reference (fixed):", logoRef);
-
-  //     if (logoRef) {
-  //       const binaryId = logoRef.replace("Binary/", "");
-  //       const binaryUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Binary/${binaryId}`;
-  //       console.log("🖼️ Fetching Binary from:", binaryUrl);
-
-  //       const binaryRes = await fetch(binaryUrl, {
-  //         headers: {
-  //           Authorization: "Basic " + btoa("fhiruser:change-password"),
-  //           Accept: "application/fhir+json",
-  //         },
-  //       });
-
-  //       if (!binaryRes.ok) throw new Error(`Binary fetch failed: ${binaryRes.status}`);
-
-  //       const binaryData = await binaryRes.json();
-  //       console.log("📦 Binary fetched:", binaryData);
-
-  //       if (binaryData.data && binaryData.contentType) {
-  //         logoDataUrl = `data:${binaryData.contentType};base64,${binaryData.data}`;
-  //         console.log("✅ Logo Data URL ready (first 50 chars):", logoDataUrl.slice(0, 50) + "...");
-  //       } else {
-  //         console.warn("⚠️ Binary missing data/contentType");
-  //       }
-  //     } else {
-  //       console.warn("⚠️ No logo extension found in Organization");
-  //     }
-  //   } catch (err) {
-  //     console.error("❌ Error fetching organization/logo:", err);
-  //   }
-
-  //   // =========================
-  //   // Draw Logo
-  //   // =========================
-  //   const logoBoxSize = 60;
-  //   const logoX = 40;
-  //   const logoY = 20;
-
-  //   try {
-  //     if (logoDataUrl) {
-  //       const img = new Image();
-  //       img.src = logoDataUrl;
-
-  //       await new Promise<void>((resolve, reject) => {
-  //         img.onload = () => resolve();
-  //         img.onerror = (e) => reject(e);
-  //       });
-  //       console.log("🖼️ Logo image loaded");
-
-  //       const aspectRatio = img.width / img.height;
-  //       let drawWidth = logoBoxSize;
-  //       let drawHeight = logoBoxSize;
-
-  //       if (aspectRatio > 1) drawHeight = logoBoxSize / aspectRatio;
-  //       else drawWidth = logoBoxSize * aspectRatio;
-
-  //       const offsetX = logoX + (logoBoxSize - drawWidth) / 2;
-  //       const offsetY = logoY + (logoBoxSize - drawHeight) / 2 - 10;
-
-  //       doc.addImage(img, "PNG", offsetX, offsetY, drawWidth, drawHeight);
-  //       console.log("✅ Logo added to PDF");
-  //     } else {
-  //       console.warn("⚠️ No logo, drawing fallback rectangle");
-  //       doc.setFillColor(200, 220, 255);
-  //       doc.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
-  //       doc.setFontSize(8);
-  //       doc.text("No Logo", logoX + 5, logoY + 30);
-  //     }
-  //   } catch (err) {
-  //     console.error("❌ Failed to add logo:", err);
-  //     doc.setFillColor(200, 220, 255);
-  //     doc.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
-  //   }
 
 
-  //   // =========================
-  //   // 🏥 Hospital Name
-  //   // =========================
-  //   doc.setFont("helvetica", "bold");
-  //   doc.setFontSize(14);
-  //   doc.text(orgName, logoX + logoBoxSize + 10, logoY + 15);
+      const res = await fetch(orgUrl, {
+        headers: {
+          Authorization: "Basic " + btoa("fhiruser:change-password"),
+          Accept: "application/fhir+json",
+        },
+      });
 
-  //   doc.setFontSize(11);
-  //   doc.text("Growth Chart Report", logoX + logoBoxSize + 10, logoY + 35);
+      if (!res.ok) throw new Error(`Organization fetch failed: ${res.status}`);
 
-  //   // =========================
-  //   // Line separator
-  //   // =========================
-  //   doc.setDrawColor(180);
-  //   doc.line(10, 70, pageWidth - 10, 70);
+      const orgData = await res.json();
+      orgName = orgData.name || orgName;
+      console.log("✅ Organization name fetched:", orgName);
 
-  //   // =========================
-  //   // 👶 PATIENT INFO
-  //   // =========================
-  //   doc.setFont("helvetica", "normal");
-  //   doc.setFontSize(10);
+      // =========================
+      // Fetch logo Binary if exists
+      // =========================
+      const extensions = Array.isArray(orgData.extension) ? orgData.extension : [];
+      const logoExt = extensions.find(
+        (ext: any) =>
+          ext.url === "http://example.org/fhir/StructureDefinition/organization-logo"
+      );
+      const logoRef = logoExt?.valueReference?.reference;
+      console.log("🔗 Logo Reference (fixed):", logoRef);
 
-  //   const patientY = 85;
-  //   doc.text(`Name: ${props.patient_name}`, 40, patientY);
-  //   doc.text(`UHID: ${props.patient_id}`, 40, patientY + 20);
-  //   doc.text(`DOB:  ${props.birth_date}`, 250, patientY);
-  //   doc.text(`G.A  : ${props.gestational_age}`, 420, patientY);
-  //   doc.text(`DOA: ____________________`, 250, patientY + 22);
-  //   doc.setDrawColor(180);
-  //   doc.line(10, 120, pageWidth - 10, 120);
+      if (logoRef) {
+        const binaryId = logoRef.replace("Binary/", "");
+        const binaryUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Binary/${binaryId}`;
+        console.log("🖼️ Fetching Binary from:", binaryUrl);
 
-  //   // =========================
-  //   //  SECTION
-  //   // =========================
-  //   const chartIds = [{ id: "temperatureGraph" }];
+        const binaryRes = await fetch(binaryUrl, {
+          headers: {
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+            Accept: "application/fhir+json",
+          },
+        });
 
-  //   const chartHeight = 280; // 🔥 Increased chart height
-  //   const chartWidth = pageWidth - 60; // almost full width
-  //   let startY = patientY + 60;
+        if (!binaryRes.ok) throw new Error(`Binary fetch failed: ${binaryRes.status}`);
 
-  //   for (const chart of chartIds) {
-  //     const element = document.getElementById(chart.id);
-  //     if (!element) continue;
+        const binaryData = await binaryRes.json();
+        console.log("📦 Binary fetched:", binaryData);
 
-  //     // Title above chart
-  //     // doc.setFont("helvetica", "bold");
-  //     // doc.setFontSize(12);
-  //     // doc.text(chart.title, 270, startY);
+        if (binaryData.data && binaryData.contentType) {
+          logoDataUrl = `data:${binaryData.contentType};base64,${binaryData.data}`;
+          console.log("✅ Logo Data URL ready (first 50 chars):", logoDataUrl.slice(0, 50) + "...");
+        } else {
+          console.warn("⚠️ Binary missing data/contentType");
+        }
+      } else {
+        console.warn("⚠️ No logo extension found in Organization");
+      }
+    } catch (err) {
+      console.error("❌ Error fetching organization/logo:", err);
+    }
 
-  //     // Capture chart
-  //     const canvas = await html2canvas(element, {
-  //       scale: 2,
-  //       backgroundColor: "#fff",
-  //     });
-  //     const imgData = canvas.toDataURL("image/png");
+    // =========================
+    // Draw Logo
+    // =========================
+    const logoBoxSize = 60;
+    const logoX = 40;
+    const logoY = 20;
 
-  //     // Maintain aspect ratio
-  //     const aspectRatio = canvas.width / canvas.height;
-  //     const targetWidth = chartWidth;
-  //     const targetHeight = Math.min(chartHeight, targetWidth / aspectRatio);
+    try {
+      if (logoDataUrl) {
+        const img = new Image();
+        img.src = logoDataUrl;
 
-  //     // Add chart image
-  //     doc.addImage(imgData, "PNG", 40, startY + 10, targetWidth, targetHeight);
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = (e) => reject(e);
+        });
+        console.log("🖼️ Logo image loaded");
 
-  //     startY += targetHeight + 60; // extra gap between charts
-  //   }
+        const aspectRatio = img.width / img.height;
+        let drawWidth = logoBoxSize;
+        let drawHeight = logoBoxSize;
 
-  //   // =========================
-  //   // 💾 SAVE PDF
-  //   // =========================
-  //   doc.save(`GrowthChart_Report(${props.patient_id}).pdf`);
-  //   // doc.save("GrowthChart_Report.pdf");
-  // };
+        if (aspectRatio > 1) drawHeight = logoBoxSize / aspectRatio;
+        else drawWidth = logoBoxSize * aspectRatio;
+
+        const offsetX = logoX + (logoBoxSize - drawWidth) / 2;
+        const offsetY = logoY + (logoBoxSize - drawHeight) / 2 - 10;
+
+        doc.addImage(img, "PNG", offsetX, offsetY, drawWidth, drawHeight);
+        console.log("✅ Logo added to PDF");
+      } else {
+        console.warn("⚠️ No logo, drawing fallback rectangle");
+        doc.setFillColor(200, 220, 255);
+        doc.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
+        doc.setFontSize(8);
+        doc.text("No Logo", logoX + 5, logoY + 30);
+      }
+    } catch (err) {
+      console.error("❌ Failed to add logo:", err);
+      doc.setFillColor(200, 220, 255);
+      doc.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
+    }
+
+
+    // =========================
+    // 🏥 Hospital Name
+    // =========================
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text(orgName, logoX + logoBoxSize + 10, logoY + 15);
+
+    doc.setFontSize(11);
+    doc.text("Growth Chart Report", logoX + logoBoxSize + 10, logoY + 35);
+
+    // =========================
+    // Line separator
+    // =========================
+    doc.setDrawColor(180);
+    doc.line(10, 70, pageWidth - 10, 70);
+
+    // =========================
+    // 👶 PATIENT INFO
+    // =========================
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+
+    const patientY = 85;
+    doc.text(`Name: ${props.patient_name}`, 40, patientY);
+    doc.text(`UHID: ${props.patient_id}`, 40, patientY + 20);
+    doc.text(`DOB:  ${props.birth_date}`, 250, patientY);
+    doc.text(`G.A  : ${props.gestational_age}`, 420, patientY);
+    doc.text(`DOA: ____________________`, 250, patientY + 22);
+    doc.setDrawColor(180);
+    doc.line(10, 120, pageWidth - 10, 120);
+
+    // =========================
+    //  SECTION
+    // =========================
+    const chartIds = [{ id: "temperatureGraph" }];
+
+    const chartHeight = 280; // 🔥 Increased chart height
+    const chartWidth = pageWidth - 60; // almost full width
+    let startY = patientY + 60;
+
+    for (const chart of chartIds) {
+      const element = document.getElementById(chart.id);
+      if (!element) continue;
+
+      // Title above chart
+      // doc.setFont("helvetica", "bold");
+      // doc.setFontSize(12);
+      // doc.text(chart.title, 270, startY);
+
+      // Capture chart
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: "#fff",
+      });
+      const imgData = canvas.toDataURL("image/png");
+
+      // Maintain aspect ratio
+      const aspectRatio = canvas.width / canvas.height;
+      const targetWidth = chartWidth;
+      const targetHeight = Math.min(chartHeight, targetWidth / aspectRatio);
+
+      // Add chart image
+      doc.addImage(imgData, "PNG", 40, startY + 10, targetWidth, targetHeight);
+
+      startY += targetHeight + 60; // extra gap between charts
+    }
+
+    // =========================
+    // 💾 SAVE PDF
+    // =========================
+    doc.save(`GrowthChart_Report(${props.patient_id}).pdf`);
+    // doc.save("GrowthChart_Report.pdf");
+  };
 
 
 
@@ -1615,6 +1617,61 @@ export const GrowthChart: FC<PatientDetails> = (props): JSX.Element => {
     }
   };
 
+  interface TabPanelProps {
+    children?: React.ReactNode;
+    index: number;
+    value: number;
+  }
+
+  function TabPanel(props: TabPanelProps) {
+    const { children, value, index, ...other } = props;
+
+    return (
+      <div
+        role="tabpanel"
+        hidden={value !== index}
+        id={`simple-tabpanel-${index}`}
+        aria-labelledby={`simple-tab-${index}`}
+        {...other}
+      >
+        {value === index && (
+          <Box sx={{ p: 3 }}>
+            {children}
+          </Box>
+        )}
+      </div>
+    );
+  }
+
+  interface StatCardProps {
+    label: string;
+    value: string | number;
+    subValue?: string;
+  }
+
+  const StatCard = ({ label, value, subValue }: StatCardProps) => (
+    <Box sx={{
+      border: '1px solid #E0E0E0',
+      borderRadius: '8px',
+      p: 1,
+      minWidth: '120px',
+      bgcolor: '#fff'
+    }}>
+      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '10px' }}>
+        {label}
+      </Typography>
+      <Stack direction="row" alignItems="baseline" spacing={1}>
+        <Typography variant="h6" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
+          {value}
+        </Typography>
+        {subValue && (
+          <Typography variant="caption" color="text.secondary">
+            {subValue}
+          </Typography>
+        )}
+      </Stack>
+    </Box>
+  );
 
   //     // Input format: "22W 3D"
   // const parseGA = (ga: string) => {

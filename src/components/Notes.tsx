@@ -241,6 +241,12 @@ export const Notes: React.FC<NotesProps> = (props) => {
       setSnackbarMessage("Note saved successfully!");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
+
+      // Clear fields and close dialog
+      setNote('');
+      setNoteType('');
+      setOpen(false);
+
       fetchNotes();
     } catch (error) {
       console.error("Error saving note:", error);

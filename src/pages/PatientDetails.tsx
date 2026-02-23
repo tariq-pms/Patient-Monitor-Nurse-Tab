@@ -10,6 +10,7 @@ import { useLocation } from "react-router-dom";
 import { Trends1 } from "../components/Trends1";
 import { Notes } from "../components/Notes";
 import { Treatment } from "../components/Treatment";
+import { Treatment1 } from "../components/Treatment1";
 import { Dashboard } from '../components/Dashboard';
 import { ConsentForms } from '../components/ConsentForm';
 import { GrowthChart } from '../components/GrowthChart';
@@ -22,7 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBaby } from "@fortawesome/free-solid-svg-icons";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-// import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
+import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 // BedIcon removed - not used
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import SearchIcon from '@mui/icons-material/Search'; // Added
@@ -439,7 +440,9 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
       'overview': 'Patients Overview',
       'diagnostics': 'Diagnostics',
       'medication': 'Medications',
-      'notes': 'Clinical Notes',
+      'clinicalnotes': 'Clinical Notes',
+         'notes': 'Notes',
+         'initialassessment': 'Initial Assessment',
       'feeds': 'Vitals & Trends',
       'trends': 'Vitals & Trends',
       'treatment': 'Patients Clinical List',
@@ -487,8 +490,8 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
         <Stack
           direction="row"
           alignItems="center"
-          // justifyContent="space-between"
-          spacing={4}
+          justifyContent="space-between"
+          spacing={2}
           flexWrap="wrap"
           useFlexGap
           sx={{ rowGap: 1.5 }}
@@ -706,11 +709,11 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
           </Stack>
 
           {/* Right Actions */}
-          {/* <Box sx={{ marginLeft: 'auto !important' }}>
+          <Box sx={{ marginLeft: 'auto !important' }}>
             <IconButton onClick={props.toggleTheme}>
               <DarkModeOutlinedIcon sx={{ color: "#64748B" }} />
             </IconButton>
-          </Box> */}
+          </Box>
         </Stack>
       </Box>
       {/* Main page */}
@@ -757,13 +760,14 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
           {selectedMenuItemId === 'diagnostics' && (
             <ProtectedModule module="Diagnostics">
               <Dashboard
-                key={patientResourceId}
-                UserRole={props.UserRole}
-                onClose={() => { }}
-                patient={""}
-                patient_resource_id={patientResourceId}
-                patient_name={patientName}
-                patient_id={patientId}
+                 key={patientResourceId}
+                    UserRole={props.UserRole}
+                    patient_resource_id={patientResourceId}
+                    patient_name={patientName}
+                    patient_id={patientId}
+                    birth_date={birthDate}
+                    gestational_age={gestationAge}
+                    current_weight={currentWeight}
               />
             </ProtectedModule>
           )}
@@ -791,16 +795,17 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
           {/* Notes */}
           {
             selectedMenuItemId === 'notes' && (
-              <ProtectedModule module="Clinical Notes">
+              <ProtectedModule module="Notes">
                 <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
-                <Notes
-                  UserRole={props.UserRole}
-                  patient_resource_id={patientResourceId}
-                  patient_name={patientName}
-                  patient_id={patientId}
-                  birth_date={birthDate}
-                  gestational_age={gestationAge}
-                />
+                  <Notes
+                    key={patientResourceId}
+                    patient_name={patientName}
+                    patient_id={patientId}
+                    patient_resource_id={patientResourceId}
+                    birth_date={birthDate}
+                    gestational_age={gestationAge}
+                    UserRole={props.UserRole}
+                  />
                 </Box>
               </ProtectedModule>
             )
@@ -826,8 +831,8 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
           }
 
           {/* Fluid Management */}
-          {selectedMenuItemId === 'fluid_management' && (
-            <ProtectedModule module="Fluid Management">
+          {selectedMenuItemId === 'treatment' && (
+            <ProtectedModule module="Clinical Notes">
               <Treatment
                 key={patientResourceId}
                 patient_resource_id={patientResourceId}
@@ -865,10 +870,10 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
 
           {/* Treatment */}
           {
-            selectedMenuItemId === 'treatment' && (
-              <ProtectedModule module="Patients Clinical List">
+            selectedMenuItemId === 'initialassessment' && (
+              <ProtectedModule module="Initial Assessment">
                 <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
-                  <Treatment
+                  <Treatment1
                     key={patientResourceId}
                     patient_name={patientName}
                     patient_id={patientId}
@@ -922,7 +927,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
             )
           }
 
-          {/* Activity Logs (Alarms) */}
+          {/* Activity Logs (Alarms)
           {
             selectedMenuItemId === 'alarms' && (
               <ProtectedModule module="Vitals & Trends">
@@ -936,7 +941,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
                 </Box>
               </ProtectedModule>
             )
-          }
+          } */}
 
 
           {
@@ -958,16 +963,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
             )
           }
 
-          {/* New Page */}
-          {
-            selectedMenuItemId === 'newPage' && (
-              <ProtectedModule module="Patients Overview">
-                <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
-                  <NewPage key={patientResourceId} patient_resource_id={patientResourceId} UserRole={props.UserRole} />
-                </Box>
-              </ProtectedModule>
-            )
-          }
+         
 
           {/* Default view */}
           {

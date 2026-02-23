@@ -18,10 +18,11 @@ import {
   faTasks,
   faHeartPulse,
   faInbox,
-  
+  faHeartCircleBolt,
   faTableColumns,
   faFileSignature,
-  faNotesMedical
+  faNotesMedical,
+  faFaceSmile
 } from "@fortawesome/free-solid-svg-icons";
 import { usePermissions } from "../contexts/PermissionContext";
 
@@ -59,11 +60,15 @@ export const SidebarOg: FC<SidebarProps> = ({
     { id: 'feeds', label: "Feeds&Nutrition", icon: faInbox, fhirModuleName: "Clinical Notes" },
     { id: 'trends', label: "Trends", icon: faHeartPulse, fhirModuleName: "Vitals & Trends" },
     { id: 'diagnostics', label: "Diagnostics", icon: faDroplet, fhirModuleName: "Diagnostics" },
-    { id: 'treatment', label: "Treatment", icon: faNotesMedical, fhirModuleName: "Patients Clinical List" }, // Changed to Patients Clinical List
+    
+     { id: 'treatment', label: "Treatment", icon: faNotesMedical, fhirModuleName: "Clinical Notes"},
+    // Changed to Patients Clinical List
     { id: 'notes', label: "Notes", icon: faFile, fhirModuleName: "Clinical Notes" },
     { id: 'assessments', label: "Assessments", icon: faClipboardCheck, fhirModuleName: "Assessments" },
     { id: 'growthchart', label: "Growth Chart", icon: faWeightHanging, fhirModuleName: "Diagnostics" },
     { id: 'consentforms', label: "Consent Forms", icon: faFileSignature, fhirModuleName: "Consent Forms" },
+    //  { id: 'treatment', label: "Treatment", icon: faFaceSmile, fhirModuleName: "Initial Assessment"},
+     { id: 'initialassessment', label: "InitialAssessment", icon: faFaceSmile, fhirModuleName: "Initial Assessment" },
 
   ];
 
@@ -74,7 +79,8 @@ export const SidebarOg: FC<SidebarProps> = ({
   const otherRoleItems: MenuItem[] = [
 
     { id: 'alarms', label: "Monitoring & Alarm", icon: faBell, fhirModuleName: "Vitals & Trends" },
-    { id: 'newPage', label: "New Page", icon: faFile, fhirModuleName: "Patients Overview" },
+   
+    // { id: 'newPage', label: "New Page", icon: faFile, fhirModuleName: "Patients Overview" },
   ];
 
   // Combine menu items based on user role

@@ -58,8 +58,7 @@ function App() {
                 .then((res) => {
                     console.log('fetched res in app', res);
                     setUserOrganization(res?.organization);
-                    //setUserRole(res?.role);
-                    setUserRole(res?.name || "");
+                    setUserRole(res?.role || "");
 
                     console.log('fetched UserRole', res?.role);
                     console.log('searchQuery', searchQuery);

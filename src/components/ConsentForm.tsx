@@ -79,7 +79,15 @@ export const ConsentForms: React.FC<ConsentFormProps> = (props) => {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
       }).join(''));
       const decoded = JSON.parse(jsonString);
-      setSelectedSummaryData(decoded);
+
+      // Map FHIR resource info back into the data so we can update it
+      const summaryId = resource.identifier?.find((i: any) => i.system === "urn:oid:nicudischarge-summary-id")?.value;
+
+      setSelectedSummaryData({
+        ...decoded,
+        fhirId: resource.id,
+        existingSummaryId: summaryId
+      });
       setOpenDischargeModal(true);
     } catch (e) {
       console.error("Failed to parse summary data", e);

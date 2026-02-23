@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef, SetStateAction, useCallback } from 'react';
-import { Box, Typography, Stack, Button, DialogContent, DialogActions, Dialog, TextField, DialogTitle, Snackbar, Alert, Tabs, Tab, useTheme, useMediaQuery, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import { Box, Typography, Stack, Button, DialogContent, DialogActions, Dialog, TextField, DialogTitle, Snackbar, Alert, Tabs, Tab, useTheme, useMediaQuery, Select, MenuItem, FormControl, InputAdornment } from '@mui/material';
 import { useAuth0 } from '@auth0/auth0-react';
 import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { PatientCard } from '../components/PatientCard';
-import AssignmentIcon from '@mui/icons-material/Assignment';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
-import AssessmentIcon from '@mui/icons-material/Assessment';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import BarChartIcon from '@mui/icons-material/BarChart';
-// import { NurseTaskList } from '../components/NurseTaskList';
+import SearchIcon from '@mui/icons-material/Search';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import ViewModuleIcon from '@mui/icons-material/ViewModule';
+import SortIcon from '@mui/icons-material/Sort';
 import { PatientTaskContainer } from '../components/MyTasks/PatientTaskContainer';
 
 type PatientMonitorProps = {
@@ -78,7 +80,7 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
   const triggerRef = useRef<HTMLDivElement | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [selectedIndex, setSelectedIndex] = useState<number>(1);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setSelectedIndex(newValue);
@@ -174,7 +176,7 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient?_count=1000&organization=${userOrganization}`, {
+        const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient?_count=100&organization=${userOrganization}`, {
           credentials: 'omit',
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
@@ -357,11 +359,9 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
 
 
   const tabConfig = [
-    { label: "My Tasks", icon: <AssignmentIcon /> },
     { label: "Patients", icon: <EmojiEmotionsIcon /> },
-    { label: "Assessments", icon: <AssessmentIcon /> },
+    { label: "My Tasks", icon: <AssignmentIcon /> },
     { label: "Reports", icon: <BarChartIcon /> },
-
   ];
   return (
 
@@ -411,13 +411,13 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
             </Box>
 
             {/* Search and Filters Toolbar */}
-            {selectedIndex === 1 && (
+            {selectedIndex === 0 && (
               <Stack
-                direction={{ xs: "column", md: "row" }}
-                spacing={2}
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1.5}
                 alignItems="center"
                 justifyContent="space-between"
-                sx={{ px: 3, mb: 1, mt: 2 }}
+                sx={{ px: { xs: 2, md: 3 }, mb: 1, mt: 1.5 }}
               >
                 {/* Search Bar */}
                 <TextField
@@ -428,50 +428,123 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
                   onChange={(e) => setSearchQuery(e.target.value)}
                   sx={{
                     flex: 1,
+                    maxWidth: { sm: 500 },
                     backgroundColor: "#FFFFFF",
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: "12px",
+                      borderRadius: "10px",
                       '& fieldset': { borderColor: '#E2E8F0' },
                       '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    }
+                      '&.Mui-focused fieldset': { borderColor: '#93C5FD' },
+                    },
                   }}
                   InputProps={{
                     startAdornment: (
-                      <Box sx={{ mr: 1, color: "#94A3B8" }}>
-                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                      </Box>
-                    )
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: "#94A3B8", fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
                   }}
                 />
 
-                {/* Filters / Sort Dropdown */}
-                <FormControl size="small" sx={{ minWidth: 200 }}>
-                  <InputLabel id="sort-select-label">Sort By</InputLabel>
-                  <Select
-                    labelId="sort-select-label"
-                    value={sortBy}
-                    label="Sort By"
-                    onChange={(e) => setSortBy(e.target.value)}
-                    sx={{ backgroundColor: "#FFFFFF", borderRadius: "8px" }}
-                  >
-                    <MenuItem value="name">Sort by: Patient Name</MenuItem>
-                    <MenuItem value="date">Sort by: Admission Date</MenuItem>
-                  </Select>
-                </FormControl>
+                {/* Right: View toggles + Sort */}
+                <Stack direction="row" spacing={1} alignItems="center">
+                  {/* <ViewListIcon sx={{ color: '#64748B', fontSize: 22, cursor: 'pointer', '&:hover': { color: '#1565C0' } }} />
+                  <ViewModuleIcon sx={{ color: '#94A3B8', fontSize: 22, cursor: 'pointer', '&:hover': { color: '#1565C0' } }} /> */}
+
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
+                    {/* <SortIcon sx={{ color: '#64748B', fontSize: 20 }} /> */}
+                    <FormControl size="small" sx={{ minWidth: 160 }}>
+                      <Select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        displayEmpty
+                        sx={{
+                          backgroundColor: "#FFFFFF",
+                          borderRadius: "8px",
+                          fontSize: "0.85rem",
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#E2E8F0',
+                          },
+                          '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#CBD5E1',
+                          },
+                        }}
+                      >
+                        <MenuItem value="name">Sort by: Patient Name</MenuItem>
+                        <MenuItem value="date">Sort by: Admission Date</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Stack>
+                </Stack>
               </Stack>
             )}
           </Box>
 
-          <Box sx={{ alignItems: 'center', justifyContent: 'center', p: 1 }}>
+          <Box
+  sx={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",   // ✅ horizontal center
+   
+  }}
+>
             {(() => {
               switch (selectedIndex) {
-                // case 0:
-                //   return <Typography>My Tasks will Come Here</Typography>;
                 case 0:
                   return (
-                    <Box >
+                   <Box
+  sx={{
+    
+    width: {
+      xs: "95%",   // mobile
+      sm: "95%",   // small tablets (optional)
+      md: "85%",   // medium screens (optional)
+      lg: "80%",   // large screens
+    },
+    mx: "auto",    // ✅ centers it horizontally
+  }}
+>
+                      {patientList
+                        .filter((patient) => {
+                          const name = patient.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "";
+                          const pid = patient.identifier?.[0]?.value || "";
+                          const query = searchQuery.toLowerCase();
+                          return name.toLowerCase().includes(query) || pid.toLowerCase().includes(query);
+                        })
+                        .sort((a, b) => {
+                          if (sortBy === 'name') {
+                            const nameA = a.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "";
+                            const nameB = b.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "";
+                            return nameA.localeCompare(nameB);
+                          } else if (sortBy === 'date') {
+                            const dateA = new Date(a.meta?.lastUpdated || a.birthDate || 0).getTime();
+                            const dateB = new Date(b.meta?.lastUpdated || b.birthDate || 0).getTime();
+                            return dateB - dateA;
+                          }
+                          return 0;
+                        })
+                        .map(patient => (
+                          <PatientCard
+                            key={String(patient.id)}
+                            patient_resource_id={String(patient.id)}
+                            patient_name={String(patient.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "Unknown")}
+                            gestational_age={String(patient.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-gestationalAge')?.valueString || patient.extension?.[1]?.valueString || "")}
+                            birthDate={String(patient.birthDate || "")}
+                            birthWeight={String(patient.birthWeight || "")}
+                            gender={String(patient.gender || "")}
+                            patient_id={String(patient.identifier?.[0]?.value || "")}
+                            device={parentDevice[String(patient.id)]}
+                            observation_resource={parentObs[String(patient.id)]}
+                            communication_resource={parentComm[String(patient.id)]}
+                            darkTheme={darkTheme}
+                            onClick={() => handlePatientCardClick(patient)}
+                          />
+                        ))}
+                    </Box>
+                  );
+                case 1:
+                  return (
+                    <Box>
                       {patientList.map(patient => (
                         <PatientTaskContainer
                           key={String(patient.id)}
@@ -487,53 +560,7 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
                         />
                       ))}
                     </Box>
-
-                  )
-                case 1:
-                  return (
-                    <Box >
-                      {patientList
-                        .filter((patient) => {
-                          const name = patient.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "";
-                          const pid = patient.identifier?.[0]?.value || "";
-                          const query = searchQuery.toLowerCase();
-                          return name.toLowerCase().includes(query) || pid.toLowerCase().includes(query);
-                        })
-                        .sort((a, b) => {
-                          if (sortBy === 'name') {
-                            const nameA = a.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "";
-                            const nameB = b.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "";
-                            return nameA.localeCompare(nameB);
-                          } else if (sortBy === 'date') {
-                            // Sort by meta.lastUpdated or birthDate as fallback
-                            const dateA = new Date(a.meta?.lastUpdated || a.birthDate || 0).getTime();
-                            const dateB = new Date(b.meta?.lastUpdated || b.birthDate || 0).getTime();
-                            return dateB - dateA; // Descending
-                          }
-                          return 0;
-                        })
-                        .map(patient => (
-                          <PatientCard
-                            key={String(patient.id)}
-                            patient_resource_id={String(patient.id)}
-                            patient_name={String(patient.extension[0]?.valueString)}
-                            gestational_age={String(patient.extension[1]?.valueString)}
-                            birthDate={String(patient.birthDate)}
-                            birthWeight={String(patient.birthWeight)}
-                            gender={String(patient.gender)}
-                            patient_id={String(patient.identifier[0]?.value)}
-                            device={parentDevice[String(patient.id)]}
-                            observation_resource={parentObs[String(patient.id)]}
-                            communication_resource={parentComm[String(patient.id)]}
-                            darkTheme={darkTheme}
-                            // selectedIcon={selectedIcon}
-                            onClick={() => handlePatientCardClick(patient)}
-                          />
-                        ))}
-                    </Box>
-
                   );
-
                 default:
                   return (
                     <Box sx={{ textAlign: "center", mt: 4 }}>
