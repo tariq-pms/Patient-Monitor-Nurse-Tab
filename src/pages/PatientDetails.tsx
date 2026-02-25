@@ -16,7 +16,7 @@ import { ConsentForms } from '../components/ConsentForm';
 import { GrowthChart } from '../components/GrowthChart';
 import { usePermissions } from '../contexts/PermissionContext';
 import { ProtectedModule } from '../components/ProtectedModule'; // ADD THIS IMPORT
-import { NewPage } from "../components/NewPage";
+
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'; // Added
 import { useNavigate } from "react-router-dom";
 // Removed ChildCareIcon
@@ -28,7 +28,6 @@ import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import SearchIcon from '@mui/icons-material/Search'; // Added
 import { Menu, MenuItem, TextField, InputAdornment } from "@mui/material"; // Added components
-import { ActivityLogs } from "../components/ActivityLogs"; // Added ActivityLogs
 
 export interface PatientDetails {
   newData: boolean;
@@ -760,15 +759,14 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
           {selectedMenuItemId === 'diagnostics' && (
             <ProtectedModule module="Diagnostics">
               <Dashboard
-                 key={patientResourceId}
-                    UserRole={props.UserRole}
-                    patient_resource_id={patientResourceId}
-                    patient_name={patientName}
-                    patient_id={patientId}
-                    birth_date={birthDate}
-                    gestational_age={gestationAge}
-                    current_weight={currentWeight}
-              />
+                key={patientResourceId}
+                UserRole={props.UserRole}
+                patient_resource_id={patientResourceId}
+                patient_name={patientName}
+                patient_id={patientId}
+                birth_date={birthDate}
+                gestational_age={gestationAge}
+                current_weight={currentWeight} patient={undefined}              />
             </ProtectedModule>
           )}
 
@@ -880,8 +878,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
                     patient_resource_id={patientResourceId}
                     birth_date={birthDate}
                     gestational_age={gestationAge}
-                    location="NICU 1 - 01"
-                  />
+                    location="NICU 1 - 01" UserRole={""} userOrganization={""}                  />
                 </Box>
               </ProtectedModule>
             )

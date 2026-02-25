@@ -3,8 +3,8 @@ import {
   TableCell, TableHead, IconButton, Paper,
   Chip, Snackbar, Alert, ToggleButton, Checkbox, Divider, ToggleButtonGroup, Dialog, DialogContent, DialogTitle, DialogActions, TextField, MenuItem, useTheme, Autocomplete,
 } from "@mui/material";
-import { AddCircleOutline, DeleteOutline, ArrowUpward, ArrowDownward, InsertDriveFile, Check as CheckIcon } from "@mui/icons-material";
-import SettingsIcon from "@mui/icons-material/Settings";
+import { AddCircleOutline, DeleteOutline, ArrowUpward, ArrowDownward, InsertDriveFile, Check as CheckIcon, Settings as SettingsIcon } from "@mui/icons-material";
+
 import { LinearProgress } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { InputAdornment } from "@mui/material";
@@ -26,7 +26,8 @@ import Menu from "@mui/material/Menu";
 import Webcam from "react-webcam";
 // import { active } from "d3";
 interface DashboardProps {
-patient:any;
+
+  patient: any;
  patient_name: string;
   patient_id: string;
   patient_resource_id: string;
@@ -421,12 +422,8 @@ const formatDaysDisplay = (min: number | undefined, max: number) => {
 export const Dashboard: React.FC<DashboardProps> = ({
   patient,
   patient_name,
-  patient_id,
   patient_resource_id,
-    
-  gestational_age, 
-
-  current_weight,
+  
 }) => {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
@@ -456,7 +453,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   //   - Read the managingOrganization reference
   //   - Use that Organization ID as hospitalId
   //
-  const [selectedHospitalId, setSelectedHospitalId] = useState<string>('1234');
+
 
   // Reference Range Configuration State
   const [refRangeConfig, setRefRangeConfig] = useState<any>(() => {
@@ -523,8 +520,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const webcamRef = useRef<Webcam>(null);
   // const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  const [extractedData, setExtractedData] = useState<{ table: any[], metadata: any } | null>(null);
+  // const [ setCapturedImage] = useState<string | null>(null);
+ 
   const fileOCRInputRef = useRef<HTMLInputElement>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -541,21 +538,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
     setNewItem({ test: "", value: "", unit: "", referenceRange: "" }); // Reset form
   };
 
-  const handleDeleteTest = (testToDelete: string) => {
-    setAvailableTests(prev => prev.filter(t => t !== testToDelete));
-    setSelectedTests(prev => prev.filter(t => t !== testToDelete));
+  // const handleDeleteTest = (testToDelete: string) => {
+  //   setAvailableTests(prev => prev.filter(t => t !== testToDelete));
+  //   setSelectedTests(prev => prev.filter(t => t !== testToDelete));
 
-    // Sync: Also remove from refRangeConfig if it exists as a key there
-    // This handles the case where a "Custom Test" (which is also an Order Type) is deleted from chips
-    setRefRangeConfig((prev: any) => {
-      if (prev[testToDelete]) {
-        const newConfig = { ...prev };
-        delete newConfig[testToDelete];
-        return newConfig;
-      }
-      return prev;
-    });
-  };
+  //   // Sync: Also remove from refRangeConfig if it exists as a key there
+  //   // This handles the case where a "Custom Test" (which is also an Order Type) is deleted from chips
+  //   setRefRangeConfig((prev: any) => {
+  //     if (prev[testToDelete]) {
+  //       const newConfig = { ...prev };
+  //       delete newConfig[testToDelete];
+  //       return newConfig;
+  //     }
+  //     return prev;
+  //   });
+  // };
 
   const handleDeleteOrderType = (typeToDelete: string) => {
     // Prevent deleting minimal defaults if needed, but user requested delete so allowing all
@@ -581,16 +578,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     try {
       // Use localhost:5000 for the local Node server handling OCR
-      console.log(`🏥 [Frontend] Sending scan request with hospitalId: ${selectedHospitalId}`);
-      const response = await fetch('http://localhost:5000/api/scan-paddle', {
+      console.log(`🏥 [Frontend] Sending scan request for ${activeOrder?.testName || 'CBC'}`);
+      const response = await fetch('https://pmsind.co.in/api/scan-paddle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           imageBase64: base64Data,
           orderType: activeOrder?.testName || 'CBC',
-          hospitalId: selectedHospitalId
-          // ^^^ PRODUCTION: Replace selectedHospitalId with the real Auth0 value:
-          //     hospitalId: user?.org_id || 'default'
         })
       });
 
@@ -710,10 +704,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         // Reset to base + Merge
         // Use the RAW_TEMPLATE structure
-        const baseTemplate = RAW_TEMPLATE.map(t => ({ ...t, value: "", unit: t.unit }));
+
 
         // Filter current results to only keep items that match the Template Test Names
-        const templateNames = new Set(RAW_TEMPLATE.map(t => t.test));
+
 
         // We'll use the *structure* of RAW_TEMPLATE but take Reference Ranges
         // from the current state IF they match, to preserve the Age-based ranges.
@@ -818,7 +812,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       return;
     }
 
-    setCapturedImage(imageSrc);
+    // setCapturedImage(imageSrc);
     await processOCR(imageSrc);
   };
 
@@ -862,7 +856,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [uploadReportedBy, setUploadReportedBy] = useState("");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
-  const fileUploadRef = useRef<HTMLInputElement>(null);
 
   const toggleTest = (testName: string) => {
     setSelectedTests(prev => {
@@ -1557,45 +1550,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </Typography>
 
         <Box display="flex" alignItems="center">
-          {/* DEMO: Hospital Selector
-              PRODUCTION: Remove this entire <Box> block (lines ~1532-1564).
-              The hospitalId will come from Auth0 automatically (see comments at line ~431).
-              No UI selector needed — each user is tied to one hospital in Auth0.
-          */}
-          <Box sx={{
-            display: 'flex',
-            alignItems: 'center',
-            mr: 2,
-            border: '1px dashed #F59E0B',
-            borderRadius: '8px',
-            px: 1.5,
-            py: 0.25,
-            backgroundColor: alpha('#F59E0B', 0.06),
-          }}>
-            <Typography variant="caption" sx={{ color: '#F59E0B', fontWeight: 600, mr: 1, whiteSpace: 'nowrap' }}>
-              🏥 Hospital:
-            </Typography>
-            <select
-              value={selectedHospitalId}
-              onChange={(e) => {
-                setSelectedHospitalId(e.target.value);
-                console.log(`🏥 [Frontend] Switched hospital to: ${e.target.value}`);
-              }}
-              style={{
-                border: 'none',
-                background: 'transparent',
-                color: '#F59E0B',
-                fontWeight: 700,
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-                outline: 'none',
-              }}
-            >
-              <option value="1234">1234</option>
-              <option value="5678">5678</option>
-            </select>
-          </Box>
-
           <Button
             onClick={() => setOpen(true)}
             sx={{
@@ -1881,200 +1835,153 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </Paper>
       </>)}
 
-   <Dialog
-  open={openSampleDialog}
-  onClose={() => setOpenSampleDialog(false)}
-  maxWidth="sm"
-  fullWidth
-  PaperProps={{
-    sx: {
-      borderRadius: "16px",
-      p: 3,
-      backgroundColor: "#fff",
-    },
-  }}
->
-  {/* HEADER */}
-  <Box display="flex" justifyContent="space-between" alignItems="center">
-    <Typography sx={{ fontWeight: 600, fontSize: "18px", color: "#0F2B45" }}>
-      Sample Collection
-    </Typography>
-    <IconButton onClick={() => setOpenSampleDialog(false)}>
-      <CloseIcon sx={{ color: "#6C757D" }} />
-    </IconButton>
-  </Box>
-
-  <Divider sx={{ my: 2 }} />
-
-  {/* SAMPLE QTY */}
-  <Typography sx={{ fontSize: "14px", fontWeight: 500, mb: 1 }}>
-    Sample Quantity
-  </Typography>
-
-  <TextField
-    fullWidth
-    placeholder="Collected Sample qty"
-    value={sampleQty}
-    onChange={(e) => setSampleQty(e.target.value)}
-    sx={{
-      mb: 2,
-      "& .MuiOutlinedInput-root": {
-        borderRadius: "12px",
-        backgroundColor: "#F8F9FA",
-      },
-    }}
-    InputProps={{
-      endAdornment: (
-        <Box display="flex" gap={1}>
-          {["0.5mL", "1.0mL", "1.5mL", "2.0mL"].map((qty) => (
-            <Chip
-              key={qty}
-              label={qty}
-              onClick={() => setSampleQty(qty)}
-              sx={{
-                height: 28,
-                borderRadius: "16px",
-                fontWeight: 500,
-                backgroundColor:
-                  sampleQty === qty ? "#228BE6" : "#E8F1FD",
-                color: sampleQty === qty ? "#fff" : "#228BE6",
-                cursor: "pointer",
-              }}
-            />
-          ))}
-        </Box>
-      ),
-    }}
-  />
-
-  {/* COLLECTION SITE */}
-  <Typography sx={{ fontSize: "14px", fontWeight: 500, mb: 1 }}>
-    Collection site
-  </Typography>
-
-  <ToggleButtonGroup
-    exclusive
-    value={collectionSite}
-    fullWidth
-    onChange={(_, value) => value && setCollectionSite(value)}
-    sx={{
-      mb: 3,
-      backgroundColor: "#F8F9FA",
-      borderRadius: "10px",
-      p: 0.5,
-    }}
-  >
-    {["Left Heel", "Right Heel", "UAC", "PIV"].map((site) => (
-      <ToggleButton
-        key={site}
-        value={site}
-        sx={{
-          textTransform: "none",
-          fontWeight: 600,
-          border: "none",
-          borderRadius: "8px",
-          color: "#6C757D",
-          "&.Mui-selected": {
-            backgroundColor: "#fff",
-            color: "#228BE6",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+      <Dialog
+        open={openSampleDialog}
+        onClose={() => setOpenSampleDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: "16px",
+            p: 2,
+            backgroundColor: isDarkMode ? theme.palette.background.paper : "#fff",
           },
         }}
       >
-        {site}
-      </ToggleButton>
-    ))}
-  </ToggleButtonGroup>
+        {/* Header */}
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography fontWeight={600} color={isDarkMode ? theme.palette.text.primary : "black"}>
+            Sample Collection
+          </Typography>
+          <IconButton onClick={() => setOpenSampleDialog(false)}>
+            <CloseIcon sx={{ color: isDarkMode ? theme.palette.text.secondary : "black" }} />
+          </IconButton>
+        </Box>
 
-  {/* PATIENT DETAILS CARD */}
-  <Box
-    sx={{
-      backgroundColor: "#F8F9FA",
-      borderRadius: "12px",
-      p: 2,
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-    }}
-  >
-    {/* LEFT */}
-    <Box>
-      <Typography sx={{ fontSize: "14px", fontWeight: 500 }}>
-        B/O: {patient_name}
-      </Typography>
-      <Typography sx={{ fontSize: "14px", fontWeight: 500, mt: 0.5 }}>
-        GA: { gestational_age}
-      </Typography>
-    </Box>
+        <Divider sx={{ my: 2 }} />
 
-    {/* RIGHT */}
-    <Box textAlign="right">
-      <Typography sx={{ fontSize: "14px", fontWeight: 500 }}>
-        UHID: {patient_id}
-      </Typography>
-      <Typography sx={{ fontSize: "14px", fontWeight: 500, mt: 0.5 }}>
-        CURRENT WT: {current_weight} g
-      </Typography>
-    </Box>
-  </Box>
+        {/* Patient Verified */}
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          sx={{
+            border: `1px solid ${isDarkMode ? theme.palette.divider : "#E5E7EB"}`,
+            borderRadius: "10px",
+            px: 2,
+            py: 1.5,
+            mb: 2,
+          }}
+        >
+          <Typography color={isDarkMode ? theme.palette.text.primary : "black"}>Patient Verified?</Typography>
+          <Checkbox
+            sx={{ color: isDarkMode ? theme.palette.text.secondary : "black" }}
+            checked={patientVerified}
+            onChange={(e) => setPatientVerified(e.target.checked)}
+          />
+        </Box>
 
-  {/* VERIFY CHECKBOX */}
-  <Box
-    sx={{
-      display: "flex",
-      justifyContent: "flex-end",
-      alignItems: "center",
-      mt: 1.5,
-      gap: 1,
-    }}
-  >
-    <Checkbox
-      size="small"
-      checked={patientVerified}
-      onChange={(e) => setPatientVerified(e.target.checked)}
-      sx={{
-        padding: 0,
-        color: "#CED4DA",
-        "&.Mui-checked": { color: "#228BE6" },
-      }}
-    />
-    <Typography sx={{ fontSize: "14px", fontWeight: 500 }}>
-      Verify Patient Details
-    </Typography>
-  </Box>
+        {/* Sample Qty */}
+        <Box mb={2}>
+          <Typography variant="caption" color={isDarkMode ? theme.palette.text.secondary : "black"}>
+            Sample qty
+          </Typography>
 
-  {/* FOOTER BUTTONS */}
-  <Box mt={4} display="flex" gap={2}>
-    <Button
-      fullWidth
-      variant="contained"
-      sx={{
-        backgroundColor: "#E9ECEF",
-        color: "#495057",
-        textTransform: "none",
-        borderRadius: "10px",
-        boxShadow: "none",
-      }}
-      onClick={() => setOpenSampleDialog(false)}
-    >
-      Back
-    </Button>
+          <TextField
+            fullWidth
+            placeholder="Collected Sample qty"
+            value={sampleQty}
+            onChange={(e) => setSampleQty(e.target.value)}
+            sx={{
+              mt: 1,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "12px",
+                pr: 1,
+                color: isDarkMode ? theme.palette.text.primary : "#000",
+                borderColor: isDarkMode ? theme.palette.divider : undefined,
+              },
+              "& .MuiOutlinedInput-notchedOutline": { borderColor: isDarkMode ? theme.palette.divider : undefined },
+              backgroundColor: isDarkMode ? theme.palette.background.default : "#F9FAFB",
+            }}
+            InputProps={{
+              endAdornment: (
+                <Box display="flex" gap={1}>
+                  {["0.5mL", "1.0mL", "1.5mL", "2.0mL"].map((qty) => (
+                    <Chip
+                      key={qty}
+                      label={qty}
+                      clickable
+                      onClick={() => setSampleQty(qty)}
+                      sx={{
+                        height: 28,
+                        borderRadius: "16px",
+                        fontWeight: 500,
+                        backgroundColor: sampleQty === qty
+                          ? (isDarkMode ? "#58A6FF" : "#228BE6")
+                          : (isDarkMode ? alpha("#58A6FF", 0.2) : "#E8F1FD"),
+                        color: sampleQty === qty
+                          ? "#fff"
+                          : (isDarkMode ? "#58A6FF" : "#228BE6"),
+                        cursor: "pointer",
+                      }}
+                    />
+                  ))}
+                </Box>
+              ),
+            }}
+          />
+        </Box>
 
-    <Button
-      fullWidth
-      variant="contained"
-      sx={{
-        backgroundColor: "#228BE6",
-        textTransform: "none",
-        borderRadius: "10px",
-      }}
-      disabled={!patientVerified || !sampleQty || !collectionSite || isSaving}
-      onClick={handleUpdateSampleStatus}
-    >
-      {isSaving ? "Updating..." : "Sample Collected →"}
-    </Button>
-  </Box>
-</Dialog>
+        {/* Collection Site */}
+        <Typography variant="caption" color={isDarkMode ? theme.palette.text.secondary : "grey"}>
+          Collection site
+        </Typography>
+        <ToggleButtonGroup
+          exclusive
+          value={collectionSite}
+          fullWidth
+          onChange={(_, value) => value && setCollectionSite(value)}
+          sx={{ mt: 1, mb: 2 }}
+        >
+          {["Left Heel", "Right Heel", "UAC", "PIV"].map((site) => (
+            <ToggleButton
+              key={site}
+              value={site}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                color: isDarkMode ? theme.palette.text.secondary : "#7A8899",
+                height: "48px",
+                border: `1px solid ${isDarkMode ? theme.palette.divider : "#D0D7E2"}`,
+                borderRadius: "8px",
+                "&.Mui-selected": {
+                  backgroundColor: isDarkMode ? alpha("#58A6FF", 0.2) : alpha("#228BE6", 0.1),
+                  color: isDarkMode ? "#58A6FF" : "#228BE6",
+                },
+              }}
+            >
+              {site}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+
+        {/* Footer */}
+        <Box mt={4} display="flex" gap={2}>
+          <Button fullWidth variant="outlined" onClick={() => setOpenSampleDialog(false)}>
+            Back
+          </Button>
+          <Button
+            fullWidth
+            variant="contained"
+            sx={{ backgroundColor: "#228BE6" }}
+            disabled={!patientVerified || !sampleQty || !collectionSite || isSaving}
+            onClick={handleUpdateSampleStatus} // Use the new async function
+          >
+            {isSaving ? "Updating..." : "Sample Collected →"}
+          </Button>
+
+        </Box>
+      </Dialog>
 
       <Dialog
         open={openSettingsDialog}
@@ -3162,7 +3069,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               const currentTest = activeOrder?.testName?.toLowerCase() || "";
 
               if (!supportedScanTests.includes(currentTest)) {
-                alert("Feature yet to come");
+                setError("This order type is not yet supported for scanning. Support for additional tests is coming soon!");
                 return;
               }
               handleScanMenuClick(e);

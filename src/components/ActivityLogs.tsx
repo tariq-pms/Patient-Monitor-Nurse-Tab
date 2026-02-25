@@ -70,18 +70,18 @@ const categories = [
     'Documents & Files'
 ];
 
-const categoryToResourceMap: { [key: string]: string } = {
-    'Admissions': 'Patient',
-    'Assessments': 'Observation',
-    'Growth Module': 'Observation',
-    'Vitals Signs': 'Observation',
-    'Clinical Notes': 'DocumentReference,DiagnosticReport',
-    'Medications': 'MedicationRequest,MedicationAdministration',
-    'Investigations': 'DiagnosticReport,Observation',
-    'System Events': 'AuditEvent'
-};
+// const categoryToResourceMap: { [key: string]: string } = {
+//     'Admissions': 'Patient',
+//     'Assessments': 'Observation',
+//     'Growth Module': 'Observation',
+//     'Vitals Signs': 'Observation',
+//     'Clinical Notes': 'DocumentReference,DiagnosticReport',
+//     'Medications': 'MedicationRequest,MedicationAdministration',
+//     'Investigations': 'DiagnosticReport,Observation',
+//     'System Events': 'AuditEvent'
+// };
 
-export const ActivityLogs: React.FC<ActivityLogsProps> = ({ patientId, patientName, userOrganization }) => {
+export const ActivityLogs: React.FC<ActivityLogsProps> = ({ patientId, patientName }) => {
     const [activities, setActivities] = useState<ActivityLogItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [fromDate, setFromDate] = useState<Dayjs | null>(dayjs().subtract(7, 'days'));

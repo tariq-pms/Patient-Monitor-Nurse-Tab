@@ -1,10 +1,10 @@
-import {Box,Typography,Divider, Button, Grid,TextField,Checkbox,ToggleButton,ToggleButtonGroup, MenuItem,Chip,IconButton,Accordion,AccordionSummary,AccordionDetails,Alert,Snackbar,TableRow,TableCell,TableBody,TableHead,Table,Card, TableContainer} from "@mui/material";
+import {Box,Typography, Button, Grid,TextField,Checkbox,ToggleButton,ToggleButtonGroup, MenuItem,Chip,IconButton,Accordion,AccordionSummary,AccordionDetails,Alert,Snackbar,TableRow,TableCell,TableBody,TableHead,Table,Card, TableContainer, Stack} from "@mui/material";
 import SignatureCanvas from 'react-signature-canvas';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AddIcon from "@mui/icons-material/Add";
-import { FC, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useEffect } from "react";
+import { FC, JSXElementConstructor,  ReactElement, ReactNode, ReactPortal, useEffect } from "react";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { alpha } from "@mui/material/styles";
@@ -13,7 +13,7 @@ import MicOffIcon from "@mui/icons-material/MicOff";
 import { InputAdornment} from "@mui/material";
 import { useRef, useState } from "react";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+
 import html2canvas from "html2canvas";
 
 interface BirthHistory {
@@ -125,6 +125,25 @@ const logoBase64="iVBORw0KGgoAAAANSUhEUgAAAcIAAAD4CAYAAAB/juY6AAAQAElEQVR4AexdBZ
     });
 
 const reportRef = useRef<HTMLDivElement>(null);
+
+const [birthDate, setBirthDate] = useState("");
+const [birthTime, setBirthTime] = useState("");
+
+useEffect(() => {
+  if (props.admission_date) {
+    const dateObj = new Date(props.admission_date);
+
+    // Format date as yyyy-MM-dd (best for input type="date")
+    const formattedDate = dateObj.toISOString().split("T")[0];
+
+    // Format time as HH:mm
+    const formattedTime = dateObj.toTimeString().slice(0, 5);
+
+    setBirthDate(formattedDate);
+    setBirthTime(formattedTime);
+  }
+}, [props.admission_date]);
+
 const SpeechRecognition =
   (window as any).SpeechRecognition ||
   (window as any).webkitSpeechRecognition;
@@ -271,8 +290,40 @@ const [planOfCare, setPlanOfCare] = useState<PlanOfCare>({
   provdetails: ""
 });
 
+const [birthHistory1, setBirthHistory1] = useState({
+  gestWeeks: "",
+  gestDays: ""
+});
+useEffect(() => {
+  if (props.gestational_age) {
+    const value = props.gestational_age.toString();
 
+    let weeks = "";
+    let days = "";
 
+    // Case 1: "36w 4d" or "36 weeks 4 days"
+    const match = value.match(/(\d+).*?(\d+)/);
+    if (match) {
+      weeks = match[1];
+      days = match[2];
+    }
+
+    // Case 2: "36+4"
+    if (value.includes("+")) {
+      const parts = value.split("+");
+      weeks = parts[0];
+      days = parts[1];
+    }
+
+    setBirthHistory1(prev => ({
+      ...prev,
+      gestWeeks: weeks,
+      gestDays: days
+    }));
+  }
+  console.log(birthHistory1);
+  
+}, [props.gestational_age]);
   const addPlanText = (text: string) => {
     setPlanOfCare((prev) => ({
       ...prev,
@@ -282,383 +333,8 @@ const [planOfCare, setPlanOfCare] = useState<PlanOfCare>({
     }));
   };
    // const val = (v?: any) => (v ? String(v) : "");
-  const generateInitialAssessmentPdf = () => {
-    if (!report) return;
-  
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pageW = 210;
-    const margin = 10;
-    let y = 12;
-  
-    // Helper function
-    const val = (value: any) => {
-      if (value === null || value === undefined || value === "") return "";
-      return String(value);
-    };
-  
-    /* ================= HEADER ================= */
-    pdf.setFont("Times", "bold");
-    pdf.setFontSize(11);
-    pdf.text("DOCTORS INITIAL ASSESSMENT", margin, y);
-    pdf.setFont("Times", "normal");
-    pdf.text("DOC NO. 4", pageW - margin - 25, y);
-  
-    y += 5;
-    pdf.line(margin, y, pageW - margin, y);
-    y += 4;
-  
-    /* ================= BASIC PATIENT INFO ================= */
-    // Since your report doesn't have these fields, we'll use placeholders
-    autoTable(pdf, {
-      startY: y,
-      theme: "grid",
-      styles: { fontSize: 8, cellPadding: 1.5 },
-      body: [
-        [
-          "Patient Name",
-          `${props.patient_name}`, // Add patient name if available
-          "Gestational Age",
-          `${props.gestational_age}`, 
-          "DOL",
-          ""
-        ],
-        [
-          "Sex",
-          `${props.gender}`,
-          "Date & Time of Admission",
-         `${props.admission_date}`,
-          "IPD No.",
-          ""
-        ],
-        [
-          "Name of the Consultant in-charge",
-          "Dr. Maladka",
-          "",
-          "",
-          "",
-          ""
-        ],
-      ],
-    });
-  
-    y = (pdf as any).lastAutoTable.finalY + 4;
-  
-    /* ================= ALLERGY SECTION ================= */
-    autoTable(pdf, {
-      startY: y,
-      theme: "grid",
-      styles: { fontSize: 8, cellPadding: 1.5 },
-      body: [
-        ["Allergy", "", "Blood Group", "", "RH factor", ""],
-        ["Vulnerable Patient", "", "", "", "", ""],
-      ],
-    });
-  
-    y = (pdf as any).lastAutoTable.finalY + 4;
-  
-    /* ================= ALLERGIC REACTION DETAILS ================= */
-    pdf.setFontSize(9);
-    pdf.text("Type of Allergic Reaction: Anaphylaxis, Urticaria, Bronchospasm, Diarrhoea, etc.", margin, y);
-    y += 5;
-    
-    pdf.rect(margin, y, pageW - 2 * margin, 6);
-    // Check for allergies in general exam or systematic exam
-    const allergies = val(report.generalExam?.allergies || "");
-    if (allergies) {
-      pdf.text(allergies, margin + 2, y + 4);
-    }
-    
-    y += 8;
-    
-    pdf.text("Alert:", margin, y);
-    pdf.rect(margin + 15, y - 2, 50, 6);
-    y += 8;
-    
-    pdf.text("History of Blood Transfusion Reaction: YES / NO", margin, y);
-    y += 10;
-  
-    /* ================= CHIEF COMPLAINT ================= */
-    pdf.setFont("Times", "bold");
-    pdf.text("Chief Complaint", margin, y);
-    pdf.setFont("Times", "normal");
-    y += 5;
-  
-    // Extract chief complaint from available data
-    const chiefComplaint = getChiefComplaint();
-    
-    autoTable(pdf, {
-      startY: y,
-      theme: "grid",
-      styles: { fontSize: 8, cellPadding: 1.5 },
-      head: [["Sr.No.", "Chief Complaint", "Duration of Chief Complaint"]],
-      body: [
-        ["1", chiefComplaint, ""]
-      ],
-    });
-  
-    y = (pdf as any).lastAutoTable.finalY + 4;
-  
-    /* ================= HISTORY OF PRESENT ILLNESS ================= */
-    pdf.setFont("Times", "bold");
-    pdf.text("History of Present Illness", margin, y);
-    pdf.setFont("Times", "normal");
-    y += 5;
-    
-    const presentIllness = report.planOfCare?.notes || 
-                          "Patient with above complaint admitted for further management and treatment";
-    
-    const illnessLines = pdf.splitTextToSize(presentIllness, pageW - 2 * margin);
-    illnessLines.forEach((line: string) => {
-      pdf.text(line, margin, y);
-      y += 4;
-    });
-    
-    y += 8;
-  
-    /* ================= CHECK FOR PAGE BREAK ================= */
-    if (y > 250) {
-      pdf.addPage();
-      y = 12;
-    }
-  
-    /* ================= MEDICAL HISTORY TABLE ================= */
-    pdf.setFont("Times", "bold");
-    pdf.text("General, Medical And Surgical History", margin, y);
-    pdf.setFont("Times", "normal");
-    y += 5;
-  
-    // Create medical history grid from systematic exam and general exam
-    autoTable(pdf, {
-      startY: y,
-      theme: "grid",
-      styles: { fontSize: 8, cellPadding: 1.5 },
-      body: [
-        [
-          "Hypertension", val(report.systematicExam?.['Cardiovascular Findings']?.includes('Hypertension') ? 'YES' : ''), 
-          "Epilepsy", val(report.systematicExam?.['CNS Findings']?.includes('Seizure') ? 'YES' : ''), 
-          "Diabetes", val(report.generalExam?.['Endocrine Findings']?.includes('Diabetes') ? 'YES' : ''), 
-          "Cardiac", val(report.systematicExam?.['Cardiovascular Findings'] ? 'YES' : '')
-        ],
-        [
-          "TB", "", 
-          "Surgical History", "", 
-          "Any Allergies", val(report.generalExam?.allergies ? 'YES' : ''), 
-          "Any Other", ""
-        ],
-      ],
-    });
-  
-    y = (pdf as any).lastAutoTable.finalY + 4;
-  
-    /* ================= IF YES DETAILS ================= */
-    pdf.setFont("Times", "bold");
-    pdf.text("If YES to any provide details", margin, y);
-    pdf.setFont("Times", "normal");
-    y += 5;
-    
-    // Combine medical details
-    const medicalDetails: string[] = [];
-    
-    // Add systematic exam findings as medical details
-    if (report.systematicExam) {
-      Object.entries(report.systematicExam).forEach(([key, value]) => {
-        if (value && value !== "") {
-          medicalDetails.push(`${key}: ${value}`);
-        }
-      });
-    }
-    
-    // Add abnormal general exam findings
-    if (report.generalExam) {
-      Object.entries(report.generalExam).forEach(([key, value]) => {
-        if (value && value !== "" && !key.includes('Normal')) {
-          medicalDetails.push(`${key}: ${value}`);
-        }
-      });
-    }
-    
-    const detailsText = medicalDetails.length > 0 
-      ? medicalDetails.join(", ")
-      : "No significant medical history noted.";
-    
-    const detailsLines = pdf.splitTextToSize(detailsText, pageW - 2 * margin);
-    detailsLines.forEach((line: string) => {
-      pdf.text(line, margin, y);
-      y += 4;
-    });
-    
-    y += 8;
-  
-    /* ================= CURRENT MEDICATION ================= */
-    pdf.setFont("Times", "bold");
-    pdf.text("Plan of Care", margin, y);
-    pdf.setFont("Times", "normal");
-    y += 5;
-    
-    const medications = report.planOfCare?.activities?.join(", ") || "No current medications prescribed";
-    
-    const medLines = pdf.splitTextToSize(medications, pageW - 2 * margin);
-    medLines.forEach((line: string) => {
-      pdf.text(line, margin, y);
-      y += 4;
-    });
-    
-    y += 8;
-  
-    /* ================= FAMILY HISTORY ================= */
-    pdf.setFont("Times", "bold");
-    pdf.text("Family History", margin, y);
-    pdf.setFont("Times", "normal");
-    y += 5;
-    
-    pdf.text("No significant family history noted.", margin, y);
-    y += 8;
-  
-    /* ================= CHECK FOR PAGE BREAK ================= */
-    if (y > 250) {
-      pdf.addPage();
-      y = 12;
-    }
-  
-    /* ================= PERSONAL HISTORY ================= */
-    pdf.setFont("Times", "bold");
-    pdf.text("Personal History", margin, y);
-    pdf.setFont("Times", "normal");
-    y += 5;
-  
-    autoTable(pdf, {
-      startY: y,
-      theme: "grid",
-      styles: { fontSize: 8, cellPadding: 1.5 },
-      body: [
-        ["Alcohol", "", "Smoking", "", "Drug Addiction", ""],
-        ["Other", "", "", "", "", ""],
-      ],
-    });
-  
-    y = (pdf as any).lastAutoTable.finalY + 4;
-  
-    /* ================= DIET ================= */
-    pdf.setFont("Times", "bold");
-    pdf.text("Diet", margin, y);
-    pdf.setFont("Times", "normal");
-    y += 5;
-    
-    const diet = "Breastfeeding / Formula as per neonatal guidelines";
-    pdf.text(diet, margin, y);
-    y += 8;
-  
-    /* ================= DEVELOPMENTAL HISTORY ================= */
-    pdf.setFont("Times", "bold");
-    pdf.text("Developmental History", margin, y);
-    pdf.setFont("Times", "normal");
-    y += 5;
-    
-    const developmentalHistory = "Appropriate for gestational age. Regular developmental assessment advised.";
-    pdf.text(developmentalHistory, margin, y);
-    y += 8;
-  
-    /* ================= BIRTH HISTORY ================= */
-    pdf.setFont("Times", "bold");
-    pdf.text("Birth History", margin, y);
-    pdf.setFont("Times", "normal");
-    y += 5;
-  
-    // Use actual birth history data
-    const birthHistory = report.birthHistory || {};
-    
-    autoTable(pdf, {
-      startY: y,
-      theme: "grid",
-      styles: { fontSize: 8, cellPadding: 1.5 },
-      body: [
-        [
-          "Type of Birth:",
-          val(birthHistory['Type of Birth'] || "Pink"),
-          "Date of Birth:",
-          val(birthHistory['Date of Birth'] || ""),
-          "Place of Birth:",
-          val(birthHistory['Place of Birth'] || "")
-        ],
-        [
-          "Cried immediately after Birth:",
-          val(birthHistory['Cried immediately after Birth'] || "YES / NO"),
-          "Birth Weight:",
-          val(birthHistory['Birth Weight'] || report.anthropometry?.['Weight'] || "2566 g"),
-          "GA:",
-          val(birthHistory['Gestation'] || birthHistory['GA'] || "21W 4D")
-        ],
-        [
-          "NICU Admission:",
-          val(birthHistory['NICU Admission'] || "YES / NO"),
-          "if yes reason:",
-          val(birthHistory['NICU Reason'] || "MSL (Thru)"),
-          "",
-          ""
-        ],
-      ],
-    });
-  
-    y = (pdf as any).lastAutoTable.finalY + 4;
-  
-    /* ================= VACCINATION STATUS ================= */
-    pdf.setFont("Times", "bold");
-    pdf.text("Vaccination Status", margin, y);
-    pdf.setFont("Times", "normal");
-    y += 5;
-    
-    const vaccinationStatus = val(birthHistory['Vaccination'] || "1230") || 
-                             "Age-appropriate vaccinations to be administered as per schedule";
-    pdf.text(vaccinationStatus, margin, y);
-  
-    /* ================= SAVE PDF ================= */
-    pdf.save(`Initial_Assessment_${report.patientName || 'Patient'}.pdf`);
-  };
+ 
   /* ================= HELPER FUNCTION ================= */
-  const getChiefComplaint = () => {
-    if (!report) return "Neonatal assessment required";
-    
-    // Check systematic exam for findings
-    if (report.systematicExam) {
-      const findings = Object.values(report.systematicExam).filter(val => val && val !== "");
-      if (findings.length > 0) {
-        // Take the first significant finding as chief complaint
-        for (const [key, value] of Object.entries(report.systematicExam)) {
-          if (value && value !== "") {
-            return `${key}: ${value}`;
-          }
-        }
-      }
-    }
-    
-    // Check general exam
-    if (report.generalExam) {
-      const findings = Object.values(report.generalExam).filter(val => val && val !== "");
-      if (findings.length > 0) {
-        for (const [key, value] of Object.entries(report.generalExam)) {
-          if (value && value !== "" && !key.includes('Normal')) {
-            return `${key}: ${value}`;
-          }
-        }
-      }
-    }
-    
-    // Check vitals for abnormalities
-    if (report.vitals) {
-      const abnormalVitals = [];
-      if (report.vitals['Heart Rate'] && parseInt(report.vitals['Heart Rate']) < 100) {
-        abnormalVitals.push("Bradycardia");
-      }
-      if (report.vitals['Oxygen Saturation'] && parseInt(report.vitals['Oxygen Saturation']) < 90) {
-        abnormalVitals.push("Low oxygen saturation");
-      }
-      if (abnormalVitals.length > 0) {
-        return abnormalVitals.join(", ");
-      }
-    }
-    
-    return "Neonatal assessment required";
-  };
   
   /* ================= HELPER FUNCTION ================= */
   // const getChiefComplaintFromReport = (report: any) => {
@@ -819,11 +495,11 @@ const addMedication = () => {
   }
   return false;
 };
-const MEASUREMENT_RANGES = {
-  weight: { min: 300, max: 6000 },   // grams (preterm → term)
-  hc: { min: 20, max: 45 },          // cm
-  length: { min: 25, max: 60 },      // cm
-} as const;
+// const MEASUREMENT_RANGES = {
+//   weight: { min: 300, max: 6000 },   // grams (preterm → term)
+//   hc: { min: 20, max: 45 },          // cm
+//   length: { min: 25, max: 60 },      // cm
+// } as const;
 type MeasurementKey = "weight" | "hc" | "length";
 
 const handleMeasurementChange = (key: MeasurementKey, value: string) => {
@@ -838,39 +514,7 @@ const handleMeasurementChange = (key: MeasurementKey, value: string) => {
 
   setVitals((prev) => ({ ...prev, [key]: value }));
 };
-const isMeasurementOutOfRange = (key: MeasurementKey) => {
-  const val = Number(vitals[key]);
-  if (!vitals[key]) return false;
 
-  const { min, max } = MEASUREMENT_RANGES[key];
-  return val < min || val > max;
-};
-const BSL_BP_RANGES = {
-  bsl: { min: 20, max: 300 },   // mg/dL
-  bp: { min: 30, max: 120 },    // mmHg
-} as const;
-type MetabolicKey = "bsl" | "bp";
-
-const handleMetabolicChange = (key: MetabolicKey, value: string) => {
-  // allow empty
-  if (value === "") {
-    setVitals((prev) => ({ ...prev, [key]: "" }));
-    return;
-  }
-
-  // only numbers
-  if (!/^\d*$/.test(value)) return;
-
-  setVitals((prev) => ({ ...prev, [key]: value }));
-};
-const isMetabolicOutOfRange = (key: MetabolicKey) => {
-  if (!vitals[key]) return false;
-  const val = Number(vitals[key]);
-  return (
-    val < BSL_BP_RANGES[key].min ||
-    val > BSL_BP_RANGES[key].max
-  );
-};
   
   const [chiefComplaint, setChiefComplaint] = useState("");
   
@@ -948,22 +592,6 @@ const isMetabolicOutOfRange = (key: MetabolicKey) => {
       ""
     ).trim();
   };
-  const FormHeader = ({ label }: { label: string }) => (
-    <Typography 
-      variant="caption" 
-      fontWeight="bold" 
-      sx={{ 
-        backgroundColor: '#ccc', 
-        display: 'block', 
-        px: 1, 
-        borderBottom: '1px solid #000', 
-        textTransform: 'uppercase',
-        color: 'black' // Ensuring high contrast for PDF printing
-      }}
-    >
-      {label}
-    </Typography>
-  );
   useEffect(() => {
     if (!props.patientId || !props.encounterId) return;
   
@@ -1957,608 +1585,6 @@ if (savedResourceIds.length > 0) {
   }
 };
 
-//     const saveInitialAssessment1 = async (
-//       patientId: string,
-//       encounterId: string
-//     ) => {
-//       const BASE = import.meta.env.VITE_FHIRAPI_URL;
-//       const AUTH = {
-//         "Content-Type": "application/fhir+json",
-//         Authorization: "Basic " + btoa("fhiruser:change-password"),
-//       };
-    
-//       try {
-//         /* ===============================
-//            1️⃣ BIRTH HISTORY OBSERVATION
-//         =============================== */
-
-//         const components = [
-//           { label: "Present Illness", value: birthHistory.presentIllness },
-//           { label: "Type of Birth", value: birthType },
-//           { label: "Liquor Status", value: liquorStatus },
-//           { label: "Gestation", value: `${birthHistory.gestWeeks}W ${birthHistory.gestDays}D` },
-//           { label: "Vaccination", value: birthHistory.vaccination },
-//           { label: "APGAR 1 min", value: birthHistory.apgar1 },
-//           { label: "APGAR 5 min", value: birthHistory.apgar5 },
-//           { label: "APGAR 10 min", value: birthHistory.apgar10 },
-//         ].filter(c => c.value);
-        
-//         const birthHistoryPayload = {
-//           resourceType: "Observation",
-//           status: "final",
-//           category: [{
-//             coding: [{
-//               system: "http://terminology.hl7.org/CodeSystem/observation-category",
-//               code: "survey",
-//               display: "Survey"
-//             }]
-//           }],
-//           code: {
-//             coding: [{
-//               system: "http://loinc.org",
-//               code: "birthhistory",
-//               display: "Birth History"
-//             }],
-//             text: "Birth History"
-//           },
-//           subject: { reference: `Patient/${patientId}` },
-//           encounter: { reference: `Encounter/${encounterId}` },
-//           component: components.map(c => ({
-//             code: { text: c.label },
-//             valueString: c.value
-//           }))
-//         };
-        
-//         await fetch(`${BASE}/Observation`, {
-//           method: "POST",
-//           headers: AUTH,
-//           body: JSON.stringify(birthHistoryPayload),
-//         });
-    
-//         /* ===============================
-//            2️⃣ CHIEF COMPLAINT → CONDITION
-//         =============================== */
-//         if (chiefComplaint) {
-//           const complaints = chiefComplaint.split(",").map(c => c.trim());
-    
-//           for (const complaint of complaints) {
-//             const conditionPayload = {
-//               resourceType: "Condition",
-//               clinicalStatus: {
-//                 coding: [{
-//                   system: "http://terminology.hl7.org/CodeSystem/condition-clinical",
-//                   code: "active"
-//                 }]
-//               },
-//               verificationStatus: {
-//                 coding: [{
-//                   system: "http://terminology.hl7.org/CodeSystem/condition-ver-status",
-//                   code: "confirmed"
-//                 }]
-//               },
-//               category: [{
-//                 coding: [{
-//                   system: "http://terminology.hl7.org/CodeSystem/condition-category",
-//                   code: "problem-list-item"
-//                 }]
-//               }],
-//               code: {
-//                 text: complaint
-//               },
-//               subject: { reference: `Patient/${patientId}` },
-//               encounter: { reference: `Encounter/${encounterId}` }
-//             };
-            
-    
-//             await fetch(`${BASE}/Condition`, {
-//               method: "POST",
-//               headers: AUTH,
-//               body: JSON.stringify(conditionPayload),
-//             });
-//           }
-//         }
-//           /* ===============================
-//            3️⃣ VITAL SIGNS OBSERVATIONS
-//         =============================== */
-//         const vitalsPayload = {
-//           resourceType: "Observation",
-//           status: "final",
-//           category: [{
-//             coding: [{
-//               system: "http://terminology.hl7.org/CodeSystem/observation-category",
-//               code: "vital-signs",
-//               display: "Vital Signs"
-//             }]
-//           }],
-//           code: { text: "Vitals" },
-//           subject: { reference: `Patient/${patientId}` },
-//           encounter: { reference: `Encounter/${encounterId}` },
-        
-//           component: [
-//             {
-//               code: { text: "Body Temperature" },
-//               valueQuantity: vitals.temp
-//                 ? { value: Number(vitals.temp), unit: "°C" }
-//                 : undefined,
-//             },
-//             {
-//               code: { text: "Heart Rate" },
-//               valueQuantity: vitals.hr
-//                 ? { value: Number(vitals.hr), unit: "beats/min" }
-//                 : undefined,
-//             },
-//             {
-//               code: { text: "Respiratory Rate" },
-//               valueQuantity: vitals.rr
-//                 ? { value: Number(vitals.rr), unit: "breaths/min" }
-//                 : undefined,
-//             },
-//             {
-//               code: { text: "Oxygen Saturation" },
-//               valueQuantity: vitals.spo2
-//                 ? { value: Number(vitals.spo2), unit: "%" }
-//                 : undefined,
-//             },
-//             {
-//               code: { text: "Other Related Notes" },
-//               valueString: vitals.relatedText,
-//             },
-//           ].filter(
-//             (c) => c.valueQuantity || (c.valueString && c.valueString.trim() !== "")
-//           ),
-//         };
-        
-//         await fetch(`${BASE}/Observation`, {
-//           method: "POST",
-//           headers: AUTH,
-//           body: JSON.stringify(vitalsPayload),
-//         });
-//          /* ===============================
-//            4️⃣ ANTHROPOMETRY
-//         =============================== */
-//         const anthropometryPayload = {
-//           resourceType: "Observation",
-//           status: "final",
-//           category: [{
-//             coding: [{
-//               system: "http://terminology.hl7.org/CodeSystem/observation-category",
-//               code: "vital-signs",
-//               display: "Vital Signs"
-//             }]
-//           }],
-//           code: { text: "Anthropometry" },
-//           subject: { reference: `Patient/${patientId}` },
-//           encounter: { reference: `Encounter/${encounterId}` },
-        
-//           component: [
-//             {
-//               code: { text: "Weight" },
-//               valueQuantity: vitals.weight
-//                 ? { value: Number(vitals.weight), unit: "g" }
-//                 : undefined,
-//             },
-//             {
-//               code: { text: "Head Circumference" },
-//               valueQuantity: vitals.hc
-//                 ? { value: Number(vitals.hc), unit: "cm" }
-//                 : undefined,
-//             },
-//             {
-//               code: { text: "Length" },
-//               valueQuantity: vitals.length
-//                 ? { value: Number(vitals.length), unit: "cm" }
-//                 : undefined,
-//             },
-//             {
-//               code: { text: "Blood Glucose" },
-//               valueQuantity: vitals.bsl
-//                 ? { value: Number(vitals.bsl), unit: "mg/dL" }
-//                 : undefined,
-//             },
-//           ].filter((c) => c.valueQuantity),
-//         };
-        
-//         await fetch(`${BASE}/Observation`, {
-//           method: "POST",
-//           headers: AUTH,
-//           body: JSON.stringify(anthropometryPayload),
-//         });
-//         /* ===============================
-//      6️⃣ GENERAL PHYSICAL EXAMINATION
-//   ================================ */
-//     const generalExamPayload = {
-//     resourceType: "Observation",
-//     status: "final",
-//     category: [{
-//       coding: [{
-//         system: "http://terminology.hl7.org/CodeSystem/observation-category",
-//         code: "generalexamination",
-//         display: "General Physical Examination"
-//       }]
-//     }],
-//     code: { text: "General Physical Examination" },
-//     subject: { reference: `Patient/${patientId}` },
-//     encounter: { reference: `Encounter/${encounterId}` },
-  
-//     component: [
-//       {
-//         code: { text: "Level of Consciousness" },
-//         valueString: exam.consciousness,
-//       },
-  
-//       {
-//         code: { text: "Color" },
-//         valueString: exam.color.join(", "),
-//       },
-  
-//       {
-//         code: { text: "Skin Findings" },
-//         valueString: exam.skin.join(", "),
-//       },
-//       {
-//         code: { text: "Skin Other Findings" },
-//         valueString: exam.skinOther,
-//       },
-  
-//       {
-//         code: { text: "Head & Neck Findings" },
-//         valueString: exam.headNeck.join(", "),
-//       },
-//       {
-//         code: { text: "Head & Neck Other" },
-//         valueString: exam.headNeckOther,
-//       },
-//       {
-//         code: { text: "Head & Neck Description" },
-//         valueString: exam.headNeckDesc,
-//       },
-  
-//       {
-//         code: { text: "ENT - Ear Findings" },
-//         valueString: exam.ear.join(", "),
-//       },
-//       {
-//         code: { text: "ENT - Ear Other" },
-//         valueString: exam.earOther,
-//       },
-//       {
-//         code: { text: "ENT - Ear Description" },
-//         valueString: exam.earDesc,
-//       },
-  
-//       {
-//         code: { text: "ENT - Nose Findings" },
-//         valueString: exam.nose.join(", "),
-//       },
-//       {
-//         code: { text: "ENT - Nose Other" },
-//         valueString: exam.noseOther,
-//       },
-//       {
-//         code: { text: "ENT - Nose Description" },
-//         valueString: exam.noseDesc,
-//       },
-  
-//       {
-//         code: { text: "ENT - Throat Findings" },
-//         valueString: exam.throat.join(", "),
-//       },
-//       {
-//         code: { text: "ENT - Throat Other" },
-//         valueString: exam.throatOther,
-//       },
-//       {
-//         code: { text: "ENT - Throat Description" },
-//         valueString: exam.throatDesc,
-//       },
-  
-//       {
-//         code: { text: "ENT - Eye Findings" },
-//         valueString: exam.eyes.join(", "),
-//       },
-//       {
-//         code: { text: "ENT - Eye Other" },
-//         valueString: exam.eyesOther,
-//       },
-//       {
-//         code: { text: "ENT - Eye Description" },
-//         valueString: exam.eyesDesc,
-//       },
-  
-//       {
-//         code: { text: "Spine & Back Findings" },
-//         valueString: exam.spineBack.join(", "),
-//       },
-//       {
-//         code: { text: "Spine & Back Other" },
-//         valueString: exam.spineBackOther,
-//       },
-//       {
-//         code: { text: "Spine & Back Description" },
-//         valueString: exam.spineBackDesc,
-//       },
-  
-//       {
-//         code: { text: "Hips & Limbs Findings" },
-//         valueString: exam.hipsLimbs.join(", "),
-//       },
-//       {
-//         code: { text: "Hips & Limbs Other" },
-//         valueString: exam.hipsLimbsOther,
-//       },
-//       {
-//         code: { text: "Hips & Limbs Description" },
-//         valueString: exam.hipsLimbsDesc,
-//       },
-//     ].filter(
-//       (c) =>
-//         c.valueString !== undefined &&
-//         c.valueString !== null &&
-//         c.valueString !== ""
-//     ),
-//   };
-  
-//   await fetch(`${BASE}/Observation`, {
-//     method: "POST",
-//     headers: AUTH,
-//     body: JSON.stringify(generalExamPayload),
-//   });
-//   /* ===============================
-//      7️⃣ SYSTEMATIC EXAMINATION
-//   ================================ */
-// const systematicExamPayload = {
-//     resourceType: "Observation",
-//     status: "final",
-//     category: [{
-//       coding: [{
-//         system: "http://terminology.hl7.org/CodeSystem/observation-category",
-//         code: "systemexamination",
-//         display: "Systematic Examination"
-//       }]
-//     }],
-//     code: { text: "Systematic Examination" },
-//     subject: { reference: `Patient/${patientId}` },
-//     encounter: { reference: `Encounter/${encounterId}` },
-  
-//     component: [
-//       {
-//         code: { text: "Respiratory Findings" },
-//         valueString: exam.respiratory.join(", "),
-//       },
-//       {
-//         code: { text: "Respiratory Other" },
-//         valueString: exam.respiratoryOther,
-//       },
-//       {
-//         code: { text: "Respiratory Description" },
-//         valueString: exam.respiratoryDesc,
-//       },
-  
-//       {
-//         code: { text: "Cardiovascular Findings" },
-//         valueString: exam.cardio.join(", "),
-//       },
-//       {
-//         code: { text: "Cardiovascular Other" },
-//         valueString: exam.cardioOther,
-//       },
-//       {
-//         code: { text: "Cardiovascular Description" },
-//         valueString: exam.cardioDesc,
-//       },
-  
-//       {
-//         code: { text: "GI Findings" },
-//         valueString: exam.gi.join(", "),
-//       },
-//       {
-//         code: { text: "GI Other" },
-//         valueString: exam.giOther,
-//       },
-//       {
-//         code: { text: "GI Description" },
-//         valueString: exam.giDesc,
-//       },
-  
-//       {
-//         code: { text: "CNS Findings" },
-//         valueString: exam.cns.join(", "),
-//       },
-//       {
-//         code: { text: "CNS Other" },
-//         valueString: exam.cnsOther,
-//       },
-//       {
-//         code: { text: "CNS Description" },
-//         valueString: exam.cnsDesc,
-//       },
-  
-//       {
-//         code: { text: "Genitourinary Findings" },
-//         valueString: exam.gu.join(", "),
-//       },
-//       {
-//         code: { text: "Genitourinary Other" },
-//         valueString: exam.guOther,
-//       },
-//       {
-//         code: { text: "Genitourinary Description" },
-//         valueString: exam.guDesc,
-//       },
-  
-//       {
-//         code: { text: "Musculoskeletal Findings" },
-//         valueString: exam.msk.join(", "),
-//       },
-//       {
-//         code: { text: "Musculoskeletal Other" },
-//         valueString: exam.mskOther,
-//       },
-//       {
-//         code: { text: "Musculoskeletal Description" },
-//         valueString: exam.mskDesc,
-//       },
-//     ].filter(
-//       (c) => c.valueString && c.valueString.trim() !== ""
-//     ),
-//   };
-  
-//   await fetch(`${BASE}/Observation`, {
-//     method: "POST",
-//     headers: AUTH,
-//     body: JSON.stringify(systematicExamPayload),
-//   });
-//  /* ===============================
-//    8️⃣ PLAN OF CARE / TREATMENT (CarePlan)
-// ================================ */
-// const carePlanPayload = {
-//   resourceType: "CarePlan",
-//   status: "active",
-//   intent: "plan",
-//   subject: { reference: `Patient/${patientId}` },
-//   encounter: { reference: `Encounter/${encounterId}` },
-
-//   activity: [
-//     // 1. Plan for the Day
-//     {
-//       detail: {
-//         status: "not-started",
-//         description: `Plan for Day: ${planOfCare.planForDay || "N/A"}`,
-//       },
-//     },
-//     // 2. Treatment of the Day
-//     {
-//       detail: {
-//         status: "not-started",
-//         description: `Treatment: ${planOfCare.TreatmentofDay || "N/A"}`,
-//       },
-//     },
-//     // 3. Investigations (Mapped as individual activities)
-//     ...(typeof planOfCare.investigations === "string" 
-//         ? planOfCare.investigations.split(",") 
-//         : planOfCare.investigations)
-//       .filter((inv) => inv && inv.trim() !== "")
-//       .map((inv) => ({
-//         detail: {
-//           category: { text: "Investigation" },
-//           status: "not-started",
-//           description: inv.trim(),
-//         },
-//       })),
-//   ],
-
-//   // 4. Medication Orders (Stored in notes for scannability)
-//   note: planOfCare.medications.length
-//     ? [
-//         {
-//           text: "Medication Orders: " + planOfCare.medications
-//             .map((m) => `${m.name} | Dose: ${m.dose} | Freq: ${m.frequency} | Last: ${m.lastDose}`)
-//             .join(" || "),
-//         },
-//       ]
-//     : undefined,
-// };
-
-// await fetch(`${BASE}/CarePlan`, {
-//   method: "POST",
-//   headers: AUTH,
-//   body: JSON.stringify(carePlanPayload),
-// });
-
-// /* ===============================
-//    9️⃣ PROVISIONAL DIAGNOSIS (Condition)
-// ================================ */
-// if (planOfCare.provdetails) {
-//   const provisionalPayload = {
-//     resourceType: "Condition",
-//     clinicalStatus: { coding: [{ system: "http://terminology.hl7.org/CodeSystem/condition-clinical", code: "active" }] },
-//     verificationStatus: { coding: [{ system: "http://terminology.hl7.org/CodeSystem/condition-ver-status", code: "provisional" }] }, // Set as Provisional
-//     category: [{ coding: [{ system: "http://terminology.hl7.org/CodeSystem/condition-category", code: "encounter-diagnosis" }] }],
-//     code: { text: planOfCare.provdetails },
-//     subject: { reference: `Patient/${patientId}` },
-//     encounter: { reference: `Encounter/${encounterId}` },
-//     recordedDate: new Date().toISOString()
-//   };
-
-//   await fetch(`${BASE}/Condition`, {
-//     method: "POST",
-//     headers: AUTH,
-//     body: JSON.stringify(provisionalPayload),
-//   });
-//  console.log("📌 provisionalPayload", provisionalPayload);
-// }
-// /* ===============================
-//    🔟 DIGITAL SIGNATURE (Provenance)
-// ================================ */
-// const createProvenance = async (resourceIds: string[]) => {
-//   const provenancePayload = {
-//     resourceType: "Provenance",
-//     target: resourceIds.map(id => ({ reference: id })), // Link to all saved data
-//     recorded: new Date().toISOString(),
-//     agent: [
-//       {
-//         type: {
-//           coding: [{
-//             system: "http://terminology.hl7.org/CodeSystem/provenance-participant-type",
-//             code: "author",
-//             display: "Author"
-//           }]
-//         },
-//         who: { display: "Clinical Associate / RMO" } // You can replace with actual User ID
-//       },
-//       {
-//         type: {
-//           coding: [{
-//             system: "http://terminology.hl7.org/CodeSystem/provenance-participant-type",
-//             code: "verifier",
-//             display: "Verifier"
-//           }]
-//         },
-//         who: { display: "Admitting Consultant" }
-//       }
-//     ],
-//     signature: [
-//       {
-//         type: [{ system: "urn:iso-astm:E1762-95:2013", code: "1.2.840.10065.1.12.1.1" }],
-//         when: new Date().toISOString(),
-//         who: { reference: `Practitioner/${import.meta.env.VITE_LOGGED_IN_USER_ID}` },
-//         data: "base64-encoded-signature-or-placeholder" 
-//       }
-//     ]
-//   };
-
-//   await fetch(`${BASE}/Provenance`, {
-//     method: "POST",
-//     headers: AUTH,
-//     body: JSON.stringify(provenancePayload),
-//   });
-// };
-
-// // --- In your main try block, collect IDs as you POST ---
-// // Example:
-// // const carePlanRes = await fetch(...);
-// // const carePlanData = await carePlanRes.json();
-// // const resourceIds = [`CarePlan/${carePlanData.id}`, `Observation/${vitalsId}`, ...];
-// // await createProvenance(resourceIds);
-  
-//   console.log("📌 Birth History Observation", birthHistoryPayload);
-//   console.log("📌 General Physical Exam", generalExamPayload);
-//   console.log("📌 Systematic Examination", systematicExamPayload);
-//   console.log("📌 CarePlan", carePlanPayload);
- 
-//   setSnackbar({
-//     open: true,
-//     severity: "success",
-//     message: "NICU Admission completed successfully",
-//   });
-//         console.log("✅ Initial Assessment saved successfully");
-    
-//       } catch (err) {
-//         console.error("❌ Failed to save Initial Assessment", err);
-//         throw err;
-//       }
-//     };
-    
    
     const toggleValue = (field: string, value: string) => {
       // 1. Access the current value using the dynamic field key
@@ -3165,14 +2191,27 @@ const handleTableChange = (index: number, field: string, value: string) => {
   <AccordionDetails sx={{ p: 2 }}>
 
     <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
-            <Typography sx={labelSx}>Date of Birth</Typography>
-            <TextField fullWidth placeholder="mm /dd /yyyy" sx={formInputSx} />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Typography sx={labelSx}>Birth Time</Typography>
-            <TextField fullWidth placeholder="- : -" sx={formInputSx} />
-          </Grid>
+         <Grid item xs={12} md={4}>
+  <Typography sx={labelSx}>Date of Birth</Typography>
+  <TextField
+    fullWidth
+    type="date"
+    value={birthDate}
+    onChange={(e) => setBirthDate(e.target.value)}
+    sx={formInputSx}
+  />
+</Grid>
+
+<Grid item xs={12} md={4}>
+  <Typography sx={labelSx}>Birth Time</Typography>
+  <TextField
+    fullWidth
+    type="time"
+    value={birthTime}
+    onChange={(e) => setBirthTime(e.target.value)}
+    sx={formInputSx}
+  />
+</Grid>
           <Grid item xs={12} md={4}>
             <Typography sx={labelSx}>Place of Birth</Typography>
             <TextField fullWidth placeholder="e.g. Borneo Hospital / OT" sx={formInputSx} />
@@ -3185,13 +2224,21 @@ const handleTableChange = (index: number, field: string, value: string) => {
               <Box sx={{ bgcolor: '#FFF7ED', color: '#F97316', px: 1, borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>SGA</Box>
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: 'center' }}>
-              <TextField value={birthHistory.gestWeeks}
-              onChange={(e) => setBirthHistory({ ...birthHistory, gestWeeks: e.target.value })}sx={{ ...formInputSx, width: '80px' }} />
+              <TextField
+  value={birthHistory.gestWeeks}
+  onChange={(e) =>
+    setBirthHistory1({ ...birthHistory, gestWeeks: e.target.value })
+  }
+  sx={{ ...formInputSx, width: '80px' }}
+/>
               <Typography sx={{ fontSize: 12, color: "#94A3B8" }}>Wks</Typography>
-              <TextField placeholder="00 Days"
-              fullWidth
-              value={birthHistory.gestDays}
-              onChange={(e) => setBirthHistory({ ...birthHistory, gestDays: e.target.value })} sx={{ ...formInputSx, width: '80px' }} />
+             <TextField
+  value={birthHistory.gestDays}
+  onChange={(e) =>
+    setBirthHistory1({ ...birthHistory, gestDays: e.target.value })
+  }
+  sx={{ ...formInputSx, width: '80px' }}
+/>
               <Typography sx={{ fontSize: 12, color: "#94A3B8" }}>Days</Typography>
             </Box>
           </Grid>
@@ -5318,115 +4365,94 @@ const handleTableChange = (index: number, field: string, value: string) => {
       Download
     </Button>
 </Box>
-  
-   
-    <div ref={reportRef}>
-    <Card sx={{ ...A4_PAGE_STYLE, border: "1px solid #000",mb: 2}}>
-         {/* HEADER */}
-         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-         <Box
-  sx={{
-    border: '2px solid #000',
-    p: 0.5,
-    
-    color: '#fff',
-  }}
->
-<Typography
-  variant="subtitle2"
-  fontWeight="bold"
-  sx={{ color: 'inherit' }}
->
-  DOCTOR INITIAL ASSESSMENT
-</Typography>
-</Box>
 
-        <Box
-  sx={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    gap: 1,          // space between logo and DOC box
-    px: 1,
-  }}
->
-  <Box
-    component="img"
-    src={`data:image/png;base64,${logoBase64}`}
-    alt="Borneo Hospital Logo"
-    sx={{
-      height: 50,
-      width: 100,
-    }}
-  />
-
-  <Box
-    sx={{
-      border: "1px solid #000",
-      p: 0.3,
-      textAlign: "center",
-      minWidth: "70px",
-    }}
-  >
-    <Typography
-      variant="caption"
-      sx={{ fontSize: "10px", fontWeight: "bold",color:'black' }}
-    >
-      DOC NO: 4
+    <div ref={reportRef} style={{ padding: '20px', backgroundColor: '#f0f0f0' }}>
+  {/* PAGE 1 */}
+  <Card sx={{ ...A4_PAGE_STYLE, p: 2, boxShadow: "none", position: 'relative' }}>
+    {/* TOP BLUE HEADER BLOCK */}
+    <Box sx={{  borderBottom: '1px solid grey', p: 1, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box component="img" src={`data:image/png;base64,${logoBase64}`} alt="Logo" sx={{ height: 60 }} />
+      <Box sx={{ textAlign: 'right', position: 'relative', minWidth: '300px' }}>
+  {/* Pill Header (Positioned at top right) */}
+  <Box sx={{ 
+    display: 'inline-block',
+    bgcolor: '#e0e4e7', // Matches the light grey in the image
+    px: 2, 
+    py: 0.3, 
+    borderRadius: '4px 4px 0 0', // Rounded only at the top
+    mr: 2
+  }}>
+    <Typography sx={{ fontSize: '12px', fontWeight: 500, color: '#333' }}>
+      DOCTOR INITIAL ASSESSMENT
     </Typography>
   </Box>
+
+  {/* Patient Meta Data Box */}
+  <Box sx={{ 
+    border: '1px solid #d1d9e0', 
+    borderRadius: '8px', 
+    p: 1.5,
+    bgcolor: '#fff'
+  }}>
+    {/* First Row: B/O and UHID */}
+    <Grid container justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
+      <Grid item display="flex" gap={1}>
+        <Typography variant="subtitle2" sx={{ color: '#90a4ae'}}>B/O:</Typography>
+        <Typography  variant="subtitle2" sx={{ fontWeight: 'bold'}}>{props.patient_name}</Typography>
+      </Grid>
+      <Grid item display="flex" gap={1}>
+        <Typography variant="subtitle2" sx={{ color: '#90a4ae'}}>UHID:</Typography>
+        <Typography variant="subtitle2" sx={{ fontWeight: 'bold'}}>{props.patientId1}</Typography>
+      </Grid>
+    </Grid>
+
+    {/* Horizontal Divider Line */}
+    <Box sx={{ borderBottom: '1px solid #e0e4e7', my: 1 }} />
+
+    {/* Second Row: GA and Current Wt */}
+    <Grid container justifyContent="space-between" alignItems="center">
+      <Grid item display="flex" gap={1}>
+        <Typography variant="subtitle2" sx={{ color: '#90a4ae' }}>GA:</Typography>
+        <Typography variant="subtitle2" sx={{ fontWeight: 'bold'}}>{props.gestational_age}</Typography>
+      </Grid>
+      <Grid item display="flex" gap={1}>
+        <Typography variant="subtitle2" sx={{ color: '#90a4ae'}}>CURRENT WT:</Typography>
+        <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+          {report?.anthropometry?.["Weight"] || "- g"}
+        </Typography>
+      </Grid>
+    </Grid>
+  </Box>
 </Box>
+    </Box>
 
-      </Box>
-
-      {/* PATIENT PROFILE BLOCK */}
-      <Box sx={{ border: '1px solid #000', mb: 1 }}>
-        <Grid container sx={{ borderBottom: '1px solid #000', p: 0.5 }}>
-          <Grid item xs={8}>Patient Name: <strong>{props.patient_name}</strong></Grid>
-          <Grid item xs={2}>UHID: <strong>{props.patientId1}</strong></Grid>
-          <Grid item xs={2}>IPD No.: <strong>—</strong></Grid>
-        </Grid>
-        <Grid container sx={{ borderBottom: '1px solid #000', p: 0.5 }}>
-          <Grid item xs={3}>Gestational Age: <strong>{props.gestational_age}</strong></Grid>
-          <Grid item xs={3}>Sex: <strong>{props.gender}</strong></Grid>
-          <Grid item xs={6}>Date & Time of Admission: <strong>{props.admission_date}</strong></Grid>
-        </Grid>
-        <Box sx={{ p: 0.5 }}>
-          Name of the Consultant In-charge: <strong>{props.UserRole}</strong>
-        </Box>
-      </Box>
-
-      {/* ALLERGY & VULNERABILITY BLOCK */}
-      <Box sx={{ border: '1px solid #000', mb: 1 }}>
-        <Grid container>
-          <Grid item xs={5} sx={{ borderRight: '1px solid #000', p: 0.5 }}>
-            <Typography fontSize={11}>Allergy: YES / NO </Typography>
-            <Typography fontSize={11}>Blood Group RH factor: --</Typography>
-            <Typography fontSize={11}>Vulnerable Patient: YES / NO </Typography>
-          </Grid>
-          <Grid item xs={7} sx={{ p: 0.5 }}>
-            <Typography fontSize={10}>Type of Allergic Reaction: Anaphylaxis, Urticaria, Bronchospasm, Diarrhoea, etc.</Typography>
-            <Typography fontSize={10}>Alert:</Typography>
-            <Typography fontSize={10}>History of Blood Transfusion Reaction: YES / NO</Typography>
-          </Grid>
-        </Grid>
-      </Box>
-
-      {/* CHIEF COMPLAINTS TABLE */}
-      <Box sx={{ border: '1px solid #000', mb: 1 }}>
-  <Grid container sx={{ backgroundColor: '#eee', borderBottom: '1px solid #000', fontWeight: 'bold' }}>
-    <Grid item xs={1} sx={{ borderRight: '1px solid #000', textAlign: 'center' }}>Sr. No.</Grid>
-    <Grid item xs={7} sx={{ borderRight: '1px solid #000', px: 1 }}>Chief Complaint</Grid>
-    <Grid item xs={4} sx={{ px: 1 }}>Recorded Date</Grid>
-  </Grid>
-  {/* {(report?.chiefComplaints || []).map((item: { text: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; date: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; }, i: Key | null | undefined) => (
-  <Grid container key={i} sx={{ borderBottom: i === (report.chiefComplaints.length - 1) ? 0 : '1px solid #eee' }}>
-    <Grid item xs={1} sx={{ borderRight: '1px solid #000', textAlign: 'center', py: 0.5 }}>{i + 1}</Grid>
-    <Grid item xs={7} sx={{ borderRight: '1px solid #000', px: 1, py: 0.5 }}>{item.text}</Grid>
-    <Grid item xs={4} sx={{ px: 1, py: 0.5 }}>{item.date}</Grid>
-  </Grid>
-))} */}
-{(report?.chiefComplaints ?? []).map(
+    {/* 01. ADMINISTRATION DETAILS */}
+    <Stack sx={{p:2}}>
+      <Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block', fontSize: '10px' }}>
+    ADMINISTRATION DETAILS
+  </Typography>
+  <Box sx={{ border: '1px solid #f0f0f0', borderRadius: '4px',  mb: 3 }}>
+    <Grid container spacing={2} sx={{ fontSize: '10px' }}>
+      <Grid item xs={2} color="#666">B/O</Grid>
+      <Grid item xs={4}><strong>{props.patient_name}</strong></Grid>
+      <Grid item xs={2} color="#666">IP Number</Grid>
+      <Grid item xs={4}><strong>{props.patientId1}</strong></Grid>
+      
+      <Grid item xs={2} color="#666">Sex</Grid>
+      <Grid item xs={4}><strong>{props.gender}</strong></Grid>
+      <Grid item xs={2} color="#666">Age</Grid>
+      <Grid item xs={4}><strong>5 days</strong></Grid>
+      
+      <Grid item xs={2} color="#666">Date & Time of Admission</Grid>
+      <Grid item xs={4}><strong>{props.admission_date}</strong></Grid>
+      <Grid item xs={2} color="#666">Consultant In-charge</Grid>
+      <Grid item xs={4}><strong style={{ color: '#228BE6' }}>{props.UserRole}</strong></Grid>
+    </Grid>
+  </Box>
+   {/* 02. COMPLAINTS ON ADMISSION */}
+    <Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block' }}>01. COMPLAINTS ON ADMISSION</Typography>
+    <Box sx={{ bgcolor: '#f9f9f9', p: 1, mb: 2, fontSize: '11px' }}>
+     {(report?.chiefComplaints ?? []).map(
   (item: { text: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; date: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; }, i: number) => (
     <Grid
       container
@@ -5452,627 +4478,564 @@ const handleTableChange = (index: number, field: string, value: string) => {
     </Grid>
   )
 )}
-
-</Box>
-
-      {/* HISTORY SECTIONS */}
-      <Box sx={{ border: '1px solid #000', mb: 1 }}>
-        <Typography variant="caption" fontWeight="bold" sx={{ backgroundColor: '#ccc', display: 'block', px: 1, borderBottom: '1px solid #000' }}>History of Present Illness</Typography>
-        <Box sx={{ p: 1, minHeight: '40px' }}>
-     
-          <Typography fontSize={11}>{report?.birthHistory["Present Illness"] || "—"}</Typography>
-        </Box>
-
-        {/* <Typography variant="caption" fontWeight="bold" sx={{ backgroundColor: '#ccc', display: 'block', px: 1, borderTop: '1px solid #000', borderBottom: '1px solid #000' }}>General, Medical And Surgical History</Typography>
-        <Table size="small">
-          <TableHead>
-            <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-              {["Hypertension", "Epilepsy", "Diabetes", "Cardiac", "TB", "Surgical History", "Any Allergies", "Any Other"].map(h => (
-                <TableCell key={h} sx={{ border: '1px solid #000', fontSize: '9px', p: 0.2, textAlign: 'center' }}>{h}</TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            <TableRow>
-              {Array(8).fill("").map((_, i) => (
-                <TableCell key={i} sx={{ border: '1px solid #000', height: '20px' }}></TableCell>
-              ))}
-            </TableRow>
-          </TableBody>
-        </Table>
-        <Box sx={{ p: 0.5, borderBottom: '1px solid #000' }}><Typography fontSize={10}>If YES to any provide details: __________________________________________________</Typography></Box>
-        <Box sx={{ p: 0.5, borderBottom: '1px solid #000' }}><Typography fontSize={10}>Any current medication: __________________________________________________</Typography></Box>
-        <Box sx={{ p: 0.5 }}><Typography fontSize={10}>Family History: __________________________________________________</Typography></Box> */}
-      </Box>
-
-      {/* PERSONAL & DEVELOPMENTAL HISTORY */}
-      {/* <Box sx={{ border: '1px solid #000', mb: 1 }}>
-        <Typography variant="caption" fontWeight="bold" sx={{ backgroundColor: '#ccc', display: 'block', px: 1, borderBottom: '1px solid #000' }}>Personal History</Typography>
-        <Grid container sx={{ p: 0.5, borderBottom: '1px solid #000' }}>
-          <Grid item xs={3}>Alcohol: <Tick checked={false} /></Grid>
-          <Grid item xs={3}>Smoking: <Tick checked={false} /></Grid>
-          <Grid item xs={3}>Drug Addiction: <Tick checked={false} /></Grid>
-          <Grid item xs={3}>Other: <strong>__________</strong></Grid>
-        </Grid>
-        <Box sx={{ p: 0.5, borderBottom: '1px solid #000' }}><Typography fontSize={10}>Diet: <strong>__________</strong></Typography></Box>
-        <Typography variant="caption" fontWeight="bold" sx={{ backgroundColor: '#ccc', display: 'block', px: 1, borderBottom: '1px solid #000' }}>Developmental History</Typography>
-        <Box sx={{ p: 1, minHeight: '30px' }}></Box>
-      </Box> */}
-
-     
-      {/* BIRTH HISTORY */}
-<Box sx={{ border: '1px solid #000', mb: 1 }}>
-  <Typography variant="caption" fontWeight="bold" sx={{ backgroundColor: '#ccc', display: 'block', px: 1, borderBottom: '1px solid #000' }}>Birth History</Typography>
-  <Grid container sx={{ borderBottom: '1px solid #000' }}>
-    <Grid item xs={4} sx={{ borderRight: '1px solid #000', p: 0.5 }}>Type of Birth: <strong>{report?.birthHistory["Type of Birth"] || "—"}</strong></Grid>
-    <Grid item xs={4} sx={{ borderRight: '1px solid #000', p: 0.5 }}>Liquor: <strong>{report?.birthHistory["Liquor Status"] || "—"}</strong></Grid>
-    <Grid item xs={4} sx={{ p: 0.5 }}>Gestation: <strong>{report?.birthHistory["Gestation"] || "—"}</strong></Grid>
-  </Grid>
-  <Grid container>
-    <Grid item xs={6} sx={{ borderRight: '1px solid #000', p: 0.5 }}>Birth Weight: <strong>{report?.birthHistory["Vaccination"] || "—"} g</strong></Grid>
-    <Grid item xs={6} sx={{ p: 0.5 }}>APGAR (1/5/10 min): <strong>{report?.birthHistory["APGAR 1 min"] || "—"} / {report?.birthHistory["APGAR 5 min"] || "—"} / {report?.birthHistory["APGAR 10 min"] || "—"}</strong></Grid>
-  </Grid>
-</Box>
-
-      {/* VACCINATION STATUS */}
-      <Box sx={{ border: '1px solid #000' }}>
-        <Typography variant="caption" fontWeight="bold" sx={{ backgroundColor: '#ccc', display: 'block', px: 1, borderBottom: '1px solid #000' }}>Vaccination Status</Typography>
-        <Box sx={{ p: 1, minHeight: '30px' }}>
-          <Typography fontSize={11}><strong>Not done</strong></Typography>
-        </Box>
-      </Box>
-      <Box sx={{ border: '1px solid #000', mb: 1 }}>
-        <Typography variant="caption" fontWeight="bold" sx={{ backgroundColor: '#ccc', display: 'block', px: 1, borderBottom: '1px solid #000' }}>Gestational Age</Typography>
-        <Grid container sx={{ p: 0.5 }}>
-          <Grid item xs={6}>LMP: <strong>24/03/2025</strong> &nbsp;&nbsp; Certain? YES / NO</Grid>
-          <Grid item xs={6}>Expected date of delivery: [ d | d | m | m | y | y | y | y ]</Grid>
-        </Grid>
-        <Grid container sx={{ p: 0.5, borderTop: '1px solid #eee' }}>
-          <Grid item xs={4}>ET: _______________</Grid>
-          <Grid item xs={4}>EDD by ET: _______________</Grid>
-          <Grid item xs={4}>EDD by USG: _______________</Grid>
-        </Grid>
-      </Box>
-            {/* SECTION: OBSTETRIC HISTORY TABLE */}
-      <Box sx={{ border: '1px solid #000', mb: 1 }}>
-        <Typography variant="caption" fontWeight="bold" sx={{ backgroundColor: '#ccc', display: 'block', px: 1, borderBottom: '1px solid #000' }}>Obstetric History</Typography>
-        <Table size="small">
-          <TableHead>
-            <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-              {["Year", "Gestational Age", "Delivery Mode", "Weight", "Pregnancy Outcome"].map(h => (
-                <TableCell key={h} sx={{ border: '1px solid #000', fontSize: '10px', p: 0.5, fontWeight: 'bold' }}>{h}</TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {[1, 2, 3, 4].map((i) => (
-              <TableRow key={i}>
-                <TableCell sx={{ border: '1px solid #000', height: '20px' }}></TableCell>
-                <TableCell sx={{ border: '1px solid #000' }}></TableCell>
-                <TableCell sx={{ border: '1px solid #000' }}></TableCell>
-                <TableCell sx={{ border: '1px solid #000' }}></TableCell>
-                <TableCell sx={{ border: '1px solid #000' }}></TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Box>
-        {/* SECTION: PREVIOUS OBSTETRIC & FAMILY HISTORY */}
-        <Box sx={{ border: '1px solid #000', mb: 1 }}>
-        <Typography variant="caption" fontWeight="bold" sx={{ backgroundColor: '#ccc', display: 'block', px: 1, borderBottom: '1px solid #000' }}>Previous Obstetric And Family History</Typography>
-        <Grid container sx={{ p: 0.5 }}>
-          {["Twins", "Genetic Conditions", "Congenital Defects", "Diabetes", "Hypertension", "Intra-uterine Growth Retardation"].map(item => (
-            <Grid item xs={4} key={item} sx={{ fontSize: '10px', py: 0.2 }}>{item}: Y / N</Grid>
-          ))}
-          <Grid item xs={6} sx={{ fontSize: '10px' }}>Antepartum Haemorrhage: Y / N</Grid>
-          <Grid item xs={6} sx={{ fontSize: '10px' }}>Post Partum Haemorrhage: Y / N</Grid>
-        </Grid>
-      </Box>
-    </Card>
-    <Card sx={{ ...A4_PAGE_STYLE, border: "1px solid #000",mb: 2}}>       
-    <Box sx={{ border: '1px solid #000', mb: 1 }}>
-  <Typography 
-    variant="caption" 
-    fontWeight="bold" 
-    sx={{ backgroundColor: '#ccc', display: 'block', px: 1, borderBottom: '1px solid #000' }}
-  >
-    General Physical Examination
-  </Typography>
-
-  <Grid container sx={{ p: 1, fontSize: '11px' }}>
-    {/* Row 1: Consciousness & Skin */}
-    <Grid item xs={6} sx={{ mb: 1 }}>
-      <strong>Level of Consciousness:</strong> {report?.generalExam?.["Level of Consciousness"] || "Active & Alert"}
-    </Grid>
-    <Grid item xs={6} sx={{ mb: 1 }}>
-      <strong>Skin:</strong> {report?.generalExam?.["Skin Findings"] || "Normal"}
-    </Grid>
-
-    {/* Row 2: Head/Neck & Spine */}
-    <Grid item xs={6} sx={{ mb: 1 }}>
-      <strong>Head & Neck:</strong> {report?.generalExam?.["Head & Neck Findings"] || "Normal"}
-    </Grid>
-    <Grid item xs={6} sx={{ mb: 1 }}>
-      <strong>Spine & Back:</strong> {report?.generalExam?.["Spine & Back Findings"] || "Normal"}
-    </Grid>
-
-    {/* ENT Section */}
-    <Grid item xs={12} sx={{ mb: 1 }}>
-      <Typography variant="body2" sx={{ fontWeight: 'bold', textDecoration: 'underline', mt: 1, mb: 0.5, fontSize: '10px' }}>
-        ENT Evaluation
-      </Typography>
-    </Grid>
-
-     <Grid item xs={6} sx={{ mb: 1 }}>
-      <strong>Eyes</strong>{report?.generalExam?.["ENT - Eye Findings"] || "Normal"}
-    </Grid>
-    <Grid item xs={6} sx={{ mb: 1 }}>
-      <strong>Ears:</strong> {report?.generalExam?.["ENT - Ear Findings"] || "Normal"}
-    </Grid>
-
-   
-    <Grid item xs={6} sx={{ mb: 1 }}>
-      <strong>Nose:</strong> {report?.generalExam?.["ENT - Nose Findings"] || "Normal"}
-    </Grid>
-    <Grid item xs={6} sx={{ mb: 1 }}>
-      <strong>Throat:</strong> {report?.generalExam?.["ENT - Throat Findings"] || "Normal"}
-    </Grid>
+    </Box>
+    {/* 03. BIRTH HISTORY & MATERNAL DETAILS */}
+<Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block' }}>
+  02. BIRTH HISTORY & MATERNAL DETAILS
+</Typography>
+<Box sx={{ borderTop: '1px solid #eee', pt: 1, mb: 2, fontSize: '10px' }}>
+  <Grid container spacing={1}>
+    <Grid item xs={2} color="#666">Date of Birth</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Date of Birth"] || "—"}</strong></Grid>
+    <Grid item xs={2} color="#666">Birth Time</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Birth Time"] || "—"}</strong></Grid>
+    <Grid item xs={2} color="#666">Place of Birth</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Place of Birth"] || "—"}</strong></Grid>
     
+    <Grid item xs={2} color="#666">Gestation</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Gestation"] || "—"}</strong></Grid>
+    <Grid item xs={2} color="#666">Birth Weight</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Birth Weight"] || "—"} kg</strong></Grid>
+    <Grid item xs={2} color="#666">Vaccination Status</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Vaccination"] || "—"}</strong></Grid>
+    
+    <Grid item xs={2} color="#666">Type of Birth</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Type of Birth"] || "—"}</strong></Grid>
+    <Grid item xs={2} color="#666">Liquor Status</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Liquor Status"] || "—"}</strong></Grid>
+    <Grid item xs={4}></Grid>
+
+    <Grid item xs={2} color="#666">Cried at Birth</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Cried Immediately"] || "—"}</strong></Grid>
+    <Grid item xs={2} color="#666">Resuscitation at Birth</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Resuscitation Required"] || "—"}</strong></Grid>
+    <Grid item xs={2} color="#666">Inj. Vitamin K Given</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Vitamin K Given"] || "—"}</strong></Grid>
+
+    <Grid item xs={2} color="#666">APGAR Scores</Grid>
+    <Grid item xs={10}>
+      <strong>
+        {report?.birthHistory?.["APGAR 1 min"] && `${report.birthHistory["APGAR 1 min"]}(1min), `}
+        {report?.birthHistory?.["APGAR 5 min"] && `${report.birthHistory["APGAR 5 min"]}(5min), `}
+        {report?.birthHistory?.["APGAR 10 min"] && `${report.birthHistory["APGAR 10 min"]}(10min)`}
+      </strong>
+    </Grid>
+
+    <Grid item xs={12} sx={{ mt: 1 }}>
+        <Typography variant="caption" fontWeight="bold" color="#666" sx={{ fontSize: '9px', textTransform: 'uppercase' }}>Maternal Details</Typography>
+    </Grid>
+
+    <Grid item xs={2} color="#666">Mother's Name</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Mother Name"] || "—"}</strong></Grid>
+    <Grid item xs={2} color="#666">Mother's Age</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Mother Age"] || "—"} Yrs</strong></Grid>
+    <Grid item xs={2} color="#666">Mother's Blood Group</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Mother Blood Group"] || "—"}</strong></Grid>
+    
+    <Grid item xs={2} color="#666">Multiple Gestation</Grid>
+    <Grid item xs={2}><strong>{report?.birthHistory?.["Multiple Gestation"] || "—"}</strong></Grid>
+    <Grid item xs={2} color="#666">Maternal History / Complications</Grid>
+    <Grid item xs={6}><strong>{report?.birthHistory?.["Maternal History Complications"] || "—"}</strong></Grid>
   </Grid>
 </Box>
-    
-
-      {/* SECTION: PHYSICAL EXAMINATION */}
-      <Box sx={{ border: '1px solid #000', mb: 1 }}>
-  <Typography
-    variant="caption"
-    fontWeight="bold"
-    sx={{
-      backgroundColor: '#ccc',
-      display: 'block',
-      px: 1,
-      borderBottom: '1px solid #000',
-    }}
-  >
-    Physical Examination
+{/* 04. OBSTETRIC HISTORY & DETAILS */}
+<Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block' }}>OBSTETRIC HISTORY & DETAILS</Typography>
+<Box sx={{ borderTop: '1px solid #eee', pt: 1, mb: 2, fontSize: '10px' }}>
+  <Typography variant="subtitle2" sx={{ mb: 2 }}>
+    Gravida-Para-Living:{" "}
+    <strong>
+      {report?.birthHistory?.["Gravida-Para-Living"] || "—"}
+    </strong>
+    &nbsp;&nbsp;&nbsp;
+    Previous Pregnancy Details:{" "}
+    <strong>
+      {report?.birthHistory?.["Previous Pregnancy Details"] || "—"}
+    </strong>
   </Typography>
-
-  {/* Row 1: Anthropometry */}
-  <Grid container spacing={0.5} sx={{ p: 0.5, borderBottom: '1px solid #eee', fontSize: 10 }}>
-    <Grid item xs={3}>
-      HC: <strong>{report?.anthropometry?.["Head Circumference"] || "___"}</strong>
-    </Grid>
-    <Grid item xs={3}>
-      Weight: <strong>{report?.anthropometry?.["Weight"] || "___"}</strong>
-    </Grid>
-    <Grid item xs={3}>
-      Height: <strong>{report?.anthropometry?.["Length"] || "___"}</strong>
-    </Grid>
-    
-    <Grid item xs={3}>
-      BMI: <strong>___</strong>
-    </Grid>
-  </Grid>
-
-  {/* Row 2: Vitals */}
-  <Grid container spacing={0.5} sx={{ p: 0.5, fontSize: 10 }}>
-    <Grid item xs={3}>
-      Pulse: <strong>{report?.vitals?.["Heart Rate"] || "___"}</strong>
-    </Grid>
-    <Grid item xs={3}>
-      RR: <strong>{report?.vitals?.["Respiratory Rate"] || "___"}</strong>
-    </Grid>
-    <Grid item xs={3}>
-      SpO₂: <strong>{report?.vitals?.["Oxygen Saturation"] || "___"}</strong>
-    </Grid>
-    <Grid item xs={3}>
-      BSL: <strong>{report?.anthropometry?.["Blood Glucose"] || "___"}</strong>
-    </Grid>
-
-    {/* Row 3 */}
-    <Grid item xs={12}>
-      Cyanosis: <strong>{report?.generalExam?.["Cyanosis"] || "None"}</strong>
-    </Grid>
-  </Grid>
-</Box>
-
-
-      {/* SECTION: PAIN ASSESSMENT (FACIAL SCALE) */}
-      <Box sx={{ border: '1px solid #000',mb: 1 }}>
-        <Typography variant="caption" fontWeight="bold" sx={{ backgroundColor: '#ccc', display: 'block', px: 1, mb: 1 }}>Pain Assessment</Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', textAlign: 'center' }}>
-          {[
-            { score: 0, label: "No", icon: "🙂" },
-            { score: 2, label: "Mild", icon: "😊", checked: true },
-            { score: 4, label: "Moderate", icon: "😐" },
-            { score: 6, label: "Severe", icon: "😟" },
-            { score: 8, label: "Very Severe", icon: "😢" },
-            { score: 10, label: "Worst Pain", icon: "😭" }
-          ].map((item) => (
-            <Box key={item.score}>
-              <Typography fontSize={10} fontWeight="bold">{item.score}</Typography>
-              <Box sx={{ fontSize: '24px', filter: item.checked ? 'none' : 'grayscale(100%)' }}>{item.icon}</Box>
-              <Typography fontSize={9}>{item.label}</Typography>
-              {item.checked && <Typography variant="caption" sx={{ display: 'block', color: 'green', fontWeight: 'bold' }}>✓</Typography>}
-            </Box>
-          ))}
-        </Box>
-      </Box>
-      <Box sx={{ border: "1px solid #000", mb: 1 }}>
-  <Typography
-    variant="subtitle2"
-    fontWeight="bold"
-    sx={{
-      backgroundColor: "#ccc",
-      display: "block",
-      px: 1,
-      borderBottom: "1px solid #000",
-    }}
-  >
-    Systematic Examination
-  </Typography>
-
 
   <Table
     size="small"
-    sx={{  fontSize: "10px", p: 0.5 } }
+    sx={{
+      mt:1,
+      "& td, & th": {
+        border: "none",
+        py: 0.2,
+        fontSize: "10px",
+      },
+    }}
   >
-    <TableBody>
-      {report?.systematicExam &&
-      Object.keys(report.systematicExam).length > 0 ? (
-        Object.entries(report.systematicExam).map(
-          ([originalLabel, value]) => {
-            const displayName = originalLabel
-              .replace(/( Findings| Other| Description)/g, "")
-              .trim();
+    <TableHead>
+      <TableRow sx={{ borderBottom: "1px solid #eee" }}>
+        <TableCell>Year</TableCell>
+        <TableCell>Gestational Age</TableCell>
+        <TableCell>Delivery Mode</TableCell>
+        <TableCell>Weight</TableCell>
+        <TableCell>Pregnancy Outcome</TableCell>
+      </TableRow>
+    </TableHead>
 
+    <TableBody>
+      {(() => {
+        const rawData =
+          report?.birthHistory?.["Obstetric History Table"];
+
+        if (!rawData) {
+          return (
+            <TableRow>
+              <TableCell colSpan={5} align="center">
+                No previous history recorded
+              </TableCell>
+            </TableRow>
+          );
+        }
+
+        try {
+          const tableData = JSON.parse(rawData);
+
+          if (!Array.isArray(tableData) || tableData.length === 0) {
             return (
-              <TableRow key={originalLabel}>
-                <TableCell sx={{ fontWeight: "bold",color:'#000' }}>
-                  {displayName}
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  No previous history recorded
                 </TableCell>
-                <TableCell sx={{ color:'#000' }}>{String(value)}</TableCell>
               </TableRow>
             );
           }
-        )
-      ) : (
-        <TableRow>
-          <TableCell colSpan={2} sx={{ fontSize: 10, textAlign: "center" }}>
-            No Systematic Examination Recorded
-          </TableCell>
-        </TableRow>
-      )}
+
+          return tableData.map((row: any, idx: number) => (
+            <TableRow key={idx}>
+              <TableCell>{row.year || "—"}</TableCell>
+              <TableCell>
+                {row.gestAgeW || "—"} W {row.gestAgeD || "—"} D
+              </TableCell>
+              <TableCell>{row.mode || "—"}</TableCell>
+              <TableCell>
+                {row.weight ? `${row.weight} g` : "—"}
+              </TableCell>
+              <TableCell>{row.outcome || "—"}</TableCell>
+            </TableRow>
+          ));
+        } catch (error) {
+          return (
+            <TableRow>
+              <TableCell colSpan={5} align="center">
+                Error loading table data
+              </TableCell>
+            </TableRow>
+          );
+        }
+      })()}
     </TableBody>
   </Table>
 </Box>
-
-
-
-      {/* SKIN SECTION */}
-      <Box sx={{ border: '1px solid #000', mb: 1, p: 0.5 }}>
-        <Typography fontSize={11} sx={{ color:'black' }}>Skin: Bed Sore: YES / <strong>NO</strong> &nbsp;&nbsp; if yes describe: ____________________</Typography>
-      </Box>
-
-      {/* FAST HUG BID & LINES/TUBES SECTION */}
-      <Box sx={{ border: '1px solid #000', mb: 1 }}>
-        <Grid container>
-          <Grid item xs={6} sx={{ borderRight: '1px solid #000' }}>
-            <Typography variant="caption" fontWeight="bold" sx={{ backgroundColor: '#ccc', display: 'block', px: 1, borderBottom: '1px solid #000' }}>Fast Hug Bid</Typography>
-            {["Feeding", "Analgesia", "Sedation", "Thromboembolic Prophylaxis", "Head of bed elevation", "Ulcer Prophylaxis", "Glucose control"].map(item => (
-              <Box key={item} sx={{ p: 0.3, borderBottom: '1px solid #eee', fontSize: '10px' }}>{item}</Box>
-            ))}
-          </Grid>
-          <Grid item xs={6}>
-            <Typography variant="caption" fontWeight="bold" sx={{ backgroundColor: '#ccc', display: 'block', px: 1, borderBottom: '1px solid #000' }}>Lines / Tubes</Typography>
-            {[
-              { label: "Intubation", val: "NO" },
-              { label: "Central line", val: "NO" },
-              { label: "Arterial Line", val: "NO" },
-              { label: "Foleys Catheter", val: "NO" },
-              { label: "IV Cannula", val: "YES", days: "01" }
-            ].map((item, i) => (
-              <Box key={i} sx={{ p: 0.3, borderBottom: '1px solid #eee', fontSize: '10px', display: 'flex', justifyContent: 'space-between' }}>
-                <span>{item.label}</span>
-                <span>{item.val} {item.days && `(${item.days} days)`}</span>
-              </Box>
-            ))}
-          </Grid>
-        </Grid>
-      </Box>
-
-      {/* LAB & RADIOLOGY RESULTS */}
-      <Box sx={{ border: '1px solid #000', mb: 1 }}>
-        <Box sx={{ p: 0.5, borderBottom: '1px solid #000' }}>
-          <Typography fontSize={11}><strong>Lab Results:</strong> CBC - Hb-12.4, TLC-30200, PLT-2.31, CRP-27.5</Typography>
-        </Box>
-        <Box sx={{ p: 0.5, borderBottom: '1px solid #000' }}>
-          <Typography fontSize={11}><strong>Radiology Results:</strong> Chest X-ray</Typography>
-        </Box>
-        <Box sx={{ p: 0.5 }}>
-          <Typography fontSize={11}><strong>Active Medical Problems:</strong> Meconium Aspiration Syndrome</Typography>
-        </Box>
-      </Box>
-
-      {/* PLAN FOR THE DAY */}
-      <Box sx={{ border: '1px solid #000', mb: 1 }}>
-        <Typography variant="caption" fontWeight="bold" sx={{ backgroundColor: '#ccc', display: 'block', px: 1, borderBottom: '1px solid #000' }}>Plan for the day:</Typography>
-        <Box sx={{ p: 1, minHeight: '60px' }}>
-          <Typography fontSize={12} sx={{ fontStyle: 'italic' }}>Admission, IV, Ventilator, Antibiotics as per protocol.</Typography>
-        </Box>
-      </Box>
-
-      {/* DOCTOR SIGNATURE PART */}
-      <Box sx={{ border: '1px solid #000', p: 1, mt: 2 }}>
-  <Grid container>
-    <Grid item xs={6}>
-      <Typography fontSize={11}>Name of the Doctor on duty: <strong>Dr. Shailesh</strong></Typography>
-    </Grid>
-    <Grid item xs={6}>
-      <Typography fontSize={11}>Time: <strong>{new Date().toLocaleTimeString([])}</strong></Typography>
-    </Grid>
-    
-    <Grid item xs={12} sx={{ mt: 1, display: 'flex', alignItems: 'center', minHeight: '50px' }}>
-  <Typography fontSize={11} sx={{ mr: 1 }}>Sign:</Typography>
-  {signatureImage ? (
-    <img 
-      src={signatureImage} 
-      alt="Doctor Signature" 
-      style={{ maxHeight: '50px', maxWidth: '200px', objectFit: 'contain' }} 
-      onError={(e) => console.error("Image failed to load", e)}
-    />
-  ) : (
-    <Typography fontSize={11} sx={{ color: '#ccc' }}>No signature found</Typography>
-  )}
-</Grid>
-  </Grid>
-  
-  <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 1, fontSize: '9px', fontWeight: 'bold' }}>
-    Note: Follow drug prescription and administration for drug details.
+ {/* 05. VITALS & ANTHROPOMETRY */}
+   <Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block', fontSize: '10px' }}>
+    03. VITALS & ANTHROPOMETRY
   </Typography>
-</Box> 
-    </Card>
-   
-    <Card sx={{ ...A4_PAGE_STYLE, border: "1px solid #000",mb: 2}}> <Box sx={{  mb: 2 }}>
-         <Typography variant="subtitle1" fontWeight="bold" sx={{ backgroundColor: '#ccc', display: 'block', px: 1, borderBottom: '1px solid #000' }}>
-           PLAN OF CARE / TREATMENT PLAN
-         </Typography>
-      </Box>
-
-      {/* RESTRAINTS AND GOALS SECTION */}
-      <Box sx={{ border: '1px solid #000', mb: 1 }}>
-        <Grid container sx={{ borderBottom: '1px solid #000', p: 0.5 }}>
-          <Grid item xs={6}>Restraints Required: YES &nbsp; / &nbsp; <strong>NO</strong></Grid>
-          <Grid item xs={6}>if yes, type of Restraint: Physical [ ] &nbsp; Chemical [ ]</Grid>
-        </Grid>
-        <Box sx={{ p: 0.5, borderBottom: '1px solid #000' }}>
-          <Typography fontSize={11}>Reason for Restraint: __________________________________________________</Typography>
-        </Box>
-        <Grid container sx={{ p: 0.5, borderBottom: '1px solid #000' }}>
-          <Grid item xs={3} fontSize={10}><strong>Goal of treatment:</strong></Grid>
-          {["Preventive", "Curative", "Rehabilitatative", "Palliative"].map(goal => (
-            <Grid item xs={2.25} key={goal} fontSize={10}>[ ] {goal}</Grid>
-          ))}
-        </Grid>
-        <Grid container sx={{ p: 0.5, borderBottom: '1px solid #000' }}>
-          <Grid item xs={3} fontSize={10}><strong>Diet Consistency:</strong></Grid>
-          {["Normal", "Soft", "Liquid", "Tube feed"].map(diet => (
-            <Grid item xs={2.25} key={diet} fontSize={10}>[ ] {diet}</Grid>
-          ))}
-        </Grid>
-        <Grid container sx={{ p: 0.5 }}>
-          <Grid item xs={3} fontSize={10}><strong>Diet Type:</strong></Grid>
-          {["Normal", "Diabetic", "Low Salt", "NPO"].map(type => (
-            <Grid item xs={2.25} key={type} fontSize={10}>[ ] {type}</Grid>
-          ))}
-        </Grid>
-      </Box>
-
-      {/* INVESTIGATION AND TREATMENT TABLE */}
-      <Box sx={{ border: '1px solid #000', mb: 1 }}>
-        <Grid container sx={{ backgroundColor: '#eee', borderBottom: '1px solid #000', fontWeight: 'bold' }}>
-          <Grid item xs={4} sx={{ borderRight: '1px solid #000', px: 1, py: 0.5, fontSize: 11 }}>Investigation Advised</Grid>
-          <Grid item xs={8} sx={{ px: 1, py: 0.5, fontSize: 11 }}>Treatment Advised</Grid>
-        </Grid>
-        {/* Generating 12 empty rows to match the document layout */}
-        {Array.from({ length: 12 }).map((_, i) => (
-          <Grid container key={i} sx={{ borderBottom: '1px solid #eee', minHeight: '28px' }}>
-            <Grid item xs={4} sx={{ borderRight: '1px solid #000' }}></Grid>
-            <Grid item xs={8}></Grid>
-          </Grid>
-        ))}
-      </Box>
-
-      {/* PROVISIONAL DIAGNOSIS SECTION */}
-      <Box sx={{ border: '1px solid #000', mb: 2 }}>
-        <FormHeader label="Provisional Diagnosis" />
-        <Box sx={{ p: 1, minHeight: '40px' }}>
-          <Typography fontSize={12} fontWeight="bold">Meconium Aspiration Syndrome with Respiratory Distress</Typography>
-        </Box>
-      </Box>
-
-      {/* FINAL SIGNATURE BLOCK */}
-      <Box sx={{ border: '1px solid #000', mt: 4 }}>
-        <Grid container>
-          <Grid item xs={6} sx={{ borderRight: '1px solid #000', p: 1 }}>
-            <Typography fontSize={10} fontWeight="bold" sx={{ mb: 4 }}>Name of the Clinical Associate/ RMO</Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-         
-    <Typography fontSize={11} sx={{ color: '#ccc' }}>No signature found</Typography>
- 
-              <Typography fontSize={10}>Date & Time: ____________</Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={6} sx={{ p: 1 }}>
-            <Typography fontSize={10} fontWeight="bold" sx={{ mb: 4 }}>Name of the Admitting Consultant</Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-              <Typography fontSize={10}>Signature: ________________</Typography>
-              <Typography fontSize={10}>Date & Time: ____________</Typography>
-            </Box>
-          </Grid>
-        </Grid>
-      </Box>
-
-    </Card></div>
-  
-    <div ref={reportRef} style={{ padding: '20px', backgroundColor: '#f0f0f0' }}>
-  {/* PAGE 1 */}
-  <Card sx={{ ...A4_PAGE_STYLE, p: 2, boxShadow: "none", position: 'relative' }}>
-    {/* TOP BLUE HEADER BLOCK */}
-    <Box sx={{ border: '2px solid #228BE6', p: 1, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <Box component="img" src={`data:image/png;base64,${logoBase64}`} alt="Logo" sx={{ height: 60 }} />
-      <Box sx={{ textAlign: 'right' }}>
-        <Box sx={{ bgcolor: '#ccc', px: 2, py: 0.5, mb: 1 }}>
-          <Typography variant="caption" fontWeight="bold">DOCTOR INITIAL ASSESSMENT</Typography>
-        </Box>
-        <Grid container spacing={1} sx={{ fontSize: '10px' }}>
-          <Grid item>B/O: <strong>{props.patient_name}</strong></Grid>
-          <Grid item>UHID: <strong>{props.patientId1}</strong></Grid>
-        </Grid>
-        <Grid container spacing={1} sx={{ fontSize: '10px' }}>
-          <Grid item>GA: <strong>{props.gestational_age}</strong></Grid>
-          <Grid item>CURRENT WT: <strong>3000 g</strong></Grid>
-        </Grid>
-      </Box>
-    </Box>
-
-    {/* 01. ADMINISTRATION DETAILS */}
-    <Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block' }}>01. ADMINISTRATION DETAILS</Typography>
-    <Box sx={{ borderTop: '1px solid #eee', pt: 1, mb: 2 }}>
-      <Grid container spacing={2} sx={{ fontSize: '11px' }}>
-        <Grid item xs={3} color="#666">B/O</Grid>
-        <Grid item xs={3}><strong>{props.patient_name}</strong></Grid>
-        <Grid item xs={3} color="#666">IP Number</Grid>
-        <Grid item xs={3}><strong>NBNK-25-26/557</strong></Grid>
-        
-        <Grid item xs={3} color="#666">Sex</Grid>
-        <Grid item xs={3}><strong>{props.gender}</strong></Grid>
-        <Grid item xs={3} color="#666">Age</Grid>
-        <Grid item xs={3}><strong>5 days</strong></Grid>
-        
-        <Grid item xs={3} color="#666">Date & Time of Admission</Grid>
-        <Grid item xs={3}><strong>{props.admission_date}</strong></Grid>
-        <Grid item xs={3} color="#666">Consultant In-charge</Grid>
-        <Grid item xs={3}><strong style={{ color: '#228BE6' }}>Dr. Anjali Patil, Dr. Rajesh Kumar</strong></Grid>
-      </Grid>
-    </Box>
-
-    {/* 02. COMPLAINTS ON ADMISSION */}
-    <Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block' }}>02. COMPLAINTS ON ADMISSION</Typography>
-    <Box sx={{ bgcolor: '#f9f9f9', p: 1, mb: 2, fontSize: '11px' }}>
-      <Grid container spacing={1}>
-        <Grid item xs={3} color="#666">Chief Complaints</Grid>
-        <Grid item xs={9}><strong>Preterm delivery, Respiratory distress, VLBW</strong></Grid>
-        <Grid item xs={3} color="#666">History of Present Illness</Grid>
-        <Grid item xs={9}><strong>{report?.birthHistory["Present Illness"] || "—"}</strong></Grid>
-      </Grid>
-    </Box>
-
-    {/* 03. BIRTH HISTORY & MATERNAL DETAILS */}
-    <Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block' }}>03. BIRTH HISTORY & MATERNAL DETAILS</Typography>
-    <Box sx={{ borderTop: '1px solid #eee', pt: 1, mb: 2, fontSize: '10px' }}>
-      <Grid container spacing={1}>
-        <Grid item xs={2} color="#666">Date of Birth</Grid><Grid item xs={2}><strong>21 Jan 2024</strong></Grid>
-        <Grid item xs={2} color="#666">Birth Time</Grid><Grid item xs={2}><strong>10:45 AM</strong></Grid>
-        <Grid item xs={2} color="#666">Place of Birth</Grid><Grid item xs={2}><strong>Borneo OT</strong></Grid>
-        
-        <Grid item xs={2} color="#666">Gestation</Grid><Grid item xs={2}><strong>27 Wks 4 Days</strong></Grid>
-        <Grid item xs={2} color="#666">Birth Weight</Grid><Grid item xs={2}><strong>1.2 kg</strong></Grid>
-        <Grid item xs={2} color="#666">Vaccination Status</Grid><Grid item xs={2}><strong>Unknown</strong></Grid>
-        
-        <Grid item xs={2} color="#666">Type of Birth</Grid><Grid item xs={2}><strong>LSCS</strong></Grid>
-        <Grid item xs={2} color="#666">Liquor Status</Grid><Grid item xs={2}><strong>Clear</strong></Grid>
-        <Grid item xs={4}></Grid>
-
-        <Grid item xs={2} color="#666">Cried at Birth</Grid><Grid item xs={2}><strong>Yes</strong></Grid>
-        <Grid item xs={2} color="#666">Resuscitation at Birth</Grid><Grid item xs={2}><strong>No</strong></Grid>
-        <Grid item xs={2} color="#666">Inj. Vitamin K Given</Grid><Grid item xs={2}><strong>Yes</strong></Grid>
-
-        <Grid item xs={2} color="#666">APGAR Scores</Grid>
-        <Grid item xs={10}><strong>5(1min), 7(5min), 8(10min)</strong></Grid>
-
-        <Grid item xs={2} color="#666">Mother's Name</Grid><Grid item xs={2}><strong>Mrs. Poornima K.</strong></Grid>
-        <Grid item xs={2} color="#666">Mother's Age</Grid><Grid item xs={2}><strong>28 Yrs</strong></Grid>
-        <Grid item xs={2} color="#666">Mother's Blood Group</Grid><Grid item xs={2}><strong>O Positive</strong></Grid>
-        
-        <Grid item xs={2} color="#666">Multiple Gestation</Grid><Grid item xs={2}><strong>Twin</strong></Grid>
-        <Grid item xs={2} color="#666">Maternal History / Complications</Grid>
-        <Grid item xs={6}><strong>G2 P1 L1 A0. PIH detected at 24 weeks...</strong></Grid>
-      </Grid>
-    </Box>
-
-    {/* 04. OBSTETRIC HISTORY & DETAILS */}
-    <Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block' }}>04. OBSTETRIC HISTORY & DETAILS</Typography>
-    <Box sx={{ borderTop: '1px solid #eee', pt: 1, mb: 2, fontSize: '10px' }}>
-        <Typography fontSize="10px" sx={{mb: 1}}>Gravida-Para-Living: <strong>G2 P1 L1</strong> &nbsp;&nbsp;&nbsp; Previous Pregnancy Details: <strong>G1-FT/LSCS</strong></Typography>
-        <Table size="small" sx={{ "& td, & th": { border: 'none', py: 0.2, fontSize: '10px' } }}>
-            <TableHead>
-                <TableRow sx={{ borderBottom: '1px solid #eee' }}>
-                    <TableCell>Year</TableCell>
-                    <TableCell>Gestational Age</TableCell>
-                    <TableCell>Delivery Mode</TableCell>
-                    <TableCell>Weight</TableCell>
-                    <TableCell>Pregnancy Outcome</TableCell>
-                </TableRow>
-            </TableHead>
-            <TableBody>
-                <TableRow><TableCell>2009</TableCell><TableCell>37 W 5 D</TableCell><TableCell>Normal Vaginal</TableCell><TableCell>2500 g</TableCell><TableCell>Living</TableCell></TableRow>
-                <TableRow><TableCell>2021</TableCell><TableCell>34 W 2 D</TableCell><TableCell>LSCS</TableCell><TableCell>1900 g</TableCell><TableCell>Living</TableCell></TableRow>
-            </TableBody>
-        </Table>
-    </Box>
-
-    {/* 05. VITALS & ANTHROPOMETRY */}
-    <Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block' }}>05. VITALS & ANTHROPOMETRY</Typography>
-    <Box sx={{ borderTop: '1px solid #eee', borderBottom: '1px solid #eee', py: 1, mb: 2, fontSize: '10px' }}>
-      <Grid container spacing={1}>
-        <Grid item xs={2.4} display="flex" justifyContent="space-between"><span>Temp</span> <strong>36.5 °C</strong></Grid>
-        <Grid item xs={2.4} display="flex" justifyContent="space-between"><span>HR</span> <strong>145 /min</strong></Grid>
-        <Grid item xs={2.4} display="flex" justifyContent="space-between"><span>RR</span> <strong>55 /min</strong></Grid>
-        <Grid item xs={2.4} display="flex" justifyContent="space-between"><span>SpO2</span> <strong>94 %</strong></Grid>
-        <Grid item xs={2.4} display="flex" justifyContent="space-between"><span>BP</span> <strong>52/32 mmHg</strong></Grid>
-        
-        <Grid item xs={2.4} display="flex" justifyContent="space-between" sx={{mt: 1}}><span>BSL</span> <strong>42 mg/dL</strong></Grid>
-        <Grid item xs={2.4} display="flex" justifyContent="space-between" sx={{mt: 1}}><span>Weight</span> <strong>1200 g</strong></Grid>
-        <Grid item xs={2.4} display="flex" justifyContent="space-between" sx={{mt: 1}}><span>Length</span> <strong>38 cm</strong></Grid>
-        <Grid item xs={2.4} display="flex" justifyContent="space-between" sx={{mt: 1}}><span>HC</span> <strong>27 cm</strong></Grid>
-      </Grid>
-      <Box sx={{ mt: 1, display: 'flex', fontSize: '10px' }}>
-        <span style={{ color: '#666', marginRight: '8px' }}>Additional Notes</span>
-        <strong>Mild oedema noted on dorsum of both feet. Skin turgor reduced. Capillary refill time 3 sec.</strong>
-      </Box>
-    </Box>
+  <Box sx={{ border: '1px solid #f0f0f0', borderRadius: '4px', p: 1.5, mb: 3 }}>
+    <Grid container spacing={2} sx={{ fontSize: '10px' }}>
+      <Grid item xs={3} display="flex" gap={1}><span>Temp</span> <strong>{report?.vitals?.["Body Temperature"] || "—"}</strong></Grid>
+      <Grid item xs={3} display="flex" gap={1}><span>HR</span> <strong>{report?.vitals?.["Heart Rate"] || "—"}</strong></Grid>
+      <Grid item xs={3} display="flex" gap={1}><span>RR</span> <strong>{report?.vitals?.["Respiratory Rate"] || "—"}</strong></Grid>
+      <Grid item xs={3} display="flex" gap={1}><span>SpO2</span> <strong>{report?.vitals?.["Oxygen Saturation"] || "—"}</strong></Grid>
+      <Grid item xs={3} display="flex" gap={1}><span>BSL</span> <strong>{report?.anthropometry?.["Blood Glucose"] || "—"}</strong></Grid>
+      <Grid item xs={3} display="flex" gap={1}><span>Weight</span> <strong>{report?.anthropometry?.["Weight"] || "—"}</strong></Grid>
+      <Grid item xs={3} display="flex" gap={1}><span>Length</span> <strong>{report?.anthropometry?.["Length"] || "—"}</strong></Grid>
+      <Grid item xs={3} display="flex" gap={1}><span>HC</span> <strong>{report?.anthropometry?.["Head Circumference"] || "—"}</strong></Grid>
+    </Grid>
+  </Box>
+    </Stack>
+     
     
     {/* FOOTER */}
-    <Box sx={{ position: 'absolute', bottom: 10, left: 20, right: 20, borderTop: '1px solid #eee', pt: 0.5, fontSize: '8px', color: '#999', display: 'flex', justifyContent: 'space-between' }}>
-        <span>8th & 9th Floor, Archit Sai Avenue... Mumbai Naka, Nashik 422001.</span>
-        <span>Page 1/3</span>
+   <Box sx={{ mt: 'auto', pt: 10 }}>
+    
+    <Box sx={{ borderTop: '1px solid #eee', pt: 1, display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#666' }}>
+      <Box >
+        5th & 6th Floor, Archit Sai Avenue, Shree Vallabh Nagar, Behind Old Chhan Hotel, Mumbai Naka, Nashik 422001. <br />
+        📞 8669668651, 9822003909 | 📧 care.nashik@nimalborneo.com | 🌐 https://borneohospitals.com/
+      </Box>
+      <Typography sx={{ fontSize: '8px' }}>Page 1/3</Typography>
     </Box>
+  </Box>
   </Card>
 
   {/* PAGE 2 - PHYSICAL EXAM */}
   <Card sx={{ ...A4_PAGE_STYLE, p: 2, boxShadow: "none", position: 'relative', mt: 2 }}>
-    <Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block' }}>06. GENERAL PHYSICAL EXAMINATIONS</Typography>
-    <Table size="small" sx={{ border: '1px solid #eee', mb: 3, "& td": { py: 0.5, fontSize: '11px', borderBottom: '1px solid #eee' } }}>
-        <TableBody>
-            <TableRow><TableCell width="30%" color="#666">Level of Consciousness</TableCell><TableCell><strong>Active & Alert</strong></TableCell></TableRow>
-            <TableRow><TableCell color="#666">Color</TableCell><TableCell><strong>Pink, Central Cyanosis</strong></TableCell></TableRow>
-            <TableRow><TableCell color="#666">Skin / Chest</TableCell><TableCell><strong>Thin, gelatinous — appropriate for GA</strong></TableCell></TableRow>
-            <TableRow><TableCell color="#666">Head/Neck</TableCell><TableCell><strong>Normocephalic, AF flat</strong></TableCell></TableRow>
-            <TableRow><TableCell color="#666">Eyes</TableCell><TableCell><strong>Fused eyelids</strong></TableCell></TableRow>
-            <TableRow><TableCell color="#666">Ears</TableCell><TableCell><strong>Low-set ears</strong></TableCell></TableRow>
-        </TableBody>
+  {/* HEADER LOGO */}
+   <Box sx={{  borderBottom: '1px solid grey', p: 1, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Box component="img" src={`data:image/png;base64,${logoBase64}`} alt="Logo" sx={{ height: 60 }} />
+  </Box>
+      <Stack sx={{p:2}}>
+  {/* 04. GENERAL PHYSICAL EXAMINATIONS */}
+  <Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block', fontSize: '10px' }}>
+    04. GENERAL PHYSICAL EXAMINATIONS
+  </Typography>
+  <TableContainer sx={{ border: '1px solid #f0f0f0', borderRadius: '4px', mb: 3 }}>
+    <Table size="small" sx={{ "& td": { py: 0.75, px: 1.5, fontSize: '10px', borderBottom: '1px solid #f0f0f0' } }}>
+      <TableBody>
+        <TableRow>
+          <TableCell width="30%" sx={{ color: "#666" }}>Level of Consciousness</TableCell>
+          <TableCell><strong>{report?.generalExam?.["Level of Consciousness"] || "—"}</strong></TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell sx={{ color: "#666" }}>Color</TableCell>
+          <TableCell><strong>{report?.generalExam?.["Color"] || "—"}</strong></TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell sx={{ color: "#666" }}>Skin / Chest</TableCell>
+          <TableCell>
+            <strong>
+              {report?.generalExam?.["Skin Findings"] || ""}
+              {report?.generalExam?.["Skin Other Findings"] ? ` — ${report.generalExam["Skin Other Findings"]}` : ""}
+              {!report?.generalExam?.["Skin Findings"] && !report?.generalExam?.["Skin Other Findings"] ? "—" : ""}
+            </strong>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell sx={{ color: "#666" }}>Head/Neck</TableCell>
+          <TableCell><strong>{report?.generalExam?.["Head & Neck Findings"] || "—"}</strong></TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell sx={{ color: "#666" }}>Eyes</TableCell>
+          <TableCell><strong>{report?.generalExam?.["ENT - Eye Findings"] || "—"}</strong></TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell sx={{ color: "#666" }}>Ears</TableCell>
+          <TableCell><strong>{report?.generalExam?.["ENT - Ear Findings"] || "—"}</strong></TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell sx={{ color: "#666" }}>Nose</TableCell>
+          <TableCell><strong>{report?.generalExam?.["ENT - Nose Findings"] || "—"}</strong></TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell sx={{ color: "#666" }}>Throat</TableCell>
+          <TableCell><strong>{report?.generalExam?.["ENT - Throat Findings"] || "—"}</strong></TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell sx={{ color: "#666" }}>Hips /Limbs</TableCell>
+          <TableCell><strong>{report?.generalExam?.["Hips & Limbs Findings"] || "—"}</strong></TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell sx={{ color: "#666" }}>Spine/Back</TableCell>
+          <TableCell><strong>{report?.generalExam?.["Spine & Back Findings"] || "—"}</strong></TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell sx={{ color: "#666" }}>Others</TableCell>
+          <TableCell><strong>{report?.generalExam?.["General Physical Examination Other"] || "—"}</strong></TableCell>
+        </TableRow>
+      </TableBody>
     </Table>
+  </TableContainer>
 
-    <Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block' }}>07. SYSTEMIC EXAMINATION</Typography>
-    <Table size="small" sx={{ border: '1px solid #eee', "& td": { py: 1, fontSize: '11px', borderBottom: '1px solid #eee' } }}>
-        <TableBody>
-            <TableRow><TableCell width="30%" color="#666">Respiratory</TableCell><TableCell><strong>Mild intercostal retractions present. Grunting audible...</strong></TableCell></TableRow>
-            <TableRow><TableCell color="#666">Cardiovascular</TableCell><TableCell><strong>S1 S2 Normal. No murmurs audible...</strong></TableCell></TableRow>
-            <TableRow><TableCell color="#666">Gastrointestinal & Abdomen</TableCell><TableCell><strong>Abdomen soft. Bowel sounds present...</strong></TableCell></TableRow>
-        </TableBody>
+  {/* 05. SYSTEMIC EXAMINATION */}
+  <Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block', fontSize: '10px' }}>
+    05. SYSTEMIC EXAMINATION
+  </Typography>
+  <TableContainer sx={{ border: '1px solid #f0f0f0', borderRadius: '4px' }}>
+    <Table size="small" sx={{ "& td": { py: 1.2, px: 1.5, fontSize: '10px', borderBottom: '1px solid #f0f0f0' } }}>
+      <TableBody>
+        {[
+          { label: "Respiratory", key: "Respiratory" },
+          { label: "Cardiovascular", key: "Cardiovascular" },
+          { label: "Gastrointestinal & Abdomen", key: "GI" },
+          { label: "Central Nervous System", key: "CNS" },
+          { label: "Genitourinary", key: "Genitourinary" },
+          { label: "Musculoskeletal", key: "Musculoskeletal" }
+        ].map((item) => (
+          <TableRow key={item.key}>
+            <TableCell width="30%" sx={{ color: "#666", verticalAlign: 'top' }}>{item.label}</TableCell>
+            <TableCell>
+              <strong>
+                {/* Logic to combine Findings + Other + Description for a clean block of text */}
+                {[
+                  report?.systematicExam?.[`${item.key} Findings`],
+                  report?.systematicExam?.[`${item.key} Other`],
+                  report?.systematicExam?.[`${item.key} Description`]
+                ].filter(Boolean).join(". ") || "Normal"}
+              </strong>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
     </Table>
-  </Card>
+  </TableContainer>
+</Stack>
+ <Box sx={{ mt: 'auto', pt: 10 }}>
+    
+    <Box sx={{ borderTop: '1px solid #eee', pt: 1, display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#666' }}>
+      <Box >
+        5th & 6th Floor, Archit Sai Avenue, Shree Vallabh Nagar, Behind Old Chhan Hotel, Mumbai Naka, Nashik 422001. <br />
+        📞 8669668651, 9822003909 | 📧 care.nashik@nimalborneo.com | 🌐 https://borneohospitals.com/
+      </Box>
+      <Typography sx={{ fontSize: '8px' }}>Page 2/3</Typography>
+    </Box>
+  </Box>
+</Card>
+
+  <Card sx={{ ...A4_PAGE_STYLE, p: 2, boxShadow: "none", position: 'relative' }}>
+  {/* HEADER */}
+   <Box sx={{  borderBottom: '1px solid grey', p: 1, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Box component="img" src={`data:image/png;base64,${logoBase64}`} alt="Logo" sx={{ height: 60 }} />
+  </Box>
+<Stack sx={
+{p:2}
+}>
+  {/* 06. PLAN OF CARE SECTION */}
+  <Typography variant="caption" fontWeight="bold" sx={{ color: '#666', mb: 0.5, display: 'block', fontSize: '10px' }}>
+    06. PLAN OF CARE / TREATMENT PLAN
+  </Typography>
+
+  <TableContainer sx={{ border: '1px solid #f0f0f0', borderRadius: '4px', mb: 4 }}>
+    <Table size="small" sx={{ "& td": { py: 0.75, px: 1.5, fontSize: '10px', borderBottom: '1px solid #f0f0f0' } }}>
+      <TableBody>
+        {/* Plan for the day */}
+        <TableRow>
+          <TableCell width="20%" sx={{ color: "#666" }}>Plan for the day</TableCell>
+          <TableCell colSpan={3}>
+            <strong>{report?.planOfCare?.activities?.find((a: string) => a.startsWith("Plan for Day:"))?.replace("Plan for Day: ", "") || "—"}</strong>
+          </TableCell>
+        </TableRow>
+
+        {/* Medication Table Header */}
+        <TableRow sx={{ backgroundColor: '#fff' }}>
+          <TableCell sx={{ color: "#666" }}>Medication</TableCell>
+          <TableCell sx={{ color: "#666" }}>Dose</TableCell>
+          <TableCell sx={{ color: "#666" }}>Frequency</TableCell>
+          <TableCell sx={{ color: "#666" }}>Route</TableCell>
+        </TableRow>
+
+        {/* Dynamic Medication Rows */}
+        {report?.planOfCare?.notes?.includes("Medication Orders:") ? (
+          report.planOfCare.notes
+            .replace("Medication Orders: ", "")
+            .split(" || ")
+            .map((med: string, i: number) => {
+              const parts = med.split(" | "); // name, dose, freq, last (route mapping assumes last or additional parsing)
+              return (
+                <TableRow key={i}>
+                  <TableCell><strong>{parts[0] || "—"}</strong></TableCell>
+                  <TableCell><strong>{parts[1]?.replace("Dose: ", "") || "—"}</strong></TableCell>
+                  <TableCell><strong>{parts[2]?.replace("Freq: ", "") || "—"}</strong></TableCell>
+                  <TableCell><strong>IV</strong></TableCell> {/* Standardized per design */}
+                </TableRow>
+              );
+            })
+        ) : (
+          <TableRow><TableCell colSpan={4} sx={{ color: '#999', fontStyle: 'italic' }}>No medications prescribed.</TableCell></TableRow>
+        )}
+
+        {/* Investigations */}
+        <TableRow>
+          <TableCell sx={{ color: "#666" }}>Investigations</TableCell>
+          <TableCell colSpan={3}>
+            <strong>
+              {report?.planOfCare?.activities
+                ?.filter((a: string) => !a.startsWith("Plan for Day:") && !a.startsWith("Treatment:"))
+                ?.join(", ") || "—"}
+            </strong>
+          </TableCell>
+        </TableRow>
+
+        {/* Treatment */}
+        <TableRow>
+          <TableCell sx={{ color: "#666" }}>Treatment</TableCell>
+          <TableCell colSpan={3}>
+            <strong>{report?.planOfCare?.activities?.find((a: string) => a.startsWith("Treatment:"))?.replace("Treatment: ", "") || "—"}</strong>
+          </TableCell>
+        </TableRow>
+
+        {/* Provisional Diagnosis */}
+        <TableRow>
+          <TableCell sx={{ color: "#666" }}>Provisional diagnosis</TableCell>
+          <TableCell colSpan={3}>
+            <strong>{report?.chiefComplaints?.map((c: any) => c.text).join(", ") || "—"}</strong>
+          </TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+  </TableContainer>
+
+  {/* DIGITAL SIGNATURES SECTION */}
+ <Typography
+  variant="caption"
+  fontWeight="bold"
+  sx={{
+    color: "#9AA5B1",
+    mb: 1,
+    display: "block",
+    fontSize: "11px",
+    letterSpacing: 0.5,
+  }}
+>
+  DIGITAL SIGNATURES
+</Typography>
+
+  <Box
+  sx={{
+    backgroundColor: "#F4F6F8",
+    border: "1px solid #E6E8EB",
+    borderRadius: "8px",
+    p: 3,
+  }}
+>
+  <Grid container spacing={6}>
+    {/* ================= RMO ================= */}
+    <Grid item xs={6}>
+      <Typography
+      variant="subtitle2"
+        sx={{
+          
+          color: "#6B7280",
+          mb: 4,
+        }}
+      >
+        Clinical Associate/RMO:{" "}
+        <strong style={{ color: "#111827" }}>
+          {props.UserRole}
+        </strong>
+      </Typography>
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+        }}
+      >
+        {/* Signature Line */}
+        <Box sx={{ width: "60%" }}>
+          <Typography variant="caption"
+            sx={{ color: "#6B7280", mb: 0.5 }}
+          >
+            Signature:
+          </Typography>
+          <Box
+            sx={{
+              borderBottom: "2px solid #374151",
+              height: "28px",
+              position: "relative",
+            }}
+          >
+            {signatureImage && (
+              <Box
+                component="img"
+                src={signatureImage}
+                sx={{
+                  maxHeight: "28px",
+                  position: "absolute",
+                  bottom: 0,
+                }}
+              />
+            )}
+          </Box>
+        </Box>
+
+        {/* Date & Time */}
+        <Box sx={{ textAlign: "right" }}>
+          <Typography
+          variant="caption"
+            sx={{ color: "#6B7280" }}
+          >
+            Date & Time - 
+          </Typography>
+          <Typography
+          variant="caption"
+            sx={{
+              
+              fontWeight: 600,
+              color: "#111827",
+            }}
+          >
+            {new Date().toLocaleDateString("en-GB")} :{" "}
+            {new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Typography>
+        </Box>
+      </Box>
+    </Grid>
+
+    {/* ================= CONSULTANT ================= */}
+    <Grid item xs={6}>
+      <Typography
+      variant="subtitle2"
+        sx={{
+          
+          color: "#6B7280",
+          mb: 4,
+        }}
+      >
+        Admitting Consultant:{" "}
+        <strong style={{ color: "#111827" }}>
+          --
+        </strong>
+      </Typography>
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+        }}
+      >
+        {/* Signature Line */}
+        <Box sx={{ width: "60%" }}>
+          <Typography variant="caption"
+            sx={{ color: "#6B7280", mb: 0.5 }}
+          >
+            Signature:
+          </Typography>
+          <Box
+            sx={{
+              borderBottom: "2px solid #374151",
+              height: "28px",
+            }}
+          />
+        </Box>
+
+        {/* Date & Time */}
+        <Box sx={{ textAlign: "right" }}>
+          <Typography variant="caption"
+            sx={{  color: "#6B7280" }}
+          >
+            Date & Time - 
+          </Typography>
+          <Typography
+          variant="caption"
+            sx={{
+             
+              fontWeight: 600,
+              color: "#111827",
+            }}
+          >
+            {new Date().toLocaleDateString("en-GB")} :{" "}
+            {new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Typography>
+        </Box>
+      </Box>
+    </Grid>
+  </Grid>
+  </Box>
+</Stack>
+  {/* FOOTER INFO */}
+  <Box sx={{ mt: 'auto', pt: 10 }}>
+    <Typography variant="caption" sx={{  color: '#666' }}>
+      Printed By: -- <Box component="span" sx={{ float: 'right' }}>Printed At: {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}</Box>
+    </Typography>
+    <Box sx={{ borderTop: '1px solid #eee', pt: 1, display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#666' }}>
+      <Box >
+        5th & 6th Floor, Archit Sai Avenue, Shree Vallabh Nagar, Behind Old Chhan Hotel, Mumbai Naka, Nashik 422001. <br />
+        📞 8669668651, 9822003909 | 📧 care.nashik@nimalborneo.com | 🌐 https://borneohospitals.com/
+      </Box>
+      <Typography sx={{ fontSize: '8px' }}>Page 3/3</Typography>
+    </Box>
+  </Box>
+</Card>
 </div>
   
 {/*   

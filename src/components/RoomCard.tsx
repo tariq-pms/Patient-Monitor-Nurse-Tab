@@ -379,7 +379,7 @@ export const RoomCard: FC<roomData> = (props) => {
        
     useEffect(() => {
       setLoadingBeds(true);
-      fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?partof=${props.roomId}`, {
+      fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?partof=${props.roomId}&_count=50`, {
         credentials: "omit",
         headers: {
           Authorization: "Basic " + btoa("fhiruser:change-password"),
@@ -1388,16 +1388,7 @@ spacing={2}
     )}
 
   </Box>
-)}
-
-
-
-
-
-
-
-
-          {/* Action Buttons */}
+)}          {/* Action Buttons */}
           <Box
             sx={{
               display: "flex",
@@ -1417,9 +1408,6 @@ spacing={2}
 >
   Save Changes
 </Button>
-
-
-
           </Box>
         </DialogContent>
               </Dialog>

@@ -1,4 +1,4 @@
-import { Box, Stack, ToggleButtonGroup, ToggleButton, Button, Dialog, DialogActions, DialogContent, TextField, DialogTitle, Typography, CircularProgress, IconButton, Tooltip } from '@mui/material'
+import { Box, Stack, ToggleButtonGroup, ToggleButton, Button, Dialog, DialogActions, DialogContent, TextField, DialogTitle, Typography, CircularProgress } from '@mui/material'
 import React, { FC, useEffect, useMemo, useRef, useState } from 'react'
 import { ChartOptions, LegendItem, Plugin } from 'chart.js';
 import { Line } from 'react-chartjs-2';
@@ -9,14 +9,14 @@ import ThermostatIcon from '@mui/icons-material/Thermostat';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
-import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import DownloadIcon from '@mui/icons-material/Download';
-import EditNoteIcon from '@mui/icons-material/EditNote';
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import OpacityIcon from "@mui/icons-material/Opacity";
-import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat";
-import BoltIcon from "@mui/icons-material/Bolt";
+
+import Grid from "@mui/material/Grid";
+import AddIcon from '@mui/icons-material/Add';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import GridOnIcon from '@mui/icons-material/GridOn';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 
 
 
@@ -61,11 +61,6 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
   const chartRef3 = useRef<any | null>(null);
   const chartRef4 = useRef<any | null>(null);
   const chartRef5 = useRef<any | null>(null);
-  const chartRef6 = useRef<any | null>(null);
-  const chartRef7 = useRef<any | null>(null);
-  const chartRef8 = useRef<any | null>(null);
-  const chartRef9 = useRef<any | null>(null);
-  const chartRef10 = useRef<any | null>(null);
   const [graphData, setGraphData] = useState(false)
 
   // const [observation, setObservation] = useState<{
@@ -87,12 +82,12 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
       listContainer = document.createElement('div');
       listContainer.style.display = 'flex';
       listContainer.style.flexDirection = 'row';
-      listContainer.style.flexWrap = 'wrap'
-
+      listContainer.style.flexWrap = 'nowrap';
+      listContainer.style.alignItems = 'center';
+      listContainer.style.gap = '20px';
       listContainer.className = 'listContainer';
       legendContainer!.appendChild(listContainer);
     }
-
     return listContainer;
   };
 
@@ -106,8 +101,9 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
       }
       ul.style.margin = '0px';
       ul.style.padding = '0px';
-      ul.style.lineHeight = '300%';
-      ul.style.gap = '5%';
+      ul.style.lineHeight = '1';
+      ul.style.gap = '20px';
+      ul.style.flexWrap = 'nowrap';
       const items: LegendItem[] = chart.options?.plugins?.legend?.labels?.generateLabels?.(chart) || [];
 
       items.forEach((item) => {
@@ -146,18 +142,18 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
           // boxSpan.style.borderColor = item.strokeStyle;
           boxSpan.style.border = `2px solid ${item.strokeStyle}`;
           boxSpan.style.display = 'inline-block';
-          boxSpan.style.flexShrink = '0px';
-          boxSpan.style.height = '20px'; // Added height
+          boxSpan.style.flexShrink = '0';
+          boxSpan.style.height = '12px';
           boxSpan.style.marginRight = '5px';
-          boxSpan.style.width = '20px';
-          boxSpan.style.borderRadius = '8px'
+          boxSpan.style.width = '12px';
+          boxSpan.style.borderRadius = '50%';
 
           const textContainer = document.createElement('p');
-          textContainer.style.fontSize = '12px'
-          textContainer.style.color = 'black';
-          textContainer.style.marginTop = '-12px';
+          textContainer.style.fontSize = '12px';
+          textContainer.style.color = '#6c757d';
+          textContainer.style.margin = '0px';
           textContainer.style.padding = '0px';
-          // textContainer.style.textDecoration = item.hidden ? 'line-through' : '';
+          textContainer.style.whiteSpace = 'nowrap';
 
           const text = document.createTextNode("- " + item.text);
           textContainer.appendChild(text);
@@ -201,6 +197,28 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
   // const [manualTrends, setManualTrends] = useState<any[]>([]);
   const [latestManual, setLatestManual] = useState<any | null>(null);
 
+  const crosshairPlugin = {
+    id: "crosshair",
+    afterDraw: (chart: any) => {
+      if (chart.tooltip?._active?.length) {
+        const activePoint = chart.tooltip._active[0];
+        const ctx = chart.ctx;
+        const x = activePoint.element.x;
+        const topY = chart.scales.y.top;
+        const bottomY = chart.scales.y.bottom;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x, topY);
+        ctx.lineTo(x, bottomY);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.4)"; // dark gray dotted line
+        ctx.setLineDash([5, 5]); // dotted effect
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  };
 
   useEffect(() => {
     const loadManualTrends = async () => {
@@ -224,6 +242,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
     animation: false,
 
     responsive: true,
+    maintainAspectRatio: false,
     interaction: {
       mode: "index",
       intersect: false,
@@ -252,36 +271,71 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
           mode: "x",
         },
       },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+        backgroundColor: "rgba(255, 255, 255, 0.9)",
+        titleColor: "#000",
+        bodyColor: "#000",
+        borderColor: "#ddd",
+        borderWidth: 1,
+        callbacks: {
+          label: function (context: any) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += context.parsed.y + ' °C';
+            } else {
+              label += 'No Data';
+            }
+            return label;
+          }
+        }
+      },
       annotation: {
+        drawTime: 'beforeDraw',
         annotations: {
-          redLow: {
+          pinkLow: {
             type: "box",
-            yMin: 0,   // start at chart min
-            yMax: 36,
-            backgroundColor: "rgba(255, 0, 0, 0.2)", // red
+            yMin: 0,
+            yMax: 36.0,
+            backgroundColor: "rgba(253, 226, 228, 0.8)", // pink
             borderWidth: 0,
+            z: -1,
           },
           green: {
             type: "box",
-            yMin: 36,
+            yMin: 36.0,
             yMax: 36.5,
-            backgroundColor: "rgba(0, 128, 0, 0.2)", // green
+            backgroundColor: "rgba(224, 242, 241, 0.8)", // green
             borderWidth: 0,
+            z: -1,
           },
-
+          white: {
+            type: "box",
+            yMin: 36.5,
+            yMax: 37.5,
+            backgroundColor: "rgba(255, 255, 255, 0)", // transparent white
+            borderWidth: 0,
+            z: -1,
+          },
           yellow: {
             type: "box",
             yMin: 37.5,
-            yMax: 38,
-            backgroundColor: "rgba(255, 255, 0, 0.2)", // yellow
+            yMax: 38.0,
+            backgroundColor: "rgba(255, 248, 220, 0.8)", // yellow
             borderWidth: 0,
+            z: -1,
           },
-          redHigh: {
+          pinkHigh: {
             type: "box",
-            yMin: 38,
-            yMax: 42,   // end at chart max
-            backgroundColor: "rgba(255, 0, 0, 0.2)", // red
+            yMin: 38.0,
+            yMax: 42.0,
+            backgroundColor: "rgba(253, 226, 228, 0.8)", // pink
             borderWidth: 0,
+            z: -1,
           },
         },
       },
@@ -291,27 +345,48 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
 
       x: {
         display: true,
-        ticks: {
-          color: "black",
-          autoSkip: true,
-          maxTicksLimit: 12.5,
+        grid: {
+          display: true,
+          drawOnChartArea: true,
+          color: "rgba(0, 0, 0, 0.05)",
         },
-
+        ticks: {
+          color: "#6c757d",
+          autoSkip: true,
+          maxTicksLimit: 6,
+          maxRotation: 0,
+          minRotation: 0,
+        },
+        afterFit: function (scale: any) {
+          let prevDateStr: string | null = null;
+          scale.ticks.forEach((tick: any) => {
+            const lbl = tick.label;
+            if (Array.isArray(lbl) && lbl.length >= 2) {
+              const timeStr = lbl[0];
+              const dateStr = lbl[1];
+              if (dateStr !== prevDateStr) {
+                prevDateStr = dateStr;
+              } else {
+                tick.label = [timeStr];
+              }
+            }
+          });
+        },
       },
       y: {
         type: 'linear' as const,
         display: true,
-        position: 'right' as const,
-        min: 30,           // ✅ Start scale at 0
-        max: 40,         // ✅ End scale at 100
+        position: 'left' as const,
+        min: 35,
+        max: 39,
         title: {
-          color: 'black',
-          display: true,
+          color: '#6c757d',
+          display: false,
           text: "Temperature (C°)"
         },
         ticks: {
-          color: 'black',
-          stepSize: 1,    // ✅ Increment by 10
+          color: '#6c757d',
+          stepSize: 1,
         },
         grid: {
           color: 'grey',
@@ -327,6 +402,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
     animation: false,
     // tension: 0.3,
     responsive: true,
+    maintainAspectRatio: false,
     // legend: {
     //     position: 'bottom'
     // },
@@ -360,21 +436,47 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
           mode: 'x',
         }
       },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+        backgroundColor: "rgba(255, 255, 255, 0.9)",
+        titleColor: "#000",
+        bodyColor: "#000",
+        borderColor: "#ddd",
+        borderWidth: 1,
+        callbacks: {
+          label: function (context: any) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += context.parsed.y + ' bpm';
+            } else {
+              label += 'No Data';
+            }
+            return label;
+          }
+        }
+      },
       annotation: {
+        drawTime: 'beforeDraw',
         annotations: {
           purple: {
             type: "box",
             yMin: 0,   // start at chart min
             yMax: 60,
-            backgroundColor: "rgba(128, 0, 128, 0.2)", // red
+            backgroundColor: "rgba(128, 0, 128, 0.8)", // red
             borderWidth: 0,
+            z: -1,
           },
           redLow: {
             type: "box",
             yMin: 60,   // start at chart min
             yMax: 80,
-            backgroundColor: "rgba(255, 0, 0, 0.2)", // red
+            backgroundColor: "rgba(255, 0, 0, 0.8)", // red
             borderWidth: 0,
+            z: -1,
           },
           // orange: {
           //   type: "box",
@@ -387,8 +489,9 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 80,
             yMax: 100,
-            backgroundColor: "rgba(255, 255, 0, 0.2)", // yellow
+            backgroundColor: "rgba(255, 255, 0, 0.8)", // yellow
             borderWidth: 0,
+            z: -1,
           },
           white: {
             type: "box",
@@ -396,20 +499,23 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             yMax: 160,
             backgroundColor: "rgba(0, 0, 0, 0)", // yellow
             borderWidth: 0,
+            z: -1,
           },
           yellow1: {
             type: "box",
             yMin: 160,
             yMax: 175,
-            backgroundColor: "rgba(255, 255, 0, 0.2)", // yellow
+            backgroundColor: "rgba(255, 255, 0, 0.8)", // yellow
             borderWidth: 0,
+            z: -1,
           },
           redHigh: {
             type: "box",
             yMin: 175,
             yMax: 200,   // end at chart max
-            backgroundColor: "rgba(255, 0, 0, 0.2)", // red
+            backgroundColor: "rgba(255, 0, 0, 0.8)", // red
             borderWidth: 0,
+            z: -1,
           },
         },
       },
@@ -417,9 +523,24 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
     scales: {
       x: {
         ticks: {
-          color: 'black',
+          color: '#6c757d',
           autoSkip: true,
-          maxTicksLimit: 5
+          maxTicksLimit: 5,
+        },
+        afterFit: function (scale: any) {
+          let prevDateStr: string | null = null;
+          scale.ticks.forEach((tick: any) => {
+            const lbl = tick.label;
+            if (Array.isArray(lbl) && lbl.length >= 2) {
+              const timeStr = lbl[0];
+              const dateStr = lbl[1];
+              if (dateStr !== prevDateStr) {
+                prevDateStr = dateStr;
+              } else {
+                tick.label = [timeStr];
+              }
+            }
+          });
         }
       },
 
@@ -444,17 +565,17 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
       y: {
         type: 'linear' as const,
         display: true,
-        position: 'right' as const,
-        min: 60,           // ✅ Start scale at 0
-        max: 180,         // ✅ End scale at 100
+        position: 'left' as const,
+        min: 45,
+        max: 185,
         title: {
-          color: "black",
-          display: true,
+          color: "#6c757d",
+          display: false,
           text: "Beats Per Minuite (BPM)",
         },
         ticks: {
-          color: 'black',
-          stepSize: 5,    // ✅ Increment by 15
+          color: '#6c757d',
+          stepSize: 10,
         },
         grid: {
           color: 'grey',
@@ -497,6 +618,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
     animation: false,
     // tension: 0.3,
     responsive: true,
+    maintainAspectRatio: false,
     interaction: {
       mode: 'index' as const,
       intersect: false,
@@ -526,56 +648,103 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
           mode: 'x',
         }
       },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+        backgroundColor: "rgba(255, 255, 255, 0.9)",
+        titleColor: "#000",
+        bodyColor: "#000",
+        borderColor: "#ddd",
+        borderWidth: 1,
+        callbacks: {
+          label: function (context: any) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += context.parsed.y + ' %';
+            } else {
+              label += 'No Data';
+            }
+            return label;
+          }
+        }
+      },
       annotation: {
+        drawTime: 'beforeDraw',
         annotations: {
           purple: {
             type: "box",
-            yMin: 0,   // start at chart min
+            yMin: 0,
             yMax: 90,
-            backgroundColor: "rgba(128, 0, 128, 0.2)", // red
+            backgroundColor: "rgba(238, 219, 240, 0.8)", // purple
             borderWidth: 0,
+            z: -1,
           },
-
           yellow: {
             type: "box",
             yMin: 90,
             yMax: 95,
-            backgroundColor: "rgba(255, 255, 0, 0.2)",
+            backgroundColor: "rgba(255, 248, 220, 0.8)", // yellow
             borderWidth: 0,
+            z: -1,
           },
           white: {
             type: "box",
             yMin: 95,
             yMax: 100,
-            backgroundColor: "rgba(0, 0, 0, 0)",
+            backgroundColor: "rgba(255, 255, 255, 0)", // transparent white
             borderWidth: 0,
+            z: -1,
           },
-
         },
       },
     },
     scales: {
       x: {
+        grid: {
+          display: true,
+          drawOnChartArea: true,
+          color: "rgba(0, 0, 0, 0.05)",
+        },
         ticks: {
-          color: 'black',
+          color: '#6c757d',
           autoSkip: true,
-          maxTicksLimit: 12.5
+          maxTicksLimit: 6,
+          maxRotation: 0,
+          minRotation: 0,
+        },
+        afterFit: function (scale: any) {
+          let prevDateStr: string | null = null;
+          scale.ticks.forEach((tick: any) => {
+            const lbl = tick.label;
+            if (Array.isArray(lbl) && lbl.length >= 2) {
+              const timeStr = lbl[0];
+              const dateStr = lbl[1];
+              if (dateStr !== prevDateStr) {
+                prevDateStr = dateStr;
+              } else {
+                tick.label = [timeStr];
+              }
+            }
+          });
         }
       },
       y: {
         type: 'linear' as const,
         display: true,
-        position: 'right' as const,
-        min: 85,           // ✅ Start scale at 0
-        max: 100,         // ✅ End scale at 100
+        position: 'left' as const,
+        min: 80,
+        max: 100,
         title: {
-          color: 'black',
-          display: true,
+          color: '#6c757d',
+          display: false,
           text: "Percentage (%)"
         },
         ticks: {
-          color: 'black',
-          stepSize: 5,    // ✅ Increment by 10
+          color: '#6c757d',
+          stepSize: 5,
         },
         grid: {
           color: 'grey',
@@ -589,6 +758,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
     animation: false,
     // tension: 0.3,
     responsive: true,
+    maintainAspectRatio: false,
     // legend: {
     //     position: 'bottom'
     // },
@@ -622,53 +792,81 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
           mode: 'x',
         }
       },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+        backgroundColor: "rgba(255, 255, 255, 0.9)",
+        titleColor: "#000",
+        bodyColor: "#000",
+        borderColor: "#ddd",
+        borderWidth: 1,
+        callbacks: {
+          label: function (context: any) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += context.parsed.y + ' bpm';
+            } else {
+              label += 'No Data';
+            }
+            return label;
+          }
+        }
+      },
 
       annotation: {
+        drawTime: 'beforeDraw',
         annotations: {
           purple: {
             type: "box",
-            yMin: 40,   // start at chart min
+            yMin: 0,
             yMax: 60,
-            backgroundColor: "rgba(128, 0, 128, 0.2)", // red
+            backgroundColor: "rgba(238, 219, 240, 0.8)", // purple
             borderWidth: 0,
+            z: -1,
           },
-          redHigh: {
+          pinkLow: {
             type: "box",
             yMin: 60,
-            yMax: 80,   // end at chart max
-            backgroundColor: "rgba(255, 0, 0, 0.2)", // red
+            yMax: 80,
+            backgroundColor: "rgba(253, 226, 228, 0.8)", // pink
             borderWidth: 0,
+            z: -1,
           },
-          yellow: {
+          yellowLow: {
             type: "box",
             yMin: 80,
             yMax: 100,
-            backgroundColor: "rgba(255, 255, 0, 0.2)", // yellow
+            backgroundColor: "rgba(255, 248, 220, 0.8)", // yellow
             borderWidth: 0,
+            z: -1,
           },
           white: {
             type: "box",
             yMin: 100,
             yMax: 160,
-            backgroundColor: "rgba(0, 0, 0, 0)", // yellow
+            backgroundColor: "rgba(255, 255, 255, 0)", // transparent white
             borderWidth: 0,
+            z: -1,
           },
-          yellow1: {
+          yellowHigh: {
             type: "box",
             yMin: 160,
             yMax: 175,
-            backgroundColor: "rgba(255, 255, 0, 0.2)", // yellow
+            backgroundColor: "rgba(255, 248, 220, 0.8)", // yellow
             borderWidth: 0,
+            z: -1,
           },
-          red: {
+          pinkHigh: {
             type: "box",
             yMin: 175,
-            yMax: 200,   // end at chart max
-            backgroundColor: "rgba(255, 0, 0, 0.2)", // red
+            yMax: 200,
+            backgroundColor: "rgba(253, 226, 228, 0.8)", // pink
             borderWidth: 0,
+            z: -1,
           },
-
-
         },
       },
       // annotation: {
@@ -715,32 +913,53 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
 
     scales: {
       x: {
+        grid: {
+          display: true,
+          drawOnChartArea: true,
+          color: "rgba(0, 0, 0, 0.05)",
+        },
         ticks: {
-          color: 'black',
+          color: '#6c757d',
           autoSkip: true,
-          maxTicksLimit: 12.5
+          maxTicksLimit: 6,
+          maxRotation: 0,
+          minRotation: 0,
+        },
+        afterFit: function (scale: any) {
+          let prevDateStr: string | null = null;
+          scale.ticks.forEach((tick: any) => {
+            const lbl = tick.label;
+            if (Array.isArray(lbl) && lbl.length >= 2) {
+              const timeStr = lbl[0];
+              const dateStr = lbl[1];
+              if (dateStr !== prevDateStr) {
+                prevDateStr = dateStr;
+              } else {
+                tick.label = [timeStr];
+              }
+            }
+          });
         }
       },
-      y: {      // Celcius
+      y: {
         type: 'linear' as const,
         display: true,
-        position: 'right' as const,
-        min: 30,           // ✅ Start scale at 0
-        max: 180,
+        position: 'left' as const,
+        min: 40,
+        max: 200,
         title: {
-          color: 'black',
-          display: true,
-          text: "Beats Per Minuite (BPM)"
+          color: '#6c757d',
+          display: false,
+          text: "Breaths Per Minute (BPM)"
         },
         ticks: {
-          color: 'black',
-          stepSize: 30,    // ✅ Increment by 10
+          color: '#6c757d',
+          stepSize: 20,
         },
-        // grid: {
-        //     color: '#303030',
-        //     drawOnChartArea: true,
-        //   },
-
+        grid: {
+          color: 'grey',
+          drawOnChartArea: true,
+        },
       },
       // y1: {     // %
       //   type: 'linear' as const,
@@ -765,6 +984,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
     animation: false,
     // tension: 0.3,
     responsive: true,
+    maintainAspectRatio: false,
     // legend: {
     //     position: 'bottom'
     // },
@@ -799,81 +1019,108 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
         }
       },
       annotation: {
+        drawTime: 'beforeDraw',
         annotations: {
           purple: {
             type: "box",
-            yMin: 10,   // start at chart min
+            yMin: 0,
             yMax: 20,
-            backgroundColor: "rgba(128, 0, 128, 0.2)", // red
+            backgroundColor: "rgba(238, 219, 240, 0.8)", // purple
             borderWidth: 0,
+            z: -1,
           },
-          redHigh: {
+          pinkLow: {
             type: "box",
             yMin: 20,
-            yMax: 25,   // end at chart max
-            backgroundColor: "rgba(255, 0, 0, 0.2)", // red
+            yMax: 25,
+            backgroundColor: "rgba(253, 226, 228, 0.8)", // pink
             borderWidth: 0,
+            z: -1,
           },
-          yellow: {
+          yellowLow: {
             type: "box",
             yMin: 25,
             yMax: 30,
-            backgroundColor: "rgba(255, 255, 0, 0.2)", // yellow
+            backgroundColor: "rgba(255, 248, 220, 0.8)", // yellow
             borderWidth: 0,
+            z: -1,
           },
           white: {
             type: "box",
             yMin: 30,
             yMax: 60,
-            backgroundColor: "rgba(0, 0, 0, 0)", // yellow
+            backgroundColor: "rgba(255, 255, 255, 0)", // transparent white
             borderWidth: 0,
+            z: -1,
           },
-          yellow1: {
+          yellowHigh: {
             type: "box",
             yMin: 60,
             yMax: 80,
-            backgroundColor: "rgba(255, 255, 0, 0.2)", // yellow
+            backgroundColor: "rgba(255, 248, 220, 0.8)", // yellow
             borderWidth: 0,
+            z: -1,
           },
-          red: {
+          pinkHigh: {
             type: "box",
             yMin: 80,
-            yMax: 100,   // end at chart max
-            backgroundColor: "rgba(255, 0, 0, 0.2)", // red
+            yMax: 100,
+            backgroundColor: "rgba(253, 226, 228, 0.8)", // pink
             borderWidth: 0,
+            z: -1,
           },
-
-
         },
       },
     },
     scales: {
       x: {
+        grid: {
+          display: true,
+          drawOnChartArea: true,
+          color: "rgba(0, 0, 0, 0.05)",
+        },
         ticks: {
-          color: 'black',
+          color: '#6c757d',
           autoSkip: true,
-          maxTicksLimit: 12.5
+          maxTicksLimit: 6,
+          maxRotation: 0,
+          minRotation: 0,
+        },
+        afterFit: function (scale: any) {
+          let prevDateStr: string | null = null;
+          scale.ticks.forEach((tick: any) => {
+            const lbl = tick.label;
+            if (Array.isArray(lbl) && lbl.length >= 2) {
+              const timeStr = lbl[0];
+              const dateStr = lbl[1];
+              if (dateStr !== prevDateStr) {
+                prevDateStr = dateStr;
+              } else {
+                tick.label = [timeStr];
+              }
+            }
+          });
         }
       },
-      y: {      // Celcius
+      y: {
         type: 'linear' as const,
         display: true,
-        position: 'right' as const,
-        min: 20,           // ✅ Start scale at 0
-        max: 100,
+        position: 'left' as const,
+        min: 10,
+        max: 90,
         title: {
-          color: 'black',
-          display: true,
+          color: '#6c757d',
+          display: false,
           text: "Breaths per minute (BPM)"
         },
         ticks: {
-          color: 'black' // Set the color of the scale values (ticks) to red
+          color: '#6c757d',
+          stepSize: 10,
         },
-        // grid: {
-        //     color: '#303030',
-        //     drawOnChartArea: true,
-        //   },
-
+        grid: {
+          color: 'grey',
+          drawOnChartArea: true,
+        },
       },
       // y: {     // %
       //   type: 'linear' as const,
@@ -909,324 +1156,12 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
   //   parentalConcern: ["NO", "SOME","HIGH"],
   // };
 
-  const categoricalOption = {
-    animation: false,
-    // tension: 0.3,
-    responsive: true,
-    // legend: {
-    //     position: 'bottom'
-    // },
-    interaction: {
-      mode: 'index' as const,
-      intersect: false,
-    },
-    stacked: false,
-    plugins: {
-      decimation: {
-        enabled: true,
-        algorithm: 'min-max',
-      },
-      colors: {
-        forceOverride: true
-      },
-      legend: {
-        display: false
-      },
-      htmlLegend: {
-        // ID of the container to put the legend in
-        containerID: 'legend-container-manual-RR',
-      },
-      zoom: {
+  // categoricalOption removed as it's no longer used for charts
 
-        zoom: {
-          wheel: {
-            enabled: true,       // Enable wheel zooming
-            modifierKey: 'ctrl'
-          },
-          mode: 'x',
-        }
-      },
-      annotation: {
-        annotations: {
-          purple: {
-            type: "box",
-            yMin: 2,   // start at chart min
-            yMax: 3,
-            backgroundColor: "rgba(128, 0, 128, 0.2)", // red
-            borderWidth: 0,
-          },
-          // redHigh: {
-          //   type: "box",
-          //   yMin: 1,
-          //   yMax: 2,   // end at chart max
-          //   backgroundColor: "rgba(255, 0, 0, 0.2)", // red
-          //   borderWidth: 0,
-          // },
-          yellow: {
-            type: "box",
-            yMin: 1,
-            yMax: 2,
-            backgroundColor: "rgba(255, 255, 0, 0.2)", // yellow
-            borderWidth: 0,
-          },
-          white: {
-            type: "box",
-            yMin: 0,
-            yMax: 1,
-            backgroundColor: "rgba(0, 0, 0, 0)", // yellow
-            borderWidth: 0,
-          },
+  // colorOption removed as it's no longer used for charts
 
+  // gulcoseOption removed as it's no longer used for charts
 
-        },
-      },
-    },
-    scales: {
-      x: {
-        ticks: {
-          color: 'black',
-          autoSkip: true,
-          maxTicksLimit: 12.5
-        }
-      },
-
-      y: {
-        type: 'linear',
-        display: true,
-        position: 'right',
-        min: 0,
-        max: 3,
-        title: {
-          color: 'black',
-          display: true,
-          text: ""
-        },
-        // ticks: {
-        //   color: "black",
-        //   stepSize: 1,
-        //   callback: () => ""   
-        // },
-
-        ticks: {
-          color: 'black',
-          stepSize: 1, // Set the color of the scale values (ticks) to red
-        },
-      }
-    }
-
-  };
-  const colorOption = {
-    animation: false,
-    // tension: 0.3,
-    responsive: true,
-    // legend: {
-    //     position: 'bottom'
-    // },
-    interaction: {
-      mode: 'index' as const,
-      intersect: false,
-    },
-    stacked: false,
-    plugins: {
-      decimation: {
-        enabled: true,
-        algorithm: 'min-max',
-      },
-      colors: {
-        forceOverride: true
-      },
-      legend: {
-        display: false
-      },
-      htmlLegend: {
-        // ID of the container to put the legend in
-        containerID: 'legend-container-manual-RR',
-      },
-      zoom: {
-
-        zoom: {
-          wheel: {
-            enabled: true,       // Enable wheel zooming
-            modifierKey: 'ctrl'
-          },
-          mode: 'x',
-        }
-      },
-      annotation: {
-        annotations: {
-          // purple: {
-          //   type: "box",
-          //   yMin: 2,   // start at chart min
-          //   yMax: 3,
-          //   backgroundColor: "rgba(128, 0, 128, 0.2)", // red
-          //   borderWidth: 0,
-          // },
-          redHigh: {
-            type: "box",
-            yMin: 2,
-            yMax: 3,   // end at chart max
-            backgroundColor: "rgba(255, 0, 0, 0.2)", // red
-            borderWidth: 0,
-          },
-          yellow: {
-            type: "box",
-            yMin: 1,
-            yMax: 2,
-            backgroundColor: "rgba(255, 255, 0, 0.2)", // yellow
-            borderWidth: 0,
-          },
-          white: {
-            type: "box",
-            yMin: 0,
-            yMax: 1,
-            backgroundColor: "rgba(0, 0, 0, 0)", // yellow
-            borderWidth: 0,
-          },
-
-
-        },
-      },
-    },
-    scales: {
-      x: {
-        ticks: {
-          color: 'black',
-          autoSkip: true,
-          maxTicksLimit: 12.5
-        }
-      },
-
-      y: {
-        type: 'linear',
-        display: true,
-        position: 'right',
-        min: 0,
-        max: 3,
-        title: {
-          color: 'black',
-          display: true,
-          text: ""
-        },
-        // ticks: {
-        //   color: "black",
-        //   stepSize: 1,
-        //   callback: () => ""   
-        // },
-
-        ticks: {
-          color: 'black',
-          stepSize: 1, // Set the color of the scale values (ticks) to red
-        },
-      }
-    }
-
-  };
-  const gulcoseOption = {
-    animation: false,
-    // tension: 0.3,
-    responsive: true,
-    // legend: {
-    //     position: 'bottom'
-    // },
-    interaction: {
-      mode: 'index' as const,
-      intersect: false,
-    },
-    stacked: false,
-    plugins: {
-      decimation: {
-        enabled: true,
-        algorithm: 'min-max',
-      },
-      colors: {
-        forceOverride: true
-      },
-      legend: {
-        display: false
-      },
-      htmlLegend: {
-        // ID of the container to put the legend in
-        containerID: 'legend-container-manual-RR',
-      },
-      zoom: {
-
-        zoom: {
-          wheel: {
-            enabled: true,       // Enable wheel zooming
-            modifierKey: 'ctrl'
-          },
-          mode: 'x',
-        }
-      },
-      annotation: {
-        annotations: {
-          purple: {
-            type: "box",
-            yMin: 3,   // start at chart min
-            yMax: 4,
-            backgroundColor: "rgba(128, 0, 128, 0.2)", // red
-            borderWidth: 0,
-          },
-          redHigh: {
-            type: "box",
-            yMin: 2,
-            yMax: 3,   // end at chart max
-            backgroundColor: "rgba(255, 0, 0, 0.2)", // red
-            borderWidth: 0,
-          },
-          yellow: {
-            type: "box",
-            yMin: 1,
-            yMax: 2,
-            backgroundColor: "rgba(255, 255, 0, 0.2)", // yellow
-            borderWidth: 0,
-          },
-          white: {
-            type: "box",
-            yMin: 0,
-            yMax: 1,
-            backgroundColor: "rgba(0, 0, 0, 0)", // yellow
-            borderWidth: 0,
-          },
-
-
-        },
-      },
-    },
-    scales: {
-      x: {
-        ticks: {
-          color: 'black',
-          autoSkip: true,
-          maxTicksLimit: 12.5
-        }
-      },
-
-      y: {
-        type: 'linear',
-        display: true,
-        position: 'right',
-        min: 0,
-        max: 4,
-        title: {
-          color: 'black',
-          display: true,
-          text: ""
-        },
-        // ticks: {
-        //   color: "black",
-        //   stepSize: 1,
-        //   callback: () => ""   
-        // },
-
-        ticks: {
-          color: 'black',
-          stepSize: 1, // Set the color of the scale values (ticks) to red
-        },
-      }
-    }
-
-  };
   // const neuroOptions = { 
   //   ...categoricalOption,
   //   scales: {
@@ -1609,78 +1544,19 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
 
 
   const handleInputChange = (field: keyof VitalsData) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    setVitals({ ...vitals, [field]: event.target.value });
+    let value = event.target.value;
+    // Only restrict to numbers and decimals for numeric vital inputs, leave observation alone
+    if ((field as string) !== "observation") {
+      value = value.replace(/[^0-9.]/g, '');
+      const parts = value.split('.');
+      if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+      }
+    }
+    setVitals({ ...vitals, [field]: value });
   };
 
-  function getVisibleXAxisTicks(chartRef: React.MutableRefObject<any>) {
-    if (!chartRef?.current) return [];
-
-    const scale = chartRef.current.scales.x;
-    if (!scale) return [];
-
-    // Chart.js stores visible ticks here
-    return scale.ticks.map((t: { label: any; }) => t.label);
-  }
-
   const downloadTrendsPDF = async () => {
-
-
-    const hideXAxis = () => {
-      [
-        chartRef1,
-        chartRef2,
-        chartRef3,
-        chartRef4,
-        chartRef5,
-        chartRef6,
-        chartRef7,
-        chartRef8,
-        chartRef9,
-        chartRef10
-
-      ].forEach(ref => {
-        const c = ref?.current;
-        if (c) {
-          c.options.scales.x.display = false;
-          c.update();
-        }
-      });
-    };
-    const chartLabels = [
-      { label: "Colour", sublabels: ["Blue", "Pale", "Pink"] },
-      { label: "Concern", sublabels: ["High", "Some", "Nil"] },
-      { label: "Neuro", sublabels: ["Unresponsive", "Lethargic", "Responsive"] },
-      { label: "Feeding", sublabels: ["Nil", "Reluctantly", "Well"] },
-      { label: "Glucose", sublabels: ["< 1.0", "1.0 - 1.9", "2.0 - 2.5", ">= 2.6"] },
-    ];
-
-
-    // 🔥 2️⃣ RESTORE X-AXIS AFTER CAPTURE
-    const showXAxis = () => {
-      [
-        chartRef1,
-        chartRef2,
-        chartRef3,
-        chartRef4,
-        chartRef5,
-        chartRef6,
-        chartRef7,
-        chartRef8,
-        chartRef9,
-        chartRef10
-
-      ].forEach(ref => {
-        const c = ref?.current;
-        if (c) {
-          c.options.scales.x.display = true;
-          c.update();
-        }
-      });
-    };
-
-    // ---- APPLY TEMPORARY HIDE ----
-    hideXAxis();
-
     const doc = new jsPDF("p", "pt", "a4");
     const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -1732,13 +1608,13 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
       console.error("Error fetching organization/logo:", err);
     }
 
-    const padding = 10;
+    const padding = 40;
     const headerHeight = 80;
 
     doc.setFillColor(255, 255, 255);
     doc.rect(0, 0, pageWidth, headerHeight + 20, "F");
 
-    const logoX = padding + 10;
+    const logoX = padding;
     const logoY = padding;
 
     try {
@@ -1758,204 +1634,403 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
       doc.rect(logoX, logoY, 130, 35, "F");
     }
 
-    doc.setFontSize(8);
-    doc.text("Score Key:", logoX, 64);
+    // --- RIGHT SIDE HEADER: VITALS CHART PILL BOX ---
+    const cardW = 300; // specific width for the pill
+    const cardX = pageWidth - padding - cardW;
+    const cardY = padding + 2;
+    const cardH = 45;
 
+    // Outer Container (Outlined Pill)
+    doc.setDrawColor(200, 200, 200);   // Light gray border
+    doc.setLineWidth(1);
     doc.setFillColor(255, 255, 255);
-    doc.rect(logoX + 50, 54, 20, 15, "F");
-    doc.text("0", logoX + 60, 64);
+    doc.roundedRect(cardX, cardY, cardW, cardH, 5, 5, "FD");
 
-    doc.setFillColor(255, 255, 153);
-    doc.rect(logoX + 92, 54, 20, 15, "F");
-    doc.text("1", logoX + 100, 64);
+    // Divider Line (Horizontal)
+    doc.setDrawColor(230, 230, 230);
+    doc.line(cardX + 10, cardY + 22, cardX + cardW - 10, cardY + 22);
 
-    doc.setFillColor(255, 153, 153);
-    doc.rect(logoX + 132, 54, 20, 15, "F");
-    doc.text("2", logoX + 140, 64);
+    const leftColMid = cardX + (cardW / 2) + 5;
 
-    const cardX = pageWidth * 0.35;
-    const cardY = padding;
-    const cardW = pageWidth * 0.62;
-    const cardH = 60;
-
-    doc.setFillColor(245, 245, 245);
-    doc.roundedRect(cardX, cardY, cardW, cardH, 8, 8, "F");
-
+    // Content: Row 1
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
+    doc.setTextColor(150, 150, 150);
+    doc.text("B/O:", cardX + 10, cardY + 15);
+    doc.setTextColor(30, 30, 30);
+    doc.text(`${props.patient_name || ""}`, cardX + 30, cardY + 15);
 
-    doc.text(`B/O: ${props.patient_name || ""}`, cardX + 10, cardY + 15);
-    doc.text(`ID:${props.patient_id || ""}`, cardX + 150, cardY + 15);
-    doc.text(`DOB: ${props.birth_date || ""}`, cardX + 280, cardY + 15);
-    doc.text(`G.A: ${props.gestational_age || ""}`, cardX + 10, cardY + 32);
+    doc.setTextColor(150, 150, 150);
+    doc.text("UHID:", leftColMid, cardY + 15);
+    doc.setTextColor(30, 30, 30);
+    doc.text(`${props.patient_id || ""}`, leftColMid + 25, cardY + 15);
 
-    doc.text(`TimeFrame: ${timeFrame} Hrs`, cardX + 280, cardY + 32);
+    // Content: Row 2
+    doc.setTextColor(150, 150, 150);
+    doc.text("GA:", cardX + 10, cardY + 36);
+    doc.setTextColor(30, 30, 30);
+    doc.text(`${props.gestational_age || ""}`, cardX + 28, cardY + 36);
 
-    doc.text(`DOA: ____________________`, cardX + 150, cardY + 32);
-    doc.text(`Gender: Male`, cardX + 10, cardY + 49);
-    doc.text(`Printed at: ${new Date().toLocaleString()}`, cardX + 150, cardY + 49);
+    doc.setTextColor(150, 150, 150);
+    doc.text("CURRENT WT:", leftColMid, cardY + 36);
+    doc.setTextColor(30, 30, 30);
+    // Note: CURRENT WT requires a property not natively available in this component yet; showing fallback.
+    doc.text(`--- g`, leftColMid + 55, cardY + 36);
 
-    const lineY = headerHeight;
-    doc.setDrawColor(180);
-    doc.line(20, lineY, pageWidth - 20, lineY);
+    // "VITALS CHART" Badge (Top-Right Overlap)
+    const badgeW = 65;
+    const badgeH = 15;
+    const badgeX = cardX + cardW - badgeW - 5;
+    const badgeY = cardY - 5;
 
-    let startY = lineY + 2;
+    doc.setFillColor(230, 235, 240);  // Very light gray/blue
+    doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 3, 3, "F");
 
-    const timeList = getVisibleXAxisTicks(chartRef1);
+    doc.setTextColor(50, 50, 50);
+    doc.setFontSize(8);
+    doc.text("VITALS CHART", badgeX + 8, badgeY + 10);
 
-    if (timeList.length > 0) {
-      const graphStartX = pageWidth * 0.20;
-      const graphWidth = pageWidth * 0.77;
-      const cellWidth = graphWidth / timeList.length + 0.7;
-      const rowHeight = 20;
+    // --- HEADER DIVIDER ---
+    const lineY = cardY + cardH + 15;
+    doc.setDrawColor(240, 219, 225); // Very light pink/gray divider
+    doc.line(padding, lineY, pageWidth - padding, lineY);
 
-      doc.setFillColor(245, 245, 245);
-      doc.rect(10, startY, graphWidth - 40, rowHeight, "F");
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.text("Time", 20, startY + rowHeight / 2);
+    let startY = lineY + 10;
 
-      doc.setFillColor(245, 245, 245);
-      doc.rect(graphStartX, startY, graphWidth, rowHeight, "F");
+    // --- GRID DIMENSIONS ---
+    const pageHeight = doc.internal.pageSize.getHeight();
+    // --- TIME LABELS ---
+    const colCount = 12;
+    const currentNow = Date.now(); // The exact time when user taps download
+    const printTimeFrame = 12; // FORCED TO 12H ONLY
+    const timeSpanMs = printTimeFrame * 60 * 60 * 1000;
 
-      doc.setFontSize(7);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(0, 0, 0);
+    // Calculate the reference "end time" by rounding up to the next hour if past the top of the hour
+    const endD = new Date(currentNow);
+    if (endD.getMinutes() > 0 || endD.getSeconds() > 0 || endD.getMilliseconds() > 0) {
+      endD.setHours(endD.getHours() + 1);
+    }
+    endD.setMinutes(0, 0, 0);
 
-      timeList.forEach((t: string | string[], i: number) => {
-        const x = graphStartX + i * cellWidth + cellWidth / 2;
-        doc.text(t, x - 15, startY + 10, { align: "center" });
+    const startTimeMs = endD.getTime() - timeSpanMs;
+    const intervalMs = timeSpanMs / colCount;
+
+    const displayLabels: { timestamp: number; label: string }[] = [];
+    for (let i = 0; i < colCount; i++) {
+      const t = startTimeMs + i * intervalMs;
+      const d = new Date(t);
+      displayLabels.push({
+        timestamp: t,
+        label: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
-
-      startY += rowHeight + 4;
     }
 
-    const chartHeights = {
-      temperatureGraph: 100,
-      respirationGraph: 100,
-      pulseGraph: 100,
-      spo2Graph: 70,
+    const labelColW = 34; // Reduced slightly to account for date strings depending on timeframe
+    const tableX = 45;    // Increased left padding for axis labels
+    const tableWidth = pageWidth - 90; // Ensure right padding matches left
+    const dataAreaW = tableWidth - labelColW;
+    const cellW = dataAreaW / colCount;
+
+    // --- DRAW TIME HEADER ROW ---
+    const headerRowH = 16;
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(176, 190, 197); // Slate blue-gray borders (#B0BEC5)
+    doc.setLineWidth(0.5);
+
+    // "Values" cell
+    doc.setFillColor(248, 249, 250); // Light gray for "Values" header matching the image
+    doc.rect(tableX, startY, labelColW, headerRowH, "F");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Values", tableX + labelColW / 2, startY + 11, { align: "center" });
+
+    // Time cells
+    for (let c = 0; c < colCount; c++) {
+      const cx = tableX + labelColW + c * cellW;
+
+      doc.setDrawColor(176, 190, 197); // Reset border color
+      doc.setFillColor(255, 255, 255); // Guarantee white inside loop
+      doc.rect(cx, startY, cellW, headerRowH, "FD");
+
+      if (displayLabels[c] && displayLabels[c].label) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(100, 100, 100);
+        doc.text(displayLabels[c].label, cx + cellW / 2, startY + 11, { align: "center" });
+      }
+    }
+
+    startY += headerRowH + 10;
+
+    // --- DATA FETCH HELPER ---
+    const MATCH_WINDOW = intervalMs / 2;
+    const findClosestPoint = (target: number, keys: string[], sourceData: any[]) => {
+      let closestVal = null; let minDiff = Infinity;
+      sourceData.forEach((item: any) => {
+        const t = new Date(item.time).getTime();
+        const diff = Math.abs(t - target);
+        if (diff < minDiff && diff < MATCH_WINDOW) {
+          for (const k of keys) {
+            if (item[k] !== undefined && item[k] !== null && item[k] !== "") {
+              minDiff = diff;
+              closestVal = item[k];
+              break;
+            }
+          }
+        }
+      });
+      return closestVal;
     };
 
-    const defaultHeight = 60;
-
-    const chartIds = [
-      { id: "temperatureGraph", title: "Temperature" },
-      { id: "respirationGraph", title: "Respiration Rate" },
-      { id: "pulseGraph", title: "Pulse Rate" },
-      { id: "spo2Graph", title: "Spo2" },
-      { id: "colourGraph", title: "Colour" },
-      { id: "neuroGraph", title: "Neuro" },
-      { id: "feedingGraph", title: "Feeding" },
-      { id: "glucoseGraph", title: "Glucose" },
-
-      { id: "parentalGraph", title: "Concern" },
+    // --- CHART Rendering Engine --- //
+    const pdfCharts = [
+      {
+        title: "Temperature",
+        unit: "(°C)",
+        min: 35.0, max: 39.0,
+        ticks: [39.0, 38.0, 37.0, 36.0, 35.0],
+        dataKeys: ["Temperature", "Core Temperature", "Skin Temperature"],
+        lineColor: "#F76707",
+        ptColor: [247, 103, 7],
+        height: 120, // increased to fill bottom space
+        zones: [
+          { min: 38.0, max: 39.0, color: [253, 226, 228] }, // pink
+          { min: 37.5, max: 38.0, color: [255, 248, 220] }, // yellow
+          { min: 36.5, max: 37.5, color: [255, 255, 255] }, // white
+          { min: 36.0, max: 36.5, color: [224, 242, 241] }, // green
+          { min: 35.0, max: 36.0, color: [253, 226, 228] }  // pink
+        ]
+      },
+      {
+        title: "Respiratory",
+        unit: "(bpm)",
+        min: 10, max: 90,
+        ticks: [90, 80, 70, 60, 50, 40, 30, 20, 10],
+        dataKeys: ["Respiratory Rate", "RR"],
+        lineColor: "#FAB005",
+        ptColor: [250, 176, 5],
+        height: 145, // increased to fill bottom space
+        zones: [
+          { min: 80, max: 90, color: [253, 226, 228] }, // pink
+          { min: 60, max: 80, color: [255, 248, 220] }, // yellow
+          { min: 30, max: 60, color: [255, 255, 255] }, // white
+          { min: 25, max: 30, color: [255, 248, 220] }, // yellow
+          { min: 20, max: 25, color: [253, 226, 228] }, // pink
+          { min: 10, max: 20, color: [238, 219, 240] }  // purple
+        ]
+      },
+      {
+        title: "Heart Rate",
+        unit: "(bpm)",
+        min: 40, max: 200,
+        ticks: [200, 180, 160, 140, 120, 100, 80, 60, 40],
+        dataKeys: ["Pulse Rate", "Heart Rate"],
+        lineColor: "#F06595",
+        ptColor: [240, 101, 149],
+        height: 145, // increased to fill bottom space
+        zones: [
+          { min: 175, max: 200, color: [253, 226, 228] }, // pink
+          { min: 160, max: 175, color: [255, 248, 220] }, // yellow
+          { min: 100, max: 160, color: [255, 255, 255] }, // white
+          { min: 80, max: 100, color: [255, 248, 220] },  // yellow
+          { min: 60, max: 80, color: [253, 226, 228] },   // pink
+          { min: 40, max: 60, color: [238, 219, 240] }    // purple
+        ]
+      },
+      {
+        title: "SpO2",
+        unit: "(%)",
+        min: 80, max: 100,
+        ticks: [100, 95, 90, 85, 80],
+        dataKeys: ["SpO₂", "SPO2"],
+        lineColor: "#4DABF7",
+        ptColor: [77, 171, 247],
+        height: 75, // increased to fill bottom space
+        zones: [
+          { min: 95, max: 100, color: [255, 255, 255] }, // white
+          { min: 90, max: 95, color: [255, 248, 220] },  // yellow
+          { min: 80, max: 90, color: [238, 219, 240] }   // purple
+        ]
+      }
     ];
 
+    pdfCharts.forEach((chart) => {
+      const range = chart.max - chart.min;
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.2);
 
-    const titleColumnWidth = pageWidth * 0.23;
-    const chartColumnX = pageWidth * 0.20;
-    const maxChartWidth = pageWidth * 0.80;
-
-    for (const chart of chartIds) {
-      const el = document.getElementById(chart.id);
-      if (!el) continue;
-
-      const chartHeight = chartHeights[chart.id as keyof typeof chartHeights] || defaultHeight;
-
-      doc.setFillColor(245, 245, 245);
-      doc.rect(10, startY, titleColumnWidth, chartHeight, "F");
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.text(chart.title, 20, startY + chartHeight / 2 + 3);
-
-      // --- Determine lookup key (fix for multi-line titles) ---
-      let lookupLabel = Array.isArray(chart.title)
-        ? ((chart as any).labelKey ?? chart.title.join(" "))
-        : chart.title;
-
-      // --- Find matching chart label entry ---
-      // const info = chartLabels.find(l => l.label === lookupLabel);
-
-      // if (info && info.sublabels) {
-      // doc.setFontSize(7);
-      // doc.setFont("helvetica", "normal");
-
-      // // Y coordinate for sublabels (aligned vertically)
-      // let subY = startY - 20 + chartHeight / 2 + 3;
-
-      // // X coordinate: after main title text
-      // const titleText = Array.isArray(chart.title) ? chart.title.join(" ") : chart.title;
-      // const subLabelX = 20 + doc.getTextWidth(titleText) + 15;
-
-      // // Print sublabels vertically
-      // info.sublabels.forEach(sub => {
-      //   doc.text(` ${sub}`, subLabelX, subY);
-      //   subY += 15;
-      // });
-      // }
-      const info = chartLabels.find(l => l.label === lookupLabel);
-
-      if (info && info.sublabels) {
-
-        doc.setFontSize(7);
-        doc.setFont("helvetica", "normal");
-
-        const subCount = info.sublabels.length;
-
-        // Prepare text width
-        const titleText = Array.isArray(chart.title)
-          ? chart.title.join(" ")
-          : chart.title;
-
-        let subLabelX: number;
-        let subY = startY - 20 + chartHeight / 2 + 3;
-        // --------------------------
-        // RULE A → For 3 Sublabels
-        // --------------------------
-        if (subCount === 3) {
-          subY = startY - 15 + chartHeight / 2 + 3;
-
-          subLabelX = 25 + doc.getTextWidth(titleText) + 15;
-        }
-
-        // --------------------------
-        // RULE B → For 4 Sublabels
-        // --------------------------
-        else if (subCount === 4) {
-          subY = startY - 20 + chartHeight / 2 + 3;
-          subLabelX = 25 + doc.getTextWidth(titleText) + 15;
-        }
-
-        // Print each sublabel
-        info.sublabels.forEach(sub => {
-          doc.text(` ${sub}`, subLabelX, subY);
-          subY += 15;
-        });
-      }
-
-
-
-      // 🎯 CAPTURE FULL CANVAS (no cropping)
-      const canvas = await html2canvas(el, {
-        scale: 2,
-        backgroundColor: "#fff",
+      // 1. Draw Zones
+      chart.zones.forEach(zone => {
+        const topY = startY + chart.height - ((zone.max - chart.min) / range) * chart.height;
+        const zoneH = ((zone.max - zone.min) / range) * chart.height;
+        doc.setFillColor(zone.color[0], zone.color[1], zone.color[2]);
+        doc.rect(tableX + labelColW, topY, dataAreaW, zoneH, "F");
       });
 
-      const imgData = canvas.toDataURL("image/png");
+      // 2. Draw Label Col BG (without stroke)
+      doc.setFillColor(255, 255, 255);
+      doc.rect(tableX, startY, labelColW, chart.height, "F");
 
-      doc.addImage(imgData, "PNG", chartColumnX - 8, startY, maxChartWidth, chartHeight);
-      doc.setDrawColor(180); // light gray
+      // 3. Draw horizontal grid lines (for ticks)
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      chart.ticks.forEach(tick => {
+        const yPos = startY + chart.height - ((tick - chart.min) / range) * chart.height;
+        doc.setDrawColor(176, 190, 197); // Slate blue-gray (#B0BEC5)
+        doc.line(tableX + labelColW, yPos, tableX + labelColW + dataAreaW, yPos);
+        let labelText = tick.toString() + (tick % 1 === 0 && chart.title === "Temperature" ? ".0" : "");
+        if (chart.title === "SpO2") labelText += "%";
+
+        // Align text to the left side of the vertical dividing line
+        doc.text(labelText, tableX + labelColW - 2, yPos + 3, { align: "right" });
+      });
+
+      // 4. Draw Vertical grid lines
+      for (let c = 0; c <= colCount; c++) {
+        const cx = tableX + labelColW + c * cellW;
+        doc.setDrawColor(176, 190, 197);
+        doc.line(cx, startY, cx, startY + chart.height);
+      }
+
+      // 5. Draw Rotated Title
+      doc.setTextColor(100, 100, 100);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      // Compute vertical center for rotated text (angle 90 means bottom-to-top)
+      const fullTitle = `${chart.title} ${chart.unit}`;
+      const titleWidth = doc.getTextWidth(fullTitle);
+
+      // Shift text X coordinate 10px further left from the center of the label column
+      const textX = tableX + (labelColW / 2) - 12;
+      const textY = startY + chart.height / 2 + titleWidth / 2;
+
+      doc.text(fullTitle, textX, textY, { angle: 90 });
+
+      // 6. Plot Data Points (Lines)
+      let prevPoint: { x: number, y: number } | null = null;
+      for (let c = 0; c < colCount; c++) {
+        let valStr = findClosestPoint(displayLabels[c].timestamp, chart.dataKeys, filteredManualData);
+        if (!valStr && chart.title === "Temperature") {
+          valStr = findClosestPoint(displayLabels[c].timestamp, ["CURRENT SKIN TEMPERATURE", "CURRENT PERIPHERAL TEMPERATURE"], filteredDeviceData);
+        }
+
+        if (valStr !== null && valStr !== undefined && !isNaN(parseFloat(valStr))) {
+          const val = parseFloat(valStr);
+          const clampedVal = Math.min(Math.max(val, chart.min), chart.max);
+          const cx = tableX + labelColW + c * cellW + cellW / 2;
+          const cy = startY + chart.height - ((clampedVal - chart.min) / range) * chart.height;
+
+          if (prevPoint) {
+            doc.setDrawColor(chart.ptColor[0], chart.ptColor[1], chart.ptColor[2]);
+            doc.setLineWidth(0.5);
+            doc.line(prevPoint.x, prevPoint.y, cx, cy);
+          }
+          prevPoint = { x: cx, y: cy };
+        }
+      }
+
+      // 7. Plot Data Points (Circles)
+      for (let c = 0; c < colCount; c++) {
+        let valStr = findClosestPoint(displayLabels[c].timestamp, chart.dataKeys, filteredManualData);
+        if (!valStr && chart.title === "Temperature") {
+          valStr = findClosestPoint(displayLabels[c].timestamp, ["CURRENT SKIN TEMPERATURE", "CURRENT PERIPHERAL TEMPERATURE"], filteredDeviceData);
+        }
+
+        if (valStr !== null && valStr !== undefined && !isNaN(parseFloat(valStr))) {
+          const val = parseFloat(valStr);
+          const clampedVal = Math.min(Math.max(val, chart.min), chart.max);
+          const cx = tableX + labelColW + c * cellW + cellW / 2;
+          const cy = startY + chart.height - ((clampedVal - chart.min) / range) * chart.height;
+
+          doc.setFillColor(chart.ptColor[0], chart.ptColor[1], chart.ptColor[2]);
+          doc.circle(cx, cy, 1.2, "F");
+        }
+      }
+
+      startY += chart.height + 12; // Adjusted spacing between charts
+    });
+
+    // ─── OBSERVATION SUMMARY TABLE (Docked perfectly to Grid) ───
+    {
+      const obsRows = [
+        { label: "Grunting", field: "Grunting" },
+        { label: "Color", field: "Colour" },
+        { label: "Neuro", field: "Neuro" },
+        { label: "Feeding", field: "Feeding" },
+        { label: "Glucose", field: "Glucose" },
+      ];
+
+      const rowH = 16; // increased row height to fill page perfectly
       doc.setLineWidth(0.5);
-      doc.line(10, startY + chartHeight + 2, pageWidth - 10, startY + chartHeight + 2);
-      startY += chartHeight + 5;
+
+      obsRows.forEach((row) => {
+        doc.setFillColor(255, 255, 255);
+        doc.setDrawColor(176, 190, 197); // Slate blue-gray (#B0BEC5)
+        doc.rect(tableX, startY, labelColW, rowH, "FD");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(100, 100, 100);
+
+        // Centered label 
+        doc.text(row.label, tableX + (labelColW / 2), startY + 10, { align: "center" });
+
+        for (let c = 0; c < colCount; c++) {
+          const cx = tableX + labelColW + c * cellW;
+          doc.setFillColor(255, 255, 255);
+          doc.rect(cx, startY, cellW, rowH, "FD");
+
+          let valueStr = findClosestPoint(displayLabels[c].timestamp, [row.field], filteredManualData);
+          if (valueStr != null) {
+  const cleanValue = String(valueStr).trim();
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.setTextColor(50);
+
+  doc.text(
+    cleanValue,
+    cx + cellW / 2,
+    startY + 10,
+    { align: "center", maxWidth: cellW - 2 }
+  );
+}
+        }
+        startY += rowH;
+      });
     }
 
-    // 🔥 3️⃣ RESTORE AFTER PDF
-    showXAxis();
+    // --- FOOTER SECTION ---
+    const footerY = pageHeight - 40; // Absolute position near bottom of A4
+    doc.setDrawColor(240, 219, 225);
+    doc.setLineWidth(0.5);
+    doc.line(40, footerY - 10, pageWidth - 40, footerY - 10);
 
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(150, 150, 150);
+    doc.text("5th & 6th Floor, Archit Sai Avenue, Shree Vallabh Nagar, Behind Old Chhan Hotel, Mumbai Naka, Nashik 422001.", 40, footerY);
+
+    // Contact Info Bottom Row
+    doc.setFont("helvetica", "bold");
+    doc.text("P: ", 40, footerY + 10);
+    doc.setFont("helvetica", "normal");
+    doc.text("8669668651, 9822003909", 48, footerY + 10);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("E: ", 108, footerY + 10);
+    doc.setFont("helvetica", "normal");
+    doc.text("care.nashik@nimalborneo.com", 116, footerY + 10);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("W: ", 186, footerY + 10);
+    doc.setFont("helvetica", "normal");
+    doc.text("https://borneohospitals.com/", 196, footerY + 10);
+
+    // Pagination
+    doc.setTextColor(180, 180, 180);
+    doc.text("Page 1/1", pageWidth - 40, footerY + 10, { align: "right" });
 
     doc.save(`Trends_Report(${props.patient_id || "patient"}).pdf`);
   };
@@ -2356,22 +2431,24 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
       labels: labels.map(l => l.label),
       datasets: [
         {
-          label: "Skin Temperature",
+          label: "Skin Temp",
           data: labels.map(l => findClosestPoint(l.timestamp, "Skin Temperature")),
-          pointRadius: 3,
-          borderWidth: 1.5,
-          borderDash: [8, 6]
-          , // dash-dot
+          pointRadius: 0,
+          borderWidth: 2.5,
+          borderColor: '#1565C0',
+          fill: false,
+          order: 0,
           pointHoverRadius: 5,
           spanGaps: true,
         },
-
         {
-          label: "Core Temperature",
+          label: "Core Temp",
           data: labels.map(l => findClosestPoint(l.timestamp, "Core Temperature")),
-          pointRadius: 3,
-          borderDash: [8, 6],
-          borderWidth: 1.5,
+          pointRadius: 0,
+          borderWidth: 2.5,
+          borderColor: '#C62828',
+          fill: false,
+          order: 0,
           pointHoverRadius: 5,
           spanGaps: true,
         }]
@@ -2478,23 +2555,19 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
         {
           label: "Skin Temp(Device)",
           data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SKIN TEMPERATURE")),
-          pointRadius: 2,
-
-          // 🔥 dotted line
-          // borderDash: [2, 2],
-          borderWidth: 1.5,
+          pointRadius: 0,
+          borderWidth: 2.5,
           borderColor: "#007bff",
+          fill: false,
           spanGaps: false,
         },
         {
           label: "Core Temp(Device)",
           data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PERIPHERAL TEMPERATURE")),
-          pointRadius: 2,
-
-          // 🔥 dotted line
-          // borderDash: [2, 2],
-          borderWidth: 1.5,
+          pointRadius: 0,
+          borderWidth: 2.5,
           borderColor: "#ff5733",
+          fill: false,
           spanGaps: false,
         }
       ]
@@ -2566,8 +2639,10 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
         {
           label: "SpO₂(Device)",
           data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SPO2")),
-          pointRadius: 2,
-          // 🔥 dotted line
+          pointRadius: 0,
+          borderWidth: 2.5,
+          borderColor: "#007bff",
+          fill: false,
           spanGaps: true,
         }
       ]
@@ -2601,8 +2676,10 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
         {
           label: "PR(Device)",
           data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PULSE RATE")),
-          pointRadius: 2,
-          // 🔥 dotted line
+          pointRadius: 0,
+          borderWidth: 2.5,
+          borderColor: "#007bff",
+          fill: false,
           spanGaps: true,
         }
       ]
@@ -2637,67 +2714,18 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
         {
           label: field,
           data: labels.map(l => findClosestPoint(l.timestamp)),
-          pointRadius: 3,
-          borderDash: [8, 6],
+          pointRadius: 0,
           pointHoverRadius: 5,
-          borderWidth: 1.5,
+          borderWidth: 2.5,
+          fill: false,
           spanGaps: true,
         }
       ]
     };
   }
 
-  function preparePulseOXDataFiltered1(
-    data: any[], hours: number, timeFrameEnd: number, field: string) {
-    const labels = generateTimeLabels(hours, data, timeFrameEnd);
+  // preparePulseOXDataFiltered1 removed as categorical charts are now in a table
 
-
-    const VALUE_MAP: any = {
-      "Grunting": { "No": 0, "Mild": 1, "Severe": 2 },
-      "Colour": { "Normal": 0, "Pale": 1, "Blue": 2 },
-      "Neuro": { "Responsive": 0, "Lethargic": 1, "Unresponsive": 2 },
-      "Feeding": { "Well": 2, "Reluctantly": 1, "Nil": 0 },
-      "Glucose": { "< 1.0": 3, "1.0 - 1.9": 2, "2.0 - 2.5": 1, "≥ 2.6": 0 },
-      "Parental Concerns": { "Nil": 0, "Some": 1, "High": 2 },
-    };
-
-
-
-    const convert = (value: any) => VALUE_MAP[field]?.[value] ?? null;
-
-    const findClosestPoint = (target: number) => {
-      const WINDOW = 2 * 60 * 1000;
-      let closest = null;
-      let minDiff = Infinity;
-
-      data.forEach((item) => {
-        const t = new Date(item.time).getTime();
-        const diff = Math.abs(t - target);
-
-        if (diff < minDiff && diff <= WINDOW) {
-          minDiff = diff;
-          closest = convert(item[field]);
-        }
-      });
-
-      return closest;
-    };
-
-    return {
-      labels: labels.map(l => l.label),
-      datasets: [
-        {
-          label: field,
-          data: labels.map(l => findClosestPoint(l.timestamp)),
-          pointRadius: 3,
-          borderDash: [8, 6],
-          pointHoverRadius: 5,
-          borderWidth: 1.5,
-          spanGaps: true,
-        }
-      ]
-    };
-  }
 
   const temperatureData1 = useMemo(() => {
     return prepareManualTemperatureData_Filtered(filteredManualData, timeFrame, timeFrameEnd);
@@ -2758,50 +2786,8 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
   //     "Grunting"
   //   );
   // }, [filteredManualData, timeFrame, timeFrameEnd]);
-  const colourData = useMemo(() => {
-    return preparePulseOXDataFiltered1(
-      filteredManualData,
-      timeFrame,
-      timeFrameEnd,
-      "Colour"
-    );
-  }, [filteredManualData, timeFrame, timeFrameEnd]);
+  // Parental Concern data is now handled directly in the table
 
-  const neuroData = useMemo(() => {
-    return preparePulseOXDataFiltered1(
-      filteredManualData,
-      timeFrame,
-      timeFrameEnd,
-      "Neuro"
-    );
-  }, [filteredManualData, timeFrame, timeFrameEnd]);
-
-  const feedingData = useMemo(() => {
-    return preparePulseOXDataFiltered1(
-      filteredManualData,
-      timeFrame,
-      timeFrameEnd,
-      "Feeding"
-    );
-  }, [filteredManualData, timeFrame, timeFrameEnd]);
-
-  const glucoseData = useMemo(() => {
-    return preparePulseOXDataFiltered1(
-      filteredManualData,
-      timeFrame,
-      timeFrameEnd,
-      "Glucose"
-    );
-  }, [filteredManualData, timeFrame, timeFrameEnd]);
-
-  const parentalConcernData = useMemo(() => {
-    return preparePulseOXDataFiltered1(
-      filteredManualData,
-      timeFrame,
-      timeFrameEnd,
-      "Parental Concerns"
-    );
-  }, [filteredManualData, timeFrame, timeFrameEnd]);
   const combinedTemperatureData = useMemo(() => {
     const labels =
       temperatureData1.labels.length > temperatureData2.labels.length
@@ -2850,267 +2836,215 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
 
   const manualGraph = useMemo(() => {
     return (
-
-      <Stack
-        height="100%"
-        width="100%"
-        spacing={2} // uniform spacing
-        sx={{
-          backgroundColor: 'transparent',
-          alignItems: 'center', // ✅ centers all charts horizontally
-          justifyContent: 'center',
-        }}
-        mx="auto"
-        mt={1}
-      >
-        {/* 🌡️ Temperature Graph */}
-        <Stack
-          width="95%"
-          p={2}
-
-          sx={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: 2,
-            boxShadow: '0px 2px 6px rgba(0,0,0,0.1)',
-          }}
-        >
-
-          <Stack direction="row" alignItems="center" >
-            <ThermostatIcon sx={{ color: '#124D81', fontSize: 28 }} />
-            <Typography
-              variant="h6"
-              align="left"
-              sx={{ fontWeight: 600, color: '#333' }}
+      <Box height="100%" width="100%" mx="auto">
+        <Grid container spacing={2}>
+          {/* 🌡️ Temperature Graph */}
+          <Grid item xs={12} lg={6}>
+            <Stack
+              height="100%"
+              p={1}
+              sx={{
+                backgroundColor: '#FFFFFF',
+                borderRadius: 2,
+                boxShadow: '0px 2px 6px rgba(0,0,0,0.1)',
+              }}
             >
-              Temperature
-            </Typography></Stack>
-          <div id="temperatureGraph">
-            <Line
-              key={timeFrame}
-              ref={chartRef1}
-              options={temperatureOption as ChartOptions<'line'>}
-              data={combinedTemperatureData}
-              height="50%"
-              plugins={[temperatureLegendPlugin]}
-            /></div>
-          <div id="legend-container"></div>
-        </Stack>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5, flexWrap: 'wrap', gap: 0.5 }}>
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <ThermostatIcon sx={{ color: '#F76707', fontSize: 20 }} />
+                  <Typography variant="h6" align="left" sx={{ fontWeight: 600, color: '#343a40', fontSize: '16px', lineHeight: 1 }}>
+                    Temperature <span style={{ fontWeight: 400, color: '#ADB5BD', fontSize: '12px' }}>°C</span>
+                  </Typography>
+                </Stack>
+                <div id="legend-container" style={{ display: 'flex', flexWrap: 'nowrap', gap: '20px', alignItems: 'center', fontSize: '0.75rem' }}></div>
+              </Box>
+              <Box sx={{ position: 'relative', height: { xs: 200, sm: 240, md: 260, lg: 240 }, width: '100%' }} id="temperatureGraph">
+                <Line
+                  key={timeFrame}
+                  ref={chartRef1}
+                  options={temperatureOption as ChartOptions<'line'>}
+                  data={combinedTemperatureData}
+                  plugins={[temperatureLegendPlugin, crosshairPlugin]}
+                />
+              </Box>
+            </Stack>
+          </Grid>
 
-        {/* 🌬️ Respiration Rate Graph */}
-        <Stack
-          width="95%"
-          p={2}
-          spacing={1}
-          sx={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: 2,
-            boxShadow: '0px 2px 6px rgba(0,0,0,0.1)',
-          }}
-        >
-          {/* Title + Icon */}
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <ShowChartIcon sx={{ color: '#124D81', fontSize: 28 }} />
-            <Typography
-              variant="h6"
-              align="left"
-              sx={{ fontWeight: 600, color: '#333' }}
+          {/* 🌬️ Respiration Rate Graph */}
+          <Grid item xs={12} lg={6}>
+            <Stack
+              height="100%"
+              p={1}
+              sx={{
+                backgroundColor: '#FFFFFF',
+                borderRadius: 2,
+                boxShadow: '0px 2px 6px rgba(0,0,0,0.1)',
+              }}
             >
-              Respiration Rate
-            </Typography>
-          </Stack>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5, flexWrap: 'wrap', gap: 0.5 }}>
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <ShowChartIcon sx={{ color: '#FAB005', fontSize: 20 }} />
+                  <Typography variant="h6" align="left" sx={{ fontWeight: 600, color: '#343a40', fontSize: '16px', lineHeight: 1 }}>
+                    Respiration <span style={{ fontWeight: 400, color: '#ADB5BD', fontSize: '12px' }}>(bpm)</span>
+                  </Typography>
+                </Stack>
+                <div id="legend-container-manual-RR" style={{ display: 'flex', flexWrap: 'nowrap', gap: '20px', alignItems: 'center', fontSize: '0.75rem' }}></div>
+              </Box>
+              <Box sx={{ position: 'relative', height: { xs: 200, sm: 240, md: 260, lg: 240 }, width: '100%' }} id="respirationGraph">
+                <Line
+                  options={pulseoximeterOption3 as ChartOptions<'line'>}
+                  ref={chartRef4}
+                  data={pulseoximeterData3}
+                  plugins={[temperatureLegendPlugin, crosshairPlugin]}
+                />
+              </Box>
+            </Stack>
+          </Grid>
 
-          {/* Chart */}
-          <div id="respirationGraph">
-            <Line
-              options={pulseoximeterOption3 as ChartOptions<'line'>}
-              ref={chartRef4}
-              data={pulseoximeterData3}
-              height="50%"
-              plugins={[temperatureLegendPlugin]}
-            /></div>
-          <div id="legend-container-manual-RR"></div>
-        </Stack>
-        {/* ❤️ Pulse Graph */}
-        <Stack
-          width="95%"
-          p={2}
-          spacing={1}
-          sx={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: 2,
-            boxShadow: '0px 2px 6px rgba(0,0,0,0.1)',
-          }}
-        >
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <MonitorHeartIcon sx={{ color: '#124D81', fontSize: 28 }} />
-            <Typography
-              variant="h6"
-              align="left"
-              sx={{ fontWeight: 600, color: '#333' }}
+          {/* ❤️ Heart/Pulse Rate Graph */}
+          <Grid item xs={12} lg={6}>
+            <Stack
+              height="100%"
+              p={1}
+              spacing={0.5}
+              sx={{
+                backgroundColor: '#FFFFFF',
+                borderRadius: 2,
+                boxShadow: '0px 2px 6px rgba(0,0,0,0.1)',
+              }}
             >
-              Pulse Rate
-            </Typography></Stack>
-          <div id="pulseGraph">
-            <Line
-              ref={chartRef2}
-              options={pulseoximeterOption1 as ChartOptions<'line'>}
-              data={combinedPrData}
-              height="50%"
-              plugins={[temperatureLegendPlugin]}
-            /></div>
-          <div id="legend-container-manual-pulse"></div>
-        </Stack>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5, flexWrap: 'wrap', gap: 0.5 }}>
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <MonitorHeartIcon sx={{ color: '#F06595', fontSize: 20 }} />
+                  <Typography variant="h6" align="left" sx={{ fontWeight: 600, color: '#343a40', fontSize: '16px', lineHeight: 1 }}>
+                    Heart/Pulse Rate <span style={{ fontWeight: 400, color: '#ADB5BD', fontSize: '12px' }}>(bpm)</span>
+                  </Typography>
+                </Stack>
+                <div id="legend-container-manual-pulse" style={{ display: 'flex', flexWrap: 'nowrap', gap: '20px', alignItems: 'center', fontSize: '0.75rem' }}></div>
+              </Box>
+              <Box sx={{ position: 'relative', height: { xs: 200, sm: 240, md: 260, lg: 240 }, width: '100%' }} id="pulseGraph">
+                <Line
+                  ref={chartRef2}
+                  options={pulseoximeterOption1 as ChartOptions<'line'>}
+                  data={combinedPrData}
+                  plugins={[temperatureLegendPlugin, crosshairPlugin]}
+                />
+              </Box>
+            </Stack>
+          </Grid>
 
-        {/* 🩸 SpO₂ Graph */}
-        <Stack
-          width="95%"
-
-          p={2}
-
-          sx={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: 2,
-            boxShadow: '0px 2px 6px rgba(0,0,0,0.1)',
-          }}
-        >
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <WaterDropIcon sx={{ color: '#124D81', fontSize: 28 }} />
-            <Typography
-              variant="h6"
-              align="center"
-              sx={{ fontWeight: 600, color: '#333' }}
+          {/* 🩸 SpO₂ Graph */}
+          <Grid item xs={12} lg={6}>
+            <Stack
+              height="100%"
+              p={1}
+              sx={{
+                backgroundColor: '#FFFFFF',
+                borderRadius: 2,
+                boxShadow: '0px 2px 6px rgba(0,0,0,0.1)',
+              }}
             >
-              SpO₂
-            </Typography></Stack>
-          <div id="spo2Graph">
-            <Line
-              options={sp02Option as ChartOptions<'line'>}
-              data={combinedSpo2Data}
-              ref={chartRef5}
-              height="50%"
-              plugins={[temperatureLegendPlugin]}
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5, flexWrap: 'wrap', gap: 0.5 }}>
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <WaterDropIcon sx={{ color: '#228BE6', fontSize: 20 }} />
+                  <Typography variant="h6" align="left" sx={{ fontWeight: 600, color: '#343a40', fontSize: '16px', lineHeight: 1 }}>
+                    SpO₂ <span style={{ fontWeight: 400, color: '#ADB5BD', fontSize: '12px' }}>(%)</span>
+                  </Typography>
+                </Stack>
+                <div id="legend-container3" style={{ display: 'flex', flexWrap: 'nowrap', gap: '20px', alignItems: 'center', fontSize: '0.75rem' }}></div>
+              </Box>
+              <Box sx={{ position: 'relative', height: { xs: 200, sm: 240, md: 260, lg: 240 }, width: '100%' }} id="spo2Graph">
+                <Line
+                  options={sp02Option as ChartOptions<'line'>}
+                  data={combinedSpo2Data}
+                  ref={chartRef5}
+                  plugins={[temperatureLegendPlugin, crosshairPlugin]}
+                />
+              </Box>
+            </Stack>
+          </Grid>
 
-            /></div>
-          <div id="legend-container3"></div>
-        </Stack>
-        {/* --- 🔊 Grunting --- */}
-        {/* <Stack
-  width="95%"
-  
-  p={3}
-  spacing={1}
-  sx={{
-    backgroundColor: "#FFFFFF",
-    borderRadius: 2,
-    boxShadow: "0px 2px 6px rgba(0,0,0,0.1)",
-  }}
->
-  <Typography variant="h6" sx={{ fontWeight: 600, color: "#333" }}>
-    Grunting Present?
-  </Typography>
-  <Line options={categoricalOption as ChartOptions<'line'>} data={gruntingData} height="30%" />
-</Stack> */}
+          {/* --- Categorical Data Table --- */}
+          <Grid item xs={12}>
+            <Box
+              id="observationSummaryTable"
+              sx={{
+                backgroundColor: "#FFFFFF",
+                borderRadius: 2,
+                boxShadow: "0px 2px 6px rgba(0,0,0,0.1)",
+                p: 2,
+                overflowX: "auto",
+              }}
+            >
+              {(() => {
+                const allLabels = generateTimeLabels(timeFrame, filteredManualData, timeFrameEnd);
+                const step = Math.max(1, Math.floor(allLabels.length / 10));
+                const sampledColumns = allLabels.filter((_, idx) => idx % step === 0);
+                const intervalMs = (timeFrame * 60 * 60 * 1000) / 10;
+                const WINDOW = intervalMs / 2; // Strict half-interval to avoid duplication
 
-        {/* --- 🎨 Colour --- */}
+                return (
+                  <Box sx={{ minWidth: 800 }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #EEEDF1" }}>
+                      <thead>
+                        <tr>
+                          <th style={{ border: "1px solid #EEEDF1", padding: "10px 16px", backgroundColor: "#F8F9FA", textAlign: "left", color: "#888", fontWeight: 600, fontSize: "11px", letterSpacing: "0.5px", textTransform: "uppercase", width: "150px" }}>
+                            Time
+                          </th>
+                          {sampledColumns.map((l, idx) => {
+                            const labelStr = Array.isArray(l.label) ? l.label.join(" ") : l.label;
+                            return (
+                              <th key={idx} style={{ border: "1px solid #EEEDF1", padding: "8px", backgroundColor: "#F8F9FA", color: "#888", fontWeight: 500, fontSize: "11px", whiteSpace: "nowrap" }}>
+                                {labelStr}
+                              </th>
+                            );
+                          })}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          { label: "Grunting", field: "Grunting" },
+                          { label: "Color", field: "Colour" },
+                          { label: "Neuro", field: "Neuro" },
+                          { label: "Feeding", field: "Feeding" },
+                          { label: "Glucose", field: "Glucose" }
+                        ].map((row) => (
+                          <tr key={row.field}>
+                            <td style={{ border: "1px solid #EEEDF1", padding: "10px 16px", fontWeight: 600, color: "#495057", backgroundColor: "#FAFAFA", fontSize: "12px" }}>
+                              {row.label}
+                            </td>
+                            {sampledColumns.map((l, idx) => {
+                              let value = "--";
+                              let minDiff = Infinity;
 
+                              filteredManualData.forEach((item) => {
+                                const t = new Date(item.time).getTime();
+                                const diff = Math.abs(t - l.timestamp);
+                                // Use strict less-than to avoid boundary overlap
+                                if (diff < minDiff && diff < WINDOW) {
+                                  minDiff = diff;
+                                  value = item[row.field] || "--";
+                                }
+                              });
 
-        {/* --- 🧠 Neuro --- */}
-        <Stack
-          width="95%"
-          p={3}
-          spacing={1}
-          sx={{
-            backgroundColor: "#FFFFFF",
-            borderRadius: 2,
-            boxShadow: "0px 2px 6px rgba(0,0,0,0.1)",
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 600, color: "#333" }}>
-            Neuro
-          </Typography>
-          <div id="neuroGraph">
-            <Line ref={chartRef6} options={categoricalOption as ChartOptions<'line'>} data={neuroData} height="30%" />
-          </div>
+                              return (
+                                <td key={idx} style={{ border: "1px solid #EEEDF1", padding: "8px", textAlign: "center", color: value === "--" ? "#CCC" : "#333", fontSize: "12px" }}>
+                                  {value}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </Box>
+                );
+              })()}
+            </Box>
+          </Grid>
 
-        </Stack>
-
-        {/* --- 🍼 Feeding --- */}
-        <Stack
-          width="95%"
-          p={3}
-          spacing={1}
-          sx={{
-            backgroundColor: "#FFFFFF",
-            borderRadius: 2,
-            boxShadow: "0px 2px 6px rgba(0,0,0,0.1)",
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 600, color: "#333" }}>
-            Feeding
-          </Typography>
-          <div id="feedingGraph">
-            <Line ref={chartRef7} options={colorOption as ChartOptions<'line'>} data={feedingData} height="30%" />
-          </div>
-
-        </Stack>
-        <Stack
-          width="95%"
-          p={3}
-          spacing={1}
-          sx={{
-            backgroundColor: "#FFFFFF",
-            borderRadius: 2,
-            boxShadow: "0px 2px 6px rgba(0,0,0,0.1)",
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 600, color: "#333" }}>
-            Colour
-          </Typography>
-          <div id="colourGraph">
-            <Line ref={chartRef8} options={categoricalOption as ChartOptions<'line'>} data={colourData} height="30%" /></div>
-        </Stack>
-        {/* --- 🩸 Glucose --- */}
-        <Stack
-          width="95%"
-          p={3}
-          spacing={1}
-          sx={{
-            backgroundColor: "#FFFFFF",
-            borderRadius: 2,
-            boxShadow: "0px 2px 6px rgba(0,0,0,0.1)",
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 600, color: "#333" }}>
-            Glucose (mmol/L)
-          </Typography>
-          <div id="glucoseGraph">
-            <Line ref={chartRef9} options={gulcoseOption as ChartOptions<'line'>} data={glucoseData} height="30%" />
-          </div>
-
-        </Stack>
-
-        {/* --- 👨‍👩‍👦 Parental Concern --- */}
-        <Stack
-          width="95%"
-          p={3}
-          spacing={1}
-          sx={{
-            backgroundColor: "#FFFFFF",
-            borderRadius: 2,
-            boxShadow: "0px 2px 6px rgba(0,0,0,0.1)",
-          }}
-        >
-
-          <Typography variant="h6" sx={{ fontWeight: 600, color: "#333" }}>
-            Parental Concern
-          </Typography>
-          <div id="parentalGraph">
-            <Line ref={chartRef10} options={colorOption as ChartOptions<'line'>} data={parentalConcernData} height="30%" />
-          </div>
-
-        </Stack>
-
-      </Stack>
+        </Grid>
+      </Box >
 
     );
 
@@ -3216,41 +3150,158 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
       <Box>
         <Box>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6" sx={{ mb: 1, fontWeight: "bold", color: "#124D81" }}>Vitals & Trends</Typography>
-            <Stack direction="row" spacing={2}> <Tooltip title="Add Manual Vitals">
-              <IconButton onClick={() => setManualVitalsDialog(true)}
-                disabled={dataSource !== "manual"}
+            <Typography variant="h5" sx={{ mb: 1, fontWeight: 700, color: '#343A40', letterSpacing: '-0.02em' }}>Vitals & Trends</Typography>
+            <Stack direction="row" spacing={2}>
+              <Button
+                variant="outlined"
+                onClick={downloadTrendsPDF}
                 sx={{
-                  fontWeight: "bold", color: "#228BE6",
-                  backgroundColor: "#F5F5F5",
+                  minWidth: '40px',
+                  width: '40px',
+                  height: '40px',
+                  p: 0,
+                  borderRadius: '8px',
+                  borderColor: 'rgba(34, 139, 230, 0.3)',
+                  color: '#228BE6',
+                  backgroundColor: '#FFFFFF',
                   "&:hover": {
                     backgroundColor: "rgba(34, 139, 230, 0.1)",
-                    color: "#FFFFFF",
+                    borderColor: 'rgba(34, 139, 230, 0.5)',
                   },
                 }}
               >
-                <EditNoteIcon sx={{ fontSize: "26px" }} />
-              </IconButton>
-            </Tooltip>
-              <Tooltip title="Download PDF">
-                <IconButton
-                  onClick={downloadTrendsPDF}
-                  sx={{
-                    fontWeight: "bold",
-                    color: "#228BE6",
-                    backgroundColor: "#F5F5F5",
-                    "&:hover": {
-                      backgroundColor: "rgba(34, 139, 230, 0.1)",
-                      color: "#FFFFFF",
-                    },
-                  }}
-                >
-                  <DownloadIcon sx={{ fontSize: "26px" }} />
-                </IconButton>
-              </Tooltip>  </Stack>
+                <DownloadIcon sx={{ fontSize: "20px" }} />
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setManualVitalsDialog(true)}
+                disabled={dataSource !== "manual"}
+                sx={{
+                  borderRadius: '8px',
+                  backgroundColor: '#228BE6',
+                  color: '#FFFFFF',
+                  fontWeight: 600,
+                  boxShadow: 'none',
+                  textTransform: 'none',
+                  paddingX: 3,
+                  "&:hover": {
+                    backgroundColor: '#1C7ED6',
+                    boxShadow: 'none',
+                  },
+                  "&.Mui-disabled": {
+                    backgroundColor: '#F1F3F5',
+                    color: '#ADB5BD',
+                  }
+                }}
+              >
+                Entry
+              </Button>
+            </Stack>
           </Stack>
           {graphData ? (
             <>
+              {/* Vitals Display Row — unified horizontal bar */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  width: '100%',
+                  maxWidth: 1400,
+                  minHeight: { xs: 'auto', md: 74 },
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: 2,
+                  boxShadow: '0px 1px 4px rgba(0,0,0,0.06)',
+                  border: '1px solid #EEEDF1',
+                  mb: 2,
+                  mt: 1,
+                  overflow: 'hidden',
+                }}
+              >
+                {[
+                  {
+                    title: "HEART RATE",
+                    value: latestManual && (latestManual["Pulse Rate"] || latestManual["Heart Rate"]) ? (latestManual["Pulse Rate"] || latestManual["Heart Rate"]) : "--",
+                    status: (val: any) => val === "--" ? null : val > 160 ? { text: "HIGH", color: "#E8590C", bg: "#FFF4E6" } : val < 100 ? { text: "LOW", color: "#2196F3", bg: "#E3F2FD" } : { text: "STABLE", color: "#2F9E44", bg: "#EBFBEE" }
+                  },
+                  {
+                    title: "RESP RATE",
+                    value: latestManual && latestManual["Respiratory Rate"] ? latestManual["Respiratory Rate"] : "--",
+                    status: (val: any) => val === "--" ? null : val > 60 ? { text: "HIGH", color: "#E8590C", bg: "#FFF4E6" } : val < 30 ? { text: "LOW", color: "#E8590C", bg: "#FFF4E6" } : { text: "STABLE", color: "#2F9E44", bg: "#EBFBEE" }
+                  },
+                  {
+                    title: "O2 SATURATION",
+                    value: latestManual && latestManual["SpO₂"] ? latestManual["SpO₂"] + "%" : "--",
+                    status: (val: any) => val === "--" ? null : parseInt(val) < 90 ? { text: "LOW", color: "#F59F00", bg: "#FFF9DB" } : parseInt(val) < 95 ? { text: "LOW", color: "#F59F00", bg: "#FFF9DB" } : { text: "STABLE", color: "#2F9E44", bg: "#EBFBEE" }
+                  },
+                  {
+                    title: "TEMP (AX)",
+                    value: latestManual && (latestManual["Temperature"] || latestManual["Core Temperature"] || latestManual["Skin Temperature"]) ? (latestManual["Temperature"] || latestManual["Core Temperature"] || latestManual["Skin Temperature"]) + "°" : "--",
+                    status: (val: any) => val === "--" ? null : parseFloat(val) > 37.5 ? { text: "HIGH", color: "#E8590C", bg: "#FFF4E6" } : parseFloat(val) < 36.5 ? { text: "LOW", color: "#2196F3", bg: "#E3F2FD" } : { text: "STABLE", color: "#2F9E44", bg: "#EBFBEE" }
+                  },
+                ].map((card, idx) => {
+                  const stat = card.status ? card.status(card.value) : null;
+                  return (
+                    <Box
+                      key={idx}
+                      sx={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        px: 3,
+                        py: 1.5,
+                        borderRight: { xs: 'none', sm: '1px solid #EEEDF1' },
+                        borderBottom: { xs: '1px solid #EEEDF1', sm: 'none' },
+                        minHeight: { md: 74 },
+                      }}
+                    >
+                      {/* Label row with inline badge */}
+                      <Stack direction="row" alignItems="center" spacing={0.75} mb={0.5}>
+                        <Typography sx={{ color: '#ADB5BD', fontWeight: 700, fontSize: '10px', letterSpacing: '0.6px', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                          {card.title}
+                        </Typography>
+                        {stat && (
+                          <Box sx={{ bgcolor: stat.bg, color: stat.color, px: 0.8, py: 0.1, borderRadius: '4px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.3px', lineHeight: '16px', whiteSpace: 'nowrap' }}>
+                            {stat.text}
+                          </Box>
+                        )}
+                      </Stack>
+                      {/* Value */}
+                      <Typography sx={{ fontWeight: 600, color: '#212529', fontSize: '22px', lineHeight: 1.1 }}>
+                        {card.value}
+                      </Typography>
+                    </Box>
+                  );
+                })}
+
+                {/* Last Updated — right-most cell, slightly different bg */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    px: 3,
+                    py: 1.5,
+                    minWidth: { sm: 140 },
+                    minHeight: { md: 74 },
+                    borderLeft: { xs: 'none', sm: '1px solid #EEEDF1' },
+                    borderTop: { xs: '1px solid #EEEDF1', sm: 'none' },
+                    backgroundColor: '#FAFAFA',
+                  }}
+                >
+                  <Typography sx={{ color: '#ADB5BD', fontWeight: 700, fontSize: '10px', letterSpacing: '0.6px', textTransform: 'uppercase', mb: 0.5, whiteSpace: 'nowrap' }}>
+                    LAST UPDATED
+                  </Typography>
+                  <Typography sx={{ fontWeight: 600, color: '#212529', fontSize: '18px', lineHeight: 1.1 }}>
+                    {latestManual && latestManual.time
+                      ? new Date(latestManual.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      : "--"}
+                  </Typography>
+                </Box>
+              </Box>
+
+
               {/* Header Controls */}
               <Stack
                 direction="row"
@@ -3261,35 +3312,39 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                 alignItems="center"
               >
                 {/* Left: Time Frame */}
-                <Box width="60%">
+                <Box>
                   <ToggleButtonGroup
                     value={timeFrame}
                     exclusive
                     size="small"
-                    // onChange={(_, newValue) => {
-                    //   if (newValue !== null) setTimeFrame(newValue);
-                    // }}
                     onChange={(_, newValue) => {
                       if (newValue !== null) {
                         setLoading(true);
-                        setTimeFrameEnd(Date.now());  // 🔥 fix future timeline
+                        setTimeFrameEnd(Date.now());
                         setTimeFrame(newValue);
                         setTimeout(() => setLoading(false), 150);
                       }
                     }}
-
-                    fullWidth
                     sx={{
-
-                      borderRadius: "10px",
-                      "& .MuiToggleButton-root": {
-                        color: "#343A40",
-                        border: "2px solid #EEEDF1",
-                        fontWeight: "bold",
-                      },
-                      "& .Mui-selected": {
-                        backgroundColor: "rgba(34, 139, 230, 0.1) !important",
-                        color: "#228BE6 !important",
+                      backgroundColor: "#F8F9FA",
+                      borderRadius: "24px",
+                      p: 0.5,
+                      border: "1px solid #EEEDF1",
+                      "& .MuiToggleButtonGroup-grouped": {
+                        border: 'none',
+                        borderRadius: '20px !important',
+                        color: "#888",
+                        fontWeight: 600,
+                        px: 2.5,
+                        minWidth: "60px",
+                        "&.Mui-selected": {
+                          backgroundColor: "#FFFFFF !important",
+                          color: "#228BE6 !important",
+                          boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
+                        },
+                        "&:hover": {
+                          backgroundColor: "#F0F0F0",
+                        }
                       },
                     }}
                   >
@@ -3298,159 +3353,85 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                         key={`${hour}hr`}
                         value={hour}
                         sx={{
-                          height: "30px",
+                          height: "32px",
                           fontSize: "12px",
-                          textTransform: "capitalize",
+                          textTransform: "none",
                         }}
                       >
-                        {hour} Hr
+                        {hour} H
                       </ToggleButton>
                     ))}
                   </ToggleButtonGroup>
                 </Box>
 
                 {/* Right: Buttons */}
-                <Stack direction="row" spacing={1} alignItems="center" >
-
-                  {/* Device / Manual Toggle */}
+                <Stack direction="row" spacing={2} alignItems="center" >
                   <ToggleButtonGroup
                     value={dataSource}
                     exclusive
                     size="small"
                     sx={{
-                      backgroundColor: "#F5F5F5",
-                      borderRadius: "10px",
-                      "& .MuiToggleButton-root": {
-                        color: "#343A40",
-                        border: "2px solid #EEEDF1",
-
-
-                      },
-                      "& .Mui-selected": {
-                        backgroundColor: "rgba(34, 139, 230, 0.1) !important",
-                        color: "#228BE6 !important",
+                      backgroundColor: "#FFFFFF",
+                      border: "1px solid #EEEDF1",
+                      borderRadius: "8px",
+                      p: 0.25,
+                      "& .MuiToggleButtonGroup-grouped": {
+                        border: 'none',
+                        borderRadius: '6px !important',
+                        color: "#888",
+                        minWidth: "40px",
+                        "&.Mui-selected": {
+                          backgroundColor: "#E6F2FE !important",
+                          color: "#228BE6 !important",
+                        },
                       },
                     }}
                   >
-                    {/* <ToggleButton
-                  value="device"
-                  onClick={() => setDataSource("device")}
-                  sx={{
-                    height: "35px",
-                    width: "75px",
-                    fontSize: "15px",
-                    textTransform: "capitalize",
-                  }}
-                >
-                  Device
-                </ToggleButton> */}
                     <ToggleButton
                       value="manual"
                       onClick={() => setDataSource("manual")}
-                      sx={{
-                        height: "35px",
-                        width: "75px",
-                        fontSize: "15px",
-                        textTransform: "capitalize",
-                      }}
+                      sx={{ height: "32px" }}
                     >
-                      Trends
+                      <TrendingUpIcon fontSize="small" />
                     </ToggleButton>
-                    <ToggleButton value="log" onClick={() => setDataSource("log")}
-                      sx={{ height: "35px", width: "75px", fontSize: "15px", textTransform: "capitalize" }}>Log</ToggleButton>
+                    <ToggleButton
+                      value="log"
+                      onClick={() => setDataSource("log")}
+                      sx={{ height: "32px" }}
+                    >
+                      <GridOnIcon fontSize="small" />
+                    </ToggleButton>
                   </ToggleButtonGroup>
+
+                  <Button
+                    variant="contained"
+                    startIcon={<CalendarTodayIcon sx={{ fontSize: "16px !important" }} />}
+                    onClick={() => {
+                      setLoading(true);
+                      setTimeFrameEnd(Date.now());
+                      setTimeout(() => setLoading(false), 150);
+                    }}
+                    sx={{
+                      height: "36px",
+                      borderRadius: "20px",
+                      textTransform: "none",
+                      backgroundColor: "#FFFFFF",
+                      color: "#228BE6",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                      boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
+                      border: "1px solid #EEEDF1",
+                      "&:hover": {
+                        backgroundColor: "#F8F9FA",
+                      }
+                    }}
+                  >
+                    Today
+                  </Button>
                 </Stack>
               </Stack>
 
-              {/* Vitals Display Row */}
-              <Stack
-                direction="row"
-                alignItems="center"
-                sx={{
-                  backgroundColor: "#FFFFFF",
-                  borderRadius: 3,
-                  p: 1,
-                  mt: 1,
-                }}
-              >
-                {/* Left: Latest Manual Values (70%) */}
-                <Box sx={{ ml: 2, flex: "0 0 25%" }}>
-                  <Typography variant="subtitle1" sx={{ color: "#666" }}>
-                    Last Update
-                  </Typography>
-                  <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#333" }}>
-                    {latestManual
-                      ? new Date(latestManual.time).toLocaleString([], {})
-                      : "No Data"}
-                  </Typography>
-                </Box>
-
-                <Box
-                  sx={{
-                    flex: "0 0 70%",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  {latestManual ? (
-                    <>
-                      {/* ❤️ Pulse / Heart Rate */}
-                      {(latestManual["Pulse Rate"] || latestManual["Heart Rate"]) && (
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <FavoriteIcon sx={{ color: "#FFAFCC", fontSize: '30px' }} />
-                          <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                            {latestManual["Pulse Rate"] ?? latestManual["Heart Rate"]}
-                          </Typography>
-                        </Stack>
-                      )}
-
-                      {/* 💧 SpO2 */}
-                      {latestManual["SpO₂"] && (
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <OpacityIcon sx={{ color: "#03A9F4", fontSize: '30px' }} />
-                          <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                            {latestManual["SpO₂"]}
-                          </Typography>
-                        </Stack>
-                      )}
-
-                      {/* 🌡️ Temperature */}
-                      {(latestManual["Temperature"] ||
-                        latestManual["Core Temperature"] ||
-                        latestManual["Skin Temperature"]) && (
-                          <Stack direction="row" alignItems="center" spacing={1}>
-                            <DeviceThermostatIcon sx={{ color: "#FF9800", fontSize: '30px' }} />
-                            <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                              {latestManual["Temperature"] ??
-                                latestManual["Core Temperature"] ??
-                                latestManual["Skin Temperature"]}
-                            </Typography>
-                          </Stack>
-                        )}
-
-                      {/* 🌬️ Respiratory Rate */}
-                      {latestManual["Respiratory Rate"] && (
-                        <Stack direction="row" alignItems="center" spacing={0}>
-                          <BoltIcon sx={{ color: "#FFEB3B", fontSize: '30px' }} />
-                          <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                            {latestManual["Respiratory Rate"]}
-                          </Typography>
-                        </Stack>
-                      )}
-                    </>
-                  ) : (
-                    <Typography variant="body2" color="textSecondary">
-                      No Recent Data
-                    </Typography>
-                  )}
-                </Box>
-
-
-
-                {/* Right: Last Update (30%) */}
-
-              </Stack>
+              {/* Old Vitals Display Row Removed */}
 
               {/* Chart Section */}
               {loading ? (
@@ -3496,11 +3477,27 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                           <tbody>
                             {combinedData.map((row, idx) => (
                               <tr key={idx} style={{ borderBottom: "1px solid #E0E0E0" }}>
-                                {Object.values(row).map((val, i) => (
-                                  <td key={i} style={{ padding: "8px" }}>
-                                    {val as any}
-                                  </td>
-                                ))}
+                                {Object.entries(row).map(([key, val], i) => {
+                                  let displayVal = val as any;
+                                  if (key === "time" && typeof val === "string" && !isNaN(Date.parse(val))) {
+                                    // Convert ISO string to IST
+                                    displayVal = new Intl.DateTimeFormat('en-IN', {
+                                      timeZone: 'Asia/Kolkata',
+                                      year: 'numeric',
+                                      month: '2-digit',
+                                      day: '2-digit',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                      second: '2-digit',
+                                      hour12: true
+                                    }).format(new Date(val));
+                                  }
+                                  return (
+                                    <td key={i} style={{ padding: "8px" }}>
+                                      {displayVal}
+                                    </td>
+                                  );
+                                })}
                               </tr>
                             ))}
                           </tbody>
@@ -3653,7 +3650,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                 {[
                   { label: "Grunting", field: "grunting", options: ["Present", "No"] },
                   { label: "Colour", field: "colour", options: ["Blue", "Pale", "Pink"] },
-                  { label: "Neuro", field: "neuro", options: ["Unresponsive", "Lethargic", "Responsive"] },
+                  { label: "Neuro", field: "neuro", options: ["Inactive", "Lethargic", "Responsive"] },
                   { label: "Feeding", field: "feeding", options: ["Nil", "Reluctantly", "Well"] },
                   { label: "Glucose", field: "glucose", options: ["< 1.0", "1.0 - 1.9", "2.0 - 2.5", "≥ 2.6"] },
                   { label: "Parental Concerns", field: "parentalConcerns", options: ["High", "Some", "Nil"] },

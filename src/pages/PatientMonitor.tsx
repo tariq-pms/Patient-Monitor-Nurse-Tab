@@ -8,9 +8,7 @@ import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SearchIcon from '@mui/icons-material/Search';
-import ViewListIcon from '@mui/icons-material/ViewList';
-import ViewModuleIcon from '@mui/icons-material/ViewModule';
-import SortIcon from '@mui/icons-material/Sort';
+
 import { PatientTaskContainer } from '../components/MyTasks/PatientTaskContainer';
 
 type PatientMonitorProps = {

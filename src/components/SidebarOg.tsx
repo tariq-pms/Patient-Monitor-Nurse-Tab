@@ -18,7 +18,6 @@ import {
   faTasks,
   faHeartPulse,
   faInbox,
-  faHeartCircleBolt,
   faTableColumns,
   faFileSignature,
   faNotesMedical,

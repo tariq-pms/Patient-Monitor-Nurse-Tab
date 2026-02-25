@@ -1,10 +1,8 @@
 
 
-import {Box,Typography,Tabs,Tab,Paper,IconButton,Stack} from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useParams, useNavigate } from "react-router-dom";
+import {Box,Typography,Tabs,Tab} from "@mui/material";
 import { FC, useEffect, useState } from "react";
-import Avatar from "@mui/material/Avatar";
+
 import{ InitialAssessment }from "../components/InitialAssessment";
 import AdmissionDetails from "../components/AdmissionDetails";
 import { NurseAssessment } from "../components/InitialAssessmentNurse";
@@ -16,15 +14,15 @@ export interface PatientDetails {
   birth_date:string;
   UserRole: string;
   userOrganization: string;
-  
+    location: string;
 }
 export const Treatment1: FC<PatientDetails> = (props): JSX.Element => {
 // export default function PatientProfile() {
 
-  const navigate = useNavigate();
+ 
   const [patient, setPatient] = useState<any>(null);
   const [tabIndex, setTabIndex] = useState(0);
- const { patientId } = useParams<{ patientId: string }>();
+
  
 
  const fetchPatientDetails = async (patientId: string) => {
@@ -319,35 +317,6 @@ useEffect(() => {
 /* ---------------------- */
 /* Small field component */
 /* ---------------------- */
-const ProfileField = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) => (
-  <Box sx={{ minWidth: 120 }}>
-    <Typography
-      sx={{
-        fontSize: 12,
-        color: "#6B7280",
-        lineHeight: 1.2,
-      }}
-    >
-      {label}
-    </Typography>
-    <Typography
-      sx={{
-        fontSize: 14,
-        fontWeight: 600,
-        color: "#111827",
-        lineHeight: 1.4,
-      }}
-    >
-      {value || "--"}
-    </Typography>
-  </Box>
-);
 
 // function ExpandableSection({ title, index, children }) {
 //   const [open, setOpen] = useState(false);

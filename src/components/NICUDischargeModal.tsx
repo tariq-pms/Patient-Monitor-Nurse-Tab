@@ -372,25 +372,25 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
         </Box>
     );
 
-    const VitalsPill = ({ label, value, unit, field, section }: { label: string; value: string; unit: string; field: string; section: string }) => (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 1.5, borderRight: '1px solid #E2E8F0', '&:last-child': { borderRight: 'none' }, flex: 1 }}>
-            <Typography variant="caption" sx={{ color: '#94A3B8', fontSize: '0.65rem', fontWeight: 700, mb: 0.5 }}>{label}</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
-                <TextField
-                    value={value}
-                    onChange={(e) => handleNestedInputChange(section, field, e.target.value)}
-                    variant="standard"
-                    inputProps={{ readOnly: isViewMode }}
-                    sx={{
-                        width: '45px',
-                        '& .MuiInput-input': { textAlign: 'center', fontSize: '0.9rem', fontWeight: 700, p: 0, color: '#1E293B' },
-                        '& .MuiInput-underline:before': { borderBottom: 'none' },
-                    }}
-                />
-                <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.65rem' }}>{unit}</Typography>
-            </Box>
-        </Box>
-    );
+    // const VitalsPill = ({ label, value, unit, field, section }: { label: string; value: string; unit: string; field: string; section: string }) => (
+    //     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 1.5, borderRight: '1px solid #E2E8F0', '&:last-child': { borderRight: 'none' }, flex: 1 }}>
+    //         <Typography variant="caption" sx={{ color: '#94A3B8', fontSize: '0.65rem', fontWeight: 700, mb: 0.5 }}>{label}</Typography>
+    //         <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
+    //             <TextField
+    //                 value={value}
+    //                 onChange={(e) => handleNestedInputChange(section, field, e.target.value)}
+    //                 variant="standard"
+    //                 inputProps={{ readOnly: isViewMode }}
+    //                 sx={{
+    //                     width: '45px',
+    //                     '& .MuiInput-input': { textAlign: 'center', fontSize: '0.9rem', fontWeight: 700, p: 0, color: '#1E293B' },
+    //                     '& .MuiInput-underline:before': { borderBottom: 'none' },
+    //                 }}
+    //             />
+    //             <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.65rem' }}>{unit}</Typography>
+    //         </Box>
+    //     </Box>
+    // );
 
     const SignatureBox = ({ title, sigRef, name }: { title: string; sigRef: any; name: string }) => (
         <Box sx={{ flex: 1, minWidth: '250px' }}>
@@ -445,27 +445,158 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                     <DischargePrintTemplate data={formData} />
                 ) : (
                     <>
-                        {/* SECTION 1: IDENTIFIERS & ADMIN */}
-                        <SectionHeader number="1" title="IDENTIFIERS & ADMIN" />
-                        <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
-                            <Grid container spacing={2.5}>
-                                <Grid item xs={6}><TextField label="UHID" value={formData.uhid} fullWidth size="small" InputProps={{ readOnly: true }} variant="filled" /></Grid>
-                                <Grid item xs={6}><TextField label="IP Number" value={formData.ip_number} fullWidth size="small" InputProps={{ readOnly: true }} variant="filled" /></Grid>
-                                <Grid item xs={12}><TextField label="Baby Name" value={formData.baby_name} onChange={(e) => handleInputChange('baby_name', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={3}><TextField label="Age (days)" value={formData.age_days} onChange={(e) => handleInputChange('age_days', e.target.value)} fullWidth size="small" type="number" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={3}>
-                                    <TextField select label="Sex" value={formData.sex} onChange={(e) => handleInputChange('sex', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }}>
-                                        <MenuItem value="Male">Male</MenuItem><MenuItem value="Female">Female</MenuItem><MenuItem value="Other">Other</MenuItem>
-                                    </TextField>
-                                </Grid>
-                                <Grid item xs={3}><TextField label="Parent Mobile" value={formData.parent_mobile} onChange={(e) => handleInputChange('parent_mobile', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={3}><TextField label="Department" value={formData.department} onChange={(e) => handleInputChange('department', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={12}><TextField label="Address" value={formData.address} onChange={(e) => handleInputChange('address', e.target.value)} fullWidth size="small" multiline rows={2} InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={6}><TextField label="Payer / Scheme" value={formData.payer} onChange={(e) => handleInputChange('payer', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={6}><TextField label="Treating Doctors" placeholder="Select doctors..." value={formData.treating_doctors.join(', ')} onChange={(e) => handleInputChange('treating_doctors', e.target.value.split(', '))} fullWidth size="small" helperText="Separate by comma" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={6}><TextField label="Admission Date & Time" value={formData.admission_datetime} onChange={(e) => handleInputChange('admission_datetime', e.target.value)} fullWidth size="small" type="datetime-local" InputLabelProps={{ shrink: true }} InputProps={{ readOnly: isViewMode }} /></Grid>
-                            </Grid>
-                        </Paper>
+                        {/* SECTION 1: ADMINISTRATION DETAILS */}
+<SectionHeader number="1" title="ADMINISTRATION DETAILS" />
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+    <Grid container spacing={3}>
+        
+        {/* Row 1: Baby Name, UHID, Admission Number */}
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>B/O ( Mother's Name)</Typography>
+            <TextField 
+                fullWidth 
+                size="small"
+                placeholder="Mother's Name"
+                value={formData.baby_name} 
+                onChange={(e) => handleInputChange('baby_name', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+                InputProps={{ readOnly: isViewMode }} 
+            />
+        </Grid>
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>UHID</Typography>
+            <TextField 
+                fullWidth 
+                size="small"
+                value={formData.uhid} 
+                sx={{ bgcolor: '#F8FAFC' }}
+                InputProps={{ readOnly: true }} 
+            />
+        </Grid>
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Admission Number</Typography>
+            <TextField 
+                fullWidth 
+                size="small"
+                value={formData.ip_number} 
+                sx={{ bgcolor: '#F8FAFC' }}
+                InputProps={{ readOnly: true }} 
+            />
+        </Grid>
+
+        {/* Row 2: Sex, Age, Treating Doctors */}
+        <Grid item xs={3}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Sex</Typography>
+            <TextField 
+                select 
+                fullWidth 
+                size="small"
+                value={formData.sex} 
+                onChange={(e) => handleInputChange('sex', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+                InputProps={{ readOnly: isViewMode }}
+            >
+                <MenuItem value="Male">Male</MenuItem>
+                <MenuItem value="Female">Female</MenuItem>
+            </TextField>
+        </Grid>
+        <Grid item xs={3}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Age</Typography>
+            <TextField 
+                fullWidth 
+                size="small"
+                value={formData.age_days + " Days"} 
+                sx={{ bgcolor: '#F8FAFC' }}
+                InputProps={{ readOnly: true }} 
+            />
+        </Grid>
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Treating Doctors</Typography>
+            <Box sx={{ 
+                display: 'flex', 
+                flexWrap: 'wrap', 
+                gap: 1, 
+                p: 1, 
+                border: '1px solid #E2E8F0', 
+                borderRadius: 1, 
+                bgcolor: '#F8FAFC',
+                minHeight: '40px'
+            }}>
+                {formData.treating_doctors.map((doc: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined, index: React.Key | null | undefined) => (
+                    <Chip 
+                        key={index} 
+                        label={doc} 
+                        size="small" 
+                        color="primary" 
+                        variant="outlined" 
+                        onDelete={isViewMode ? undefined : () => { /* remove doctor logic */ }}
+                        sx={{ bgcolor: '#EFF6FF', color: '#3B82F6', borderColor: '#DBEAFE' }}
+                    />
+                ))}
+                {!isViewMode && (
+                    <Typography variant="caption" sx={{ color: '#94A3B8', alignSelf: 'center', ml: 1 }}>
+                        Add doctor...
+                    </Typography>
+                )}
+            </Box>
+        </Grid>
+
+        {/* Row 3: Payer Name, Mobile Number, Payer/Insurance */}
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Payer Name</Typography>
+            <TextField 
+                fullWidth 
+                size="small"
+                placeholder="Insurance Company Ltd."
+                value={formData.payer_name} 
+                onChange={(e) => handleInputChange('payer_name', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+                InputProps={{ readOnly: isViewMode }} 
+            />
+        </Grid>
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Mobile Number</Typography>
+            <TextField 
+                fullWidth 
+                size="small"
+                value={formData.parent_mobile} 
+                onChange={(e) => handleInputChange('parent_mobile', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+                InputProps={{ readOnly: isViewMode }} 
+            />
+        </Grid>
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Payer / Insurance</Typography>
+            <TextField 
+                select 
+                fullWidth 
+                size="small"
+                value={formData.payer_type || 'Self Pay'} 
+                onChange={(e) => handleInputChange('payer_type', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+                InputProps={{ readOnly: isViewMode }}
+            >
+                <MenuItem value="Self Pay">Self Pay</MenuItem>
+                <MenuItem value="Insurance">Insurance</MenuItem>
+                <MenuItem value="Corporate">Corporate</MenuItem>
+            </TextField>
+        </Grid>
+
+        {/* Row 4: Payer Address */}
+        <Grid item xs={12}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Payer Address</Typography>
+            <TextField 
+                fullWidth 
+                size="small"
+                placeholder="Full address..."
+                value={formData.address} 
+                onChange={(e) => handleInputChange('address', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+                InputProps={{ readOnly: isViewMode }} 
+            />
+        </Grid>
+    </Grid>
+</Paper>
 
                         {/* SECTION 2: DISCHARGE STATUS & DATES */}
                         <SectionHeader number="2" title="DISCHARGE STATUS & DATES" />
@@ -493,237 +624,781 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                                 )}
                             </Grid>
                         </Paper>
+               {/* SECTION 3: DIAGNOSIS */}
+<SectionHeader number="3" title="DIAGNOSIS" />
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+    <Grid container spacing={3}>
+        {/* Provisional Diagnosis */}
+        <Grid item xs={12}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Provisional Diagnosis</Typography>
+            <TextField 
+                fullWidth 
+                multiline 
+                rows={3}
+                placeholder="Initial diagnosis based on admission findings..."
+                value={formData.provisional_diagnosis} 
+                onChange={(e) => handleInputChange('provisional_diagnosis', e.target.value)} 
+                sx={{ 
+                    bgcolor: '#F8FAFC', // Standard light tint from design
+                    '& .MuiOutlinedInput-root': {
+                        fontSize: '14px'
+                    }
+                }} 
+            />
+        </Grid>
 
-                        {/* SECTION 3: MATERNAL & BIRTH DETAILS */}
-                        <SectionHeader number="3" title="MATERNAL & BIRTH DETAILS" />
-                        <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
-                            <Grid container spacing={2.5}>
-                                {/* Maternal */}
-                                <Grid item xs={12}><Typography variant="caption" sx={{ fontWeight: 'bold', color: '#64748B' }}>MATERNAL</Typography></Grid>
-                                <Grid item xs={4}><TextField label="Mother's Name" value={formData.mother_name} onChange={(e) => handleInputChange('mother_name', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={2}><TextField label="Age (yrs)" value={formData.mother_age} onChange={(e) => handleInputChange('mother_age', e.target.value)} fullWidth size="small" type="number" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={2}>
-                                    <TextField select label="Blood Group" value={formData.mother_blood_group} onChange={(e) => handleInputChange('mother_blood_group', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }}>
-                                        {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => <MenuItem key={bg} value={bg}>{bg}</MenuItem>)}
-                                    </TextField>
-                                </Grid>
-                                <Grid item xs={4}><TextField label="Obs History (G P L A)" value={formData.obstetric_history} onChange={(e) => handleInputChange('obstetric_history', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={12}><TextField label="Maternal Complications" placeholder="e.g. GDM, Pre-eclampsia" value={formData.maternal_complications.join(', ')} onChange={(e) => handleInputChange('maternal_complications', e.target.value.split(','))} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
+        {/* Final Diagnosis */}
+        <Grid item xs={12}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Final Diagnosis</Typography>
+            <TextField 
+                fullWidth 
+                multiline 
+                rows={3}
+                placeholder="Confirmed diagnosis at the time of discharge..."
+                value={formData.final_diagnosis} 
+                onChange={(e) => handleInputChange('final_diagnosis', e.target.value)} 
+                sx={{ 
+                    bgcolor: '#F8FAFC',
+                    '& .MuiOutlinedInput-root': {
+                        fontSize: '14px'
+                    }
+                }} 
+            />
+        </Grid>
 
-                                {/* Birth */}
-                                <Grid item xs={12} sx={{ mt: 1 }}><Typography variant="caption" sx={{ fontWeight: 'bold', color: '#64748B' }}>BIRTH</Typography></Grid>
-                                <Grid item xs={3}><TextField label="DOB" type="date" value={formData.dob_actual} onChange={(e) => handleInputChange('dob_actual', e.target.value)} fullWidth size="small" InputLabelProps={{ shrink: true }} InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={3}><TextField label="Time of Birth" type="time" value={formData.birth_time} onChange={(e) => handleInputChange('birth_time', e.target.value)} fullWidth size="small" InputLabelProps={{ shrink: true }} InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={2}><TextField label="Gest. Weeks" value={formData.gestation_weeks} onChange={(e) => handleInputChange('gestation_weeks', e.target.value)} fullWidth size="small" type="number" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={2}><TextField label="Gest. Days" value={formData.gestation_days} onChange={(e) => handleInputChange('gestation_days', e.target.value)} fullWidth size="small" type="number" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={2}><TextField label="Birth Weight (kg)" value={formData.birth_weight} onChange={(e) => handleInputChange('birth_weight', e.target.value)} fullWidth size="small" type="number" InputProps={{ readOnly: isViewMode }} /></Grid>
+        {/* Conditional Cause of Death Field */}
+        {formData.discharge_type === 'Expired' && (
+            <Grid item xs={12}>
+                <Typography variant="body2" sx={{ color: '#EF4444', mb: 1, fontWeight: 'bold' }}>Cause of Death</Typography>
+                <TextField 
+                    fullWidth 
+                    multiline 
+                    rows={3}
+                    placeholder="Document the primary and immediate causes of death..."
+                    value={formData.cause_of_death} 
+                    onChange={(e) => handleInputChange('cause_of_death', e.target.value)} 
+                    sx={{ 
+                        bgcolor: '#FEF2F2', // Light red tint for critical info
+                        '& .MuiOutlinedInput-root': {
+                            borderColor: '#FCA5A5',
+                            fontSize: '14px'
+                        }
+                    }} 
+                />
+            </Grid>
+        )}
+    </Grid>
+</Paper>
+                        {/* SECTION 3: BIRTH HISTORY & MATERNAL DETAILS */}
+<SectionHeader number="4" title="BIRTH HISTORY & MATERNAL DETAILS" />
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+    
+    {/* BIRTH DETAILS SUB-SECTION */}
+    <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#3B82F6', display: 'block', mb: 2, letterSpacing: 1 }}>
+        BIRTH DETAILS
+    </Typography>
+    
+    <Grid container spacing={2.5}>
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Date of Birth</Typography>
+            <TextField type="date" value={formData.dob_actual} onChange={(e) => handleInputChange('dob_actual', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#F8FAFC' }} InputProps={{ readOnly: isViewMode }} />
+        </Grid>
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Birth Time</Typography>
+            <TextField type="time" value={formData.birth_time} onChange={(e) => handleInputChange('birth_time', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#F8FAFC' }} InputProps={{ readOnly: isViewMode }} />
+        </Grid>
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Place of Birth</Typography>
+            <TextField placeholder="e.g. Borneo Hospital / OT" value={formData.place_of_birth} onChange={(e) => handleInputChange('place_of_birth', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#F8FAFC' }} InputProps={{ readOnly: isViewMode }} />
+        </Grid>
 
-                                <Grid item xs={4}>
-                                    <TextField select label="Delivery Mode" value={formData.mode_of_delivery} onChange={(e) => handleInputChange('mode_of_delivery', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }}>
-                                        <MenuItem value="Vaginal">Vaginal</MenuItem><MenuItem value="LSCS">LSCS</MenuItem><MenuItem value="Instrumental">Instrumental</MenuItem>
-                                    </TextField>
-                                </Grid>
-                                <Grid item xs={4}><TextField label="Indication (if LSCS)" value={formData.lscs_indication} onChange={(e) => handleInputChange('lscs_indication', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={4}><TextField label="Place of Birth" value={formData.place_of_birth} onChange={(e) => handleInputChange('place_of_birth', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
+        {/* Gestational Age Row */}
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Gestational Age</Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+                <TextField placeholder="32" value={formData.gestation_weeks} onChange={(e) => handleInputChange('gestation_weeks', e.target.value)} size="small" sx={{ bgcolor: '#F8FAFC' }} InputProps={{ endAdornment: <Typography variant="caption" sx={{ color: '#94A3B8', ml: 1 }}>wks</Typography> }} />
+                <TextField placeholder="5" value={formData.gestation_days} onChange={(e) => handleInputChange('gestation_days', e.target.value)} size="small" sx={{ bgcolor: '#F8FAFC' }} InputProps={{ endAdornment: <Typography variant="caption" sx={{ color: '#94A3B8', ml: 1 }}>days</Typography> }} />
+            </Box>
+        </Grid>
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Birth Weight (g)</Typography>
+            <TextField placeholder="Weight in grams" value={formData.birth_weight} onChange={(e) => handleInputChange('birth_weight', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#F8FAFC' }} />
+        </Grid>
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Vaccination Status</Typography>
+            <TextField placeholder="-" value={formData.vaccination_status} onChange={(e) => handleInputChange('vaccination_status', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#F8FAFC' }} />
+        </Grid>
 
-                                <Grid item xs={2}><TextField label="APGAR 1 min" value={formData.apgar_1} onChange={(e) => handleInputChange('apgar_1', e.target.value)} fullWidth size="small" type="number" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={2}><TextField label="APGAR 5 min" value={formData.apgar_5} onChange={(e) => handleInputChange('apgar_5', e.target.value)} fullWidth size="small" type="number" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={4}>
-                                    <FormControlLabel control={<Checkbox checked={formData.vitk_given} onChange={(e) => handleInputChange('vitk_given', e.target.checked)} disabled={isViewMode} />} label="Vit K Given" />
-                                </Grid>
-                            </Grid>
-                        </Paper>
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Type of Birth</Typography>
+            <TextField select fullWidth size="small" value={formData.mode_of_delivery} onChange={(e) => handleInputChange('mode_of_delivery', e.target.value)} sx={{ bgcolor: '#F8FAFC' }}>
+                <MenuItem value="Normal Vaginal Delivery">Normal Vaginal Delivery</MenuItem>
+                <MenuItem value="LSCS">LSCS</MenuItem>
+            </TextField>
+        </Grid>
+        <Grid item xs={8}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Delivery Indication</Typography>
+            <TextField placeholder="e.g. Preterm labor, Fetal distress" value={formData.lscs_indication} onChange={(e) => handleInputChange('lscs_indication', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#F8FAFC' }} />
+        </Grid>
 
-                        {/* SECTION 4: PRESENTING COMPLAINTS & ADMISSION EXAM */}
-                        <SectionHeader number="4" title="PRESENTING COMPLAINTS & ADMISSION EXAM" />
-                        <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
-                            <TextField label="Presenting Complaints" value={formData.presenting_complaints} onChange={(e) => handleInputChange('presenting_complaints', e.target.value)} fullWidth multiline rows={2} sx={{ mb: 2 }} InputProps={{ readOnly: isViewMode }} />
+        {/* Checkbox row */}
+        <Grid item xs={12} sx={{ display: 'flex', gap: 3, mt: 1 }}>
+            <FormControlLabel control={<Checkbox size="small" checked={formData.cried_immediately} onChange={(e) => handleInputChange('cried_immediately', e.target.checked)} />} label={<Typography sx={{ fontSize: '13px' }}>Cried Immediately after birth</Typography>} />
+            <FormControlLabel control={<Checkbox size="small" checked={formData.resuscitation_required} onChange={(e) => handleInputChange('resuscitation_required', e.target.checked)} />} label={<Typography sx={{ fontSize: '13px' }}>Resuscitation required at birth</Typography>} />
+            <FormControlLabel control={<Checkbox size="small" checked={formData.vitk_given} onChange={(e) => handleInputChange('vitk_given', e.target.checked)} />} label={<Typography sx={{ fontSize: '13px' }}>Inj. Vitamin K given</Typography>} />
+        </Grid>
 
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#64748B', display: 'block', mb: 1 }}>VITALS AT ADMISSION</Typography>
-                            <Box sx={{ display: 'flex', border: '1px solid #E2E8F0', borderRadius: '16px', bgcolor: '#F8FAFC', mb: 3, overflow: 'hidden', flexWrap: 'wrap' }}>
-                                <VitalsPill label="Weight" value={formData.adm_vitals.weight_g} unit="g" field="weight_g" section="adm_vitals" />
-                                <VitalsPill label="Temp" value={formData.adm_vitals.temp_c} unit="°C" field="temp_c" section="adm_vitals" />
-                                <VitalsPill label="HR" value={formData.adm_vitals.hr} unit="bpm" field="hr" section="adm_vitals" />
-                                <VitalsPill label="RR" value={formData.adm_vitals.rr} unit="b/min" field="rr" section="adm_vitals" />
-                                <VitalsPill label="SpO₂" value={formData.adm_vitals.spo2} unit="%" field="spo2" section="adm_vitals" />
-                                <VitalsPill label="BP(Sys)" value={formData.adm_vitals.bp_sys} unit="mmHg" field="bp_sys" section="adm_vitals" />
-                                <VitalsPill label="BP(Dia)" value={formData.adm_vitals.bp_dia} unit="mmHg" field="bp_dia" section="adm_vitals" />
-                                <VitalsPill label="CRT" value={formData.adm_vitals.crt} unit="sec" field="crt" section="adm_vitals" />
-                            </Box>
+        {/* APGAR SCORES BOX */}
+        <Grid item xs={12}>
+            <Box sx={{ p: 2, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid #E2E8F0' }}>
+                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 2 }}>APGAR Scores</Typography>
+                <Grid container spacing={2}>
+                    <Grid item xs={4}>
+                        <Typography variant="caption" sx={{ color: '#3B82F6', mb: 0.5, display: 'block' }}>1 Min</Typography>
+                        <TextField placeholder="Score" value={formData.apgar_1} onChange={(e) => handleInputChange('apgar_1', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#FFF' }} />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Typography variant="caption" sx={{ color: '#3B82F6', mb: 0.5, display: 'block' }}>5 Min</Typography>
+                        <TextField placeholder="Score" value={formData.apgar_5} onChange={(e) => handleInputChange('apgar_5', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#FFF' }} />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Typography variant="caption" sx={{ color: '#3B82F6', mb: 0.5, display: 'block' }}>10 Min</Typography>
+                        <TextField placeholder="Score" value={formData.apgar_10} onChange={(e) => handleInputChange('apgar_10', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#FFF' }} />
+                    </Grid>
+                </Grid>
+            </Box>
+        </Grid>
 
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#64748B', display: 'block', mb: 1 }}>EXAM AT ADMISSION</Typography>
-                            <Grid container spacing={2}>
-                                <Grid item xs={6}><TextField label="CVS" value={formData.adm_exam.cvs} onChange={(e) => handleNestedInputChange('adm_exam', 'cvs', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={6}><TextField label="Respiratory" value={formData.adm_exam.rs} onChange={(e) => handleNestedInputChange('adm_exam', 'rs', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={6}><TextField label="CNS" value={formData.adm_exam.cns} onChange={(e) => handleNestedInputChange('adm_exam', 'cns', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={6}><TextField label="Abdomen (P/A)" value={formData.adm_exam.pa} onChange={(e) => handleNestedInputChange('adm_exam', 'pa', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={6}>
-                                    <TextField select label="Anterior Fontanelle" value={formData.adm_exam.af} onChange={(e) => handleNestedInputChange('adm_exam', 'af', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }}>
-                                        <MenuItem value="At level">At level</MenuItem><MenuItem value="Sunken">Sunken</MenuItem><MenuItem value="Bulging">Bulging</MenuItem>
-                                    </TextField>
-                                </Grid>
-                            </Grid>
-                        </Paper>
+        {/* MATERNAL DETAILS SUB-SECTION */}
+        <Grid item xs={12} sx={{ mt: 2 }}>
+            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#3B82F6', display: 'block', mb: 2, letterSpacing: 1 }}>
+                MATERNAL DETAILS
+            </Typography>
+        </Grid>
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Mother's Name</Typography>
+            <TextField fullWidth size="small" value={formData.mother_name} onChange={(e) => handleInputChange('mother_name', e.target.value)} sx={{ bgcolor: '#F8FAFC' }} />
+        </Grid>
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Mother's Age (Years)</Typography>
+            <TextField placeholder="e.g. 32" fullWidth size="small" value={formData.mother_age} onChange={(e) => handleInputChange('mother_age', e.target.value)} sx={{ bgcolor: '#F8FAFC' }} />
+        </Grid>
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Mother's Blood Group</Typography>
+            <TextField select fullWidth size="small" value={formData.mother_blood_group} onChange={(e) => handleInputChange('mother_blood_group', e.target.value)} sx={{ bgcolor: '#F8FAFC' }}>
+                <MenuItem value="O Positive">O Positive</MenuItem>
+                {/* Add other groups */}
+            </TextField>
+        </Grid>
+        <Grid item xs={4}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Multiple Gestation</Typography>
+            <TextField placeholder="e.g. Twin 1/Singleton" fullWidth size="small" value={formData.multiple_gestation} sx={{ bgcolor: '#F8FAFC' }} />
+        </Grid>
+        <Grid item xs={8}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Maternal History/Complications</Typography>
+            <TextField placeholder="e.g. Pre-eclampsia, GDM..." fullWidth size="small" value={formData.maternal_history} sx={{ bgcolor: '#F8FAFC' }} />
+        </Grid>
 
-                        {/* SECTION 5: DIAGNOSIS */}
-                        <SectionHeader number="5" title="DIAGNOSIS" />
-                        <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
-                            <Grid container spacing={2}>
-                                <Grid item xs={12}><TextField label="Provisional Diagnosis" value={formData.provisional_diagnosis} onChange={(e) => handleInputChange('provisional_diagnosis', e.target.value)} fullWidth size="small" multiline rows={2} /></Grid>
-                                <Grid item xs={12}><TextField label="Final Diagnosis" value={formData.final_diagnosis} onChange={(e) => handleInputChange('final_diagnosis', e.target.value)} fullWidth size="small" multiline rows={2} /></Grid>
-                                {formData.discharge_type === 'Expired' && (
-                                    <Grid item xs={12}><TextField label="Cause of Death" value={formData.cause_of_death} onChange={(e) => handleInputChange('cause_of_death', e.target.value)} fullWidth size="small" multiline rows={2} /></Grid>
-                                )}
-                            </Grid>
-                        </Paper>
+        {/* OBSTETRIC HISTORY */}
+        <Grid item xs={12} sx={{ mt: 2 }}>
+            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#3B82F6', display: 'block', mb: 2, letterSpacing: 1 }}>
+                OBSTETRIC HISTORY
+            </Typography>
+        </Grid>
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Gravida-Para-Living (G-P-L)</Typography>
+            <TextField placeholder="e.g. G2P2L1" fullWidth size="small" value={formData.obstetric_history} sx={{ bgcolor: '#F8FAFC' }} />
+        </Grid>
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Previous Pregnancy Details</Typography>
+            <TextField placeholder="e.g. G1-FT/LSCS" fullWidth size="small" value={formData.prev_pregnancy_details} sx={{ bgcolor: '#F8FAFC' }} />
+        </Grid>
+    </Grid>
+</Paper>
+    
+                     
+                       {/* SECTION 4: COMPLAINTS ON ADMISSION */}
+<SectionHeader number="5" title="COMPLAINTS ON ADMISSION" />
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+    
+    {/* Chief Complaints */}
+    <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Chief Complaints</Typography>
+    <TextField 
+        fullWidth 
+        multiline 
+        rows={3}
+        placeholder="e.g. Preterm delivery, Respiratory distress, VLBW"
+        value={formData.presenting_complaints} 
+        onChange={(e) => handleInputChange('presenting_complaints', e.target.value)} 
+        sx={{ bgcolor: '#F8FAFC', mb: 4 }}
+        InputProps={{ readOnly: isViewMode }} 
+    />
 
-                        <SectionHeader number="6" title="INVESTIGATIONS" />
-                        <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
-                            <Grid container spacing={2}>
-                                {Object.keys(formData.investigations).map(key => (
-                                    <Grid item xs={6} key={key}><TextField label={key.toUpperCase()} value={formData.investigations[key]} onChange={(e) => handleNestedInputChange('investigations', key, e.target.value)} fullWidth size="small" /></Grid>
-                                ))}
-                            </Grid>
-                        </Paper>
+    {/* ADMISSION VITALS & ANTHROPOMETRY BOX */}
+    <Box sx={{ p: 2, border: '1px solid #DBEAFE', borderRadius: 2, bgcolor: '#EFF6FF', mb: 4 }}>
+        <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#3B82F6', display: 'block', mb: 2, letterSpacing: 1 }}>
+            ADMISSION VITALS & ANTHROPOMETRY
+        </Typography>
+        
+        <Grid container spacing={1.5}>
+            {[
+                { label: 'TEMP (C)', field: 'temp_c', section: 'adm_vitals' },
+                { label: 'HR (/MIN)', field: 'hr', section: 'adm_vitals' },
+                { label: 'RR (/MIN)', field: 'rr', section: 'adm_vitals' },
+                { label: 'SPO2 (%)', field: 'spo2', section: 'adm_vitals' },
+                { label: 'BP (SYS/DIA)', field: 'bp_combined', section: 'adm_vitals' },
+                { label: 'WT (G)', field: 'weight_g', section: 'adm_vitals' },
+                { label: 'BSL (MG/DL)', field: 'bsl', section: 'adm_vitals' },
+                { label: 'HC (CM)', field: 'hc_cm', section: 'adm_vitals' },
+                { label: 'LENGTH (CM)', field: 'length_cm', section: 'adm_vitals' },
+            ].map((v) => (
+                <Grid item xs={2.4} key={v.label}>
+                    <Typography sx={{ fontSize: '9px', fontWeight: 'bold', color: '#64748B', mb: 0.5 }}>{v.label}</Typography>
+                    <TextField 
+                        fullWidth 
+                        size="small"
+                        value={formData[v.section][v.field]}
+                        onChange={(e) => handleNestedInputChange(v.section, v.field, e.target.value)}
+                        sx={{ bgcolor: '#FFF', '& .MuiOutlinedInput-root': { height: '32px' } }}
+                    />
+                </Grid>
+            ))}
+        </Grid>
+    </Box>
 
-                        <SectionHeader number="7" title="COURSE IN HOSPITAL" />
-                        {Object.keys(formData.course).map(key => (
-                            <Accordion key={key} elevation={0} sx={{ border: '1px solid #E2E8F0', mb: 1, borderRadius: '12px !important' }}>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>{key.toUpperCase()}</AccordionSummary>
-                                <AccordionDetails><TextField fullWidth multiline rows={2} value={formData.course[key]} onChange={(e) => handleNestedInputChange('course', key, e.target.value)} InputProps={{ readOnly: isViewMode }} /></AccordionDetails>
-                            </Accordion>
-                        ))}
+    {/* General Physical Examination */}
+    <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>General Physical Examination</Typography>
+    <TextField 
+        fullWidth 
+        multiline 
+        rows={3}
+        placeholder="Baby active & alert, pink, central cyanosis absent..."
+        value={formData.general_exam_admission} 
+        onChange={(e) => handleInputChange('general_exam_admission', e.target.value)} 
+        sx={{ bgcolor: '#F8FAFC', mb: 4 }}
+    />
 
-                        <SectionHeader number="8" title="GIVEN TREATMENT" />
-                        <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
-                            <Grid container spacing={2}>
-                                {Object.keys(formData.treatment).map(key => (
-                                    <Grid item xs={6} key={key}><TextField label={key.toUpperCase()} value={formData.treatment[key]} onChange={(e) => handleNestedInputChange('treatment', key, e.target.value)} fullWidth size="small" /></Grid>
-                                ))}
-                            </Grid>
-                        </Paper>
+    {/* Systemic Examination - Accordion Style */}
+    <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Systemic Examination</Typography>
+    <Box sx={{ border: '1px solid #E2E8F0', borderRadius: 2, overflow: 'hidden' }}>
+        {[
+            { label: 'Respiratory', field: 'rs' },
+            { label: 'Cardiovascular', field: 'cvs' },
+            { label: 'Gastrointestinal & Abdomen', field: 'pa' },
+            { label: 'Central Nervous System', field: 'cns' },
+            { label: 'Genitourinary', field: 'gu' },
+            { label: 'Musculoskeletal', field: 'msk' },
+            { label: 'Others', field: 'others' }
+        ].map((system, _idx) => (
+            <Accordion key={system.field} elevation={0} sx={{ '&:not(:last-child)': { borderBottom: '1px solid #E2E8F0' } }}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ fontSize: '18px' }} />}>
+                    <Typography sx={{ fontSize: '14px', color: '#475569' }}>{system.label}</Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ pt: 0 }}>
+                    <TextField 
+                        fullWidth 
+                        multiline 
+                        rows={2}
+                        placeholder={`Findings for ${system.label}...`}
+                        value={formData.adm_exam[system.field]}
+                        onChange={(e) => handleNestedInputChange('adm_exam', system.field, e.target.value)}
+                        sx={{ bgcolor: '#F8FAFC' }}
+                    />
+                </AccordionDetails>
+            </Accordion>
+        ))}
+    </Box>
+</Paper>
 
-                        {/* SECTION 9: CONDITION AT DISCHARGE / OUTCOME */}
-                        <SectionHeader number="9" title="CONDITION AT DISCHARGE / OUTCOME" />
-                        <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+                        
+     
+                        {/* SECTION 6: INVESTIGATIONS SUMMARY */}
+<SectionHeader number="6" title="INVESTIGATIONS SUMMARY" />
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+    <Grid container spacing={3}>
+        {/* Row 1: Hematology & Biochemistry */}
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Hematology / Coagulation</Typography>
+            <TextField 
+                fullWidth 
+                multiline 
+                rows={3}
+                placeholder="CBC, CRP, PT/INR details..."
+                value={formData.investigations.hematology} 
+                onChange={(e) => handleNestedInputChange('investigations', 'hematology', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+            />
+        </Grid>
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Biochemistry (LFT, KFT, Lytes)</Typography>
+            <TextField 
+                fullWidth 
+                multiline 
+                rows={3}
+                placeholder="Creatinine, Bilirubin, Electrolytes..."
+                value={formData.investigations.biochemistry} 
+                onChange={(e) => handleNestedInputChange('investigations', 'biochemistry', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+            />
+        </Grid>
 
-                            {/* Final Vitals */}
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#64748B', display: 'block', mb: 1 }}>FINAL VITALS</Typography>
-                            <Box sx={{ display: 'flex', border: '1px solid #E2E8F0', borderRadius: '16px', bgcolor: '#F8FAFC', mb: 3, overflow: 'hidden', flexWrap: 'wrap' }}>
-                                <VitalsPill label="Weight" value={formData.final_vitals.weight_kg} unit="kg" field="weight_kg" section="final_vitals" />
-                                <VitalsPill label="HR" value={formData.final_vitals.hr} unit="bpm" field="hr" section="final_vitals" />
-                                <VitalsPill label="RR" value={formData.final_vitals.rr} unit="b/min" field="rr" section="final_vitals" />
-                                <VitalsPill label="SpO₂" value={formData.final_vitals.spo2} unit="%" field="spo2" section="final_vitals" />
-                                <VitalsPill label="Temp" value={formData.final_vitals.temp} unit="°C" field="temp" section="final_vitals" />
-                                <VitalsPill label="CRT" value={formData.final_vitals.crt} unit="sec" field="crt" section="final_vitals" />
-                            </Box>
+        {/* Row 2: Microbiology & Radiology */}
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Microbiology (Cultures)</Typography>
+            <TextField 
+                fullWidth 
+                multiline 
+                rows={3}
+                placeholder="Blood/Urine cultures, sensitivity results..."
+                value={formData.investigations.microbiology} 
+                onChange={(e) => handleNestedInputChange('investigations', 'microbiology', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+            />
+        </Grid>
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Radiology (USG, X-Ray, Echo)</Typography>
+            <TextField 
+                fullWidth 
+                multiline 
+                rows={3}
+                placeholder="X-Ray findings, USG Abdomen, Echo details..."
+                value={formData.investigations.radiology} 
+                onChange={(e) => handleNestedInputChange('investigations', 'radiology', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+            />
+        </Grid>
 
-                            {/* Final Exam */}
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#64748B', display: 'block', mb: 1 }}>FINAL EXAM</Typography>
-                            <Grid container spacing={2} sx={{ mb: 3 }}>
-                                <Grid item xs={6}><TextField label="CVS" value={formData.final_exam.cvs} onChange={(e) => handleNestedInputChange('final_exam', 'cvs', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={6}><TextField label="Respiratory" value={formData.final_exam.rs} onChange={(e) => handleNestedInputChange('final_exam', 'rs', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={6}><TextField label="CNS" value={formData.final_exam.cns} onChange={(e) => handleNestedInputChange('final_exam', 'cns', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={6}><TextField label="Abdomen (P/A)" value={formData.final_exam.pa} onChange={(e) => handleNestedInputChange('final_exam', 'pa', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={6}>
-                                    <TextField select label="Anterior Fontanelle" value={formData.final_exam.af} onChange={(e) => handleNestedInputChange('final_exam', 'af', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }}>
-                                        <MenuItem value="At level">At level</MenuItem><MenuItem value="Sunken">Sunken</MenuItem><MenuItem value="Bulging">Bulging</MenuItem>
-                                    </TextField>
-                                </Grid>
-                            </Grid>
+        {/* Row 3: Others (Full Width) */}
+        <Grid item xs={12}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Others</Typography>
+            <TextField 
+                fullWidth 
+                size="small"
+                placeholder="Any other special investigations..."
+                value={formData.investigations.others} 
+                onChange={(e) => handleNestedInputChange('investigations', 'others', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+            />
+        </Grid>
+    </Grid>
+</Paper>
 
-                            {/* Check if Normal Discharge for Anthropometry */}
-                            {formData.discharge_type === 'Normal discharge' && (
-                                <>
-                                    <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#64748B', display: 'block', mb: 1 }}>ANTHROPOMETRY DIRECTLY AT DISCHARGE</Typography>
-                                    <Grid container spacing={2} sx={{ mb: 3 }}>
-                                        <Grid item xs={4}><TextField label="Length (cm)" value={formData.anthropometry.length_cm} onChange={(e) => handleNestedInputChange('anthropometry', 'length_cm', e.target.value)} fullWidth size="small" type="number" /></Grid>
-                                        <Grid item xs={4}><TextField label="Head Circ. (cm)" value={formData.anthropometry.hc_cm} onChange={(e) => handleNestedInputChange('anthropometry', 'hc_cm', e.target.value)} fullWidth size="small" type="number" /></Grid>
-                                        <Grid item xs={4}><TextField label="Chest Circ. (cm)" value={formData.anthropometry.cc_cm} onChange={(e) => handleNestedInputChange('anthropometry', 'cc_cm', e.target.value)} fullWidth size="small" type="number" /></Grid>
-                                    </Grid>
-                                </>
-                            )}
+                       
+                       {/* SECTION 8: TREATMENT GIVEN */}
+<SectionHeader number="8" title="TREATMENT GIVEN" />
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+    <Grid container spacing={3}>
+        {/* Row 1: Medications & Therapies */}
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Medications</Typography>
+            <TextField 
+                fullWidth 
+                multiline 
+                rows={4}
+                placeholder="List antibiotics, syrups, supplements, and other medications..."
+                value={formData.treatment.medications} 
+                onChange={(e) => handleNestedInputChange('treatment', 'medications', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+            />
+        </Grid>
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Therapies</Typography>
+            <TextField 
+                fullWidth 
+                multiline 
+                rows={4}
+                placeholder="Describe Phototherapy, O2 therapy, CPAP, etc..."
+                value={formData.treatment.therapies} 
+                onChange={(e) => handleNestedInputChange('treatment', 'therapies', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+            />
+        </Grid>
 
-                            {/* Outcome Specific Extras */}
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#64748B', display: 'block', mb: 1 }}>OUTCOME SPECIFIC DETAILS</Typography>
-                            <Grid container spacing={2}>
-                                {formData.discharge_type === 'Normal discharge' && (
-                                    <Grid item xs={12}><TextField label="Global Statement" value={formData.outcome_extras.dc_global_statement} onChange={(e) => handleNestedInputChange('outcome_extras', 'dc_global_statement', e.target.value)} fullWidth size="small" multiline InputProps={{ readOnly: isViewMode }} /></Grid>
-                                )}
-                                {formData.discharge_type === 'Expired' && (
-                                    <>
-                                        <Grid item xs={12}><TextField label="Final State" value={formData.outcome_extras.expired_final_state} onChange={(e) => handleNestedInputChange('outcome_extras', 'expired_final_state', e.target.value)} fullWidth size="small" multiline /></Grid>
-                                        <Grid item xs={12}><FormControlLabel control={<Checkbox checked={formData.outcome_extras.resus_attempted} onChange={(e) => handleNestedInputChange('outcome_extras', 'resus_attempted', e.target.checked)} />} label="Resuscitation Attempted" /></Grid>
-                                        {formData.outcome_extras.resus_attempted && <Grid item xs={12}><TextField label="Resuscitation Details" value={formData.outcome_extras.resus_details} onChange={(e) => handleNestedInputChange('outcome_extras', 'resus_details', e.target.value)} fullWidth size="small" multiline /></Grid>}
-                                    </>
-                                )}
-                                {(formData.discharge_type === 'LAMA/DAMA') && (
-                                    <Grid item xs={12}><TextField label="LAMA Condition" value={formData.outcome_extras.lama_condition} onChange={(e) => handleNestedInputChange('outcome_extras', 'lama_condition', e.target.value)} fullWidth size="small" multiline /></Grid>
-                                )}
-                                {(formData.discharge_type === 'Referred/Transferred') && (
-                                    <Grid item xs={12}><TextField label="Transfer Condition" value={formData.outcome_extras.transfer_condition} onChange={(e) => handleNestedInputChange('outcome_extras', 'transfer_condition', e.target.value)} fullWidth size="small" multiline /></Grid>
-                                )}
-                            </Grid>
-                        </Paper>
+        {/* Row 2: Injections & Feeds/Fluids */}
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Injections</Typography>
+            <TextField 
+                fullWidth 
+                multiline 
+                rows={4}
+                placeholder="Record Vitamin K, Vaccinations, and other injections..."
+                value={formData.treatment.injections} 
+                onChange={(e) => handleNestedInputChange('treatment', 'injections', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+            />
+        </Grid>
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Feeds & Fluids</Typography>
+            <TextField 
+                fullWidth 
+                multiline 
+                rows={4}
+                placeholder="Detail IV fluids, feeding methods, volumes, and duration..."
+                value={formData.treatment.feeds_fluids} 
+                onChange={(e) => handleNestedInputChange('treatment', 'feeds_fluids', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+            />
+        </Grid>
+    </Grid>
+</Paper>
+
+                       {/* SECTION 9: CONDITION AT OUTCOME */}
+<SectionHeader number="9" title="CONDITION AT OUTCOME" />
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+    
+    <Grid container spacing={3} sx={{ mb: 4 }}>
+        {/* Overall Condition Dropdown */}
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Overall Condition</Typography>
+            <TextField 
+                select 
+                fullWidth 
+                size="small"
+                value={formData.overall_condition || 'Stable'} 
+                onChange={(e) => handleInputChange('overall_condition', e.target.value)}
+                sx={{ bgcolor: '#F8FAFC' }}
+            >
+                <MenuItem value="Stable">Stable</MenuItem>
+                <MenuItem value="Sick">Sick</MenuItem>
+                <MenuItem value="Critical">Critical</MenuItem>
+            </TextField>
+        </Grid>
+
+        {/* Global Statement Field */}
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Global Statement</Typography>
+            <TextField 
+                fullWidth 
+                size="small"
+                placeholder="e.g. Discharged in stable condition"
+                value={formData.outcome_extras.dc_global_statement} 
+                onChange={(e) => handleNestedInputChange('outcome_extras', 'dc_global_statement', e.target.value)}
+                sx={{ bgcolor: '#F8FAFC' }}
+            />
+        </Grid>
+    </Grid>
+
+    {/* STYLIZED VITALS BOX (Green Border Style) */}
+    <Box sx={{ 
+        p: 2, 
+        border: '1px solid #DCFCE7', 
+        borderRadius: 2, 
+        bgcolor: '#F0FDF4', 
+        mb: 4 
+    }}>
+        <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#166534', display: 'block', mb: 2, letterSpacing: 1 }}>
+            DISCHARGE VITALS & ANTHROPOMETRY
+        </Typography>
+        
+        <Grid container spacing={1.5}>
+            {[
+                { label: 'FINAL WT (KG)*', field: 'weight_kg', section: 'final_vitals', error: !formData.final_vitals.weight_kg },
+                { label: 'LENGTH (CM)', field: 'length_cm', section: 'anthropometry' },
+                { label: 'HC (CM)', field: 'hc_cm', section: 'anthropometry' },
+                { label: 'CC (CM)', field: 'cc_cm', section: 'anthropometry' },
+                { label: 'TEMP (C)', field: 'temp', section: 'final_vitals' },
+                { label: 'HR (/MIN)', field: 'hr', section: 'final_vitals' },
+                { label: 'SPO2 (%)', field: 'spo2', section: 'final_vitals' },
+            ].map((v) => (
+                <Grid item xs key={v.label}>
+                    <Typography sx={{ fontSize: '9px', fontWeight: 'bold', color: v.error ? '#EF4444' : '#64748B', mb: 0.5 }}>
+                        {v.label}
+                    </Typography>
+                    <TextField 
+                        fullWidth 
+                        size="small"
+                        value={v.section === 'final_vitals' ? formData.final_vitals[v.field] : formData.anthropometry[v.field]}
+                        onChange={(e) => handleNestedInputChange(v.section, v.field, e.target.value)}
+                        sx={{ 
+                            bgcolor: '#FFF',
+                            '& .MuiOutlinedInput-root': {
+                                height: '32px',
+                                borderColor: v.error ? '#FCA5A5' : '#E2E8F0'
+                            }
+                        }}
+                    />
+                </Grid>
+            ))}
+        </Grid>
+    </Box>
+
+    {/* SYSTEMIC EXAMINATION (DISCHARGE) */}
+    <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Systemic Examination (Discharge)</Typography>
+    <TextField 
+        fullWidth 
+        multiline 
+        rows={2}
+        placeholder="Baby active, reflexes good, accepting feeds..."
+        value={formData.final_state_summary} // Map to your state summary field
+        onChange={(e) => handleInputChange('final_state_summary', e.target.value)}
+        sx={{ bgcolor: '#F8FAFC' }}
+    />
+</Paper>
 
                         {/* SECTION 10: DISCHARGE MEDICATIONS & FOLLOW-UP */}
-                        <SectionHeader number="10" title="DISCHARGE MEDICATIONS & FOLLOW-UP" />
-                        <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#64748B', display: 'block', mb: 1 }}>FEEDING & HOME CARE</Typography>
-                            <Grid container spacing={2} sx={{ mb: 3 }}>
-                                <Grid item xs={12}><TextField label="Feeding Plan" value={formData.feeding_plan} onChange={(e) => handleInputChange('feeding_plan', e.target.value)} fullWidth multiline rows={2} InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={12}><TextField label="Home Care Advice" value={formData.home_care} onChange={(e) => handleInputChange('home_care', e.target.value)} fullWidth multiline rows={2} InputProps={{ readOnly: isViewMode }} /></Grid>
-                            </Grid>
-
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#64748B', display: 'block', mb: 1 }}>DISCHARGE MEDICATIONS</Typography>
-                            <TableContainer sx={{ border: '1px solid #E2E8F0', borderRadius: 2, mb: 2 }}>
-                                <Table size="small">
-                                    <TableHead sx={{ bgcolor: '#F1F5F9' }}>
-                                        <TableRow>
-                                            <TableCell sx={{ fontWeight: 700 }}>Drug</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Dose</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Route</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Frequency</TableCell>
-                                            <TableCell />
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {formData.dc_medications.map((med: any, idx: number) => (
-                                            <TableRow key={idx}>
-                                                <TableCell><TextField fullWidth variant="standard" value={med.drug} onChange={(e) => updateMedication(idx, 'drug', e.target.value)} InputProps={{ readOnly: isViewMode }} /></TableCell>
-                                                <TableCell><TextField fullWidth variant="standard" value={med.dose} onChange={(e) => updateMedication(idx, 'dose', e.target.value)} InputProps={{ readOnly: isViewMode }} /></TableCell>
-                                                <TableCell><TextField fullWidth variant="standard" value={med.route} onChange={(e) => updateMedication(idx, 'route', e.target.value)} InputProps={{ readOnly: isViewMode }} /></TableCell>
-                                                <TableCell><TextField fullWidth variant="standard" value={med.frequency} onChange={(e) => updateMedication(idx, 'frequency', e.target.value)} InputProps={{ readOnly: isViewMode }} /></TableCell>
-                                                <TableCell>{!isViewMode && <IconButton size="small" onClick={() => removeMedication(idx)} color="error"><DeleteIcon fontSize="small" /></IconButton>}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                            {!isViewMode && <Button startIcon={<AddIcon />} onClick={addMedication} size="small" sx={{ mb: 3 }}>Add Drug</Button>}
-
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#64748B', display: 'block', mb: 1 }}>FOLLOW-UP</Typography>
-                            <Grid container spacing={2}>
-                                <Grid item xs={4}><TextField label="Date" type="date" value={formData.followup.date || ''} onChange={(e) => handleNestedInputChange('followup', 'date', e.target.value)} fullWidth size="small" InputLabelProps={{ shrink: true }} InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={4}><TextField label="Clinic / Location" value={formData.followup.clinic} onChange={(e) => handleNestedInputChange('followup', 'clinic', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={4}><TextField label="Doctor" value={formData.followup.doctor} onChange={(e) => handleNestedInputChange('followup', 'doctor', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }} /></Grid>
-                                <Grid item xs={12}><TextField label="Instructions" value={formData.followup.instructions} onChange={(e) => handleNestedInputChange('followup', 'instructions', e.target.value)} fullWidth size="small" multiline rows={2} InputProps={{ readOnly: isViewMode }} /></Grid>
-                            </Grid>
-                        </Paper>
-
-                        <SectionHeader number="11" title="SIGNATURES & ACKNOWLEDGEMENT" />
-                        <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                                <SignatureBox title="Discharge Prepared By" sigRef={preparedBySig} name={formData.summary_prepared_by} />
-                                <SignatureBox title="Approving Doctor" sigRef={approverSig} name="Consultant Name" />
-                                <SignatureBox title="Parent/Guardian" sigRef={parentSig} name={formData.parent_name || 'Relative'} />
-                            </Box>
-                            <FormControlLabel
-                                control={<Checkbox checked={formData.parent_acknowledged} onChange={(e) => handleInputChange('parent_acknowledged', e.target.checked)} />}
-                                label={<Typography variant="body2" sx={{ color: '#475569' }}>I/We have been explained about the disease and medications clearly.</Typography>}
-                                sx={{ mt: 2 }}
+                        <SectionHeader number="10" title="DISCHARGE MEDICATIONS & FOLLOW-UP PLAN" />
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+    
+    {/* DISCHARGE MEDICATIONS TABLE */}
+    <TableContainer sx={{ border: '1px solid #E2E8F0', borderRadius: 2, mb: 2 }}>
+        <Table size="small">
+            <TableHead>
+                <TableRow>
+                    <TableCell sx={{ color: '#64748B', fontSize: '12px', py: 1.5 }}>Drug Name</TableCell>
+                    <TableCell sx={{ color: '#64748B', fontSize: '12px' }}>Dose</TableCell>
+                    <TableCell sx={{ color: '#64748B', fontSize: '12px' }}>Frequency</TableCell>
+                    <TableCell sx={{ color: '#64748B', fontSize: '12px' }}>Duration</TableCell>
+                    <TableCell />
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                {formData.dc_medications.map((med: any, idx: number) => (
+                    <TableRow key={idx}>
+                        <TableCell sx={{ py: 1 }}>
+                            <TextField 
+                                fullWidth 
+                                variant="standard" 
+                                placeholder="e.g. Syp. Calcium" 
+                                value={med.drug} 
+                                onChange={(e) => updateMedication(idx, 'drug', e.target.value)} 
+                                InputProps={{ disableUnderline: true, readOnly: isViewMode, sx: { fontSize: '14px' } }} 
                             />
-                        </Paper>
+                        </TableCell>
+                        <TableCell>
+                            <TextField 
+                                fullWidth 
+                                variant="standard" 
+                                placeholder="2.5ml" 
+                                value={med.dose} 
+                                onChange={(e) => updateMedication(idx, 'dose', e.target.value)} 
+                                InputProps={{ disableUnderline: true, readOnly: isViewMode, sx: { fontSize: '14px' } }} 
+                            />
+                        </TableCell>
+                        <TableCell>
+                            <TextField 
+                                fullWidth 
+                                variant="standard" 
+                                placeholder="BD" 
+                                value={med.frequency} 
+                                onChange={(e) => updateMedication(idx, 'frequency', e.target.value)} 
+                                InputProps={{ disableUnderline: true, readOnly: isViewMode, sx: { fontSize: '14px' } }} 
+                            />
+                        </TableCell>
+                        <TableCell>
+                            <TextField 
+                                fullWidth 
+                                variant="standard" 
+                                placeholder="5 days" 
+                                value={med.duration} 
+                                onChange={(e) => updateMedication(idx, 'duration', e.target.value)} 
+                                InputProps={{ disableUnderline: true, readOnly: isViewMode, sx: { fontSize: '14px' } }} 
+                            />
+                        </TableCell>
+                        <TableCell align="right">
+                            {!isViewMode && (
+                                <IconButton size="small" onClick={() => removeMedication(idx)} sx={{ color: '#EF4444' }}>
+                                    <DeleteIcon fontSize="small" />
+                                </IconButton>
+                            )}
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    </TableContainer>
+
+    {!isViewMode && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+            <Button 
+                startIcon={<AddIcon />} 
+                onClick={addMedication} 
+                sx={{ color: '#3B82F6', textTransform: 'none', fontWeight: 500 }}
+            >
+                Add Medication
+            </Button>
+        </Box>
+    )}
+
+    {/* FOLLOW UP FIELDS */}
+    <Grid container spacing={3}>
+        <Grid item xs={12}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Next Follow-up Date</Typography>
+            <TextField 
+                type="date" 
+                fullWidth 
+                size="small"
+                value={formData.followup.date || ''} 
+                onChange={(e) => handleNestedInputChange('followup', 'date', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+                InputProps={{ readOnly: isViewMode }} 
+            />
+        </Grid>
+
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Follow Up Clinic / Hospital</Typography>
+            <TextField 
+                fullWidth 
+                size="small"
+                placeholder="e.g. Pediatric OPD, Room 102"
+                value={formData.followup.clinic} 
+                onChange={(e) => handleNestedInputChange('followup', 'clinic', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+                InputProps={{ readOnly: isViewMode }} 
+            />
+        </Grid>
+
+        <Grid item xs={6}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Follow Up Doctor</Typography>
+            <TextField 
+                fullWidth 
+                size="small"
+                placeholder="e.g. Dr. Jane Doe"
+                value={formData.followup.doctor} 
+                onChange={(e) => handleNestedInputChange('followup', 'doctor', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+                InputProps={{ readOnly: isViewMode }} 
+            />
+        </Grid>
+
+        <Grid item xs={12}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Follow Up Instructions & Advice</Typography>
+            <TextField 
+                fullWidth 
+                multiline 
+                rows={3}
+                placeholder="Review in OPD. Danger signs explained. Vaccination schedule discussed..."
+                value={formData.followup.instructions} 
+                onChange={(e) => handleNestedInputChange('followup', 'instructions', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+                InputProps={{ readOnly: isViewMode }} 
+            />
+        </Grid>
+
+        <Grid item xs={12}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Feeding Instructions</Typography>
+            <TextField 
+                fullWidth 
+                multiline 
+                rows={3}
+                placeholder="Feeding Instructions"
+                value={formData.feeding_plan} 
+                onChange={(e) => handleInputChange('feeding_plan', e.target.value)} 
+                sx={{ bgcolor: '#F8FAFC' }}
+                InputProps={{ readOnly: isViewMode }} 
+            />
+        </Grid>
+    </Grid>
+</Paper>
+
+                        <SectionHeader number="11" title="AUTHORIZATION & SIGNATURES" />
+<Paper elevation={0} sx={{ p: 0, bgcolor: 'transparent' }}>
+  <Grid container spacing={3}>
+    
+    {/* LEFT COLUMN: MEDICAL TEAM */}
+    <Grid item xs={12} md={6}>
+      <Box sx={{ 
+        p: 2, 
+        borderRadius: 3, 
+        border: '1px dashed #E2E8F0', 
+        bgcolor: '#F8FAFC', // Light blue-grey tint per design
+        height: '100%'
+      }}>
+        <Typography variant="caption" fontWeight="bold" sx={{ color: '#475569', mb: 2, display: 'block', letterSpacing: 1 }}>
+          MEDICAL TEAM
+        </Typography>
+
+        <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Approving Doctor (Consultant)</Typography>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Name of consultant"
+          value="Consultant Name"
+          sx={{ mb: 0.5, bgcolor: '#FFF' }}
+        />
+        <Typography variant="caption" sx={{ color: '#94A3B8', display: 'block', mb: 2, fontSize: '10px' }}>
+          Hold Ctrl/Cmd to select multiple
+        </Typography>
+
+        <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Prepared by Signature</Typography>
+        <Box sx={{ position: 'relative' }}>
+          <SignatureBox 
+               sigRef={preparedBySig}
+               name={formData.summary_prepared_by} title={''}             
+          />
+          <Typography 
+            variant="caption" 
+            sx={{ position: 'absolute', top: 8, right: 8, color: '#EF4444', cursor: 'pointer' }}
+            onClick={() => preparedBySig.current?.clear()}
+          >
+            Clear
+          </Typography>
+        </Box>
+      </Box>
+    </Grid>
+
+    {/* RIGHT COLUMN: GUARDIAN ACKNOWLEDGEMENT */}
+    <Grid item xs={12} md={6}>
+      <Box sx={{ 
+        p: 2, 
+        borderRadius: 3, 
+        border: '1px dashed #E2E8F0', 
+        bgcolor: '#F8FAFC', 
+        height: '100%'
+      }}>
+        <Typography variant="caption" fontWeight="bold" sx={{ color: '#475569', mb: 2, display: 'block', letterSpacing: 1 }}>
+          GUARDIAN ACKNOWLEDGEMENT
+        </Typography>
+
+        <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Parent/Guardian Name</Typography>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Name of parent receiving discharge..."
+          value={formData.parent_name}
+          onChange={(e) => handleInputChange('parent_name', e.target.value)}
+          sx={{ mb: 3, bgcolor: '#FFF' }}
+        />
+
+        <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Parent/Guardian Signature</Typography>
+    <Box sx={{ position: 'relative', mb: 2 }}>
+  <SignatureBox 
+    sigRef={parentSig}
+                                                    name="" title={''}   
+  />
+
+  <Typography 
+    variant="caption"
+    sx={{
+      position: 'absolute',
+      top: 8,
+      right: 8,
+      color: '#EF4444',
+      cursor: 'pointer'
+    }}
+    onClick={() => parentSig.current?.clear()}
+  >
+    Clear
+  </Typography>
+</Box>
+
+        <FormControlLabel
+          control={
+            <Checkbox 
+              size="small"
+              checked={formData.parent_acknowledged} 
+              onChange={(e) => handleInputChange('parent_acknowledged', e.target.checked)} 
+            />
+          }
+          label={
+            <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>
+              Discharge summary explained & copy received
+            </Typography>
+          }
+        />
+      </Box>
+    </Grid>
+  </Grid>
+</Paper>
                     </>
                 )}
             </DialogContent>
