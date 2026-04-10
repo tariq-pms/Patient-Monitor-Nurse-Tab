@@ -1,4 +1,4 @@
-import { Box, Stack, ToggleButtonGroup, ToggleButton, Button, Dialog, DialogActions, DialogContent, TextField, DialogTitle, Typography, CircularProgress } from '@mui/material'
+import { Box, Stack, ToggleButtonGroup, ToggleButton, Button, Dialog, DialogActions, DialogContent, TextField, DialogTitle, Typography, CircularProgress, IconButton, alpha } from '@mui/material'
 import React, { FC, useEffect, useMemo, useRef, useState } from 'react'
 import { ChartOptions, LegendItem, Plugin } from 'chart.js';
 import { Line } from 'react-chartjs-2';
@@ -11,12 +11,14 @@ import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import jsPDF from "jspdf";
 import DownloadIcon from '@mui/icons-material/Download';
+import { useTheme } from "@mui/material/styles";
 
 import Grid from "@mui/material/Grid";
 import AddIcon from '@mui/icons-material/Add';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import GridOnIcon from '@mui/icons-material/GridOn';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import html2canvas from 'html2canvas';
 
 
 
@@ -33,7 +35,7 @@ export interface PatientDetails {
   patient_id: string;
   gestational_age: string;
   birth_date: string;
-
+ gender:string;
   device_resource_id: string;
 
   darkTheme: boolean;
@@ -55,6 +57,8 @@ interface VitalsData {
 }
 
 export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === "dark";
   const [selectedLegends, setSelectedLegends] = useState<any>([])
   const chartRef1 = useRef<any | null>(null);
   const chartRef2 = useRef<any | null>(null);
@@ -190,7 +194,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
   // }
 
   const [manualData, setManualData] = useState<any[]>([]);
-  const [deviceData, setDeviceData] = useState([]);
+const [deviceData, setDeviceData] = useState<any[]>([]);
 
   const [step, setStep] = useState(1);
 
@@ -295,50 +299,51 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
         }
       },
       annotation: {
-        drawTime: 'beforeDraw',
-        annotations: {
-          pinkLow: {
-            type: "box",
-            yMin: 0,
-            yMax: 36.0,
-            backgroundColor: "rgba(253, 226, 228, 0.8)", // pink
-            borderWidth: 0,
-            z: -1,
-          },
-          green: {
-            type: "box",
-            yMin: 36.0,
-            yMax: 36.5,
-            backgroundColor: "rgba(224, 242, 241, 0.8)", // green
-            borderWidth: 0,
-            z: -1,
-          },
-          white: {
-            type: "box",
-            yMin: 36.5,
-            yMax: 37.5,
-            backgroundColor: "rgba(255, 255, 255, 0)", // transparent white
-            borderWidth: 0,
-            z: -1,
-          },
-          yellow: {
-            type: "box",
-            yMin: 37.5,
-            yMax: 38.0,
-            backgroundColor: "rgba(255, 248, 220, 0.8)", // yellow
-            borderWidth: 0,
-            z: -1,
-          },
-          pinkHigh: {
-            type: "box",
-            yMin: 38.0,
-            yMax: 42.0,
-            backgroundColor: "rgba(253, 226, 228, 0.8)", // pink
-            borderWidth: 0,
-            z: -1,
-          },
-        },
-      },
+  // Ensures annotations are drawn behind everything else
+  drawTime: 'beforeDatasetsDraw', 
+  annotations: {
+    pinkLow: {
+      type: "box",
+      yMin: 0,
+      yMax: 36.0,
+      backgroundColor: "rgba(253, 226, 228, 0.45)", // Dropped to 0.2
+      borderWidth: 0,
+      z: -10,
+    },
+    green: {
+      type: "box",
+      yMin: 36.0,
+      yMax: 36.5,
+      backgroundColor: "rgba(224, 242, 241, 0.45)", // Dropped to 0.2
+      borderWidth: 0,
+      z: -10,
+    },
+    white: {
+      type: "box",
+      yMin: 36.5,
+      yMax: 37.5,
+      backgroundColor: "transparent", 
+      borderWidth: 0,
+      z: -10,
+    },
+    yellow: {
+      type: "box",
+      yMin: 37.5,
+      yMax: 38.0,
+      backgroundColor: "rgba(255, 248, 220, 0.45)", // Dropped to 0.2
+      borderWidth: 0,
+      z: -10,
+    },
+    pinkHigh: {
+      type: "box",
+      yMin: 38.0,
+      yMax: 42.0,
+      backgroundColor: "rgba(253, 226, 228, 0.45)", // Dropped to 0.2
+      borderWidth: 0,
+      z: -10,
+    },
+  },
+},
 
     },
     scales: {
@@ -466,7 +471,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 0,   // start at chart min
             yMax: 60,
-            backgroundColor: "rgba(128, 0, 128, 0.8)", // red
+            backgroundColor: "rgba(128, 0, 128, 0.4)", // red
             borderWidth: 0,
             z: -1,
           },
@@ -474,7 +479,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 60,   // start at chart min
             yMax: 80,
-            backgroundColor: "rgba(255, 0, 0, 0.8)", // red
+            backgroundColor: "rgba(255, 0, 0, 0.4)", // red
             borderWidth: 0,
             z: -1,
           },
@@ -489,7 +494,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 80,
             yMax: 100,
-            backgroundColor: "rgba(255, 255, 0, 0.8)", // yellow
+            backgroundColor: "rgba(255, 255, 0, 0.4)", // yellow
             borderWidth: 0,
             z: -1,
           },
@@ -505,7 +510,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 160,
             yMax: 175,
-            backgroundColor: "rgba(255, 255, 0, 0.8)", // yellow
+            backgroundColor: "rgba(255, 255, 0, 0.4)", // yellow
             borderWidth: 0,
             z: -1,
           },
@@ -513,7 +518,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 175,
             yMax: 200,   // end at chart max
-            backgroundColor: "rgba(255, 0, 0, 0.8)", // red
+            backgroundColor: "rgba(255, 0, 0, 0.4)", // red
             borderWidth: 0,
             z: -1,
           },
@@ -654,7 +659,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
         backgroundColor: "rgba(255, 255, 255, 0.9)",
         titleColor: "#000",
         bodyColor: "#000",
-        borderColor: "#ddd",
+        borderColor: "#0CB0D3",
         borderWidth: 1,
         callbacks: {
           label: function (context: any) {
@@ -678,7 +683,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 0,
             yMax: 90,
-            backgroundColor: "rgba(238, 219, 240, 0.8)", // purple
+            backgroundColor: "rgba(238, 219, 240, 0.4)", // purple
             borderWidth: 0,
             z: -1,
           },
@@ -686,7 +691,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 90,
             yMax: 95,
-            backgroundColor: "rgba(255, 248, 220, 0.8)", // yellow
+            backgroundColor: "rgba(255, 248, 220, 0.4)", // yellow
             borderWidth: 0,
             z: -1,
           },
@@ -823,7 +828,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 0,
             yMax: 60,
-            backgroundColor: "rgba(238, 219, 240, 0.8)", // purple
+            backgroundColor: "rgba(238, 219, 240, 0.4)", // purple
             borderWidth: 0,
             z: -1,
           },
@@ -831,7 +836,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 60,
             yMax: 80,
-            backgroundColor: "rgba(253, 226, 228, 0.8)", // pink
+            backgroundColor: "rgba(253, 226, 228, 0.4)", // pink
             borderWidth: 0,
             z: -1,
           },
@@ -839,7 +844,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 80,
             yMax: 100,
-            backgroundColor: "rgba(255, 248, 220, 0.8)", // yellow
+            backgroundColor: "rgba(255, 248, 220, 0.4)", // yellow
             borderWidth: 0,
             z: -1,
           },
@@ -855,7 +860,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 160,
             yMax: 175,
-            backgroundColor: "rgba(255, 248, 220, 0.8)", // yellow
+            backgroundColor: "rgba(255, 248, 220, 0.4)", // yellow
             borderWidth: 0,
             z: -1,
           },
@@ -863,7 +868,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 175,
             yMax: 200,
-            backgroundColor: "rgba(253, 226, 228, 0.8)", // pink
+            backgroundColor: "rgba(253, 226, 228, 0.4)", // pink
             borderWidth: 0,
             z: -1,
           },
@@ -1025,7 +1030,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 0,
             yMax: 20,
-            backgroundColor: "rgba(238, 219, 240, 0.8)", // purple
+            backgroundColor: "rgba(238, 219, 240, 0.4)", // purple
             borderWidth: 0,
             z: -1,
           },
@@ -1033,7 +1038,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 20,
             yMax: 25,
-            backgroundColor: "rgba(253, 226, 228, 0.8)", // pink
+            backgroundColor: "rgba(253, 226, 228, 0.4)", // pink
             borderWidth: 0,
             z: -1,
           },
@@ -1041,7 +1046,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 25,
             yMax: 30,
-            backgroundColor: "rgba(255, 248, 220, 0.8)", // yellow
+            backgroundColor: "rgba(255, 248, 220, 0.4)", // yellow
             borderWidth: 0,
             z: -1,
           },
@@ -1057,7 +1062,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 60,
             yMax: 80,
-            backgroundColor: "rgba(255, 248, 220, 0.8)", // yellow
+            backgroundColor: "rgba(255, 248, 220, 0.4)", // yellow
             borderWidth: 0,
             z: -1,
           },
@@ -1065,7 +1070,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             type: "box",
             yMin: 80,
             yMax: 100,
-            backgroundColor: "rgba(253, 226, 228, 0.8)", // pink
+            backgroundColor: "rgba(253, 226, 228, 0.4)", // pink
             borderWidth: 0,
             z: -1,
           },
@@ -1312,11 +1317,37 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
     setGraphData(true)
     setrendergraph(!rendergraph)
   }, [times])
-
+  
   const handleAddEntry = async (formData?: any) => {
     try {
       const vitals = formData?.vitals || {};
       const observation = formData?.observation1 || {};
+
+      // Valdiation
+      if (vitals.hr) {
+        const hr = parseFloat(vitals.hr);
+        if (hr < 0 || hr > 300) return alert("Heart Rate must be between 0 and 300 bpm");
+      }
+      if (vitals.pr) {
+        const pr = parseFloat(vitals.pr);
+        if (pr < 0 || pr > 300) return alert("Pulse Rate must be between 0 and 300 bpm");
+      }
+      if (vitals.rr) {
+        const rr = parseFloat(vitals.rr);
+        if (rr < 0 || rr > 150) return alert("Respiratory Rate must be between 0 and 150 bpm");
+      }
+      if (vitals.spo2) {
+        const spo2 = parseFloat(vitals.spo2);
+        if (spo2 < 0 || spo2 > 100) return alert("SpO₂ must be between 0 and 100%");
+      }
+      if (vitals.skinTemp) {
+        const skinTemp = parseFloat(vitals.skinTemp);
+        if (skinTemp < 10 || skinTemp > 45) return alert("Skin Temperature must be between 10 and 45°C");
+      }
+      if (vitals.coreTemp) {
+        const coreTemp = parseFloat(vitals.coreTemp);
+        if (coreTemp < 10 || coreTemp > 45) return alert("Core Temperature must be between 10 and 45°C");
+      }
 
       const baseUrl = import.meta.env.VITE_FHIRAPI_URL as string;
       const searchUrl = `${baseUrl}/Observation?subject=Patient/${props.patient_resource_id}&category=vital-signs&_sort=-date&_count=1`;
@@ -1500,6 +1531,33 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
 
       alert("Vitals + Observation saved successfully!");
       setManualVitalsDialog(false);
+      
+      // Clear Inputs
+      setVitals({
+        hr: '',
+        pr: '',
+        rr: '',
+        spo2: '',
+        skinTemp: '',
+        coreTemp: '',
+        bp: '',
+        observation: ''
+      });
+      setObservation1({
+        grunting: "",
+        colour: "",
+        neuro: "",
+        feeding: "",
+        glucose: "",
+        parentalConcerns: "",
+      });
+      setStep(1);
+
+      // Refresh Data
+      setLoading(true);
+      fetchManualTrends(props.patient_resource_id)
+        .then((data) => setManualData(data))
+        .finally(() => setLoading(false));
 
     } catch (error) {
       console.error("⚠️ Error in handleAddEntry:", error);
@@ -1517,7 +1575,8 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
     bp: '',
     observation: ''
   });
-
+  let cachedObservationId: string | null = null;
+let vitalsAbortController: AbortController | null = null;
   const [observation1, setObservation1] = useState({
     grunting: "",
     colour: "",
@@ -1542,684 +1601,450 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
   const handleNext = () => setStep((prev) => prev + 1);
   const handleBack = () => setStep((prev) => prev - 1);
 
+  function getVisibleXAxisTicks(chartRef: React.MutableRefObject<any>) {
+    if (!chartRef?.current) return [];
 
+    const scale = chartRef.current.scales.x;
+    if (!scale) return [];
+
+    // Chart.js stores visible ticks here
+    return scale.ticks.map((t: { label: any; }) => t.label);
+  }
   const handleInputChange = (field: keyof VitalsData) => (event: React.ChangeEvent<HTMLInputElement>) => {
     let value = event.target.value;
+    
+    // Length limits
+    if (["hr", "pr", "rr", "spo2"].includes(field)) {
+      if (value.length > 3) return;
+    }
+    if (["skinTemp", "coreTemp"].includes(field)) {
+      if (value.length > 4) return;
+    }
+    if (field === "bp" && value.length > 7) return;
+
     // Only restrict to numbers and decimals for numeric vital inputs, leave observation alone
-    if ((field as string) !== "observation") {
+    if ((field as string) !== "observation" && field !== "bp") {
       value = value.replace(/[^0-9.]/g, '');
       const parts = value.split('.');
       if (parts.length > 2) {
         value = parts[0] + '.' + parts.slice(1).join('');
       }
+    } else if (field === "bp") {
+      value = value.replace(/[^0-9/]/g, '');
     }
     setVitals({ ...vitals, [field]: value });
   };
 
-  const downloadTrendsPDF = async () => {
-    const doc = new jsPDF("p", "pt", "a4");
-    const pageWidth = doc.internal.pageSize.getWidth();
 
-    let orgName = "Unknown Organization";
-    let logoDataUrl = null;
-
-    try {
-      const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/${props.userOrganization}`;
-      const res = await fetch(orgUrl, {
-        headers: {
-          Authorization: "Basic " + btoa("fhiruser:change-password"),
-          Accept: "application/fhir+json",
-        },
-      });
-
-      if (!res.ok) throw new Error(`Organization fetch failed: ${res.status}`);
-
-      const orgData = await res.json();
-      orgName = orgData.name || orgName;
-
-      const extensions = Array.isArray(orgData.extension) ? orgData.extension : [];
-      const logoExt = extensions.find(
-        (ext: { url: string; }) =>
-          ext.url ===
-          "http://example.org/fhir/StructureDefinition/organization-logo"
-      );
-      const logoRef = logoExt?.valueReference?.reference;
-
-      if (logoRef) {
-        const binaryId = logoRef.replace("Binary/", "");
-        const binaryUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Binary/${binaryId}`;
-
-        const binaryRes = await fetch(binaryUrl, {
-          headers: {
-            Authorization: "Basic " + btoa("fhiruser:change-password"),
-            Accept: "application/fhir+json",
-          },
+const downloadTrendsPDF = async () => {
+    const hideXAxis = () => {
+        [chartRef1, chartRef2, chartRef3, chartRef4, chartRef5].forEach(ref => {
+            const c = ref?.current;
+            if (c) { c.options.scales.x.display = false; c.update(); }
         });
-
-        if (!binaryRes.ok) throw new Error(`Binary fetch failed: ${binaryRes.status}`);
-
-        const binaryData = await binaryRes.json();
-
-        if (binaryData.data && binaryData.contentType) {
-          logoDataUrl = `data:${binaryData.contentType};base64,${binaryData.data}`;
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching organization/logo:", err);
-    }
-
-    const padding = 40;
-    const headerHeight = 80;
-
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, pageWidth, headerHeight + 20, "F");
-
-    const logoX = padding;
-    const logoY = padding;
-
-    try {
-      if (logoDataUrl) {
-        const img = new Image();
-        img.src = logoDataUrl;
-
-        await new Promise((resolve) => (img.onload = resolve));
-
-        doc.addImage(img, "PNG", logoX, logoY, 130, 35);
-      } else {
-        doc.setFillColor('200');
-        doc.rect(logoX, logoY, 130, 35, "F");
-      }
-    } catch {
-      doc.setFillColor('200');
-      doc.rect(logoX, logoY, 130, 35, "F");
-    }
-
-    // --- RIGHT SIDE HEADER: VITALS CHART PILL BOX ---
-    const cardW = 300; // specific width for the pill
-    const cardX = pageWidth - padding - cardW;
-    const cardY = padding + 2;
-    const cardH = 45;
-
-    // Outer Container (Outlined Pill)
-    doc.setDrawColor(200, 200, 200);   // Light gray border
-    doc.setLineWidth(1);
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(cardX, cardY, cardW, cardH, 5, 5, "FD");
-
-    // Divider Line (Horizontal)
-    doc.setDrawColor(230, 230, 230);
-    doc.line(cardX + 10, cardY + 22, cardX + cardW - 10, cardY + 22);
-
-    const leftColMid = cardX + (cardW / 2) + 5;
-
-    // Content: Row 1
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(150, 150, 150);
-    doc.text("B/O:", cardX + 10, cardY + 15);
-    doc.setTextColor(30, 30, 30);
-    doc.text(`${props.patient_name || ""}`, cardX + 30, cardY + 15);
-
-    doc.setTextColor(150, 150, 150);
-    doc.text("UHID:", leftColMid, cardY + 15);
-    doc.setTextColor(30, 30, 30);
-    doc.text(`${props.patient_id || ""}`, leftColMid + 25, cardY + 15);
-
-    // Content: Row 2
-    doc.setTextColor(150, 150, 150);
-    doc.text("GA:", cardX + 10, cardY + 36);
-    doc.setTextColor(30, 30, 30);
-    doc.text(`${props.gestational_age || ""}`, cardX + 28, cardY + 36);
-
-    doc.setTextColor(150, 150, 150);
-    doc.text("CURRENT WT:", leftColMid, cardY + 36);
-    doc.setTextColor(30, 30, 30);
-    // Note: CURRENT WT requires a property not natively available in this component yet; showing fallback.
-    doc.text(`--- g`, leftColMid + 55, cardY + 36);
-
-    // "VITALS CHART" Badge (Top-Right Overlap)
-    const badgeW = 65;
-    const badgeH = 15;
-    const badgeX = cardX + cardW - badgeW - 5;
-    const badgeY = cardY - 5;
-
-    doc.setFillColor(230, 235, 240);  // Very light gray/blue
-    doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 3, 3, "F");
-
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(8);
-    doc.text("VITALS CHART", badgeX + 8, badgeY + 10);
-
-    // --- HEADER DIVIDER ---
-    const lineY = cardY + cardH + 15;
-    doc.setDrawColor(240, 219, 225); // Very light pink/gray divider
-    doc.line(padding, lineY, pageWidth - padding, lineY);
-
-    let startY = lineY + 10;
-
-    // --- GRID DIMENSIONS ---
-    const pageHeight = doc.internal.pageSize.getHeight();
-    // --- TIME LABELS ---
-    const colCount = 12;
-    const currentNow = Date.now(); // The exact time when user taps download
-    const printTimeFrame = 12; // FORCED TO 12H ONLY
-    const timeSpanMs = printTimeFrame * 60 * 60 * 1000;
-
-    // Calculate the reference "end time" by rounding up to the next hour if past the top of the hour
-    const endD = new Date(currentNow);
-    if (endD.getMinutes() > 0 || endD.getSeconds() > 0 || endD.getMilliseconds() > 0) {
-      endD.setHours(endD.getHours() + 1);
-    }
-    endD.setMinutes(0, 0, 0);
-
-    const startTimeMs = endD.getTime() - timeSpanMs;
-    const intervalMs = timeSpanMs / colCount;
-
-    const displayLabels: { timestamp: number; label: string }[] = [];
-    for (let i = 0; i < colCount; i++) {
-      const t = startTimeMs + i * intervalMs;
-      const d = new Date(t);
-      displayLabels.push({
-        timestamp: t,
-        label: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      });
-    }
-
-    const labelColW = 34; // Reduced slightly to account for date strings depending on timeframe
-    const tableX = 45;    // Increased left padding for axis labels
-    const tableWidth = pageWidth - 90; // Ensure right padding matches left
-    const dataAreaW = tableWidth - labelColW;
-    const cellW = dataAreaW / colCount;
-
-    // --- DRAW TIME HEADER ROW ---
-    const headerRowH = 16;
-    doc.setFillColor(255, 255, 255);
-    doc.setDrawColor(176, 190, 197); // Slate blue-gray borders (#B0BEC5)
-    doc.setLineWidth(0.5);
-
-    // "Values" cell
-    doc.setFillColor(248, 249, 250); // Light gray for "Values" header matching the image
-    doc.rect(tableX, startY, labelColW, headerRowH, "F");
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    doc.setTextColor(100, 100, 100);
-    doc.text("Values", tableX + labelColW / 2, startY + 11, { align: "center" });
-
-    // Time cells
-    for (let c = 0; c < colCount; c++) {
-      const cx = tableX + labelColW + c * cellW;
-
-      doc.setDrawColor(176, 190, 197); // Reset border color
-      doc.setFillColor(255, 255, 255); // Guarantee white inside loop
-      doc.rect(cx, startY, cellW, headerRowH, "FD");
-
-      if (displayLabels[c] && displayLabels[c].label) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(7);
-        doc.setTextColor(100, 100, 100);
-        doc.text(displayLabels[c].label, cx + cellW / 2, startY + 11, { align: "center" });
-      }
-    }
-
-    startY += headerRowH + 10;
-
-    // --- DATA FETCH HELPER ---
-    const MATCH_WINDOW = intervalMs / 2;
-    const findClosestPoint = (target: number, keys: string[], sourceData: any[]) => {
-      let closestVal = null; let minDiff = Infinity;
-      sourceData.forEach((item: any) => {
-        const t = new Date(item.time).getTime();
-        const diff = Math.abs(t - target);
-        if (diff < minDiff && diff < MATCH_WINDOW) {
-          for (const k of keys) {
-            if (item[k] !== undefined && item[k] !== null && item[k] !== "") {
-              minDiff = diff;
-              closestVal = item[k];
-              break;
-            }
-          }
-        }
-      });
-      return closestVal;
     };
 
-    // --- CHART Rendering Engine --- //
-    const pdfCharts = [
-      {
-        title: "Temperature",
-        unit: "(°C)",
-        min: 35.0, max: 39.0,
-        ticks: [39.0, 38.0, 37.0, 36.0, 35.0],
-        dataKeys: ["Temperature", "Core Temperature", "Skin Temperature"],
-        lineColor: "#F76707",
-        ptColor: [247, 103, 7],
-        height: 120, // increased to fill bottom space
-        zones: [
-          { min: 38.0, max: 39.0, color: [253, 226, 228] }, // pink
-          { min: 37.5, max: 38.0, color: [255, 248, 220] }, // yellow
-          { min: 36.5, max: 37.5, color: [255, 255, 255] }, // white
-          { min: 36.0, max: 36.5, color: [224, 242, 241] }, // green
-          { min: 35.0, max: 36.0, color: [253, 226, 228] }  // pink
-        ]
-      },
-      {
-        title: "Respiratory",
-        unit: "(bpm)",
-        min: 10, max: 90,
-        ticks: [90, 80, 70, 60, 50, 40, 30, 20, 10],
-        dataKeys: ["Respiratory Rate", "RR"],
-        lineColor: "#FAB005",
-        ptColor: [250, 176, 5],
-        height: 145, // increased to fill bottom space
-        zones: [
-          { min: 80, max: 90, color: [253, 226, 228] }, // pink
-          { min: 60, max: 80, color: [255, 248, 220] }, // yellow
-          { min: 30, max: 60, color: [255, 255, 255] }, // white
-          { min: 25, max: 30, color: [255, 248, 220] }, // yellow
-          { min: 20, max: 25, color: [253, 226, 228] }, // pink
-          { min: 10, max: 20, color: [238, 219, 240] }  // purple
-        ]
-      },
-      {
-        title: "Heart Rate",
-        unit: "(bpm)",
-        min: 40, max: 200,
-        ticks: [200, 180, 160, 140, 120, 100, 80, 60, 40],
-        dataKeys: ["Pulse Rate", "Heart Rate"],
-        lineColor: "#F06595",
-        ptColor: [240, 101, 149],
-        height: 145, // increased to fill bottom space
-        zones: [
-          { min: 175, max: 200, color: [253, 226, 228] }, // pink
-          { min: 160, max: 175, color: [255, 248, 220] }, // yellow
-          { min: 100, max: 160, color: [255, 255, 255] }, // white
-          { min: 80, max: 100, color: [255, 248, 220] },  // yellow
-          { min: 60, max: 80, color: [253, 226, 228] },   // pink
-          { min: 40, max: 60, color: [238, 219, 240] }    // purple
-        ]
-      },
-      {
-        title: "SpO2",
-        unit: "(%)",
-        min: 80, max: 100,
-        ticks: [100, 95, 90, 85, 80],
-        dataKeys: ["SpO₂", "SPO2"],
-        lineColor: "#4DABF7",
-        ptColor: [77, 171, 247],
-        height: 75, // increased to fill bottom space
-        zones: [
-          { min: 95, max: 100, color: [255, 255, 255] }, // white
-          { min: 90, max: 95, color: [255, 248, 220] },  // yellow
-          { min: 80, max: 90, color: [238, 219, 240] }   // purple
-        ]
-      }
-    ];
+    const showXAxis = () => {
+        [chartRef1, chartRef2, chartRef3, chartRef4, chartRef5].forEach(ref => {
+            const c = ref?.current;
+            if (c) { c.options.scales.x.display = true; c.update(); }
+        });
+    };
 
-    pdfCharts.forEach((chart) => {
-      const range = chart.max - chart.min;
-      doc.setDrawColor(200, 200, 200);
-      doc.setLineWidth(0.2);
+    hideXAxis();
 
-      // 1. Draw Zones
-      chart.zones.forEach(zone => {
-        const topY = startY + chart.height - ((zone.max - chart.min) / range) * chart.height;
-        const zoneH = ((zone.max - zone.min) / range) * chart.height;
-        doc.setFillColor(zone.color[0], zone.color[1], zone.color[2]);
-        doc.rect(tableX + labelColW, topY, dataAreaW, zoneH, "F");
-      });
+    const doc       = new jsPDF("p", "pt", "a4");
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const padding   = 30;
+    const headerHeight = 85;
 
-      // 2. Draw Label Col BG (without stroke)
-      doc.setFillColor(255, 255, 255);
-      doc.rect(tableX, startY, labelColW, chart.height, "F");
+    // =========================
+    // 1️⃣ FETCH ORGANIZATION + LOGO + FOOTER DATA
+    // =========================
+    let orgName    = "Unknown Organization";
+    let logoDataUrl: string | null = null;
 
-      // 3. Draw horizontal grid lines (for ticks)
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.setTextColor(150, 150, 150);
-      chart.ticks.forEach(tick => {
-        const yPos = startY + chart.height - ((tick - chart.min) / range) * chart.height;
-        doc.setDrawColor(176, 190, 197); // Slate blue-gray (#B0BEC5)
-        doc.line(tableX + labelColW, yPos, tableX + labelColW + dataAreaW, yPos);
-        let labelText = tick.toString() + (tick % 1 === 0 && chart.title === "Temperature" ? ".0" : "");
-        if (chart.title === "SpO2") labelText += "%";
-
-        // Align text to the left side of the vertical dividing line
-        doc.text(labelText, tableX + labelColW - 2, yPos + 3, { align: "right" });
-      });
-
-      // 4. Draw Vertical grid lines
-      for (let c = 0; c <= colCount; c++) {
-        const cx = tableX + labelColW + c * cellW;
-        doc.setDrawColor(176, 190, 197);
-        doc.line(cx, startY, cx, startY + chart.height);
-      }
-
-      // 5. Draw Rotated Title
-      doc.setTextColor(100, 100, 100);
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "bold");
-      // Compute vertical center for rotated text (angle 90 means bottom-to-top)
-      const fullTitle = `${chart.title} ${chart.unit}`;
-      const titleWidth = doc.getTextWidth(fullTitle);
-
-      // Shift text X coordinate 10px further left from the center of the label column
-      const textX = tableX + (labelColW / 2) - 12;
-      const textY = startY + chart.height / 2 + titleWidth / 2;
-
-      doc.text(fullTitle, textX, textY, { angle: 90 });
-
-      // 6. Plot Data Points (Lines)
-      let prevPoint: { x: number, y: number } | null = null;
-      for (let c = 0; c < colCount; c++) {
-        let valStr = findClosestPoint(displayLabels[c].timestamp, chart.dataKeys, filteredManualData);
-        if (!valStr && chart.title === "Temperature") {
-          valStr = findClosestPoint(displayLabels[c].timestamp, ["CURRENT SKIN TEMPERATURE", "CURRENT PERIPHERAL TEMPERATURE"], filteredDeviceData);
-        }
-
-        if (valStr !== null && valStr !== undefined && !isNaN(parseFloat(valStr))) {
-          const val = parseFloat(valStr);
-          const clampedVal = Math.min(Math.max(val, chart.min), chart.max);
-          const cx = tableX + labelColW + c * cellW + cellW / 2;
-          const cy = startY + chart.height - ((clampedVal - chart.min) / range) * chart.height;
-
-          if (prevPoint) {
-            doc.setDrawColor(chart.ptColor[0], chart.ptColor[1], chart.ptColor[2]);
-            doc.setLineWidth(0.5);
-            doc.line(prevPoint.x, prevPoint.y, cx, cy);
-          }
-          prevPoint = { x: cx, y: cy };
-        }
-      }
-
-      // 7. Plot Data Points (Circles)
-      for (let c = 0; c < colCount; c++) {
-        let valStr = findClosestPoint(displayLabels[c].timestamp, chart.dataKeys, filteredManualData);
-        if (!valStr && chart.title === "Temperature") {
-          valStr = findClosestPoint(displayLabels[c].timestamp, ["CURRENT SKIN TEMPERATURE", "CURRENT PERIPHERAL TEMPERATURE"], filteredDeviceData);
-        }
-
-        if (valStr !== null && valStr !== undefined && !isNaN(parseFloat(valStr))) {
-          const val = parseFloat(valStr);
-          const clampedVal = Math.min(Math.max(val, chart.min), chart.max);
-          const cx = tableX + labelColW + c * cellW + cellW / 2;
-          const cy = startY + chart.height - ((clampedVal - chart.min) / range) * chart.height;
-
-          doc.setFillColor(chart.ptColor[0], chart.ptColor[1], chart.ptColor[2]);
-          doc.circle(cx, cy, 1.2, "F");
-        }
-      }
-
-      startY += chart.height + 12; // Adjusted spacing between charts
-    });
-
-    // ─── OBSERVATION SUMMARY TABLE (Docked perfectly to Grid) ───
-    {
-      const obsRows = [
-        { label: "Grunting", field: "Grunting" },
-        { label: "Color", field: "Colour" },
-        { label: "Neuro", field: "Neuro" },
-        { label: "Feeding", field: "Feeding" },
-        { label: "Glucose", field: "Glucose" },
-      ];
-
-      const rowH = 16; // increased row height to fill page perfectly
-      doc.setLineWidth(0.5);
-
-      obsRows.forEach((row) => {
-        doc.setFillColor(255, 255, 255);
-        doc.setDrawColor(176, 190, 197); // Slate blue-gray (#B0BEC5)
-        doc.rect(tableX, startY, labelColW, rowH, "FD");
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(7);
-        doc.setTextColor(100, 100, 100);
-
-        // Centered label 
-        doc.text(row.label, tableX + (labelColW / 2), startY + 10, { align: "center" });
-
-        for (let c = 0; c < colCount; c++) {
-          const cx = tableX + labelColW + c * cellW;
-          doc.setFillColor(255, 255, 255);
-          doc.rect(cx, startY, cellW, rowH, "FD");
-
-          let valueStr = findClosestPoint(displayLabels[c].timestamp, [row.field], filteredManualData);
-          if (valueStr != null) {
-  const cleanValue = String(valueStr).trim();
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  doc.setTextColor(50);
-
-  doc.text(
-    cleanValue,
-    cx + cellW / 2,
-    startY + 10,
-    { align: "center", maxWidth: cellW - 2 }
-  );
-}
-        }
-        startY += rowH;
-      });
-    }
-
-    // --- FOOTER SECTION ---
-    const footerY = pageHeight - 40; // Absolute position near bottom of A4
-    doc.setDrawColor(240, 219, 225);
-    doc.setLineWidth(0.5);
-    doc.line(40, footerY - 10, pageWidth - 40, footerY - 10);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    doc.setTextColor(150, 150, 150);
-    doc.text("5th & 6th Floor, Archit Sai Avenue, Shree Vallabh Nagar, Behind Old Chhan Hotel, Mumbai Naka, Nashik 422001.", 40, footerY);
-
-    // Contact Info Bottom Row
-    doc.setFont("helvetica", "bold");
-    doc.text("P: ", 40, footerY + 10);
-    doc.setFont("helvetica", "normal");
-    doc.text("8669668651, 9822003909", 48, footerY + 10);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("E: ", 108, footerY + 10);
-    doc.setFont("helvetica", "normal");
-    doc.text("care.nashik@nimalborneo.com", 116, footerY + 10);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("W: ", 186, footerY + 10);
-    doc.setFont("helvetica", "normal");
-    doc.text("https://borneohospitals.com/", 196, footerY + 10);
-
-    // Pagination
-    doc.setTextColor(180, 180, 180);
-    doc.text("Page 1/1", pageWidth - 40, footerY + 10, { align: "right" });
-
-    doc.save(`Trends_Report(${props.patient_id || "patient"}).pdf`);
-  };
-
-  async function fetchDeviceVitals(patientId: string, timeframeHours = 48) {
-    // console.log("📡 fetchDeviceVitals() called", { patientId, timeframeHours });
+    let footerAddress  = "";
+    let footerPhones: string[] = [];
+    let footerEmail    = "";
+    let footerWebsite  = "";
 
     try {
-      const sinceDate = new Date(Date.now() - timeframeHours * 3600 * 1000).toISOString();
-      // console.log("⏳ Fetching history since:", sinceDate);
+        const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/${props.userOrganization}`;
+        const res = await fetch(orgUrl, {
+            headers: {
+                Authorization: "Basic " + btoa("fhiruser:change-password"),
+                Accept: "application/fhir+json",
+            },
+        });
 
-      // ---------------- SEARCH LATEST OBSERVATION ----------------
-      const searchUrl =
-        `${import.meta.env.VITE_FHIRAPI_URL}/Observation?subject=Patient/${patientId}` +
-        `&category=data-log&_sort=-_lastUpdated&_count=1`;
+        if (!res.ok) throw new Error(`Organization fetch failed: ${res.status}`);
+        const orgData = await res.json();
+        orgName = orgData.name || orgName;
 
-      // console.log("🔍 Search URL:", searchUrl);
+        // ── Logo ──────────────────────────────────────────────
+        const logoExt = (orgData.extension || []).find(
+            (ext: any) => ext.url === "http://example.org/fhir/StructureDefinition/organization-logo"
+        );
+        const logoRef = logoExt?.valueReference?.reference;
+        if (logoRef) {
+            const binaryId  = logoRef.replace("Binary/", "");
+            const binaryRes = await fetch(
+                `${import.meta.env.VITE_FHIRAPI_URL}/Binary/${binaryId}`,
+                {
+                    headers: {
+                        Authorization: "Basic " + btoa("fhiruser:change-password"),
+                        Accept: "application/fhir+json",
+                    },
+                }
+            );
+            if (!binaryRes.ok) throw new Error(`Binary fetch failed: ${binaryRes.status}`);
+            const binaryData = await binaryRes.json();
+            if (binaryData.data && binaryData.contentType) {
+                logoDataUrl = `data:${binaryData.contentType};base64,${binaryData.data}`;
+            }
+        }
 
+        // ── Address ───────────────────────────────────────────
+        const addr = orgData.address?.[0];
+        if (addr) {
+            footerAddress = [
+                addr.line?.join(", "),
+                addr.city,
+                addr.state,
+                addr.postalCode,
+                addr.country,
+            ].filter(Boolean).join(", ");
+        }
+
+        // ── Telecom ───────────────────────────────────────────
+        (orgData.telecom || []).forEach((t: any) => {
+            if (t.system === "phone") footerPhones.push(t.value);
+            if (t.system === "email") footerEmail   = t.value;
+            if (t.system === "url")   footerWebsite = t.value;
+        });
+
+    } catch (err) {
+        console.error("Error fetching organization/logo:", err);
+    }
+
+    // =========================
+    // 🧾 HEADER
+    // =========================
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, pageWidth, headerHeight + 10, "F");
+
+    if (logoDataUrl) {
+        doc.addImage(logoDataUrl, "PNG", padding, 20, 80, 20);
+    }
+
+    const cardW = 220;
+    const cardH = 60;
+    const cardX = pageWidth - cardW - padding;
+    const cardY = 30;
+
+    // Title tab
+    doc.setFillColor(220, 225, 230);
+    doc.roundedRect(cardX + 20, cardY - 15, cardW - 20, 15, 3, 3, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(40);
+    doc.text("VITALS AND TRENDS", cardX + 65, cardY - 3);
+
+    // Info card
+    doc.setDrawColor(200, 208, 215);
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(cardX + 10, cardY, cardW, cardH - 5, 5, 5, "FD");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(50);
+
+    doc.text(`B/O: ${props.patient_name    || ""}`, cardX + 15,  cardY + 15);
+    doc.text(`ID: ${props.patient_id       || ""}`, cardX + 140, cardY + 15);
+    doc.text(`G.A: ${props.gestational_age || ""}`, cardX + 15,  cardY + 32);
+    doc.text(`TimeFrame: ${timeFrame} Hrs`,          cardX + 140, cardY + 32);
+    doc.text(`Gender: ${props.gender       || ""}`, cardX + 15,  cardY + 49);
+
+    // Header divider
+    doc.setDrawColor(100, 100, 100);
+    doc.setLineWidth(1);
+    doc.line(padding, headerHeight + 10, pageWidth - padding, headerHeight + 10);
+
+    // =========================
+    // 📊 CHART GRID
+    // =========================
+    const sidebarWidth = 35;
+    const chartStartX  = padding + sidebarWidth;
+    const chartWidth   = pageWidth - chartStartX - padding;
+    const rowHeight    = 150;
+    let currentY       = 110;
+
+    // Time header row
+    const timeList = getVisibleXAxisTicks(chartRef1);
+    if (timeList.length > 0) {
+        const cellWidth = chartWidth / timeList.length;
+
+        doc.setFillColor(240, 240, 240);
+        doc.rect(padding, currentY, sidebarWidth, 25, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.text("TIME", padding + 5, currentY + 16);
+
+        doc.setFillColor(248, 249, 250);
+        doc.rect(chartStartX, currentY, chartWidth, 25, "F");
+        doc.setDrawColor(200);
+        doc.rect(chartStartX, currentY, chartWidth, 25, "D");
+
+        timeList.forEach((t: string | string[], i: number) => {
+            const x = chartStartX + i * cellWidth + cellWidth / 2;
+            doc.setFontSize(7);
+            doc.text(t, x, currentY + 15, { align: "center" });
+        });
+        currentY += 30;
+    }
+
+    // Chart rows
+    const chartIds = [
+        { id: "temperatureGraph", title: "TEMPERATURE" },
+        { id: "respirationGraph", title: "RESPIRATION" },
+        { id: "pulseGraph",       title: "PULSE RATE"  },
+        { id: "spo2Graph",        title: "SpO2"        },
+    ];
+
+    for (const chart of chartIds) {
+        const el = document.getElementById(chart.id);
+        if (!el) continue;
+
+        doc.setDrawColor(200);
+        doc.setFillColor(255, 255, 255);
+        doc.rect(padding, currentY, sidebarWidth + chartWidth, rowHeight, "D");
+
+        doc.setFillColor(248, 249, 250);
+        doc.rect(padding, currentY, sidebarWidth, rowHeight, "F");
+        doc.line(chartStartX, currentY, chartStartX, currentY + rowHeight);
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(100);
+        doc.text(chart.title, padding + 23, currentY + (rowHeight / 1.5), { angle: 90 });
+
+        const canvas  = await html2canvas(el, { scale: 2, backgroundColor: "#fff", logging: false, useCORS: true });
+        const imgData = canvas.toDataURL("image/png");
+        doc.addImage(imgData, "PNG", chartStartX + 1, currentY + 1, chartWidth - 2, rowHeight - 2);
+
+        currentY += rowHeight + 8;
+    }
+
+    // =========================
+    // 4️⃣ FOOTER — built from org resource
+    // =========================
+    const logoX      = padding;  // reuse padding as left anchor (matches header logo)
+    const totalPages = (doc as any).internal.getNumberOfPages();
+
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        const pageHeight = doc.internal.pageSize.getHeight();
+
+        // Divider line
+        doc.setDrawColor(238, 238, 238);
+        doc.setLineWidth(1);
+        doc.line(logoX, pageHeight - 50, pageWidth - logoX, pageHeight - 50);
+
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        doc.setFont("helvetica", "normal");
+
+        // Row 1 — Address
+        doc.text(footerAddress || "Address not available", logoX, pageHeight - 35);
+
+        // Row 2 — Phones | Email | Website + page number
+        const contactParts: string[] = [];
+        if (footerPhones.length > 0) contactParts.push(footerPhones.join(", "));
+        if (footerEmail)             contactParts.push(footerEmail);
+        if (footerWebsite)           contactParts.push(footerWebsite);
+
+        doc.text(contactParts.join("  |  "), logoX, pageHeight - 21);
+        doc.text(`Page ${i}/${totalPages}`, pageWidth - logoX - 30, pageHeight - 21);
+    }
+
+    showXAxis();
+    doc.save(`Trends_Report_${props.patient_id}.pdf`);
+};
+
+  // async function fetchDeviceVitals(patientId: string, timeframeHours = 48) {
+  //   // console.log("📡 fetchDeviceVitals() called", { patientId, timeframeHours });
+
+  //   try {
+  //     const sinceDate = new Date(Date.now() - timeframeHours * 3600 * 1000).toISOString();
+  //     // console.log("⏳ Fetching history since:", sinceDate);
+
+  //     // ---------------- SEARCH LATEST OBSERVATION ----------------
+  //     const searchUrl =
+  //       `${import.meta.env.VITE_FHIRAPI_URL}/Observation?subject=Patient/${patientId}` +
+  //       `&category=data-log&_sort=-_lastUpdated&_count=1`;
+
+  //     // console.log("🔍 Search URL:", searchUrl);
+
+  //     const searchResponse = await fetch(searchUrl, {
+  //       headers: {
+  //         Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //         Accept: "application/fhir+json",
+  //       },
+  //     });
+
+  //     // console.log("🔎 Search Response Status:", searchResponse.status);
+
+  //     const searchResult = await searchResponse.json();
+  //     // console.log("📥 Search Result:", searchResult);
+
+  //     if (!searchResult.entry?.length) {
+  //       console.warn("⚠ No observation entries found for patient.");
+  //       return [];
+  //     }
+
+  //     const observationId = searchResult.entry[0].resource.id;
+  //     // console.log("🆔 Latest Observation ID:", observationId);
+
+  //     // ---------------- FETCH OBSERVATION HISTORY ----------------
+  //     const historyUrl =
+  //       `${import.meta.env.VITE_FHIRAPI_URL}/Observation/${observationId}` +
+  //       `/_history?_since=${sinceDate}&_count=10000`;
+
+  //     // console.log("📜 History URL:", historyUrl);
+
+  //     const historyResponse = await fetch(historyUrl, {
+  //       headers: {
+  //         Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //         Accept: "application/fhir+json",
+  //       },
+  //     });
+
+  //     // console.log("📄 History Response Status:", historyResponse.status);
+
+  //     const bundle = await historyResponse.json();
+  //     // console.log("📦 History Bundle:", bundle);
+
+  //     // ---------------- PARSE HISTORY DATA ----------------
+  //     const parsed =
+  //       bundle.entry?.map((entry: any) => {
+  //         const obs = entry.resource;
+  //         // console.log("🔧 Parsing Observation Entry:", obs);
+
+  //         const time = obs.effectiveDateTime;
+  //         const values: Record<string, number | string> = {};
+
+  //         obs.component?.forEach((c: any) => {
+  //           const label = c.code?.coding?.[0]?.display;
+  //           const value = c.valueQuantity?.value ?? c.valueString;
+
+  //           // console.log(`   ➕ Component: ${label} = ${value}`);
+
+  //           if (label && value !== undefined) values[label] = value;
+  //         });
+
+  //         return { time, ...values };
+  //       }) || [];
+
+  //     // console.log("🔍 Parsed Values (Before Sort):", parsed);
+
+  //     const sorted = parsed.sort((a: any, b: any) =>
+  //       new Date(a.time).getTime() - new Date(b.time).getTime()
+  //     );
+
+  //     // console.log("✅ Sorted Device Vitals:", sorted);
+
+  //     return sorted;
+  //   } catch (err) {
+  //     console.error("❌ Error fetching device history:", err);
+  //     return [];
+  //   }
+  // }
+async function fetchDeviceVitals(patientId: string, timeframeHours = 48) {
+  // 1. Cancel any previous pending request to save bandwidth and CPU
+  if (vitalsAbortController) {
+    vitalsAbortController.abort();
+  }
+  vitalsAbortController = new AbortController();
+
+  try {
+    const sinceDate = new Date(Date.now() - timeframeHours * 3600 * 1000).toISOString();
+    let obsId = cachedObservationId;
+
+    // 2. Search for the ID ONLY if we haven't found it yet
+    if (!obsId) {
+      const searchUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Observation?subject=Patient/${patientId}&category=data-log&_sort=-_lastUpdated&_count=1`;
+      
       const searchResponse = await fetch(searchUrl, {
         headers: {
           Authorization: "Basic " + btoa("fhiruser:change-password"),
           Accept: "application/fhir+json",
         },
+        signal: vitalsAbortController.signal,
       });
-
-      // console.log("🔎 Search Response Status:", searchResponse.status);
 
       const searchResult = await searchResponse.json();
-      // console.log("📥 Search Result:", searchResult);
-
       if (!searchResult.entry?.length) {
-        console.warn("⚠ No observation entries found for patient.");
         return [];
       }
+      obsId = searchResult.entry[0].resource.id;
+      cachedObservationId = obsId; // Store it for future calls
+    }
 
-      const observationId = searchResult.entry[0].resource.id;
-      // console.log("🆔 Latest Observation ID:", observationId);
+    // 3. Fetch History
+    const historyUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Observation/${obsId}/_history?_since=${sinceDate}&_count=10000`;
 
-      // ---------------- FETCH OBSERVATION HISTORY ----------------
-      const historyUrl =
-        `${import.meta.env.VITE_FHIRAPI_URL}/Observation/${observationId}` +
-        `/_history?_since=${sinceDate}&_count=10000`;
+    const historyResponse = await fetch(historyUrl, {
+      headers: {
+        Authorization: "Basic " + btoa("fhiruser:change-password"),
+        Accept: "application/fhir+json",
+      },
+      signal: vitalsAbortController.signal,
+    });
 
-      // console.log("📜 History URL:", historyUrl);
+    const bundle = await historyResponse.json();
+    const entries = bundle.entry || [];
+    const totalEntries = entries.length;
 
-      const historyResponse = await fetch(historyUrl, {
-        headers: {
-          Authorization: "Basic " + btoa("fhiruser:change-password"),
-          Accept: "application/fhir+json",
-        },
-      });
+    // 4. Calculate Skip Factor (Downsampling)
+    // Goal: Don't overwhelm the chart. Aim for ~2000-3000 points max.
+    let skipFactor = 1;
+    if (totalEntries > 5000) skipFactor = 5;
+    if (totalEntries > 20000) skipFactor = 15;
+    if (totalEntries > 50000) skipFactor = 30;
 
-      // console.log("📄 History Response Status:", historyResponse.status);
+    const parsed: any[] = [];
 
-      const bundle = await historyResponse.json();
-      // console.log("📦 History Bundle:", bundle);
+    // 5. Optimized Loop with Skip Logic
+    // We iterate backwards because FHIR history is usually Newest -> Oldest
+    for (let i = 0; i < totalEntries; i += skipFactor) {
+      const obs = entries[i].resource;
+      const row: any = { time: obs.effectiveDateTime };
 
-      // ---------------- PARSE HISTORY DATA ----------------
-      const parsed =
-        bundle.entry?.map((entry: any) => {
-          const obs = entry.resource;
-          // console.log("🔧 Parsing Observation Entry:", obs);
+      const components = obs.component || [];
+      for (let j = 0; j < components.length; j++) {
+        const c = components[j];
+        const label = c.code?.coding?.[0]?.display;
+        if (label) {
+          row[label] = c.valueQuantity?.value ?? c.valueString;
+        }
+      }
+      parsed.push(row);
+    }
 
-          const time = obs.effectiveDateTime;
-          const values: Record<string, number | string> = {};
+    // 6. Final Sort: Chronological order (Oldest -> Newest)
+    // Since we parsed Newest -> Oldest with skip, a reverse is much faster than a full .sort()
+    return parsed.reverse();
 
-          obs.component?.forEach((c: any) => {
-            const label = c.code?.coding?.[0]?.display;
-            const value = c.valueQuantity?.value ?? c.valueString;
-
-            // console.log(`   ➕ Component: ${label} = ${value}`);
-
-            if (label && value !== undefined) values[label] = value;
-          });
-
-          return { time, ...values };
-        }) || [];
-
-      // console.log("🔍 Parsed Values (Before Sort):", parsed);
-
-      const sorted = parsed.sort((a: any, b: any) =>
-        new Date(a.time).getTime() - new Date(b.time).getTime()
-      );
-
-      // console.log("✅ Sorted Device Vitals:", sorted);
-
-      return sorted;
-    } catch (err) {
-      console.error("❌ Error fetching device history:", err);
+  } catch (err: any) {
+    if (err.name === 'AbortError') {
+      // Ignore abort errors - it just means a newer request started
       return [];
     }
+    console.error("❌ Error fetching device history:", err);
+    return [];
   }
+}
 
-
-  //  useEffect(() => {
-  //   const obsId = "190a53303b0-109e626a-ce18-431a-bb4c-347e48081fab"; // ⚠️ Instead of a single ID, use subject or device ref if possible
-  //   const currentTime = new Date("2024-07-22T07:10:07.234512Z");
-  //   const cutoff = new Date("2024-07-20T07:10:07.234Z");
-  //    console.log('cutoff',cutoff);
-
-  //   setLoading(true);
-  //   let collected: any[] = [];
-
-  //   // fetch all Observations in last 24h
-  //   fetchObservationsByDate(obsId, cutoff, currentTime, (batch) => {
-  //     collected = [...collected, ...batch];
-  //     setFullData24h(collected); // ✅ store ALL points
-  //     setLoading(false);
-  //   });
-  //       }, []);
-
-  //      const fetchObservationsByDate = async (
-  //   obsId: string,
-  //   cutoff: Date,
-  //   end: Date,
-  //   onBatch: (batch: any[]) => void
-  // ) => {
-  //   console.log("⚡ Starting fetch for Observation history. ID:", obsId);
-  //   console.log("⏱ Cutoff:", cutoff.toISOString(), "End:", end.toISOString());
-
-  //   const baseUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Observation/${obsId}/_history`;
-  //   let url = `${baseUrl}?_count=1000&_since=2024-07-20T07:10:07.234Z`;
-  //   let pageCount = 0;
-
-  //   while (url) {
-  //     console.log(`🔹 Fetching page #${pageCount + 1}:`, url);
-
-  //     let res;
-  //     try {
-  //       res = await fetch(url, {
-  //         headers: { Authorization: "Basic " + btoa("fhiruser:change-password") },
-  //       });
-  //       console.log("📡 Fetch result:", res);
-  //     } catch (err) {
-  //       console.error("❌ Network or fetch error:", err);
-  //       break;
-  //     }
-
-  //     if (!res.ok) {
-  //       console.error("❌ FHIR fetch failed:", res.status, await res.text());
-  //       break;
-  //     }
-
-  //     let bundle;
-  //     try {
-  //       bundle = await res.json();
-  //       console.log("📦 Bundle received:", bundle);
-  //     } catch (err) {
-  //       console.error("❌ Failed to parse JSON:", err);
-  //       break;
-  //     }
-
-  //     if (!bundle.entry || bundle.entry.length === 0) {
-  //       console.log("ℹ️ No entries found in this page → stopping fetch.");
-  //       break;
-  //     }
-
-  //     console.log(`✅ Page #${pageCount + 1} contains entries:`, bundle.entry.length);
-
-  //     const batch: any[] = [];
-  //     for (const e of bundle.entry) {
-  //       const ts = new Date(e.resource.effectiveDateTime ?? e.resource.meta.lastUpdated);
-  //       if (ts >= cutoff && ts <= end) {
-  //         batch.push(e);
-  //       }
-  //     }
-
-  //     console.log(`📝 Batch after filtering by date:`, batch.length, "entries");
-
-  //     if (batch.length > 0) {
-  //       onBatch(batch.reverse()); // preserve chronological order
-  //       console.log(`📤 Sent batch of ${batch.length} entries upstream via onBatch callback.`);
-  //     }
-
-  //     // ⚡ Follow pagination - Fix: Use base URL and extract only the query parameters
-  //     const nextLink = bundle.link?.find((l: any) => l.relation === "next");
-  //     if (nextLink && nextLink.url) {
-  //       // Extract only the query parameters from the nextLink URL and append to baseUrl
-  //       const nextUrl = new URL(nextLink.url);
-  //       url = `${baseUrl}${nextUrl.search}`;
-  //       console.log("➡️ Next page URL (corrected):", url);
-  //       pageCount++;
-  //     } else {
-  //       url = '';
-  //     }
-  //   }
-
-  //   console.log(`🎉 Fetch complete. Total pages fetched: ${pageCount}`);
-  //       };
 
   async function fetchManualTrends(patientId: string, timeframeHours = 24) {
     console.log("📥 Fetching MANUAL observations for patient:", patientId);
@@ -2288,32 +2113,12 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
   }, [dataSource, props.patient_resource_id]);
 
   useEffect(() => {
+     setLoading(true);
     fetchDeviceVitals(props.patient_resource_id)
-      .then((data) => setDeviceData(data));
+      .then((data) => setDeviceData(data))
+        .finally(() => setLoading(false));
+      
   }, [props.patient_resource_id, timeFrame]);
-
-
-  //     useEffect(() => {
-  // if (fullData24h.length === 0) return;
-  // const currentTime = new Date("2024-07-22T07:10:07.234512Z");
-  // // const cutoff = new Date(currentTime.getTime() - timeFrame * 60 * 60 * 1000);
-  // const cutoff = new Date("2024-07-20T07:10:07.234Z");
-
-  // const filtered = fullData24h.filter((e) => {
-  //   const ts = new Date(
-  //     e.resource.effectiveDateTime ?? e.resource.meta.lastUpdated
-  //   );
-  //   return ts >= cutoff && ts <= currentTime;
-  // });
-
-  // // ✅ downsample hourly
-  // const hourlyData = timeFrame >= 24
-  //   ? downsampleHourly(filtered, cutoff, currentTime)
-  //   : filtered.length > 2000 ? downsample(filtered, 2000) : filtered;
-
-  // setObservation(hourlyData);
-  //     }, [timeFrame, fullData24h]);
-  // 🔥 1. Filter manual data based on timeframe
 
   const filteredManualData = useMemo(() => {
     if (!manualData.length) return [];
@@ -2341,37 +2146,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
 
   }, [deviceData, timeFrame, timeFrameEnd]);
 
-  // function generateTimeLabels1(hours: number, timeFrameEnd: number) {
-  //   const labels = [];
-  //   const now = timeFrameEnd;                     // End time is when user clicked timeframe
-  //   const start = now - hours * 60 * 60 * 1000;   // History window start
-  // console.log("start",start);
-
-  //   let t = start;
-
-  //   while (t <= now) {
-  //     const d = new Date(t);
-  //     const time = d.toLocaleTimeString([], {
-  //       hour: "2-digit",
-  //       minute: "2-digit",
-  //     });
-
-  //     const year = String(d.getFullYear()).slice(-2);
-  //     const date = `${d.getDate()}/${d.getMonth() + 1}/${year}`;
-  //     // 🔥 if > 12 hr timeframe → include date
-  //     const label =
-  //       hours > 12
-  //         ? [time, date]
-  //         :  [time]
-
-  //     labels.push({ label, timestamp: t });   // store raw timestamp for exact matching
-  //     t += 10 * 60 * 1000;
-  //   }
-
-  //   return labels;
-  // }
-
-  function generateTimeLabels(
+    function generateTimeLabels(
     hours: number,
     sourceData: any[],
     timeFrameEnd: number
@@ -2456,162 +2231,88 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
   }
 
 
-  // function prepareDeviceTemperatureData_Filtered(deviceData: any[], hours: number, timeFrameEnd: number) {
-  //   const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
+ function prepareDeviceTemperatureData(deviceData: any[], hours: number, timeFrameEnd: number) {
+  const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
+  
+  // 1. Sort data by time once to allow the pointer to work (O(n log n))
+  const sortedData = [...deviceData].sort(
+    (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()
+  );
 
-  //   const findClosestPoint = (target: number, key: string) => {
-  //     const WINDOW = 10 * 60 * 1000;
-  //     let closest = null;
-  //     let minDiff = Infinity;
+  const WINDOW = 2 * 60 * 1000; // 2 minutes
+  const MIN_TEMP = 30;
+  const MAX_TEMP = 45;
 
-  //     deviceData.forEach((item) => {
-  //       const t = new Date(item.time).getTime();
-  //       const diff = Math.abs(t - target);
+  /**
+   * Helper to find data points in one pass (O(n))
+   */
+  const getOptimizedPoints = (key: string) => {
+    let dataIdx = 0;
+    
+    return labels.map((l) => {
+      const target = l.timestamp;
 
-  //       if (diff < minDiff && diff <= WINDOW) {
-  //         minDiff = diff;
-  //         closest = item[key] ?? null;
-  //       }
-  //     });
+      // Move the pointer forward to skip data older than our current window
+      while (
+        dataIdx < sortedData.length && 
+        new Date(sortedData[dataIdx].time).getTime() < target - WINDOW
+      ) {
+        dataIdx++;
+      }
 
-  //     return closest;
-  //   };
-
-  //   return {
-  //     labels: labels.map(l => l.label),
-  //     datasets: [
-  //       {
-  //         label: "Skin Temp(Device))",
-  //         data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SKIN TEMPERATURE")),
-  //         pointRadius: 2,
-  //             // 🔥 dotted line
-  //         spanGaps: true,
-  //       },
-  //       {
-  //         label: "Core Temp(Device)",
-  //         data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PERIPHERAL TEMPERATURE")),
-  //         pointRadius: 2,
-  //             // 🔥 dotted line
-  //         spanGaps: true,
-  //       }
-  //     ]
-  //   };
-  // }
-  // function prepareDeviceTemperatureData1(deviceData: any[]) {
-  //   if (!deviceData.length) return { labels: [], datasets: [] };
-
-  //   const labels = deviceData.map(d =>
-  //     new Date(d.time).toLocaleTimeString([], {
-  //       hour: "2-digit",
-  //       minute: "2-digit",
-  //       second: "2-digit"
-  //     })
-  //   );
-
-  //   return {
-  //     labels,
-  //     datasets: [
-  //       {
-  //         label: "Skin Temp",
-  //         data: deviceData.map(d => d["CURRENT SKIN TEMPERATURE"] ?? null),
-  //         pointRadius: 2,
-  //         borderWidth: 1.5,
-  //         spanGaps: false,   // 🔥 now no gaps!
-  //       },
-  //       {
-  //         label: "Core Temp",
-  //         data: deviceData.map(d => d["CURRENT PERIPHERAL TEMPERATURE"] ?? null),
-  //         pointRadius: 2,
-  //         borderWidth: 1.5,
-  //         spanGaps: false,
-  //       }
-  //     ]
-  //   };
-  // }
-  function prepareDeviceTemperatureData(deviceData: any[], hours: number, timeFrameEnd: number) {
-    const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
-
-    const findClosestPoint = (target: number, key: string) => {
-      const WINDOW = 2 * 60 * 1000;
-      let closest = null;
+      // Check the current and next few points within the window
+      // (Since it's sorted, we only need to look at the immediate vicinity)
+      let bestMatch = null;
       let minDiff = Infinity;
+      let tempIdx = dataIdx;
 
-      deviceData.forEach((item) => {
-        const t = new Date(item.time).getTime();
-        const diff = Math.abs(t - target);
+      while (
+        tempIdx < sortedData.length && 
+        new Date(sortedData[tempIdx].time).getTime() <= target + WINDOW
+      ) {
+        const item = sortedData[tempIdx];
+        const itemTime = new Date(item.time).getTime();
+        const diff = Math.abs(itemTime - target);
+        const val = item[key];
 
-        if (diff < minDiff && diff <= WINDOW) {
-          minDiff = diff;
-          closest = item[key] ?? null;
+        // RANGE VALIDATION: Only accept if within 30-45 and better than previous match
+        if (val !== null && val >= MIN_TEMP && val <= MAX_TEMP) {
+          if (diff < minDiff) {
+            minDiff = diff;
+            bestMatch = val;
+          }
         }
-      });
+        tempIdx++;
+      }
 
-      return closest;
-    };
+      return bestMatch;
+    });
+  };
 
-    return {
-      labels: labels.map(l => l.label),
-      datasets: [
-        {
-          label: "Skin Temp(Device)",
-          data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SKIN TEMPERATURE")),
-          pointRadius: 0,
-          borderWidth: 2.5,
-          borderColor: "#007bff",
-          fill: false,
-          spanGaps: false,
-        },
-        {
-          label: "Core Temp(Device)",
-          data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PERIPHERAL TEMPERATURE")),
-          pointRadius: 0,
-          borderWidth: 2.5,
-          borderColor: "#ff5733",
-          fill: false,
-          spanGaps: false,
-        }
-      ]
-    };
-    // return {
-    //   labels: labels.map(l => l.label),
-    //   datasets: [
-    //     {
-    //       label: "Device Skin Temp",
-    //       data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT SKIN TEMPERATURE")),
-    //       pointRadius: 3,
-
-    //       // 🔥 Custom point colors
-    //       pointBackgroundColor: "#007bff",
-    //       pointBorderColor: "#003d80",
-    //       pointHoverBackgroundColor: "#66aaff",
-    //       pointHoverBorderColor: "#002a66",
-
-    //       // 🔥 dotted line
-    //       borderDash: [4, 4],
-    //       borderWidth: 1.5,
-    //       borderColor: "#007bff",
-    //       spanGaps: false,
-    //     },
-    //     {
-    //       label: "Device Core Temp",
-    //       data: labels.map(l => findClosestPoint(l.timestamp, "CURRENT PERIPHERAL TEMPERATURE")),
-    //       pointRadius: 3,
-
-    //       // 🔥 Custom point colors
-    //       pointBackgroundColor: "#ff5733",
-    //       pointBorderColor: "#a63b22",
-    //       pointHoverBackgroundColor: "#ff8a70",
-    //       pointHoverBorderColor: "#7a1f10",
-
-    //       // 🔥 dotted line
-    //       borderDash: [4, 4],
-    //       borderWidth: 1.5,
-    //       borderColor: "#ff5733",
-    //       spanGaps: false,
-    //     }
-    //   ]
-    // };
-  }
+  return {
+    labels: labels.map((l) => l.label),
+    datasets: [
+      {
+        label: "Skin Temp(Device)",
+        data: getOptimizedPoints("CURRENT SKIN TEMPERATURE"),
+        pointRadius: 0,
+        borderWidth: 2.5,
+        borderColor: "#007bff",
+        fill: false,
+        spanGaps: false, // Prevents lines jumping over large missing gaps
+      },
+      {
+        label: "Core Temp(Device)",
+        data: getOptimizedPoints("CURRENT PERIPHERAL TEMPERATURE"),
+        pointRadius: 0,
+        borderWidth: 2.5,
+        borderColor: "#ff5733",
+        fill: false,
+        spanGaps: false,
+      },
+    ],
+  };
+}
   function prepareDeviceSpo2Data(deviceData: any[], hours: number, timeFrameEnd: number) {
     const labels = generateTimeLabels(hours, deviceData, timeFrameEnd);
 
@@ -2724,9 +2425,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
     };
   }
 
-  // preparePulseOXDataFiltered1 removed as categorical charts are now in a table
-
-
+  
   const temperatureData1 = useMemo(() => {
     return prepareManualTemperatureData_Filtered(filteredManualData, timeFrame, timeFrameEnd);
 
@@ -2778,15 +2477,6 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
     );
   }, [filteredManualData, timeFrame, timeFrameEnd]);
 
-  // const gruntingData = useMemo(() => {
-  //   return preparePulseOXDataFiltered1(
-  //     filteredManualData,
-  //     timeFrame,
-  //     timeFrameEnd,
-  //     "Grunting"
-  //   );
-  // }, [filteredManualData, timeFrame, timeFrameEnd]);
-  // Parental Concern data is now handled directly in the table
 
   const combinedTemperatureData = useMemo(() => {
     const labels =
@@ -2803,20 +2493,51 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
     };
   }, [temperatureData1, temperatureData2]);
 
-  const combinedSpo2Data = useMemo(() => {
-    const labels =
-      pulseoximeterData2.labels.length > deviceSpo2Data.labels.length
-        ? pulseoximeterData2.labels
-        : deviceSpo2Data.labels;
+  // const combinedSpo2Data = useMemo(() => {
+  //   const labels =
+  //     pulseoximeterData2.labels.length > deviceSpo2Data.labels.length
+  //       ? pulseoximeterData2.labels
+  //       : deviceSpo2Data.labels;
 
-    return {
-      labels,
-      datasets: [
-        ...pulseoximeterData2.datasets,
-        ...deviceSpo2Data.datasets,
-      ]
-    };
-  }, [pulseoximeterData2, deviceSpo2Data]);
+  //   return {
+  //     labels,
+  //     datasets: [
+  //       ...pulseoximeterData2.datasets,
+  //       ...deviceSpo2Data.datasets,
+  //     ]
+  //   };
+  // }, [pulseoximeterData2, deviceSpo2Data]);
+
+
+  const combinedSpo2Data = useMemo(() => {
+  const labels =
+    pulseoximeterData2.labels.length > deviceSpo2Data.labels.length
+      ? pulseoximeterData2.labels
+      : deviceSpo2Data.labels;
+
+  const cyanBlue = "#0CB0D3";
+
+  const allDatasets = [
+    ...pulseoximeterData2.datasets,
+    ...deviceSpo2Data.datasets,
+  ].map((dataset) => ({
+    ...dataset,
+    borderColor: cyanBlue,
+    backgroundColor: cyanBlue, // Point color
+    pointBackgroundColor: cyanBlue,
+    pointBorderColor: "#fff",
+    pointHoverBackgroundColor: "#fff",
+    pointHoverBorderColor: cyanBlue,
+    borderWidth: 2,
+    tension: 0.3, // Keeps the line smooth
+    fill: false,  // Set to true if you want an area chart
+  }));
+
+  return {
+    labels,
+    datasets: allDatasets,
+  };
+}, [pulseoximeterData2, deviceSpo2Data]);
 
   const combinedPrData = useMemo(() => {
     return {
@@ -2830,9 +2551,6 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
       ],
     };
   }, [pulseoximeterDataM, devicePulseRate]);
-
-
-
 
   const manualGraph = useMemo(() => {
     return (
@@ -3147,58 +2865,46 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
 
   return (
     <React.Fragment>
-      <Box>
-        <Box>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography variant="h5" sx={{ mb: 1, fontWeight: 700, color: '#343A40', letterSpacing: '-0.02em' }}>Vitals & Trends</Typography>
-            <Stack direction="row" spacing={2}>
-              <Button
-                variant="outlined"
-                onClick={downloadTrendsPDF}
-                sx={{
-                  minWidth: '40px',
-                  width: '40px',
-                  height: '40px',
-                  p: 0,
-                  borderRadius: '8px',
-                  borderColor: 'rgba(34, 139, 230, 0.3)',
-                  color: '#228BE6',
-                  backgroundColor: '#FFFFFF',
-                  "&:hover": {
-                    backgroundColor: "rgba(34, 139, 230, 0.1)",
-                    borderColor: 'rgba(34, 139, 230, 0.5)',
-                  },
-                }}
-              >
-                <DownloadIcon sx={{ fontSize: "20px" }} />
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setManualVitalsDialog(true)}
+     
+        <Box sx={{maxWidth: { xs: '80%', md: '80%',lg:'100%' }, }}>
+
+        <Box mt={1} mb={1} display={'flex'} justifyContent={'space-between'}>
+          <Typography variant="h6" sx={{ color: isDarkMode ? theme.palette.text.primary : "#0F3B61" }} gutterBottom>
+                Vitals & Trends
+              </Typography>
+  <Box display={"flex"}  alignItems="center"
+  justifyContent="flex-end"
+  gap={1.5}>
+    <IconButton 
+ onClick={downloadTrendsPDF} // Add this
+  sx={{
+    backgroundColor: alpha("#228BE6", 0.1),
+    color: "#228BE6",
+    borderRadius: "8px",
+    px: 2, py: 0.9,
+    "&:hover": { backgroundColor: alpha("#228BE6", 0.2) },
+  }}
+>
+  <DownloadIcon />
+</IconButton>
+   <Button
+  startIcon={<AddIcon fontSize="small" />}
+  onClick={() => setManualVitalsDialog(true)}
                 disabled={dataSource !== "manual"}
-                sx={{
-                  borderRadius: '8px',
-                  backgroundColor: '#228BE6',
-                  color: '#FFFFFF',
-                  fontWeight: 600,
-                  boxShadow: 'none',
-                  textTransform: 'none',
-                  paddingX: 3,
-                  "&:hover": {
-                    backgroundColor: '#1C7ED6',
-                    boxShadow: 'none',
-                  },
-                  "&.Mui-disabled": {
-                    backgroundColor: '#F1F3F5',
-                    color: '#ADB5BD',
-                  }
-                }}
-              >
-                Entry
-              </Button>
-            </Stack>
-          </Stack>
+  sx={{
+    backgroundColor: alpha("#228BE6", 0.1),
+    color: "#228BE6",
+    textTransform: "none",
+    borderRadius: "8px",
+    px: 3,
+  }}
+>
+  Entry
+</Button>
+
+  </Box>
+  </Box>
+
           {graphData ? (
             <>
               {/* Vitals Display Row — unified horizontal bar */}
@@ -3209,10 +2915,10 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                   width: '100%',
                   maxWidth: 1400,
                   minHeight: { xs: 'auto', md: 74 },
-                  backgroundColor: '#FFFFFF',
+                  backgroundColor: isDarkMode ? theme.palette.background.paper : '#FFFFFF',
                   borderRadius: 2,
                   boxShadow: '0px 1px 4px rgba(0,0,0,0.06)',
-                  border: '1px solid #EEEDF1',
+                  border: `1px solid ${isDarkMode ? theme.palette.divider : '#EEEDF1'}`,
                   mb: 2,
                   mt: 1,
                   overflow: 'hidden',
@@ -3251,8 +2957,8 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                         justifyContent: 'center',
                         px: 3,
                         py: 1.5,
-                        borderRight: { xs: 'none', sm: '1px solid #EEEDF1' },
-                        borderBottom: { xs: '1px solid #EEEDF1', sm: 'none' },
+                        borderRight: { xs: 'none', sm: `1px solid ${isDarkMode ? theme.palette.divider : '#EEEDF1'}` },
+                        borderBottom: { xs: `1px solid ${isDarkMode ? theme.palette.divider : '#EEEDF1'}`, sm: 'none' },
                         minHeight: { md: 74 },
                       }}
                     >
@@ -3268,7 +2974,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                         )}
                       </Stack>
                       {/* Value */}
-                      <Typography sx={{ fontWeight: 600, color: '#212529', fontSize: '22px', lineHeight: 1.1 }}>
+                      <Typography sx={{ fontWeight: 600, color: isDarkMode ? theme.palette.text.primary : '#212529', fontSize: '22px', lineHeight: 1.1 }}>
                         {card.value}
                       </Typography>
                     </Box>
@@ -3285,15 +2991,15 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                     py: 1.5,
                     minWidth: { sm: 140 },
                     minHeight: { md: 74 },
-                    borderLeft: { xs: 'none', sm: '1px solid #EEEDF1' },
-                    borderTop: { xs: '1px solid #EEEDF1', sm: 'none' },
-                    backgroundColor: '#FAFAFA',
+                    borderLeft: { xs: 'none', sm: `1px solid ${isDarkMode ? theme.palette.divider : '#EEEDF1'}` },
+                    borderTop: { xs: `1px solid ${isDarkMode ? theme.palette.divider : '#EEEDF1'}`, sm: 'none' },
+                    backgroundColor: isDarkMode ? theme.palette.background.default : '#FAFAFA',
                   }}
                 >
                   <Typography sx={{ color: '#ADB5BD', fontWeight: 700, fontSize: '10px', letterSpacing: '0.6px', textTransform: 'uppercase', mb: 0.5, whiteSpace: 'nowrap' }}>
                     LAST UPDATED
                   </Typography>
-                  <Typography sx={{ fontWeight: 600, color: '#212529', fontSize: '18px', lineHeight: 1.1 }}>
+                  <Typography sx={{ fontWeight: 600, color: isDarkMode ? theme.palette.text.primary : '#212529', fontSize: '18px', lineHeight: 1.1 }}>
                     {latestManual && latestManual.time
                       ? new Date(latestManual.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                       : "--"}
@@ -3303,13 +3009,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
 
 
               {/* Header Controls */}
-              <Stack
-                direction="row"
-                width="100%"
-
-                p={1}
-                justifyContent="space-between"
-                alignItems="center"
+              <Stack direction="row" width="100%" p={1} justifyContent="space-between" alignItems="center"
               >
                 {/* Left: Time Frame */}
                 <Box>
@@ -3326,10 +3026,10 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                       }
                     }}
                     sx={{
-                      backgroundColor: "#F8F9FA",
+                      backgroundColor: isDarkMode ? theme.palette.background.default : "#F8F9FA",
                       borderRadius: "24px",
                       p: 0.5,
-                      border: "1px solid #EEEDF1",
+                      border: `1px solid ${isDarkMode ? theme.palette.divider : "#EEEDF1"}`,
                       "& .MuiToggleButtonGroup-grouped": {
                         border: 'none',
                         borderRadius: '20px !important',
@@ -3338,7 +3038,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                         px: 2.5,
                         minWidth: "60px",
                         "&.Mui-selected": {
-                          backgroundColor: "#FFFFFF !important",
+                          backgroundColor: `${isDarkMode ? theme.palette.background.paper : "#FFFFFF"} !important`,
                           color: "#228BE6 !important",
                           boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
                         },
@@ -3371,8 +3071,8 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                     exclusive
                     size="small"
                     sx={{
-                      backgroundColor: "#FFFFFF",
-                      border: "1px solid #EEEDF1",
+                      backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF",
+                      border: `1px solid ${isDarkMode ? theme.palette.divider : "#EEEDF1"}`,
                       borderRadius: "8px",
                       p: 0.25,
                       "& .MuiToggleButtonGroup-grouped": {
@@ -3415,14 +3115,14 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                       height: "36px",
                       borderRadius: "20px",
                       textTransform: "none",
-                      backgroundColor: "#FFFFFF",
+                      backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF",
                       color: "#228BE6",
                       fontWeight: 600,
                       fontSize: "13px",
                       boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
-                      border: "1px solid #EEEDF1",
+                      border: `1px solid ${isDarkMode ? theme.palette.divider : "#EEEDF1"}`,
                       "&:hover": {
-                        backgroundColor: "#F8F9FA",
+                        backgroundColor: isDarkMode ? theme.palette.action.hover : "#F8F9FA",
                       }
                     }}
                   >
@@ -3457,7 +3157,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                   ) : (
                     <Box
                       sx={{
-                        backgroundColor: "#FFF", borderRadius: 2, boxShadow: 1,
+                        backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFF", borderRadius: 2, boxShadow: 1,
                         p: 2,
                         overflowX: "auto",
                         maxHeight: "400px",
@@ -3466,7 +3166,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                       {combinedData.length > 0 ? (
                         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
                           <thead>
-                            <tr style={{ backgroundColor: "#F8F9FA", textAlign: "left" }}>
+                            <tr style={{ backgroundColor: isDarkMode ? theme.palette.background.default : "#F8F9FA", textAlign: "left" }}>
                               {Object.keys(combinedData[0]).map((col) => (
                                 <th key={col} style={{ padding: "8px", fontWeight: 600 }}>
                                   {col}
@@ -3476,7 +3176,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                           </thead>
                           <tbody>
                             {combinedData.map((row, idx) => (
-                              <tr key={idx} style={{ borderBottom: "1px solid #E0E0E0" }}>
+                              <tr key={idx} style={{ borderBottom: `1px solid ${isDarkMode ? theme.palette.divider : "#E0E0E0"}` }}>
                                 {Object.entries(row).map(([key, val], i) => {
                                   let displayVal = val as any;
                                   if (key === "time" && typeof val === "string" && !isNaN(Date.parse(val))) {
@@ -3516,7 +3216,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             <Box></Box>
           )}
 
-          {/* <Divider sx={{ mt: "40px", backgroundColor: "white" }} /> */}
+        
         </Box>
 
         <Dialog
@@ -3526,8 +3226,8 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
           maxWidth="xs"
           PaperProps={{
             sx: {
-              backgroundColor: '#FFFFFF',
-              color: "#000000",
+              backgroundColor: isDarkMode ? theme.palette.background.paper : '#FFFFFF',
+              color: isDarkMode ? theme.palette.text.primary : "#000000",
               borderRadius: 3,
             },
           }}
@@ -3536,7 +3236,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             sx={{
               fontWeight: 500,
               pb: 1,
-              color: "#000000",
+              color: isDarkMode ? theme.palette.text.primary : "#000000",
               textAlign: "center",
             }}
           >
@@ -3555,12 +3255,12 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                     placeholder="--- bpm"
                     InputProps={{
                       sx: {
-                        backgroundColor: "#F5F5F5",
+                        backgroundColor: isDarkMode ? theme.palette.background.default : "#F5F5F5",
                         borderRadius: 1,
-                        color: "#000",
+                        color: isDarkMode ? theme.palette.text.primary : "#000",
                       },
                     }}
-                    InputLabelProps={{ sx: { color: "#000" } }}
+                    InputLabelProps={{ sx: { color: isDarkMode ? theme.palette.text.secondary : "#000" } }}
                   />
                   <TextField
                     label="PR"
@@ -3575,7 +3275,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                         color: "#000",
                       },
                     }}
-                    InputLabelProps={{ sx: { color: "#000" } }}
+                    InputLabelProps={{ sx: { color: isDarkMode ? theme.palette.text.secondary : "#000" } }}
                   />
                 </Stack>
 
@@ -3587,9 +3287,9 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                     fullWidth
                     placeholder="--- bpm"
                     InputProps={{
-                      sx: { backgroundColor: "#F5F5F5", borderRadius: 1, color: "#000" },
+                      sx: { backgroundColor: isDarkMode ? theme.palette.background.default : "#F5F5F5", borderRadius: 1, color: isDarkMode ? theme.palette.text.primary : "#000" },
                     }}
-                    InputLabelProps={{ sx: { color: "#000" } }}
+                    InputLabelProps={{ sx: { color: isDarkMode ? theme.palette.text.secondary : "#000" } }}
                   />
                   <TextField
                     label="SpO₂"
@@ -3598,9 +3298,9 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                     fullWidth
                     placeholder="--- %"
                     InputProps={{
-                      sx: { backgroundColor: "#F5F5F5", borderRadius: 1, color: "#000" },
+                      sx: { backgroundColor: isDarkMode ? theme.palette.background.default : "#F5F5F5", borderRadius: 1, color: isDarkMode ? theme.palette.text.primary : "#000" },
                     }}
-                    InputLabelProps={{ sx: { color: "#000" } }}
+                    InputLabelProps={{ sx: { color: isDarkMode ? theme.palette.text.secondary : "#000" } }}
                   />
                 </Stack>
 
@@ -3612,9 +3312,9 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                     fullWidth
                     placeholder="--- °C"
                     InputProps={{
-                      sx: { backgroundColor: "#F5F5F5", borderRadius: 1, color: "#000" },
+                      sx: { backgroundColor: isDarkMode ? theme.palette.background.default : "#F5F5F5", borderRadius: 1, color: isDarkMode ? theme.palette.text.primary : "#000" },
                     }}
-                    InputLabelProps={{ sx: { color: "#000" } }}
+                    InputLabelProps={{ sx: { color: isDarkMode ? theme.palette.text.secondary : "#000" } }}
                   />
                   <TextField
                     label="Core Temperature"
@@ -3623,9 +3323,9 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                     fullWidth
                     placeholder="--- °C"
                     InputProps={{
-                      sx: { backgroundColor: "#F5F5F5", borderRadius: 1, color: "#000" },
+                      sx: { backgroundColor: isDarkMode ? theme.palette.background.default : "#F5F5F5", borderRadius: 1, color: isDarkMode ? theme.palette.text.primary : "#000" },
                     }}
-                    InputLabelProps={{ sx: { color: "#000" } }}
+                    InputLabelProps={{ sx: { color: isDarkMode ? theme.palette.text.secondary : "#000" } }}
                   />
                 </Stack>
 
@@ -3638,9 +3338,9 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                   rows={3}
                   placeholder="Observation Notes"
                   InputProps={{
-                    sx: { backgroundColor: "#F5F5F5", borderRadius: 1, color: "#000" },
+                    sx: { backgroundColor: isDarkMode ? theme.palette.background.default : "#F5F5F5", borderRadius: 1, color: isDarkMode ? theme.palette.text.primary : "#000" },
                   }}
-                  InputLabelProps={{ sx: { color: "#000" } }}
+                  InputLabelProps={{ sx: { color: isDarkMode ? theme.palette.text.secondary : "#000" } }}
                 />
               </Stack>
             )}
@@ -3656,7 +3356,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
                   { label: "Parental Concerns", field: "parentalConcerns", options: ["High", "Some", "Nil"] },
                 ].map(({ label, field, options }) => (
                   <Stack key={field}>
-                    <Typography sx={{ mb: 1, fontSize: 14, color: "#000" }}>
+                    <Typography sx={{ mb: 1, fontSize: 14, color: isDarkMode ? theme.palette.text.primary : "#000" }}>
                       {label}
                     </Typography>
 
@@ -3699,7 +3399,15 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
               </Button>
             )}
             {step === 1 && (
-              <Button sx={{ color: "#1976d2" }}>
+              <Button 
+                onClick={() => {
+                  setManualVitalsDialog(false);
+                  setVitals({ hr: '', pr: '', rr: '', spo2: '', skinTemp: '', coreTemp: '', bp: '', observation: '' });
+                  setObservation1({ grunting: "", colour: "", neuro: "", feeding: "", glucose: "", parentalConcerns: "" });
+                  setStep(1);
+                }} 
+                sx={{ color: "#1976d2" }}
+              >
                 Cancel
               </Button>
             )}
@@ -3725,7 +3433,7 @@ export const Trends1: FC<PatientDetails> = (props): JSX.Element => {
             )}
           </DialogActions>
         </Dialog>
-      </Box>
+     
 
     </React.Fragment>
   )

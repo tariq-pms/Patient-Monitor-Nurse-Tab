@@ -85,6 +85,7 @@ const [open, setOpen] = useState(false);
       setAnchorEl(null);
   };
   const open1 = Boolean(anchorEl);
+
   // const handleClick1 = (event: React.MouseEvent<HTMLElement>) => {
   //     setAnchorEl(event.currentTarget);
   // };
@@ -280,8 +281,6 @@ const removeButton = (index: number) => {
 
   const [deleteDevice, setDeleteDevice] = useState(false)
 
-
-
   const removeFromRoom = () => {
       return (
           <Dialog
@@ -331,6 +330,7 @@ const removeButton = (index: number) => {
       </Dialog>
       )
   }
+
   const [miniDialog, setMiniDialog] = useState(false)
   const [selectedDevice, setSelectedDevice] = useState(Number)
   const addToRoom = () => {
@@ -355,7 +355,7 @@ const removeButton = (index: number) => {
                           return(
                                   <Button onClick={() => {setMiniDialog(true); setSelectedDevice(index)}} sx={{width:'48%', height:'60px', justifyContent:'center', textAlign:'center', color:props.darkTheme?'white':'#2F3D4A', border:'0.1px solid #282828',margin:'5px'}}>
                                       <Typography variant="subtitle2" component={"h2"}>
-                                       {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}
+                                       {(device.resource.identifier[1].value).toString() + ' ' + device.resource.serialNumber?.toString()}
                                        {/* changed the identifier to display the device name and mac address */}
                                       </Typography>
                                   </Button>
@@ -407,7 +407,6 @@ return (
                     <Stack marginTop={'0%'}>
                     <IconButton sx={{width:'10%',marginLeft:'auto',marginRight:'3%',color:props.darkTheme?'white':'#124D81'}} ><SettingsIcon /></IconButton>
                     <Menu id="demo-positioned-menu" aria-labelledby="demo-positioned-button" anchorEl={anchorEl} open={open1} onClose={handleClose1} anchorOrigin={{vertical: 'top', horizontal: 'right', }}  PaperProps={{style:{backgroundImage:'linear-gradient(to bottom, #3C4661, #3C4661, #3C4661)', boxShadow: `0px 0px 40px 1px #404040`, border:'0.4px solid #505050', justifyContent:'center', textAlign:'center'}}} MenuListProps={{sx:{py:0}}} >
-              
         </Menu>
             <Typography   style={{userSelect: 'none',color:props.darkTheme?'white': '#124D81',fontWeight: 'bold'}}>{props.roomName}</Typography>
                 </Stack>
@@ -417,7 +416,7 @@ return (
                         if(device?.resource?.owner?.reference === `Organization/${props.userOrganization}` && device?.resource?.location?.reference.split("/")[1] === props.roomId){
                             return (
                               //   <MenuItem>{device.resource.identifier[0].value.toString()}</MenuItem>
-              <MenuItem > {(device.resource.identifier[1].value).toString() + ' ' + (device.resource.identifier[0].value).toString()}</MenuItem>
+              <MenuItem > {(device.resource.identifier[1].value).toString() + ' ' + device.resource.serialNumber?.toString()}</MenuItem>
 
                             )
                         }
@@ -429,8 +428,6 @@ return (
             </CardContent>
             {addToRoom()}
             {removeFromRoom()}
-       
-           
             <Snackbar open={snack} autoHideDuration={5000} onClose={handleClose}>
                     <Alert onClose={handleClose} variant="filled" severity={snackSucc ? 'success':'error'}>
                         {snackSucc && "Operation Completed Successfully"}
@@ -441,7 +438,5 @@ return (
           </Card>
           )}
           </Box>
- 
-
 )
 }

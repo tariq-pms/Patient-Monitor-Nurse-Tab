@@ -2474,15 +2474,15 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
 
   // Define these styles to fix the "can't find name" errors
   const inputStyles = {
-    "& .MuiInputLabel-root": { color: "#64748B", fontWeight: 500 },
+    "& .MuiInputLabel-root": { color: isDarkMode ? theme.palette.text.secondary : "#64748B", fontWeight: 500 },
     "& .MuiInputLabel-root.Mui-focused": { color: "#3B82F6" },
     "& .MuiOutlinedInput-root": {
-      bgcolor: "#F8FAFC",
-      "& fieldset": { borderColor: "#E2E8F0", borderWidth: 1.5 },
+      bgcolor: isDarkMode ? theme.palette.background.paper : "#F8FAFC",
+      "& fieldset": { borderColor: isDarkMode ? theme.palette.divider : "#E2E8F0", borderWidth: 1.5 },
       "&:hover fieldset": { borderColor: "#3B82F6" },
       "&.Mui-focused fieldset": { borderColor: "#3B82F6", borderWidth: 2 }
     },
-    "& .MuiInputBase-input": { color: "#1E293B", fontWeight: 500 }
+    "& .MuiInputBase-input": { color: isDarkMode ? theme.palette.text.primary : "#1E293B", fontWeight: 500 }
   };
 
   // const selectStyles = {
@@ -2511,8 +2511,8 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
   };
 
   const cancelButtonStyles = {
-    borderColor: "#CBD5E1",
-    color: "#475569",
+    borderColor: isDarkMode ? theme.palette.divider : "#CBD5E1",
+    color: isDarkMode ? theme.palette.text.secondary : "#475569",
     fontWeight: 600,
     px: 3,
     py: 1.25,
@@ -2520,7 +2520,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
     textTransform: "none",
     fontSize: "0.95rem",
     borderWidth: 1.5,
-    "&:hover": { borderColor: "#94A3B8", bgcolor: "#F8FAFC", borderWidth: 1.5 }
+    "&:hover": { borderColor: isDarkMode ? theme.palette.primary.light : "#94A3B8", bgcolor: isDarkMode ? theme.palette.action.hover : "#F8FAFC", borderWidth: 1.5 }
   };
 
 
@@ -3134,14 +3134,14 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
 
                 {/* ✅ PATIENT INFO HEADER */}
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF", border: `1px solid ${isDarkMode ? theme.palette.divider : "#E5E7EB"}`, borderRadius: "12px", padding: "12px 24px", boxShadow: "0px 1px 3px rgba(0,0,0,0.05)" }}>
-                  <Typography sx={{ fontWeight: 600, fontSize: "15px", color: "#374151" }}>
+                  <Typography sx={{ fontWeight: 600, fontSize: "15px", color: isDarkMode ? theme.palette.text.primary : "#374151" }}>
                     GA: <span style={{ fontWeight: 400 }}>{gaWeeks || "--"} W {gaDays || "0"} D</span>
                   </Typography>
-                  <Typography sx={{ fontWeight: 600, fontSize: "15px", color: "#374151" }}>
+                  <Typography sx={{ fontWeight: 600, fontSize: "15px", color: isDarkMode ? theme.palette.text.primary : "#374151" }}>
                     PMA: <span style={{ fontWeight: 400 }}>{dob && gaWeeks ? calculatePmaWeeks() : "--"} Weeks</span>
                   </Typography>
                   <Stack direction="row" alignItems="center" spacing={1}>
-                    <Typography sx={{ fontWeight: 600, fontSize: "15px", color: "#374151" }}>
+                    <Typography sx={{ fontWeight: 600, fontSize: "15px", color: isDarkMode ? theme.palette.text.primary : "#374151" }}>
                       Wt: <span style={{ fontWeight: 400 }}>{weight ? (Number(weight) / 1000).toFixed(2) : "--"} Kg</span>
                     </Typography>
                     <IconButton size="small" onClick={() => setShowDetails(!showDetails)} sx={{ color: "#228BE6", backgroundColor: "#E7F5FF", '&:hover': { backgroundColor: "#D0EBFF" } }}>
@@ -3152,7 +3152,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
 
                 {/* 🔽 EXPANDABLE EDIT SECTION */}
                 {showDetails && (
-                  <Box sx={{ p: 3, borderRadius: 3, bgcolor: "#F8FAFC", border: "1px dashed #CBD5E1" }}>
+                  <Box sx={{ p: 3, borderRadius: 3, bgcolor: isDarkMode ? theme.palette.background.paper : "#F8FAFC", border: `1px dashed ${isDarkMode ? theme.palette.divider : "#CBD5E1"}` }}>
                     <Typography variant="subtitle2" sx={{ color: "#64748B", fontWeight: 700, mb: 2, textTransform: "uppercase", fontSize: "12px", letterSpacing: "0.5px" }}>Editing Metrics Manually</Typography>
                     <Grid container spacing={3}>
                       <Grid item xs={4}><TextField label="Date of Birth" type="date" fullWidth value={dob ? dob.toISOString().split('T')[0] : ''} onChange={(e) => { const val = e.target.value; setDob(val ? new Date(val) : null); }} InputLabelProps={{ shrink: true }} sx={inputStyles} /></Grid>
@@ -3165,7 +3165,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
 
                 {/* 🔹 STEP 1: DRUG NAME SELECTION */}
                 <Box>
-                  <Typography variant="subtitle1" sx={{ color: "#1E293B", fontWeight: 600, marginBottom: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography variant="subtitle1" sx={{ color: isDarkMode ? theme.palette.text.primary : "#1E293B", fontWeight: 600, marginBottom: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
                     <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: "50%", bgcolor: "#3B82F6", color: "white", fontSize: "0.75rem", fontWeight: 700 }}>1</Box>
                     Select Drug <Box component="span" sx={{ color: "#EF4444", ml: 0.5 }}>*</Box>
                   </Typography>
@@ -3234,7 +3234,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                     }}
                     renderInput={(params) => <TextField {...params} placeholder="Search drug name or type new..." fullWidth sx={inputStyles} />}
                     PaperComponent={(props) => (
-                      <Paper {...props} sx={{ bgcolor: "#FFFFFF", color: "#1E293B" }} />
+                      <Paper {...props} sx={{ bgcolor: isDarkMode ? theme.palette.background.paper : "#FFFFFF", color: isDarkMode ? theme.palette.text.primary : "#1E293B" }} />
                     )}
                   />
                 </Box>
@@ -3242,7 +3242,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                 {/* 🔹 STEP 2: DRUG USE (HEADING) SELECTION */}
                 {selectedDrugData && (
                   <Box>
-                    <Typography variant="subtitle1" sx={{ color: "#1E293B", fontWeight: 600, marginBottom: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography variant="subtitle1" sx={{ color: isDarkMode ? theme.palette.text.primary : "#1E293B", fontWeight: 600, marginBottom: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
                       <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: "50%", bgcolor: "#3B82F6", color: "white", fontSize: "0.75rem", fontWeight: 700 }}>2</Box>
                       Select Indication (Drug Use) <Box component="span" sx={{ color: "#EF4444", ml: 0.5 }}>*</Box>
                     </Typography>
@@ -3301,7 +3301,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                       }}
                       renderInput={(params) => <TextField {...params} placeholder="e.g. Sepsis, Meningitis..." fullWidth sx={inputStyles} />}
                       PaperComponent={(props) => (
-                        <Paper {...props} sx={{ bgcolor: "#FFFFFF", color: "#1E293B" }} />
+                        <Paper {...props} sx={{ bgcolor: isDarkMode ? theme.palette.background.paper : "#FFFFFF", color: isDarkMode ? theme.palette.text.primary : "#1E293B" }} />
                       )}
                     />
                   </Box>
@@ -3310,7 +3310,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                 {/* 🔹 STEP 3: ROUTE SELECTION */}
                 {selectedHeading && selectedDrugData && (
                   <Box>
-                    <Typography variant="subtitle1" sx={{ color: "#1E293B", fontWeight: 600, marginBottom: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography variant="subtitle1" sx={{ color: isDarkMode ? theme.palette.text.primary : "#1E293B", fontWeight: 600, marginBottom: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
                       <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: "50%", bgcolor: "#3B82F6", color: "white", fontSize: "0.75rem", fontWeight: 700 }}>3</Box>
                       Select Route <Box component="span" sx={{ color: "#EF4444", ml: 0.5 }}>*</Box>
                     </Typography>
@@ -3398,7 +3398,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                         }}
                         renderInput={(params) => <TextField {...params} label="Select Route" placeholder="IV, IM, PO..." fullWidth sx={inputStyles} />}
                         PaperComponent={(props) => (
-                          <Paper {...props} sx={{ bgcolor: "#FFFFFF", color: "#1E293B" }} />
+                          <Paper {...props} sx={{ bgcolor: isDarkMode ? theme.palette.background.paper : "#FFFFFF", color: isDarkMode ? theme.palette.text.primary : "#1E293B" }} />
                         )}
                       />
                     </FormControl>
@@ -3430,9 +3430,9 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                                 }}
                                 sx={{
                                   p: 2, borderRadius: 2, cursor: "pointer", border: "1px solid",
-                                  borderColor: isSelected ? "#3B82F6" : "#E2E8F0",
-                                  backgroundColor: isSelected ? "#F0F9FF" : "#FFFFFF",
-                                  color: isSelected ? "#1E40AF" : "#334155",
+                                  borderColor: isSelected ? "#3B82F6" : (isDarkMode ? theme.palette.divider : "#E2E8F0"),
+                                  backgroundColor: isSelected ? (isDarkMode ? "#1a2740" : "#F0F9FF") : (isDarkMode ? theme.palette.background.paper : "#FFFFFF"),
+                                  color: isSelected ? "#1E40AF" : (isDarkMode ? theme.palette.text.primary : "#334155"),
                                   transition: "all 0.2s ease",
                                   mb: 1
                                 }}
@@ -3464,7 +3464,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                         </Stack>
                       </Box>
                     ) : availableOptions.filter(isRangeValid).length === 0 ? (
-                      <Box sx={{ p: 3, textAlign: 'center', bgcolor: "#F8FAFC", borderRadius: 3, border: "1px dashed #E2E8F0" }}>
+                      <Box sx={{ p: 3, textAlign: 'center', bgcolor: isDarkMode ? theme.palette.background.paper : "#F8FAFC", borderRadius: 3, border: `1px dashed ${isDarkMode ? theme.palette.divider : "#E2E8F0"}` }}>
                         <Typography variant="body2" sx={{ color: "#475569", fontWeight: 600 }}>
                           No regimens found matching these patient metrics.
                         </Typography>
@@ -3487,9 +3487,9 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                                 onClick={() => handleRegimenSelect(opt)}
                                 sx={{
                                   p: 2, borderRadius: 2, cursor: "pointer", border: "1px solid",
-                                  borderColor: isSelected ? "#3B82F6" : "#E2E8F0",
-                                  backgroundColor: isSelected ? "#F0F9FF" : "#FFFFFF", // Light Theme
-                                  color: isSelected ? "#1E40AF" : "#334155",
+                                  borderColor: isSelected ? "#3B82F6" : (isDarkMode ? theme.palette.divider : "#E2E8F0"),
+                                  backgroundColor: isSelected ? (isDarkMode ? "#1a2740" : "#F0F9FF") : (isDarkMode ? theme.palette.background.paper : "#FFFFFF"), // Light Theme
+                                  color: isSelected ? "#1E40AF" : (isDarkMode ? theme.palette.text.primary : "#334155"),
                                   transition: "all 0.2s ease",
                                   mb: 1
                                 }}
@@ -3565,8 +3565,8 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                 {/* 🔹 PRESCRIPTION DETAILS FORM (Visible if Route is Selected) */}
                 {selectedDrugData && selectedHeading && route && (
                   <Box>
-                    <Box sx={{ my: 3, p: 3, borderRadius: 3, bgcolor: "#FFFFFF", border: "1px solid #E2E8F0", boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)" }}>
-                      <Typography variant="h6" sx={{ color: "#1E293B", fontWeight: 700, fontSize: "1.1rem", display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+                    <Box sx={{ my: 3, p: 3, borderRadius: 3, bgcolor: isDarkMode ? theme.palette.background.paper : "#FFFFFF", border: `1px solid ${isDarkMode ? theme.palette.divider : "#E2E8F0"}`, boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)" }}>
+                      <Typography variant="h6" sx={{ color: isDarkMode ? theme.palette.text.primary : "#1E293B", fontWeight: 700, fontSize: "1.1rem", display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
                         <Box sx={{ fontSize: "1.5rem" }}>📋</Box> Drug Details Summary
                       </Typography>
                       <Box sx={{ p: 2, borderRadius: 2, bgcolor: "#EFF6FF", border: "1px solid #DBEAFE", mb: 2.5 }}>
@@ -3598,7 +3598,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                     </Box>
 
                     {/* 📅 Prescription Period Inputs */}
-                    <Box sx={{ p: 3, mb: 4, borderRadius: 3, bgcolor: "#FFFFFF", border: "1px solid #E2E8F0" }}>
+                    <Box sx={{ p: 3, mb: 4, borderRadius: 3, bgcolor: isDarkMode ? theme.palette.background.paper : "#FFFFFF", border: `1px solid ${isDarkMode ? theme.palette.divider : "#E2E8F0"}` }}>
                       <Typography variant="subtitle2" sx={{ color: "#64748B", fontWeight: 700, mb: 2 }}>
                         Prescription Period
                       </Typography>
@@ -3642,8 +3642,8 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                     </Box>
 
                     {/* 💊 Final Prescription Values - Editable */}
-                    <Box sx={{ p: 3.5, borderRadius: 3, border: "2px solid #3B82F6", bgcolor: "#FFFFFF", boxShadow: "0 4px 16px rgba(59, 130, 246, 0.12)" }}>
-                      <Typography variant="h6" sx={{ color: "#1E293B", mb: 6, fontWeight: 700, fontSize: "1.1rem", display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <Box sx={{ p: 3.5, borderRadius: 3, border: "2px solid #3B82F6", bgcolor: isDarkMode ? theme.palette.background.paper : "#FFFFFF", boxShadow: "0 4px 16px rgba(59, 130, 246, 0.12)" }}>
+                      <Typography variant="h6" sx={{ color: isDarkMode ? theme.palette.text.primary : "#1E293B", mb: 6, fontWeight: 700, fontSize: "1.1rem", display: "flex", alignItems: "center", gap: 1.5 }}>
                         <Box sx={{ fontSize: "1.5rem" }}>💊</Box> Final Prescription Values
                       </Typography>
                       <Grid container spacing={4}>
@@ -3798,7 +3798,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
             </Box>
           </DialogContent>
 
-          <DialogActions sx={{ p: 3, borderTop: "1px solid #E2E8F0", bgcolor: "#F8FAFB" }}>
+          <DialogActions sx={{ p: 3, borderTop: `1px solid ${isDarkMode ? theme.palette.divider : "#E2E8F0"}`, bgcolor: isDarkMode ? theme.palette.background.default : "#F8FAFB" }}>
             <Button
               variant="outlined"
               onClick={() => { setOpenPrescribeModal(false); }}
@@ -3829,10 +3829,11 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
       <ProtectedModule module="Medications" action="edit">
         <Box >
           <Grid container alignItems="center" justifyContent="space-between" >
-            <Typography variant="h6" sx={{ color: "#0F3B61" }} gutterBottom>
+            <Typography variant="h6" sx={{ color: isDarkMode ? theme.palette.text.primary : "#0F3B61" }} gutterBottom>
               Medications
             </Typography>
             <Box
+            mt={1}
               sx={{
                 display: "flex",
                 justifyContent: "flex-end",
@@ -3843,6 +3844,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
               <Button
                 variant="contained"
                 onClick={() => setOpenPrescribeModal(true)}
+                
                 sx={{
                   backgroundColor: "rgba(34, 139, 230, 0.1)", // 10% opacity
                   color: "#228BE6",
@@ -3880,7 +3882,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
               sx={{
                 display: "inline-flex",
                 alignItems: "center",
-                backgroundColor: "#FFFFFF",
+                backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF",
                 borderRadius: "8px",
 
               }}
@@ -3900,13 +3902,13 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                       px: 3,
                       py: 1,
                       borderRadius: "8px",
-                      color: isSelected ? "#228BE6" : "#3C4048",
+                      color: isSelected ? "#228BE6" : (isDarkMode ? theme.palette.text.secondary : "#3C4048"),
                       backgroundColor: isSelected ? "#E8F1FB" : "transparent",
                       fontWeight: isSelected ? 600 : 500,
                       fontSize: "0.9rem",
                       transition: "all 0.2s ease",
                       "&:hover": {
-                        backgroundColor: isSelected ? "#E8F1FB" : "#F0F4FA",
+                        backgroundColor: isSelected ? "#E8F1FB" : (isDarkMode ? theme.palette.action.hover : "#F0F4FA"),
                       },
                     }}
                   >
@@ -3932,7 +3934,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                     ),
                   }}
                   sx={{
-                    backgroundColor: "#FFFFFF",
+                    backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF",
                     borderRadius: "25px",
                     "& .MuiOutlinedInput-notchedOutline": { border: "none" },
                     "& .MuiOutlinedInput-root": { borderRadius: "25px", px: 1.5 },
@@ -3948,7 +3950,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                     onChange={(e) => setStatusSearch(e.target.value)}
                     sx={{
                       borderRadius: "25px",
-                      backgroundColor: "#FFFFFF",
+                      backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF",
                       "& .MuiOutlinedInput-notchedOutline": { border: "none" },
                       px: 1.5,
                       color: "#124D81",
@@ -4014,7 +4016,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                 size="small"
                 sx={{
                   minWidth: 120,
-                  backgroundColor: "#FFFFFF",
+                  backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF",
                   borderRadius: "8px",
                   boxShadow: "0px 1px 2px rgba(0,0,0,0.1)",
                   "& .MuiOutlinedInput-notchedOutline": {
@@ -4029,7 +4031,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                   sx={{
                     borderRadius: "25px",
                     px: 1.5,
-                    color: "#124D81",
+                    color: isDarkMode ? theme.palette.text.primary : "#124D81",
                     "& .MuiSelect-icon": { color: "#228BE6" },
                   }}
                 >
@@ -4056,7 +4058,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                   sm: "1.3fr 1.1fr 1fr 1.4fr 0.4fr", // tablet
                   md: "1.2fr 1fr 1fr 1.3fr 0.4fr",   // desktop
                 },
-                backgroundColor: "#F4F6FB",
+                backgroundColor: isDarkMode ? theme.palette.background.paper : "#F4F6FB",
                 borderRadius: "10px 10px 0 0",
                 padding: "10px 18px",
                 color: "#8A94A6",
@@ -4125,17 +4127,17 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
                       },
                       alignItems: "center",
                       padding: "14px 18px",
-                      borderBottom: "1px solid #E6EAF0",
-                      backgroundColor: "#FFFFFF",
+                      borderBottom: `1px solid ${isDarkMode ? theme.palette.divider : "#E6EAF0"}`,
+                      backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF",
                       transition: "background-color 0.4s ease",
-                      "&:hover": { backgroundColor: "#F9FBFF", cursor: "pointer" },
+                      "&:hover": { backgroundColor: isDarkMode ? theme.palette.action.hover : "#F9FBFF", cursor: "pointer" },
                     }}
                   >
                     {/* 💊 Drug name & type */}
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                       <FontAwesomeIcon icon={faPrescription} style={{ color: "#228BE6" }} />
                       <Box>
-                        <Typography sx={{ color: "#124D81", fontWeight: 600 }}>
+                        <Typography sx={{ color: isDarkMode ? theme.palette.primary.light : "#124D81", fontWeight: 600 }}>
                           {medication.name}
                         </Typography>
                         <Typography
@@ -4256,7 +4258,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
               height: "75vh",
               borderRadius: 3,
               boxShadow: 6,
-              backgroundColor: "#FFFFFF",
+              backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF",
               display: "flex",
               flexDirection: "column",
             },
@@ -4271,7 +4273,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
           {/* -------- HEADER -------- */}
           <DialogTitle
             sx={{
-              color: "#0F3B61",
+              color: isDarkMode ? theme.palette.text.primary : "#0F3B61",
               fontWeight: "bold",
               display: "flex",
               alignItems: "center",
@@ -4280,7 +4282,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
             }}
           >
             Medication Verification
-            <IconButton onClick={handleCloseEntire} sx={{ color: "#0F3B61" }}>
+            <IconButton onClick={handleCloseEntire} sx={{ color: isDarkMode ? theme.palette.text.primary : "#0F3B61" }}>
               <CloseIcon />
             </IconButton>
           </DialogTitle>
@@ -4381,7 +4383,7 @@ export const PrescriptionScreen: React.FC<PrescriptionScreenProps> = (props) => 
           <DialogContent dividers sx={{ flexGrow: 1, p: 3 }}>
             {step === 1 && selectedMedication && (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <Typography variant="h6" sx={{ color: "#124D81" }}>
+                <Typography variant="h6" sx={{ color: isDarkMode ? theme.palette.primary.light : "#124D81" }}>
                   {selectedMedication.name}
                 </Typography>
 

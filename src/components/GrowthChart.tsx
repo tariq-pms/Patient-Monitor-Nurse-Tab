@@ -14,8 +14,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Menu, MenuItem, ListItemIcon } from '@mui/material';
 import { useAuth0 } from "@auth0/auth0-react";
-import { BORNEO_LOGO } from './GrowthNimai_logo'; // Adjust path if needed
-// ... keep your existing imports ...
+
 import {
   Paper,
   
@@ -828,406 +827,284 @@ setLoading(true);
       setSnack(true);
     }
   };
-  // const handleAddEntry1 = async () => {
-  //   if (!currentWeight || !weeks || !days) {
-  //     setSnackSucc(false);
-  //     setSnack(true);
-  //     return;
-  //   }
 
-  //   const pmaDecimal = parseFloat((Number(weeks) + Number(days) / 7).toFixed(2));
+const handleDownloadPdf = async () => {
+    const doc = new jsPDF("p", "pt", "a4");
+    const pageWidth = doc.internal.pageSize.getWidth();
 
-  //   const components: any[] = [];
+    // =========================
+    // 1️⃣ FETCH ORGANIZATION + LOGO + FOOTER DATA
+    // =========================
+    let orgName     = "Unknown Organization";
+    let logoDataUrl: string | null = null;
 
-  //   if (currentWeight)
-  //     components.push({
-  //       code: { text: "Weight" },
-  //       valueQuantity: {
-  //         value: parseFloat(currentWeight),
-  //         unit: "g",
-  //         system: "http://unitsofmeasure.org",
-  //         code: "g",
-  //       },
-  //     });
+    // Footer fields — populated from org resource
+    let footerAddress  = "";
+    let footerPhones: string[] = [];
+    let footerEmail    = "";
+    let footerWebsite  = "";
 
-  //   if (length)
-  //     components.push({
-  //       code: { text: "Length" },
-  //       valueQuantity: {
-  //         value: parseFloat(length),
-  //         unit: "cm",
-  //         system: "http://unitsofmeasure.org",
-  //         code: "cm",
-  //       },
-  //     });
-
-  //   if (headC)
-  //     components.push({
-  //       code: { text: "Head Circumference" },
-  //       valueQuantity: {
-  //         value: parseFloat(headC),
-  //         unit: "cm",
-  //         system: "http://unitsofmeasure.org",
-  //         code: "cm",
-  //       },
-  //     });
-
-  //   // PMA
-  //   components.push({
-  //     code: { text: "Post-menstrual Age (PMA)" },
-  //     valueQuantity: {
-  //       value: pmaDecimal,
-  //       unit: "weeks",
-  //       system: "http://unitsofmeasure.org",
-  //       code: "wk",
-  //     },
-  //   });
-
-  //   const observation = {
-  //     resourceType: "Observation",
-  //     status: "final",
-  //     category: [
-  //       {
-  //         coding: [
-  //           {
-  //             system: "http://terminology.hl7.org/CodeSystem/observation-category",
-  //             code: "fenton-chart",
-  //             display: "Fenton Chart",
-  //           },
-  //         ],
-  //       },
-  //     ],
-  //     code: {
-  //       coding: [
-  //         {
-  //           system: "http://loinc.org",
-  //           code: "8331-1",
-  //           display: "Weekly Fenton Chart Measurement",
-  //         },
-  //       ],
-  //       text: "Fenton Chart Entry",
-  //     },
-  //     subject: {
-  //       reference: `Patient/${props.patient_resource_id}`,
-  //     },
-  //     effectiveDateTime: new Date().toISOString(),
-  //     component: components,
-  //   };
-
-  //   const baseUrl = import.meta.env.VITE_FHIRAPI_URL;
-  //   const authHeader = "Basic " + btoa("fhiruser:change-password");
-
-  //   try {
-  //     // 🔍 1. Search if a Fenton observation already exists
-  //     const searchResponse = await fetch(
-  //       `${baseUrl}/Observation?subject=Patient/${props.patient_resource_id}&category=fenton-chart`,
-  //       {
-  //         headers: {
-  //           Authorization: authHeader,
-  //           Accept: "application/fhir+json",
-  //         },
-  //       }
-  //     );
-
-  //     const searchResult = await searchResponse.json();
-
-  //     if (searchResponse.ok && searchResult.entry?.length > 0) {
-  //       // 🔁 UPDATE (PUT)
-  //       const existingObservation = searchResult.entry[0].resource;
-  //       const obsId = existingObservation.id;
-
-  //       const putResponse = await fetch(`${baseUrl}/Observation/${obsId}`, {
-  //         method: "PUT",
-  //         headers: {
-  //           Authorization: authHeader,
-  //           "Content-Type": "application/fhir+json",
-  //           Accept: "application/fhir+json",
-  //         },
-  //         body: JSON.stringify({
-  //           ...existingObservation,
-  //           ...observation,
-  //           id: obsId, // keep same ID
-  //         }),
-  //       });
-
-  //       if (putResponse.ok) {
-  //         setSnackSucc(true);
-  //         setSnack(true);
-  //       } else {
-  //         setSnackSucc(false);
-  //         setSnack(true);
-  //       }
-
-  //     } else {
-  //       // 🆕 CREATE (POST)
-  //       const postResponse = await fetch(`${baseUrl}/Observation`, {
-  //         method: "POST",
-  //         headers: {
-  //           Authorization: authHeader,
-  //           "Content-Type": "application/fhir+json",
-  //           Accept: "application/fhir+json",
-  //         },
-  //         body: JSON.stringify(observation),
-  //       });
-
-  //       if (postResponse.ok) {
-  //         setSnackSucc(true);
-  //         setSnack(true);
-  //       } else {
-  //         setSnackSucc(false);
-  //         setSnack(true);
-  //       }
-  //     }
-
-  //     // Reset
-  //     setaddnewbutton1(false);
-  //     setCurrentWeight("");
-  //     setLength("");
-  //     setHeadC("");
-
-  //   } catch (error) {
-  //     console.error("Network error:", error);
-  //     setSnackSucc(false);
-  //     setSnack(true);
-  //   }
-  // };
-
-  const handleDownloadPdf = () => {
-    const doc = new jsPDF();
-
-    // ---------------------------------------------------------
-    // 1. SETUP & HEADER
-    // ---------------------------------------------------------
-
-    // ➤ LOGO (Replace this string with your Base64 image data or URL)
-    // You can convert your image to base64 here: https://www.base64-image.de/
-    const logoUrl = BORNEO_LOGO;
-
-    // Draw Logo (Left)
-    // doc.addImage(imgData, 'FMT', x, y, width, height)
     try {
-      doc.addImage(logoUrl, 'PNG', 14, 10, 25, 12); // Adjust W/H as needed
-    } catch (e) {
-      console.warn("Logo not found or invalid format");
+        const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/${props.userOrganization}`;
+        const res = await fetch(orgUrl, {
+            headers: {
+                Authorization: "Basic " + btoa("fhiruser:change-password"),
+                Accept: "application/fhir+json",
+            },
+        });
+
+        if (res.ok) {
+            const org = await res.json();
+            orgName = org.name || orgName;
+
+            // ── Logo ──────────────────────────────────────────────
+            const logoExt = (org.extension || []).find((e: any) =>
+                e.url === "http://example.org/fhir/StructureDefinition/organization-logo"
+            );
+            const logoRef = logoExt?.valueReference?.reference;
+            if (logoRef) {
+                const binaryId = logoRef.replace("Binary/", "");
+                const binRes = await fetch(
+                    `${import.meta.env.VITE_FHIRAPI_URL}/Binary/${binaryId}`,
+                    {
+                        headers: {
+                            Authorization: "Basic " + btoa("fhiruser:change-password"),
+                            Accept: "application/fhir+json",
+                        },
+                    }
+                );
+                if (binRes.ok) {
+                    const b = await binRes.json();
+                    if (b.data) logoDataUrl = `data:${b.contentType};base64,${b.data}`;
+                }
+            }
+
+            // ── Address ───────────────────────────────────────────
+            const addr = org.address?.[0];
+            if (addr) {
+                const lines   = addr.line?.join(", ") || "";
+                const city    = addr.city       || "";
+                const state   = addr.state      || "";
+                const postal  = addr.postalCode || "";
+                const country = addr.country    || "";
+                footerAddress = [lines, city, state, postal, country]
+                    .filter(Boolean)
+                    .join(", ");
+            }
+
+            // ── Telecom ───────────────────────────────────────────
+            (org.telecom || []).forEach((t: any) => {
+                if (t.system === "phone") footerPhones.push(t.value);
+                if (t.system === "email") footerEmail   = t.value;
+                if (t.system === "url")   footerWebsite = t.value;
+            });
+        }
+    } catch (err) {
+        console.error("ORG FETCH ERROR:", err);
     }
 
-    // Hospital Address / Name (Next to Logo)
-    doc.setFontSize(8);
-    doc.setTextColor(100);
-    doc.text("Shree Vallabh Nagar,", 42, 12);
-    doc.text("Mumbai Naka, Nashik", 42, 16);
-    doc.text("422001.", 42, 20);
+    // =========================
+    // 🧾 HEADER
+    // =========================
+    const logoBoxSize = 80;
+    const logoX = 30;
+    const logoY = 20;
 
-    // Title Box (Left)
-    doc.setFillColor(245, 247, 250); // Light Gray bg
-    doc.roundedRect(14, 25, 50, 8, 1, 1, 'F');
-    doc.setFontSize(10);
-    doc.setTextColor(0);
+    try {
+        if (logoDataUrl) {
+            const img = new Image();
+            img.src = logoDataUrl;
+            await new Promise<void>((resolve, reject) => {
+                img.onload  = () => resolve();
+                img.onerror = (e) => reject(e);
+            });
+            const aspectRatio = img.width / img.height;
+            let drawWidth  = logoBoxSize;
+            let drawHeight = logoBoxSize;
+            if (aspectRatio > 1) drawHeight = logoBoxSize / aspectRatio;
+            else drawWidth = logoBoxSize * aspectRatio;
+            const offsetX = logoX + (logoBoxSize - drawWidth)  / 2;
+            const offsetY = logoY + (logoBoxSize - drawHeight) / 2 - 10;
+            doc.addImage(img, "PNG", offsetX, offsetY, drawWidth, drawHeight);
+        } else {
+            doc.setFillColor(200, 220, 255);
+            doc.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
+            doc.setFontSize(8);
+            doc.text("No Logo", logoX + 5, logoY + 30);
+        }
+    } catch {
+        doc.setFillColor(200, 220, 255);
+        doc.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
+    }
+
+    // Right side Info Box
+    const rightX = pageWidth - 40 - 250;
+    const boxY   = logoY + 10;
+
+    // Grey Tab
+    doc.setFillColor(224, 228, 231);
+    doc.rect(rightX + 50, boxY - 14, 160, 14, "F");
+    doc.setFontSize(9);
+    doc.setTextColor(51, 51, 51);
     doc.setFont("helvetica", "bold");
-    doc.text("BSL & WEIGHT CHART", 39, 30, { align: "center" });
+    doc.text("BSL & WEIGHT CHART", rightX + 70, boxY - 4);
 
-    // ---------------------------------------------------------
-    // 2. PATIENT DEMOGRAPHICS BOX (Right)
-    // ---------------------------------------------------------
-    const rightBoxX = 110;
-    const rightBoxY = 10;
-    const rightBoxW = 85;
-    const rightBoxH = 18;
+    // Bordered Box
+    doc.setDrawColor(209, 217, 224);
+    doc.setLineWidth(1);
+    doc.roundedRect(rightX, boxY, 250, 40, 4, 4, "S");
 
-    // Draw Border Box
-    doc.setDrawColor(200);
-    doc.setLineWidth(0.1);
-    doc.roundedRect(rightBoxX, rightBoxY, rightBoxW, rightBoxH, 2, 2, 'S');
-
-    // Line Separator
-    doc.line(rightBoxX, rightBoxY + 9, rightBoxX + rightBoxW, rightBoxY + 9);
-
-    // Data Mapping from Props
-    const pName = props.patient_name || "Unknown";
-    const pID = props.patient_id || "--";
-    const pGA = props.gestational_age || "--";
-    // Get latest weight from data if available
-    const latestWt = weightData.length > 0 ? weightData[0]["Current Weight"] : "--";
-
+    const row1Y = boxY + 15;
+    const row2Y = boxY + 30;
     doc.setFontSize(9);
 
-    // Row 1: Name & ID
-    doc.setFont("helvetica", "normal");
-    doc.text("B/O Mothers Name", rightBoxX + 2, rightBoxY + 6);
-    doc.setFont("helvetica", "bold");
-    doc.text(pName, rightBoxX + 35, rightBoxY + 6);
+    doc.setTextColor(144, 164, 174); doc.setFont("helvetica", "normal");
+    doc.text("B/O:", rightX + 10, row1Y);
+    doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold");
+    doc.text(props.patient_name || "N/A", rightX + 35, row1Y);
 
-    doc.setFont("helvetica", "normal");
-    doc.text("ID:", rightBoxX + 55, rightBoxY + 6);
-    doc.setFont("helvetica", "bold");
-    doc.text(pID, rightBoxX + 62, rightBoxY + 6);
+    doc.setTextColor(144, 164, 174); doc.setFont("helvetica", "normal");
+    doc.text("UHID:", rightX + 130, row1Y);
+    doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold");
+    doc.text(props.patient_id || "N/A", rightX + 165, row1Y);
 
-    // Row 2: GA & Weight
-    doc.setFont("helvetica", "normal");
-    doc.text("GA:", rightBoxX + 2, rightBoxY + 15);
-    doc.setFont("helvetica", "bold");
-    doc.text(pGA, rightBoxX + 10, rightBoxY + 15);
+    doc.setTextColor(144, 164, 174); doc.setFont("helvetica", "normal");
+    doc.text("GA:", rightX + 10, row2Y);
+    doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold");
+    doc.text(props.gestational_age || "N/A", rightX + 35, row2Y);
 
-    doc.setFont("helvetica", "normal");
-    doc.text("Current Weight:", rightBoxX + 50, rightBoxY + 15);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${latestWt} g`, rightBoxX + 74, rightBoxY + 15);
+    doc.setTextColor(144, 164, 174); doc.setFont("helvetica", "normal");
+    doc.text("DOB:", rightX + 130, row2Y);
+    doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold");
+    doc.text(props.birth_date || "N/A", rightX + 165, row2Y);
 
+    // Divider below header
+    doc.setDrawColor(238, 238, 238);
+    doc.line(logoX, boxY + 55, pageWidth - logoX, boxY + 55);
 
     // ---------------------------------------------------------
-    // 3. TABLES (Side by Side)
+    // 3️⃣ TABLES (Side by Side) — unchanged
     // ---------------------------------------------------------
-    const startY = 40;
+ const startY = boxY + 65;
 
-    // --- TABLE 1: WEIGHT (Left) ---
-    // Transform Data for AutoTable
-    const weightRows = weightData
-      .sort((a: any, b: any) => new Date(b.time).getTime() - new Date(a.time).getTime())
-      .map((row: any, i: number, arr: any[]) => {
-        const curr = row["Current Weight"];
-        const prevRow = arr[i + 1];
+// --- Weight Table ---
+const weightRows = weightData
+    .sort((a: any, b: any) => new Date(b.time).getTime() - new Date(a.time).getTime())
+    .map((row: any, i: number, arr: any[]) => {
+        const curr       = row["Current Weight"];
+        const prevRow    = arr[i + 1];
         const prevWeight = prevRow ? prevRow["Current Weight"] : null;
         let vStr = "";
-
         if (curr && prevWeight) {
-          const currDate = new Date(row.time);
-          const prevDate = new Date(prevRow.time);
-          const duration = Math.max(1, Math.abs(differenceInDays(currDate, prevDate)));
-          const avgWeight = (curr + prevWeight) / 2;
-          const velocity = ((curr - prevWeight) * 1000) / (avgWeight * duration);
-          vStr = `(${velocity > 0 ? '+' : ''}${velocity.toFixed(1)}g/kg/d)`;
+            const currDate  = new Date(row.time);
+            const prevDate  = new Date(prevRow.time);
+            const duration  = Math.max(1, Math.abs(differenceInDays(currDate, prevDate)));
+            const avgWeight = (curr + prevWeight) / 2;
+            const velocity  = ((curr - prevWeight) * 1000) / (avgWeight * duration);
+            vStr = `(${velocity > 0 ? '+' : ''}${velocity.toFixed(1)}g/kg/d)`;
         }
-
         return [
-          format(new Date(row.time), 'dd-MM-yy'),
-          format(new Date(row.time), 'hh:mm a'),
-          `${curr} ${vStr}`
+            format(new Date(row.time), 'dd-MM-yy'),
+            format(new Date(row.time), 'hh:mm a'),
+            `${curr} ${vStr}`,
         ];
-      });
-
-    autoTable(doc, {
-      startY: startY,
-      head: [['Date', 'Time', 'Weight (g)']],
-      body: weightRows,
-      theme: 'grid', // Changed from 'plain' to 'grid'
-      margin: { left: 14 },
-      tableWidth: 85,
-      styles: {
-        fontSize: 8,
-        cellPadding: 3,
-        lineColor: [200, 200, 200], // Gray border color
-        lineWidth: 0.1 // Thin border
-      },
-      headStyles: {
-        fillColor: [245, 247, 250],
-        textColor: 80,
-        fontStyle: 'bold',
-        lineColor: [200, 200, 200],
-        lineWidth: 0.1
-      },
-      columnStyles: {
-        0: { textColor: 100 },
-        2: { fontStyle: 'bold' }
-      },
-      didParseCell: function (data) {
-        // Color the Difference Text (Green/Red)
-        if (data.section === 'body' && data.column.index === 2) {
-          const text = data.cell.raw as string;
-          if (text.includes('+')) data.cell.styles.textColor = [16, 185, 129]; // Green
-          if (text.includes('-')) data.cell.styles.textColor = [239, 68, 68];  // Red
-        }
-      }
     });
 
+autoTable(doc, {
+    startY,
+    head: [['Date', 'Time', 'Weight (g)']],
+    body: weightRows,
+    theme: 'grid',
+    margin: { left: 14, right: 14 },  // ← full width
+    styles:     { fontSize: 8, cellPadding: 3, lineColor: [200, 200, 200], lineWidth: 0.1 },
+    headStyles: { fillColor: [245, 247, 250], textColor: 80, fontStyle: 'bold', lineColor: [200, 200, 200], lineWidth: 0.1 },
+    columnStyles: { 0: { textColor: 100 }, 2: { fontStyle: 'bold' } },
+    didParseCell: (data) => {
+        if (data.section === 'body' && data.column.index === 2) {
+            const text = data.cell.raw as string;
+            if (text.includes('+')) data.cell.styles.textColor = [16, 185, 129];
+            if (text.includes('-')) data.cell.styles.textColor = [239, 68, 68];
+        }
+    },
+});
 
-    // --- TABLE 2: BSL (Right Side of PDF) ---
-    const bslRows = bslEntries
-      .sort((a: any, b: any) => new Date(b.time).getTime() - new Date(a.time).getTime())
-      .map((row: any) => {
+// Capture where weight table ended (handles page breaks too)
+const bslStartY = (doc as any).lastAutoTable.finalY + 12;
+
+// --- BSL Table (below weight table) ---
+const bslRows = bslEntries
+    .sort((a: any, b: any) => new Date(b.time).getTime() - new Date(a.time).getTime())
+    .map((row: any) => {
         const val = row["BSL"];
         let label = "";
-
-        // Label Logic for PDF Text
-        if (val < 45) label = "Hypo";
-        else if (val >= 45 && val < 70) label = "Hypo Borderline";
+        if      (val < 45)                label = "Hypo";
+        else if (val >= 45 && val < 70)   label = "Hypo Borderline";
         else if (val >= 70 && val <= 150) label = "Stable";
         else if (val > 150 && val <= 200) label = "Hyper Borderline";
-        else if (val > 200) label = "Hyper";
-
+        else if (val > 200)               label = "Hyper";
         return [
-          format(new Date(row.time), 'dd-MM-yy'),
-          format(new Date(row.time), 'hh:mm a'),
-          `${val} (${label})`
+            format(new Date(row.time), 'dd-MM-yy'),
+            format(new Date(row.time), 'hh:mm a'),
+            `${val} (${label})`,
         ];
-      });
-
-    autoTable(doc, {
-      startY: startY,
-      head: [['Date', 'Time', 'BSL (mg/dL)']],
-      body: bslRows,
-      theme: 'grid', // Changed from 'plain' to 'grid'
-      margin: { left: 110 },
-      tableWidth: 85,
-      styles: {
-        fontSize: 8,
-        cellPadding: 3,
-        lineColor: [200, 200, 200], // Gray border color
-        lineWidth: 0.1 // Thin border
-      },
-      headStyles: {
-        fillColor: [245, 247, 250],
-        textColor: 80,
-        fontStyle: 'bold',
-        lineColor: [200, 200, 200],
-        lineWidth: 0.1
-      },
-      columnStyles: {
-        2: { fontStyle: 'bold' }
-      },
-
-      // 🔥 COLOR LOGIC FOR PDF TEXT
-      didParseCell: function (data) {
-        if (data.section === 'body' && data.column.index === 2) {
-          const text = data.cell.raw as string;
-          const val = parseInt(text.split(' ')[0]); // Extract number from "40 (Hypo)"
-
-          if (!isNaN(val)) {
-            if (val < 45) {
-              data.cell.styles.textColor = [245, 158, 11]; // Orange (Hypo)
-            }
-            else if (val >= 45 && val < 70) {
-              data.cell.styles.textColor = [234, 179, 8]; // Yellow (Hypo Borderline)
-            }
-            else if (val >= 70 && val <= 150) {
-              data.cell.styles.textColor = [16, 185, 129]; // Green (Stable)
-            }
-            else if (val > 150 && val <= 200) {
-              data.cell.styles.textColor = [248, 113, 113]; // Mild Red (Hyper Borderline)
-            }
-            else if (val > 200) {
-              data.cell.styles.textColor = [239, 68, 68]; // Red (Hyper)
-            }
-          }
-        }
-      }
     });
 
+autoTable(doc, {
+    startY: bslStartY,              // ← starts right below weight table
+    head: [['Date', 'Time', 'BSL (mg/dL)']],
+    body: bslRows,
+    theme: 'grid',
+    margin: { left: 14, right: 14 },  // ← full width
+    styles:     { fontSize: 8, cellPadding: 3, lineColor: [200, 200, 200], lineWidth: 0.1 },
+    headStyles: { fillColor: [245, 247, 250], textColor: 80, fontStyle: 'bold', lineColor: [200, 200, 200], lineWidth: 0.1 },
+    columnStyles: { 2: { fontStyle: 'bold' } },
+    didParseCell: (data) => {
+        if (data.section === 'body' && data.column.index === 2) {
+            const val = parseInt((data.cell.raw as string).split(' ')[0]);
+            if (!isNaN(val)) {
+                if      (val < 45)   data.cell.styles.textColor = [245, 158, 11];
+                else if (val < 70)   data.cell.styles.textColor = [234, 179, 8];
+                else if (val <= 150) data.cell.styles.textColor = [16, 185, 129];
+                else if (val <= 200) data.cell.styles.textColor = [248, 113, 113];
+                else                 data.cell.styles.textColor = [239, 68, 68];
+            }
+        }
+    },
+});
+
     // ---------------------------------------------------------
-    // 4. FOOTER
+    // 4️⃣ FOOTER — built from org resource
     // ---------------------------------------------------------
-    const pageCount = doc.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(7);
-      doc.setTextColor(150);
-      const username = user?.name || 'User'; // Fallback to 'User' if name is missing
-      const footerText = `Printed By: ${username}   ${format(new Date(), 'dd/MM/yy hh:mm a')}`;
-      doc.text(footerText, 14, 290); // Bottom left
-      doc.text(`Page ${i}/${pageCount}`, 190, 290, { align: 'right' });
+    const totalPages = (doc as any).internal.getNumberOfPages();
+
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        const pageHeight = doc.internal.pageSize.getHeight();
+
+        // Divider line
+        doc.setDrawColor(238, 238, 238);
+        doc.setLineWidth(1);
+        doc.line(logoX, pageHeight - 50, pageWidth - logoX, pageHeight - 50);
+
+        doc.setFontSize(7);
+        doc.setTextColor(100, 100, 100);
+        doc.setFont("helvetica", "normal");
+
+        // Row 1 — Address
+        doc.text(footerAddress || "Address not available", logoX, pageHeight - 35);
+
+        // Row 2 — Phones | Email | Website + page number
+        const contactParts: string[] = [];
+        if (footerPhones.length > 0) contactParts.push(footerPhones.join(", "));
+        if (footerEmail)             contactParts.push(footerEmail);
+        if (footerWebsite)           contactParts.push(footerWebsite);
+
+        doc.text(contactParts.join("  |  "), logoX, pageHeight - 21);
+        doc.text(`Page ${i}/${totalPages}`, pageWidth - logoX - 30, pageHeight - 21);
     }
 
-    doc.save(`BSL_Weight_Chart_${pName}.pdf`);
-  };
+    doc.save(`BSL_Weight_Chart_${props.patient_name || "Patient"}.pdf`);
+};
 
   const handleAddEntry1 = async () => {
     if (!currentWeight) {
@@ -2080,75 +1957,135 @@ setLoading(true);
   />
 </Stack> */}
 
-            <Stack direction="row" gap={2} mt={2}>
+           <Stack direction="row" gap={2} mt={2}>
 
-              {/* PMA Weeks */}
-              <TextField
-                label="PMA Weeks"
-                value={pmaWeeksState}
-                fullWidth
-                onChange={(e) => setPmaWeeksState(e.target.value)}
-                InputProps={{
-                  sx: {
-                    backgroundColor: "#F5F5F5",
-                    borderRadius: 1,
-                    color: "#000",
-                  },
-                }}
-                InputLabelProps={{ sx: { color: "#000" } }}
-              />
+  {/* PMA Weeks */}
+  <TextField
+    label="PMA Weeks"
+    value={pmaWeeksState}
+    onChange={(e) => {
+      let val = e.target.value;
 
-              {/* PMA Days */}
-              <TextField
-                label="PMA Days"
-                value={pmaDaysState}
-                fullWidth
-                onChange={(e) => setPmaDaysState(e.target.value)}
-                InputProps={{
-                  sx: {
-                    backgroundColor: "#F5F5F5",
-                    borderRadius: 1,
-                    color: "#000",
-                  },
-                }}
-                InputLabelProps={{ sx: { color: "#000" } }}
-              />
+      // only digits
+      val = val.replace(/\D/g, "");
 
-            </Stack>
+      // max 2 digits
+      if (val.length > 2) return;
+
+      setPmaWeeksState(val);
+    }}
+    onKeyDown={(e) => {
+      if (["e", "E", "+", "-", "."].includes(e.key)) {
+        e.preventDefault();
+      }
+    }}
+    inputProps={{
+      inputMode: "numeric",
+      maxLength: 2,
+    }}
+    InputProps={{
+      sx: {
+        backgroundColor: "#F5F5F5",
+        borderRadius: 1,
+        color: "#000",
+      },
+    }}
+    InputLabelProps={{ sx: { color: "#000" } }}
+    fullWidth
+  />
+
+  {/* PMA Days */}
+  <TextField
+    label="PMA Days"
+    value={pmaDaysState}
+    onChange={(e) => {
+      let val = e.target.value;
+
+      // only digits
+      val = val.replace(/\D/g, "");
+
+      // max 1 digit
+      if (val.length > 1) return;
+
+      // allow only 0–6
+      if (val !== "" && parseInt(val) > 6) return;
+
+      setPmaDaysState(val);
+    }}
+    onKeyDown={(e) => {
+      if (["e", "E", "+", "-", "."].includes(e.key)) {
+        e.preventDefault();
+      }
+    }}
+    inputProps={{
+      inputMode: "numeric",
+      maxLength: 1,
+    }}
+    InputProps={{
+      sx: {
+        backgroundColor: "#F5F5F5",
+        borderRadius: 1,
+        color: "#000",
+      },
+    }}
+    InputLabelProps={{ sx: { color: "#000" } }}
+    fullWidth
+  />
+
+</Stack>
 
 
             <Stack direction="row" spacing={2} mt={2}>
 
               <TextField
-                label="Current Weight"
-                required
-                type="number"
-                value={currentWeight}
-                onChange={(e) => setCurrentWeight(e.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <Typography sx={{ color: "#9BA1AE" }}>g</Typography>
-                  ),
-                  sx: {
-                    backgroundColor: "#F5F5F5",
-                    borderRadius: 1,
-                    color: "#000",
-                  },
-                }}
-                InputLabelProps={{ sx: { color: "#000" } }}
-                fullWidth
-                variant="outlined"
-              />
+  label="Current Weight"
+  required
+  value={currentWeight}
+  onChange={(e) => {
+    let val = e.target.value;
+
+    // ✅ Allow only digits
+    val = val.replace(/\D/g, "");
+
+    // ✅ Limit to 4 digits
+    if (val.length > 4) return;
+
+    setCurrentWeight(val);
+  }}
+  onKeyDown={(e) => {
+    // ❌ Block invalid keys
+    if (["e", "E", "+", "-", "."].includes(e.key)) {
+      e.preventDefault();
+    }
+  }}
+  inputProps={{
+    inputMode: "numeric", // mobile numeric keyboard
+    maxLength: 4,        // fallback limit
+  }}
+  InputProps={{
+    endAdornment: (
+      <Typography sx={{ color: "#9BA1AE" }}>g</Typography>
+    ),
+    sx: {
+      backgroundColor: "#F5F5F5",
+      borderRadius: 1,
+      color: "#000",
+    },
+  }}
+  InputLabelProps={{ sx: { color: "#000" } }}
+  fullWidth
+  variant="outlined"
+/>
               <TextField
                 label="Weight Velocity"
                 value={gainLoss}
                 InputProps={{
                   readOnly: true,
-                  endAdornment: (
-                    <Typography sx={{ color: "#9BA1AE", fontSize: "12px", whiteSpace: "nowrap", ml: 1 }}>
-                      g / kg / d
-                    </Typography>
-                  ),
+                  // endAdornment: (
+                  //   <Typography sx={{ color: "#9BA1AE", fontSize: "12px", whiteSpace: "nowrap", ml: 1 }}>
+                  //     g / kg / d
+                  //   </Typography>
+                  // ),
                   sx: {
                     backgroundColor: "#F5F5F5",
                     borderRadius: 1,
@@ -2172,46 +2109,84 @@ setLoading(true);
             <Stack direction="row" spacing={2} mt={2}>
 
               <TextField
-                label="Length"
-                type="number"
-                value={length}
-                onChange={(e) => setLength(e.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <Typography sx={{ color: "#9BA1AE" }}>cm</Typography>
-                  ),
-                  sx: {
-                    backgroundColor: "#F5F5F5",
-                    borderRadius: 1,
-                    color: "#000",
-                  },
-                }}
-                InputLabelProps={{ sx: { color: "#000" } }}
-                fullWidth
-                variant="outlined"
-              />
+  label="Length"
+  value={length}
+  onChange={(e) => {
+    let val = e.target.value;
+
+    // ✅ Allow only digits
+    val = val.replace(/\D/g, "");
+
+    // ✅ Limit to 3 digits
+    if (val.length > 3) return;
+
+    setLength(val);
+  }}
+  onKeyDown={(e) => {
+    // ❌ Block invalid keys
+    if (["e", "E", "+", "-", "."].includes(e.key)) {
+      e.preventDefault();
+    }
+  }}
+  inputProps={{
+    inputMode: "numeric",
+    maxLength: 3,
+  }}
+  InputProps={{
+    endAdornment: (
+      <Typography sx={{ color: "#9BA1AE" }}>cm</Typography>
+    ),
+    sx: {
+      backgroundColor: "#F5F5F5",
+      borderRadius: 1,
+      color: "#000",
+    },
+  }}
+  InputLabelProps={{ sx: { color: "#000" } }}
+  fullWidth
+  variant="outlined"
+/>
             </Stack>
             <Stack direction="row" spacing={2} mt={2}>
 
               <TextField
-                label="Head C"
-                value={headC}
-                type="number"
-                onChange={(e) => setHeadC(e.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <Typography sx={{ color: "#9BA1AE" }}>cm</Typography>
-                  ),
-                  sx: {
-                    backgroundColor: "#F5F5F5",
-                    borderRadius: 1,
-                    color: "#000",
-                  },
-                }}
-                InputLabelProps={{ sx: { color: "#000" } }}
-                fullWidth
-                variant="outlined"
-              />
+  label="Head C"
+  value={headC}
+  onChange={(e) => {
+    let val = e.target.value;
+
+    // ✅ Allow only digits
+    val = val.replace(/\D/g, "");
+
+    // ✅ Limit to 3 digits
+    if (val.length > 3) return;
+
+    setHeadC(val);
+  }}
+  onKeyDown={(e) => {
+    // ❌ Block invalid keys
+    if (["e", "E", "+", "-", "."].includes(e.key)) {
+      e.preventDefault();
+    }
+  }}
+  inputProps={{
+    inputMode: "numeric",
+    maxLength: 3,
+  }}
+  InputProps={{
+    endAdornment: (
+      <Typography sx={{ color: "#9BA1AE" }}>cm</Typography>
+    ),
+    sx: {
+      backgroundColor: "#F5F5F5",
+      borderRadius: 1,
+      color: "#000",
+    },
+  }}
+  InputLabelProps={{ sx: { color: "#000" } }}
+  fullWidth
+  variant="outlined"
+/>
             </Stack>
 
 
@@ -2616,144 +2591,6 @@ setLoading(true);
   }
 
   // Add these constants for reference line intervals
-  // const PMA_INTERVAL = 2; // weeks
-  // const LEN_INTERVAL = 2; // cm
-  // const HC_INTERVAL = 2; // cm
-  // const WT_INTERVAL = 500; // grams
-
-  // Add this function to generate reference lines
-  // const generateReferenceLines = () => {
-  //   const lines = [];
-
-  //   // 1. PMA reference lines (vertical)
-  //   for (let pma = PMA_MIN; pma <= PMA_MAX; pma += PMA_INTERVAL) {
-  //     const x = mapX(pma);
-  //     lines.push(
-  //       <line
-  //         key={`pma-${pma}`}
-  //         x1={x}
-  //         x2={x}
-  //         y1={Y0}
-  //         y2={Y1}
-  //         stroke="#e0e0e0"
-  //         strokeWidth={1}
-  //         strokeDasharray="3,3"
-  //       />
-  //     );
-
-  //     // PMA labels at bottom
-  //     lines.push(
-  //       <text
-  //         key={`pma-label-${pma}`}
-  //         x={x}
-  //         y={Y1 + 15}
-  //         fontSize="10"
-  //         textAnchor="middle"
-  //         fill="#666"
-  //       >
-  //         {pma}
-  //       </text>
-  //     );
-  //   }
-
-  //   // 2. Length reference lines (horizontal)
-  //   for (let len = LEN_MIN; len <= LEN_MAX; len += LEN_INTERVAL) {
-  //     const y = mapY_length(len);
-  //     lines.push(
-  //       <line
-  //         key={`len-${len}`}
-  //         x1={X0}
-  //         x2={X1}
-  //         y1={y}
-  //         y2={y}
-  //         stroke="#87CEFA" // Light blue for length
-  //         strokeWidth={0.5}
-  //         strokeDasharray="2,2"
-  //       />
-  //     );
-
-  //     // Length labels on left
-  //     lines.push(
-  //       <text
-  //         key={`len-label-${len}`}
-  //         x={X0 - 10}
-  //         y={y}
-  //         fontSize="9"
-  //         textAnchor="end"
-  //         fill="#666"
-  //         alignmentBaseline="middle"
-  //       >
-  //         {len}
-  //       </text>
-  //     );
-  //   }
-
-  //   // 3. Head circumference reference lines (horizontal)
-  //   for (let hc = HC_MIN; hc <= HC_MAX; hc += HC_INTERVAL) {
-  //     const y = mapY_head(hc);
-  //     lines.push(
-  //       <line
-  //         key={`hc-${hc}`}
-  //         x1={X0}
-  //         x2={X1}
-  //         y1={y}
-  //         y2={y}
-  //         stroke="#98FB98" // Pale green for head circumference
-  //         strokeWidth={0.5}
-  //         strokeDasharray="2,2"
-  //       />
-  //     );
-
-  //     // HC labels on left
-  //     lines.push(
-  //       <text
-  //         key={`hc-label-${hc}`}
-  //         x={X0 - 10}
-  //         y={y}
-  //         fontSize="9"
-  //         textAnchor="end"
-  //         fill="#666"
-  //         alignmentBaseline="middle"
-  //       >
-  //         {hc}
-  //       </text>
-  //     );
-  //   }
-
-  //   // 4. Weight reference lines (horizontal)
-  //   for (let wt = WT_MIN; wt <= WT_MAX; wt += WT_INTERVAL) {
-  //     const y = mapY_weight(wt);
-  //     lines.push(
-  //       <line
-  //         key={`wt-${wt}`}
-  //         x1={X0}
-  //         x2={X1}
-  //         y1={y}
-  //         y2={y}
-  //         stroke="#FFB6C1" // Light pink for weight
-  //         strokeWidth={0.5}
-  //         strokeDasharray="2,2"
-  //       />
-  //     );
-
-  //     // Weight labels on left (convert to kg for readability)
-  //     lines.push(
-  //       <text
-  //         key={`wt-label-${wt}`}
-  //         x={X0 - 10}
-  //         y={y}
-  //         fontSize="9"
-  //         textAnchor="end"
-  //         fill="#666"
-  //         alignmentBaseline="middle"
-  //       >
-  //         {(wt / 1000).toFixed(1)}
-  //       </text>
-  //     );
-  //   }
-
-  //   return lines;
-  // };
 
   // Also add connecting lines between measurements for the same entry
   const generateConnectingLines = (entries: any[]) => {
@@ -2896,149 +2733,456 @@ setLoading(true);
   };
 
 
+  // const handleDownload = async () => {
+  //   if (!containerRef.current) return;
+
+  //   const doc = new jsPDF("p", "pt", "a4");
+
+  //   // ✔ Correct A4 size in points
+  //   const PAGE_W = doc.internal.pageSize.getWidth();   // ~595
+  //   const PAGE_H = doc.internal.pageSize.getHeight();  // ~842
+
+  //   const PADDING = 10;
+  //   const HEADER_H = 80;
+
+  //   // -----------------------------------------
+  //   // 1️⃣ FETCH ORGANIZATION + LOGO
+  //   // -----------------------------------------
+  //   let orgName = "Unknown Organization";
+  //   let logoDataUrl = null;
+
+  //   try {
+  //     const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/${props.userOrganization}`;
+  //     const res = await fetch(orgUrl, {
+  //       headers: {
+  //         Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //         Accept: "application/fhir+json",
+  //       },
+  //     });
+
+  //     if (res.ok) {
+  //       const org = await res.json();
+  //       orgName = org.name || orgName;
+
+  //       const ext = org.extension || [];
+  //       const logoExt = ext.find((e: { url: string; }) =>
+  //         e.url === "http://example.org/fhir/StructureDefinition/organization-logo"
+  //       );
+  //       const logoRef = logoExt?.valueReference?.reference;
+
+  //       if (logoRef) {
+  //         const binaryId = logoRef.replace("Binary/", "");
+  //         const binRes = await fetch(
+  //           `${import.meta.env.VITE_FHIRAPI_URL}/Binary/${binaryId}`,
+  //           {
+  //             headers: {
+  //               Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //               Accept: "application/fhir+json",
+  //             },
+  //           }
+  //         );
+
+  //         if (binRes.ok) {
+  //           const b = await binRes.json();
+  //           if (b.data) logoDataUrl = `data:${b.contentType};base64,${b.data}`;
+  //         }
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.error("ORG LOGO ERROR:", err);
+  //   }
+
+  //   // -----------------------------------------
+  //   // 2️⃣ CAPTURE CHART AREA
+  //   // -----------------------------------------
+  //   const canvas = await html2canvas(containerRef.current, {
+  //     scale: 2,
+  //     backgroundColor: "#fff",
+  //     useCORS: true,
+  //   });
+  //   const PNG = canvas.toDataURL("image/png");
+
+  //   // -----------------------------------------
+  //   // 3️⃣ HEADER
+  //   // -----------------------------------------
+  //   // 🧾 Header Section
+  //   const logoBoxSize = 80;
+  //   const logoX = 60;
+  //   const logoY = 20;
+
+  //   try {
+  //     if (logoDataUrl) {
+  //       const img = new Image();
+  //       img.src = logoDataUrl;
+  //       await new Promise<void>((resolve, reject) => {
+  //         img.onload = () => resolve();
+  //         img.onerror = (e) => reject(e);
+  //       });
+  //       const aspectRatio = img.width / img.height;
+  //       let drawWidth = logoBoxSize;
+  //       let drawHeight = logoBoxSize;
+  //       if (aspectRatio > 1) drawHeight = logoBoxSize / aspectRatio;
+  //       else drawWidth = logoBoxSize * aspectRatio;
+  //       const offsetX = logoX + (logoBoxSize - drawWidth) / 2;
+  //       const offsetY = logoY + (logoBoxSize - drawHeight) / 2 - 10;
+  //       doc.addImage(img, "PNG", offsetX, offsetY, drawWidth, drawHeight);
+  //     } else {
+  //       doc.setFillColor(200, 220, 255);
+  //       doc.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
+  //       doc.setFontSize(8);
+  //       doc.text("No Logo", logoX + 5, logoY + 30);
+  //     }
+  //   } catch {
+  //     doc.setFillColor(200, 220, 255);
+  //     doc.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
+  //   }
+
+  //   // Hospital name
+  //   // doc.setFont("helvetica", "bold");
+  //   // doc.setFontSize(14);
+  //   // doc.text(orgName, logoX + 70, logoY + 25);
+  
+  //   // Right side Info Box
+  //   const rightX = PAGE_W - 40 - 250; 
+  //   const boxY = logoY + 10;
+      
+  //   // Grey Tab
+  //   doc.setFillColor(224, 228, 231); 
+  //   doc.rect(rightX + 50, boxY - 14, 160, 14, "F");
+  //   doc.setFontSize(9);
+  //   doc.setTextColor(51, 51, 51); 
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text("FENTON CHART REPORT", rightX + 65, boxY - 4);
+      
+  //   // Bordered Box
+  //   doc.setDrawColor(209, 217, 224); 
+  //   doc.setLineWidth(1);
+  //   doc.roundedRect(rightX, boxY, 250, 40, 4, 4, "S");
+      
+  //   // Text inside box
+  //   const row1Y = boxY + 15;
+  //   const row2Y = boxY + 30;
+  //   doc.setFontSize(9);
+      
+  //   doc.setTextColor(144, 164, 174); 
+  //   doc.setFont("helvetica", "normal");
+  //   doc.text("B/O:", rightX + 10, row1Y);
+  //   doc.setTextColor(0, 0, 0);
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text(props.patient_name || "N/A", rightX + 35, row1Y);
+      
+  //   doc.setTextColor(144, 164, 174);
+  //   doc.setFont("helvetica", "normal");
+  //   doc.text("UHID:", rightX + 130, row1Y);
+  //   doc.setTextColor(0, 0, 0);
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text(props.patient_id || "N/A", rightX + 165, row1Y);
+
+  //   doc.setTextColor(144, 164, 174);
+  //   doc.setFont("helvetica", "normal");
+  //   doc.text("GA:", rightX + 10, row2Y);
+  //   doc.setTextColor(0, 0, 0);
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text(props.gestational_age || "N/A", rightX + 35, row2Y);
+
+  //   doc.setTextColor(144, 164, 174);
+  //   doc.setFont("helvetica", "normal");
+  //   doc.text("DOB:", rightX + 130, row2Y);
+  //   doc.setTextColor(0, 0, 0);
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text(props.birth_date || "N/A", rightX + 165, row2Y);
+
+  //   // Line separator below header
+  //   doc.setDrawColor(238, 238, 238); 
+  //   doc.line(logoX, boxY + 55, PAGE_W - logoX, boxY + 55);
+
+  //   // -----------------------------------------
+  //   // 4️⃣ FIT CHART INTO A4 BELOW HEADER
+  //   // -----------------------------------------
+
+  //   // Real chart px size from canvas
+  //   const imgW = canvas.width;
+  //   const imgH = canvas.height;
+
+  //   // Compute aspect-fit dimensions
+  //   const maxW = PAGE_W;
+  //   const maxH = PAGE_H - HEADER_H;
+
+  //   let finalW = maxW;
+  //   let finalH = (imgH / imgW) * finalW;
+
+  //   if (finalH > maxH) {
+  //     finalH = maxH;
+  //     finalW = (imgW / imgH) * finalH;
+  //   }
+
+  //   const chartX = (PAGE_W - finalW) / 2;
+  //   const chartY = HEADER_H + 2;
+
+  //   doc.addImage(PNG, "PNG", chartX, chartY, finalW, finalH);
+
+  //   // -----------------------------------------
+  //   // FOOTER (Tab 2)
+  //   // -----------------------------------------
+  //   const totalPages = (doc as any).internal.getNumberOfPages();
+  //   for (let i = 1; i <= totalPages; i++) {
+  //       doc.setPage(i);
+  //       const pageHeight = doc.internal.pageSize.getHeight();
+        
+  //       // Grey Line borderTop
+  //       doc.setDrawColor(238, 238, 238);
+  //       doc.setLineWidth(1);
+  //       doc.line(logoX, pageHeight - 50, PAGE_W - logoX, pageHeight - 50);
+        
+  //       // Footer Text Address
+  //       doc.setFontSize(8);
+  //       doc.setTextColor(100, 100, 100);
+  //       doc.setFont("helvetica", "normal");
+  //       doc.text("5th & 6th Floor, Archit Sai Avenue, Shree Vallabh Nagar, Behind Old Chhan Hotel, Mumbai Naka, Nashik 422001.", logoX, pageHeight - 35);
+        
+  //       // Contact details
+  //       doc.text("8669668651, 9822003909", logoX, pageHeight - 21);
+  //       doc.text("| care.nashik@nimalborneo.com |", logoX + 100, pageHeight - 21);
+  //       doc.text("https://borneohospitals.com/", logoX + 220, pageHeight - 21);
+        
+  //       // Page Number
+  //       doc.text(`Page ${i}/${totalPages}`, PAGE_W - logoX - 30, pageHeight - 21);
+  //   }
+
+  //   // -----------------------------------------
+  //   // 5️⃣ SAVE
+  //   // -----------------------------------------
+  //   doc.save(`FentonChart_${props.patient_id || "patient"}.pdf`);
+  // };
   const handleDownload = async () => {
     if (!containerRef.current) return;
 
     const doc = new jsPDF("p", "pt", "a4");
 
-    // ✔ Correct A4 size in points
-    const PAGE_W = doc.internal.pageSize.getWidth();   // ~595
-    const PAGE_H = doc.internal.pageSize.getHeight();  // ~842
-
-    const PADDING = 10;
+    const PAGE_W = doc.internal.pageSize.getWidth();
+    const PAGE_H = doc.internal.pageSize.getHeight();
+    // const PADDING = 10;
     const HEADER_H = 80;
 
     // -----------------------------------------
-    // 1️⃣ FETCH ORGANIZATION + LOGO
+    // 1️⃣ FETCH ORGANIZATION + LOGO + FOOTER DATA
     // -----------------------------------------
-    let orgName = "Unknown Organization";
-    let logoDataUrl = null;
+    let orgName    = "Unknown Organization";
+    let logoDataUrl: string | null = null;
+
+    // Footer fields — populated from org resource
+    let footerAddress = "";
+    let footerPhones: string[]  = [];
+    let footerEmail   = "";
+    let footerWebsite = "";
 
     try {
-      const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/${props.userOrganization}`;
-      const res = await fetch(orgUrl, {
-        headers: {
-          Authorization: "Basic " + btoa("fhiruser:change-password"),
-          Accept: "application/fhir+json",
-        },
-      });
-
-      if (res.ok) {
-        const org = await res.json();
-        orgName = org.name || orgName;
-
-        const ext = org.extension || [];
-        const logoExt = ext.find((e: { url: string; }) =>
-          e.url === "http://example.org/fhir/StructureDefinition/organization-logo"
-        );
-        const logoRef = logoExt?.valueReference?.reference;
-
-        if (logoRef) {
-          const binaryId = logoRef.replace("Binary/", "");
-          const binRes = await fetch(
-            `${import.meta.env.VITE_FHIRAPI_URL}/Binary/${binaryId}`,
-            {
-              headers: {
+        const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/${props.userOrganization}`;
+        const res = await fetch(orgUrl, {
+            headers: {
                 Authorization: "Basic " + btoa("fhiruser:change-password"),
                 Accept: "application/fhir+json",
-              },
-            }
-          );
+            },
+        });
 
-          if (binRes.ok) {
-            const b = await binRes.json();
-            if (b.data) logoDataUrl = `data:${b.contentType};base64,${b.data}`;
-          }
+        if (res.ok) {
+            const org = await res.json();
+            orgName = org.name || orgName;
+
+            // ── Logo ──────────────────────────────────────────────
+            const logoExt = (org.extension || []).find((e: any) =>
+                e.url === "http://example.org/fhir/StructureDefinition/organization-logo"
+            );
+            const logoRef = logoExt?.valueReference?.reference;
+
+            if (logoRef) {
+                const binaryId = logoRef.replace("Binary/", "");
+                const binRes = await fetch(
+                    `${import.meta.env.VITE_FHIRAPI_URL}/Binary/${binaryId}`,
+                    {
+                        headers: {
+                            Authorization: "Basic " + btoa("fhiruser:change-password"),
+                            Accept: "application/fhir+json",
+                        },
+                    }
+                );
+                if (binRes.ok) {
+                    const b = await binRes.json();
+                    if (b.data) logoDataUrl = `data:${b.contentType};base64,${b.data}`;
+                }
+            }
+
+            // ── Address ───────────────────────────────────────────
+            const addr = org.address?.[0];
+            if (addr) {
+                const lines  = addr.line?.join(", ") || "";
+                const city   = addr.city        || "";
+                const state  = addr.state       || "";
+                const postal = addr.postalCode  || "";
+                const country = addr.country    || "";
+                footerAddress = [lines, city, state, postal, country]
+                    .filter(Boolean)
+                    .join(", ");
+            }
+
+            // ── Telecom ───────────────────────────────────────────
+            (org.telecom || []).forEach((t: any) => {
+                if (t.system === "phone")  footerPhones.push(t.value);
+                if (t.system === "email")  footerEmail   = t.value;
+                if (t.system === "url")    footerWebsite = t.value;
+            });
         }
-      }
     } catch (err) {
-      console.error("ORG LOGO ERROR:", err);
+        console.error("ORG FETCH ERROR:", err);
     }
 
     // -----------------------------------------
     // 2️⃣ CAPTURE CHART AREA
     // -----------------------------------------
     const canvas = await html2canvas(containerRef.current, {
-      scale: 2,
-      backgroundColor: "#fff",
-      useCORS: true,
+        scale: 2,
+        backgroundColor: "#fff",
+        useCORS: true,
     });
     const PNG = canvas.toDataURL("image/png");
 
     // -----------------------------------------
     // 3️⃣ HEADER
     // -----------------------------------------
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, PAGE_W, HEADER_H + 20, "F");
+    const logoBoxSize = 80;
+    const logoX = 60;
+    const logoY = 20;
 
-    // LOGO
-    const logoX = PADDING + 10;
-    const logoY = PADDING + 10;
-
-    if (logoDataUrl) {
-      const img = new Image();
-      img.src = logoDataUrl;
-      await new Promise(r => (img.onload = r));
-      doc.addImage(img, "PNG", logoX, logoY, 120, 35);
-    } else {
-      doc.setFillColor('200');
-      doc.rect(logoX, logoY, 120, 35, "F");
+    try {
+        if (logoDataUrl) {
+            const img = new Image();
+            img.src = logoDataUrl;
+            await new Promise<void>((resolve, reject) => {
+                img.onload  = () => resolve();
+                img.onerror = (e) => reject(e);
+            });
+            const aspectRatio = img.width / img.height;
+            let drawW = logoBoxSize;
+            let drawH = logoBoxSize;
+            if (aspectRatio > 1) drawH = logoBoxSize / aspectRatio;
+            else drawW = logoBoxSize * aspectRatio;
+            const offsetX = logoX + (logoBoxSize - drawW) / 2;
+            const offsetY = logoY + (logoBoxSize - drawH) / 2 - 10;
+            doc.addImage(img, "PNG", offsetX, offsetY, drawW, drawH);
+        } else {
+            doc.setFillColor(200, 220, 255);
+            doc.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
+            doc.setFontSize(8);
+            doc.text("No Logo", logoX + 5, logoY + 30);
+        }
+    } catch {
+        doc.setFillColor(200, 220, 255);
+        doc.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
     }
 
+    // Right side Info Box
+    const rightX = PAGE_W - 40 - 250;
+    const boxY   = logoY + 10;
+
+    // Grey Tab
+    doc.setFillColor(224, 228, 231);
+    doc.rect(rightX + 50, boxY - 14, 160, 14, "F");
+    doc.setFontSize(9);
+    doc.setTextColor(51, 51, 51);
+    doc.setFont("helvetica", "bold");
+    doc.text("FENTON CHART REPORT", rightX + 65, boxY - 4);
+
+    // Bordered Box
+    doc.setDrawColor(209, 217, 224);
+    doc.setLineWidth(1);
+    doc.roundedRect(rightX, boxY, 250, 40, 4, 4, "S");
+
+    const row1Y = boxY + 15;
+    const row2Y = boxY + 30;
+    doc.setFontSize(9);
+
+    doc.setTextColor(144, 164, 174); doc.setFont("helvetica", "normal");
+    doc.text("B/O:", rightX + 10, row1Y);
+    doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold");
+    doc.text(props.patient_name || "N/A", rightX + 35, row1Y);
+
+    doc.setTextColor(144, 164, 174); doc.setFont("helvetica", "normal");
+    doc.text("UHID:", rightX + 130, row1Y);
+    doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold");
+    doc.text(props.patient_id || "N/A", rightX + 165, row1Y);
+
+    doc.setTextColor(144, 164, 174); doc.setFont("helvetica", "normal");
+    doc.text("GA:", rightX + 10, row2Y);
+    doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold");
+    doc.text(props.gestational_age || "N/A", rightX + 35, row2Y);
+
+    doc.setTextColor(144, 164, 174); doc.setFont("helvetica", "normal");
+    doc.text("DOB:", rightX + 130, row2Y);
+    doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold");
+    doc.text(props.birth_date || "N/A", rightX + 165, row2Y);
+
+    // Divider below header
+    doc.setDrawColor(238, 238, 238);
+    doc.line(logoX, boxY + 55, PAGE_W - logoX, boxY + 55);
+
     // -----------------------------------------
-    // PATIENT CARD
+    // 4️⃣ FIT CHART BELOW HEADER
     // -----------------------------------------
-    const cardX = PAGE_W * 0.35;
-    const cardY = PADDING;
-    const cardW = PAGE_W * 0.62;
-    const cardH = 60;
-
-    doc.setFillColor(245, 245, 245);
-    doc.roundedRect(cardX, cardY, cardW, cardH, 8, 8, "F");
-
-    doc.setFontSize(10);
-    doc.text(`B/O: ${props.patient_name || ""}`, cardX + 10, cardY + 15);
-    doc.text(`ID: ${props.patient_id || ""}`, cardX + 150, cardY + 15);
-    doc.text(`DOB: ${props.birth_date || ""}`, cardX + 280, cardY + 15);
-
-    doc.text(`G.A: ${props.gestational_age || ""}`, cardX + 10, cardY + 32);
-    doc.text(`Printed: ${new Date().toLocaleString()}`, cardX + 150, cardY + 32);
-
-    doc.text(`Gender: ${props.gender || "—"}`, cardX + 10, cardY + 49);
-
-    doc.setDrawColor(180);
-    doc.line(20, HEADER_H, PAGE_W - 20, HEADER_H);
-
-    // -----------------------------------------
-    // 4️⃣ FIT CHART INTO A4 BELOW HEADER
-    // -----------------------------------------
-
-    // Real chart px size from canvas
     const imgW = canvas.width;
     const imgH = canvas.height;
-
-    // Compute aspect-fit dimensions
     const maxW = PAGE_W;
     const maxH = PAGE_H - HEADER_H;
 
     let finalW = maxW;
     let finalH = (imgH / imgW) * finalW;
-
-    if (finalH > maxH) {
-      finalH = maxH;
-      finalW = (imgW / imgH) * finalH;
-    }
+    if (finalH > maxH) { finalH = maxH; finalW = (imgW / imgH) * finalH; }
 
     const chartX = (PAGE_W - finalW) / 2;
     const chartY = HEADER_H + 2;
-
     doc.addImage(PNG, "PNG", chartX, chartY, finalW, finalH);
 
     // -----------------------------------------
-    // 5️⃣ SAVE
+    // 5️⃣ FOOTER — built from org resource
+    // -----------------------------------------
+    const totalPages = (doc as any).internal.getNumberOfPages();
+
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        const pageH = doc.internal.pageSize.getHeight();
+
+        // Divider line
+        doc.setDrawColor(238, 238, 238);
+        doc.setLineWidth(1);
+        doc.line(logoX, pageH - 50, PAGE_W - logoX, pageH - 50);
+
+        // Row 1 — Address
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        doc.setFont("helvetica", "normal");
+        doc.text(footerAddress || "Address not available", logoX, pageH - 35);
+
+        // Row 2 — Contact details (phones | email | website)
+        const contactParts: string[] = [];
+        if (footerPhones.length > 0) contactParts.push(footerPhones.join(", "));
+        if (footerEmail)             contactParts.push(footerEmail);
+        if (footerWebsite)           contactParts.push(footerWebsite);
+
+        const contactLine = contactParts.join("  |  ");
+
+        // Split contact line vs page number so page number stays right-aligned
+        doc.text(contactLine, logoX, pageH - 21);
+        doc.text(
+            `Page ${i}/${totalPages}`,
+            PAGE_W - logoX - 30,
+            pageH - 21,
+        );
+    }
+
+    // -----------------------------------------
+    // 6️⃣ SAVE
     // -----------------------------------------
     doc.save(`FentonChart_${props.patient_id || "patient"}.pdf`);
-  };
+};
   const fentonGraph = useMemo(() => {
     return (
       <Box display="flex" flexDirection={{ xs: 'column', lg: 'row' }} alignItems="flex-start" gap={4}>
@@ -3229,6 +3373,7 @@ setLoading(true);
   // ... all your logic is above here ...
 
   return (
+    
     <Box sx={{ backgroundColor: isDarkMode ? theme.palette.background.default : '#F4F6F8', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}>
       <Box sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
         {/* TITLE */}
@@ -3410,6 +3555,7 @@ setLoading(true);
                     {/* Download Button */}
                     <IconButton
                       onClick={handleDownloadPdf}
+                      disabled={!manualEntries || manualEntries.length === 0}
                       sx={{
                         border: `1px solid ${isDarkMode ? theme.palette.divider : '#E0E0E0'}`,
                         borderRadius: '4px',
@@ -3885,6 +4031,7 @@ setLoading(true);
                 <Stack direction="row" spacing={1}>
                   <IconButton
                     onClick={handleDownload}
+                    disabled={!fentonEntries || fentonEntries.length === 0}
                     sx={{
                       border: `1px solid ${isDarkMode ? theme.palette.divider : '#E0E0E0'}`,
                       borderRadius: '6px',

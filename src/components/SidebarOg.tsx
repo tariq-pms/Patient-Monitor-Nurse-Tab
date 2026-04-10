@@ -21,9 +21,11 @@ import {
   faTableColumns,
   faFileSignature,
   faNotesMedical,
+  faMaskVentilator,
   faFaceSmile
 } from "@fortawesome/free-solid-svg-icons";
 import { usePermissions } from "../contexts/PermissionContext";
+import { Tooltip } from "@mui/material";
 
 interface MenuItem {
   id: string;
@@ -58,16 +60,16 @@ export const SidebarOg: FC<SidebarProps> = ({
     { id: 'medication', label: "Medication", icon: faPrescription, fhirModuleName: "Medications" },
     { id: 'feeds', label: "Feeds&Nutrition", icon: faInbox, fhirModuleName: "Clinical Notes" },
     { id: 'trends', label: "Trends", icon: faHeartPulse, fhirModuleName: "Vitals & Trends" },
-    { id: 'diagnostics', label: "Diagnostics", icon: faDroplet, fhirModuleName: "Diagnostics" },
-    
+    { id: 'diagnostics', label: "Diagnostics", icon: faDroplet, fhirModuleName: "Diagnostics" }, 
      { id: 'treatment', label: "Treatment", icon: faNotesMedical, fhirModuleName: "Clinical Notes"},
     // Changed to Patients Clinical List
     { id: 'notes', label: "Notes", icon: faFile, fhirModuleName: "Clinical Notes" },
-    { id: 'assessments', label: "Assessments", icon: faClipboardCheck, fhirModuleName: "Assessments" },
+    { id: 'assessments', label: "Scoring", icon: faClipboardCheck, fhirModuleName: "Assessments" },
     { id: 'growthchart', label: "Growth Chart", icon: faWeightHanging, fhirModuleName: "Diagnostics" },
     { id: 'consentforms', label: "Consent Forms", icon: faFileSignature, fhirModuleName: "Consent Forms" },
     //  { id: 'treatment', label: "Treatment", icon: faFaceSmile, fhirModuleName: "Initial Assessment"},
-     { id: 'initialassessment', label: "InitialAssessment", icon: faFaceSmile, fhirModuleName: "Initial Assessment" },
+     { id: 'initialassessment', label: "Assessment", icon: faFaceSmile, fhirModuleName: "Initial Assessment" },
+     { id: 'ventichart', label: "VentiChart", icon: faMaskVentilator, fhirModuleName: "Venti Chart" }
 
   ];
 
@@ -77,7 +79,7 @@ export const SidebarOg: FC<SidebarProps> = ({
 
   const otherRoleItems: MenuItem[] = [
 
-    { id: 'alarms', label: "Monitoring & Alarm", icon: faBell, fhirModuleName: "Vitals & Trends" },
+    { id: 'alarms', label: "Notification", icon: faBell, fhirModuleName: "Vitals & Trends" },
    
     // { id: 'newPage', label: "New Page", icon: faFile, fhirModuleName: "Patients Overview" },
   ];
@@ -161,54 +163,62 @@ export const SidebarOg: FC<SidebarProps> = ({
             No modules available
           </ListItem>
         ) : (
-          filteredMenuItems.map((item) => (
-            <ListItem
-              key={item.id}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                height: 40,
-                fontSize: '1.3rem',
-                paddingX: 1,
-                backgroundColor: selectedId === item.id
-                  ? (isDarkMode ? 'rgba(88, 166, 255, 0.15)' : "#CCE6FF")
-                  : "transparent",
-                marginBottom: 2,
-                cursor: "pointer",
-                "&:hover": {
-                  backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : "#E6F2FF"
-                },
-              }}
-              onClick={() => onIconClick(item.id)}
-            >
-              <ListItemIcon
-                sx={{
-                  color: selectedId === item.id
-                    ? (isDarkMode ? '#58A6FF' : "#124D81")
-                    : (isDarkMode ? theme.palette.text.secondary : "#757575"),
-                  minWidth: 36,
-                  justifyContent: "center",
-                }}
-              >
-                <FontAwesomeIcon icon={item.icon} style={{ fontSize: "100%" }} />
-              </ListItemIcon>
-              <ListItemText
-                primary={item.label}
-                sx={{
-                  color: selectedId === item.id
-                    ? (isDarkMode ? '#58A6FF' : "#124D81")
-                    : (isDarkMode ? theme.palette.text.secondary : "#757575"),
-                  fontWeight: selectedId === item.id ? "bold" : "normal",
-                  marginLeft: 2,
-                  opacity: isSidebarCollapsed ? 1 : 0,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  transition: "opacity 0.3s ease",
-                  width: isSidebarCollapsed ? "auto" : 0,
-                }}
-              />
-            </ListItem>
-          ))
+      filteredMenuItems.map((item) => (
+  <Tooltip
+    key={item.id}
+    title={item.label}
+    placement="right"
+    arrow
+    disableHoverListener={isSidebarCollapsed} // optional
+  >
+    <ListItem
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        height: 40,
+        fontSize: '1.3rem',
+        paddingX: 1,
+        backgroundColor: selectedId === item.id
+          ? (isDarkMode ? 'rgba(88, 166, 255, 0.15)' : "#CCE6FF")
+          : "transparent",
+        marginBottom: 2,
+        cursor: "pointer",
+        "&:hover": {
+          backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : "#E6F2FF"
+        },
+      }}
+      onClick={() => onIconClick(item.id)}
+    >
+      <ListItemIcon
+        sx={{
+          color: selectedId === item.id
+            ? (isDarkMode ? '#58A6FF' : "#124D81")
+            : (isDarkMode ? theme.palette.text.secondary : "#757575"),
+          minWidth: 36,
+          justifyContent: "center",
+        }}
+      >
+        <FontAwesomeIcon icon={item.icon} style={{ fontSize: "100%" }} />
+      </ListItemIcon>
+
+      <ListItemText
+        primary={item.label}
+        sx={{
+          color: selectedId === item.id
+            ? (isDarkMode ? '#58A6FF' : "#124D81")
+            : (isDarkMode ? theme.palette.text.secondary : "#757575"),
+          fontWeight: selectedId === item.id ? "bold" : "normal",
+          marginLeft: 2,
+          opacity: isSidebarCollapsed ? 1 : 0,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          transition: "opacity 0.3s ease",
+          width: isSidebarCollapsed ? "auto" : 0,
+        }}
+      />
+    </ListItem>
+  </Tooltip>
+))
         )}
       </List>
     </Box>

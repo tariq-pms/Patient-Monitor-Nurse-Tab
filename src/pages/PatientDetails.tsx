@@ -1,7 +1,7 @@
 import { Box, Typography, Stack, IconButton, useTheme } from "@mui/material";
 import { SidebarOg } from '../components/SidebarOg';
 
-import { FC, useState, useEffect, useCallback } from "react";
+import { FC, useState, useEffect, useCallback, SetStateAction } from "react";
 import { PrescriptionScreen } from '../components/PrescriptionScreen';
 import { PatientOverview } from "../components/PatientOverview";
 import { FeedsScreen } from "../components/FeedsScreen";
@@ -23,12 +23,13 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBaby } from "@fortawesome/free-solid-svg-icons";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
+// import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 // BedIcon removed - not used
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import SearchIcon from '@mui/icons-material/Search'; // Added
 import { Menu, MenuItem, TextField, InputAdornment } from "@mui/material"; // Added components
-
+import { VentiChart } from "../components/VentiChart";
+import { Notifications } from "./Notifications";
 export interface PatientDetails {
   newData: boolean;
   key: string;
@@ -357,12 +358,55 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
     fetchLatestWeight();
   }, [patientResourceId, patientId]);
 
-  useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        if (!props.userOrganization) return;
+  // useEffect(() => {
+  //   const fetchPatients = async () => {
+  //     try {
+  //       if (!props.userOrganization) return;
 
-        const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Patient?_count=1000&organization=${props.userOrganization}`, {
+  //       const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Patient?_count=1000&organization=${props.userOrganization}`, {
+  //         headers: {
+  //           Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //           "Content-Type": "application/fhir+json"
+  //         }
+  //       });
+
+  //       if (!response.ok) throw new Error("Failed to fetch patients");
+
+  //       const data = await response.json();
+  //       const formatted = data.entry?.map((entry: any) => {
+  //         const r = entry.resource;
+  //         return {
+  //           id: r.id,
+  //           name: r.name?.[0]?.text || "Unknown", // Assuming name is stored here as per typical
+  //           // Correction: Original code used extension for mothers name, let's assume standard name or extension
+  //           // Reusing logic from Patient.tsx regarding Name:
+  //           mothersName: r.extension?.find((e: any) => e.url === "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName")?.valueString || "Unknown",
+  //           gender: r.gender,
+  //           bed: r.id === patientId ? "NICU 1 - 01" : "--", // Mock bed for now as in Patient.tsx it was "bed: '--'"
+  //           patientId: r.identifier?.[0]?.value || "N/A",
+  //           resource: r // Keep full resource for state passing
+  //         };
+  //       }) || [];
+  //       setAllPatients(formatted);
+  //     } catch (e) {
+  //       console.error(e);
+  //     }
+  //   };
+  //   fetchPatients();
+  // }, [props.userOrganization]);
+
+useEffect(() => {
+  const fetchPatients = async () => {
+    try {
+      if (!props.userOrganization) return;
+
+      let allFetchedPatients: SetStateAction<any[]> = [];
+      // 1. Add active=true to the query
+      let nextUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Patient?_count=100&organization=${props.userOrganization}&active=true`;
+
+      // 2. Loop while there is a "next" page
+      while (nextUrl) {
+        const response = await fetch(nextUrl, {
           headers: {
             Authorization: "Basic " + btoa("fhiruser:change-password"),
             "Content-Type": "application/fhir+json"
@@ -372,29 +416,36 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
         if (!response.ok) throw new Error("Failed to fetch patients");
 
         const data = await response.json();
-        const formatted = data.entry?.map((entry: any) => {
-          const r = entry.resource;
-          return {
-            id: r.id,
-            name: r.name?.[0]?.text || "Unknown", // Assuming name is stored here as per typical
-            // Correction: Original code used extension for mothers name, let's assume standard name or extension
-            // Reusing logic from Patient.tsx regarding Name:
-            mothersName: r.extension?.find((e: any) => e.url === "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName")?.valueString || "Unknown",
-            gender: r.gender,
-            bed: r.id === patientId ? "NICU 1 - 01" : "--", // Mock bed for now as in Patient.tsx it was "bed: '--'"
-            patientId: r.identifier?.[0]?.value || "N/A",
-            resource: r // Keep full resource for state passing
-          };
-        }) || [];
-        setAllPatients(formatted);
-      } catch (e) {
-        console.error(e);
+        
+        if (data.entry) {
+          const pagePatients = data.entry.map((entry: any) => {
+            const r = entry.resource;
+            return {
+              id: r.id,
+              name: r.name?.[0]?.text || "Unknown",
+              mothersName: r.extension?.find((e: any) => e.url === "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName")?.valueString || "Unknown",
+              gender: r.gender,
+              bed: r.id === patientId ? "NICU 1 - 01" : "--", 
+              patientId: r.identifier?.[0]?.value || "N/A",
+              resource: r 
+            };
+          });
+          allFetchedPatients = [...allFetchedPatients, ...pagePatients];
+        }
+
+        // 3. Check for the 'next' relation link in the FHIR Bundle
+        const nextLink = data.link?.find((l: any) => l.relation === "next");
+        nextUrl = nextLink ? nextLink.url : null;
       }
-    };
-    fetchPatients();
-  }, [props.userOrganization]);
 
+      setAllPatients(allFetchedPatients);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
+  fetchPatients();
+}, [props.userOrganization]);
   const handlePatientSelect = (patient: any) => {
     // Prepare state similar to how it's passed from Patient.tsx
     // We need: patientName, patientId, patientResourceId, gestationAge, birthDate, gender, birthWeight
@@ -442,6 +493,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
       'clinicalnotes': 'Clinical Notes',
          'notes': 'Notes',
          'initialassessment': 'Initial Assessment',
+          'ventichart': 'Venti Chart',
       'feeds': 'Vitals & Trends',
       'trends': 'Vitals & Trends',
       'treatment': 'Patients Clinical List',
@@ -459,6 +511,28 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
       setSelectedMenuItemId(id);
     }
   };
+
+  useEffect(() => {
+    const moduleLabels: { [key: string]: string } = {
+      'overview': 'Overview',
+      'medication': 'Medication',
+      'feeds': 'Feeds & Nutrition',
+      'trends': 'Trends',
+      'diagnostics': 'Diagnostics',
+      'treatment': 'Treatment',
+      'notes': 'Notes',
+      'assessments': 'Scoring',
+      'growthchart': 'Growth Chart',
+      'consentforms': 'Consent Forms',
+      'initialassessment': 'Assessment',
+      'ventichart': 'VentiChart',
+      'alltask': 'All Tasks',
+      'alarms': 'Notification'
+    };
+
+    const label = moduleLabels[selectedMenuItemId] || 'Patient Details';
+    document.title = patientName ? `${label} | ${patientName}` : label;
+  }, [selectedMenuItemId, patientName]);
 
   // Show loading state while permissions are being fetched
   if (loading) {
@@ -709,9 +783,9 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
 
           {/* Right Actions */}
           <Box sx={{ marginLeft: 'auto !important' }}>
-            <IconButton onClick={props.toggleTheme}>
+            {/* <IconButton onClick={props.toggleTheme}>
               <DarkModeOutlinedIcon sx={{ color: "#64748B" }} />
-            </IconButton>
+            </IconButton> */}
           </Box>
         </Stack>
       </Box>
@@ -802,6 +876,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
                     patient_resource_id={patientResourceId}
                     birth_date={birthDate}
                     gestational_age={gestationAge}
+                     userOrganization={props.userOrganization}
                     UserRole={props.UserRole}
                   />
                 </Box>
@@ -820,6 +895,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
                     patient_name={patientName}
                     patient_id={patientId}
                     UserRole={props.UserRole}
+                    userOrganization={props.userOrganization}
                     gestational_age={gestationAge}
                     birth_date={birthDate}
                   />
@@ -857,6 +933,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
                     birth_date={birthDate}
                     gestational_age={gestationAge}
                     device_resource_id={""}
+                     gender={gender}
                     userOrganization={props.userOrganization}
                     darkTheme={false}
                     selectedIcon={""}
@@ -883,7 +960,24 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
               </ProtectedModule>
             )
           }
-
+             {
+            selectedMenuItemId === 'ventichart' && (
+              <ProtectedModule module="Venti Chart">
+                <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
+                  <VentiChart
+                    key={patientResourceId}
+                    patient_resource_id={patientResourceId}
+                    patient_name={patientName}
+                    patient_id={patientId}
+                    UserRole={props.UserRole}
+                    userOrganization={props.userOrganization}
+                    gestational_age={gestationAge}
+                    birth_date={birthDate}
+                  />
+                </Box>
+              </ProtectedModule>
+            )
+          }
           {/* Assessments - User can EDIT this module */}
           {
             selectedMenuItemId === 'assessments' && (
@@ -917,6 +1011,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
                     gestational_age={gestationAge}
                     userOrganization={props.userOrganization}
                     gender={gender}
+                    
                     onWeightChange={handleWeightChange}
                   />
                 </Box>
@@ -924,21 +1019,21 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
             )
           }
 
-          {/* Activity Logs (Alarms)
+          {/* Notifications */}
           {
             selectedMenuItemId === 'alarms' && (
               <ProtectedModule module="Vitals & Trends">
-                <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
-                  <ActivityLogs
+                <Box sx={{ flexGrow: 1, overflowY: "auto", height: "100%" }}>
+                  <Notifications
                     key={patientResourceId}
                     patientId={patientId || ""}
-                    patientName={patientName || ""}
+                    patient_resource_id={patientResourceId}
                     userOrganization={props.userOrganization}
                   />
                 </Box>
               </ProtectedModule>
             )
-          } */}
+          }
 
 
           {
@@ -953,6 +1048,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
                     UserRole={props.UserRole}
                     gender={gender}
                     birth_weight={birthWeight}
+                     userOrganization={props.userOrganization}
 
                   />
                 </Box>

@@ -265,9 +265,10 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
     return acc;
   }, { iv: 0, rt: 0, oral: 0, urine: 0, aspiration: 0, stool: 0 });
 
-  const totalInput = totals.iv + totals.rt + totals.oral;
-  const totalOutput = totals.urine + totals.aspiration + totals.stool;
-  const balance = totalInput - totalOutput;
+ // Calculate totals as before
+const totalInput = (totals.iv + totals.rt + totals.oral).toFixed(2);
+const totalOutput = (totals.urine + totals.aspiration + totals.stool).toFixed(2);
+const balance = (totalInput - totalOutput).toFixed(2);
 
   const FENTON_2025_DATA = {
     male: {
@@ -773,19 +774,21 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
       setLoading(false);
     }
   };
-  const calculateDuration = (startDate: string, endDate: string): number => {
-    if (!startDate || !endDate) return 0;
+  const calculateDuration = (startDate: string, endDate: string): string => {
+    if (!startDate || !endDate || startDate === "N/A" || endDate === "N/A") return "N/A";
     const start = new Date(startDate);
     const end = new Date(endDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return "N/A";
     const diffTime = Math.abs(end.getTime() - start.getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return `${days} days`;
   };
 
-
-
-
-
-
+  const safeFormatDate = (dateStr: string) => {
+    if (!dateStr || dateStr === "N/A") return "N/A";
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? "N/A" : d.toLocaleDateString();
+  };
 
   useEffect(() => {
     fetchPrescription();
@@ -916,11 +919,11 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
                     </Stack>
                   )}
 
-                  {latestManual["SpO2"] && (
+                  {latestManual["SpO₂"] && (
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <OpacityIcon sx={{ color: "#03A9F4", fontSize: "30px" }} />
                       <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                        {latestManual["SpO2"]}
+                        {latestManual["SpO₂"]}
                       </Typography>
                     </Stack>
                   )}
@@ -951,14 +954,14 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
 
                   <IconButton
                     sx={{
-                      backgroundColor: "#F2FBFF",
-                      color: "#124D81",
-                      border: "1px solid #E0E0E0",
+                      backgroundColor: isDarkMode ? alpha(theme.palette.primary.main, 0.1) : "#F2FBFF",
+                      color: isDarkMode ? theme.palette.primary.light : "#124D81",
+                      border: `1px solid ${isDarkMode ? theme.palette.divider : "#E0E0E0"}`,
                       borderRadius: "8px",
-                      "&:hover": { backgroundColor: "#E0F7FF" },
+                      "&:hover": { backgroundColor: isDarkMode ? alpha(theme.palette.primary.main, 0.2) : "#E0F7FF" },
                     }}
                   >
-                    <FontAwesomeIcon icon={faArrowTrendUp} color="#124D81" />
+                    <FontAwesomeIcon icon={faArrowTrendUp} color={isDarkMode ? theme.palette.primary.light : "#124D81"} />
                   </IconButton>
                 </>
               ) : (
@@ -974,7 +977,7 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
                   <Typography
                     variant="body1"
                     sx={{
-                      color: "#9BA1AE",
+                      color: isDarkMode ? theme.palette.text.secondary : "#9BA1AE",
                       fontWeight: 500,
                       textAlign: "center",
                     }}
@@ -991,30 +994,13 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
 
         {/* 1. Medication Summary (Top 5 Recent) */}
-        <Box
-          sx={{
-            borderRadius: "15px",
-            padding: "16px 20px",
-            backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF",
-          }}
-        >
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ borderBottom: "2px solid #E6EAF0", mb: 2, pb: 1 }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: 700, color: isDarkMode ? theme.palette.text.primary : "#124D81" }}>
-              Recent Medications (Top 5)
-            </Typography>
-            <IconButton sx={{ backgroundColor: isDarkMode ? alpha("#58A6FF", 0.1) : "#F2FBFF", color: isDarkMode ? '#58A6FF' : "#124D81", border: `1px solid ${isDarkMode ? theme.palette.divider : "#E0E0E0"}`, borderRadius: "8px" }}>
-              <FontAwesomeIcon icon={faPrescription} />
-            </IconButton>
-          </Stack>
-
-          {filteredMedications.length === 0 ? (
+                   <Box >
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: isDarkMode ? theme.palette.text.primary : "#124D81" }}>
+           Medications (Recent)
+          </Typography>
+         {filteredMedications.length === 0 ? (
             <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60px" }}>
-              <Typography variant="body1" sx={{ color: "#A7B3CD", fontWeight: 500 }}>No active prescriptions.</Typography>
+              <Typography variant="body1" sx={{ color: isDarkMode ? theme.palette.text.secondary : "#A7B3CD", fontWeight: 500 }}>No active prescriptions.</Typography>
             </Box>
           ) : (
             filteredMedications.slice(0, 5).map((medication, index) => (
@@ -1022,40 +1008,42 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
                 key={index}
                 sx={{
                   display: "grid",
+                  borderRadius:'12px',
+                  backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF",
                   gridTemplateColumns: "1.5fr 1fr 1fr 1fr 1.2fr 0.8fr",
                   alignItems: "center",
                   padding: "10px",
-                  borderBottom: "1px solid #E6EAF0",
-                  "&:hover": { backgroundColor: "#F9FBFF", cursor: "pointer" },
+                  
+                  cursor: "pointer" ,
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <FontAwesomeIcon icon={faPrescription} style={{ color: "#228BE6" }} />
                   <Box>
-                    <Typography sx={{ color: "#124D81", fontWeight: 600, fontSize: "0.9rem" }}>{medication.name}</Typography>
+                    <Typography sx={{ color: isDarkMode ? theme.palette.primary.light : "#124D81", fontWeight: 600, fontSize: "0.9rem" }}>{medication.name}</Typography>
                     <Typography sx={{ color: "#A7B3CD", fontSize: "0.7rem" }}>{medication?.orderType || "Regular"}</Typography>
                   </Box>
                 </Box>
                 <Typography variant="body2">{medication.frequency1}</Typography>
                 <Typography variant="body2">{medication.route}</Typography>
-                <Typography variant="body2">{calculateDuration(medication.startDate, medication.endDate)} days</Typography>
+                
+                <Typography variant="body2">{calculateDuration(medication.startDate, medication.endDate)}</Typography>
                 <Chip
                   size="small"
                   label={medication.administeredCount < medication.totalDoses ? "Ongoing" : "Completed"}
                   sx={{ backgroundColor: medication.administeredCount < medication.totalDoses ? "#E7F3FF" : "#E6F4EA", color: medication.administeredCount < medication.totalDoses ? "#228BE6" : "#2EB67D", fontWeight: 600 }}
                 />
-                <Typography variant="caption" sx={{ color: "#6c757d", textAlign: 'right' }}>{new Date(medication.startDate).toLocaleDateString()}</Typography>
+                <Typography variant="caption" sx={{ color: "#6c757d", textAlign: 'right' }}>{safeFormatDate(medication.startDate)}</Typography>
               </Box>
             ))
           )}
         </Box>
-
         {/* 2. Feed Summary */}
-        <Box>
+        <Box >
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: isDarkMode ? theme.palette.text.primary : "#124D81" }}>
             Feed Summary
           </Typography>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
+          <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF" }}>
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} md={5}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -1065,7 +1053,7 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
                       {totalInput} <span style={{ fontSize: '0.75rem', color: 'grey' }}>mL</span>
                     </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 1.5, backgroundColor: '#F9FAFB', p: 1, borderRadius: '8px', flexGrow: 1, justifyContent: 'space-around' }}>
+                  <Box sx={{ display: 'flex', gap: 1.5, backgroundColor: isDarkMode ? theme.palette.background.paper : "#F9FAFB", p: 1, borderRadius: '8px', flexGrow: 1, justifyContent: 'space-around' }}>
                     <BalanceStat label="IV" value={totals.iv} />
                     <BalanceStat label="NG/RT" value={totals.rt} />
                     <BalanceStat label="ORAL" value={totals.oral} />
@@ -1083,7 +1071,7 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
                       {totalOutput} <span style={{ fontSize: '0.75rem', color: 'grey' }}>mL</span>
                     </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 1.5, backgroundColor: '#F9FAFB', p: 1, borderRadius: '8px', flexGrow: 1, justifyContent: 'center' }}>
+                  <Box sx={{ display: 'flex', gap: 1.5,  backgroundColor: isDarkMode ? theme.palette.background.paper : "#F9FAFB", p: 1, borderRadius: '8px', flexGrow: 1, justifyContent: 'center' }}>
                     <BalanceStat label="Urine" value={totals.urine} />
                   </Box>
                 </Box>
@@ -1108,9 +1096,9 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: isDarkMode ? theme.palette.text.primary : "#124D81" }}>
             Diagnostic Report
           </Typography>
-          <Paper elevation={0} sx={{ borderRadius: "12px", backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", overflow: "hidden" }}>
+          <Paper elevation={0} sx={{ borderRadius: "12px", backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF", border: `1px solid ${isDarkMode ? theme.palette.divider : "#E5E7EB"}`, overflow: "hidden" }}>
             {/* Table Header */}
-            <Box sx={{ display: "grid", gridTemplateColumns: "2fr 1fr 1.5fr 2fr", px: 2, py: 1.5, backgroundColor: "#F9FAFB", borderBottom: "1px solid #E5E7EB" }}>
+            <Box sx={{ display: "grid", gridTemplateColumns: "2fr 1fr 1.5fr 2fr", px: 2, py: 1.5, backgroundColor: isDarkMode ? alpha(theme.palette.background.default, 0.5) : "#F9FAFB", borderBottom: `1px solid ${isDarkMode ? theme.palette.divider : "#E5E7EB"}` }}>
               <Typography variant="caption" fontWeight={600} color="textSecondary">Order type</Typography>
               <Typography variant="caption" fontWeight={600} color="textSecondary">Specimen</Typography>
               <Typography variant="caption" fontWeight={600} color="textSecondary">Status</Typography>
@@ -1123,9 +1111,9 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
               diagnosticOrders.slice(0, 5).map((order) => {
                 const statusStyles = getStatusChipStyles(order.status);
                 return (
-                  <Box key={order.id} sx={{ display: "grid", gridTemplateColumns: "2fr 1fr 1.5fr 2fr", px: 2, py: 1.5, alignItems: "center", borderBottom: "1px solid #F3F4F6", "&:last-child": { borderBottom: 0 } }}>
+                  <Box key={order.id} sx={{ display: "grid", gridTemplateColumns: "2fr 1fr 1.5fr 2fr", px: 2, py: 1.5, alignItems: "center", borderBottom: `1px solid ${isDarkMode ? theme.palette.divider : "#F3F4F6"}`, "&:last-child": { borderBottom: 0 } }}>
                     <Box>
-                      <Typography variant="body2" fontWeight={600} color="#111827">{order.testName}</Typography>
+                      <Typography variant="body2" fontWeight={600} sx={{ color: isDarkMode ? theme.palette.text.primary : "#111827" }}>{order.testName}</Typography>
                       <Typography variant="caption" color={order.priority === "Emergency" ? "#F97316" : "textSecondary"}>{order.priority}</Typography>
                     </Box>
                     <Box><Chip size="small" label={order.specimen} sx={{ height: 20, fontSize: '0.7rem' }} /></Box>
@@ -1143,7 +1131,7 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: isDarkMode ? theme.palette.text.primary : "#124D81" }}>
             Clinical Notes Summary
           </Typography>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
+          <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', backgroundColor: isDarkMode ? theme.palette.background.paper : '#FFFFFF', border: `1px solid ${isDarkMode ? theme.palette.divider : '#E5E7EB'}` }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 2 }}>
               {notesSummary.map((item, index) => (
                 <Box key={index} sx={{ textAlign: 'center' }}>
@@ -1154,11 +1142,11 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
                     mt: 1,
                     p: 1.5,
                     borderRadius: '8px',
-                    backgroundColor: item.count > 0 ? alpha('#228BE6', 0.1) : '#F9FAFB',
+                    backgroundColor: item.count > 0 ? alpha('#228BE6', 0.1) : (isDarkMode ? theme.palette.background.default : '#F9FAFB'),
                     border: '1px solid',
-                    borderColor: item.count > 0 ? alpha('#228BE6', 0.2) : '#E5E7EB'
+                    borderColor: item.count > 0 ? alpha('#228BE6', 0.2) : (isDarkMode ? theme.palette.divider : '#E5E7EB')
                   }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: item.count > 0 ? '#124D81' : '#9CA3AF' }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: item.count > 0 ? (isDarkMode ? theme.palette.primary.light : '#124D81') : (isDarkMode ? theme.palette.text.secondary : '#9CA3AF') }}>
                       {item.count}
                     </Typography>
                     <Typography variant="caption" color="textSecondary">
@@ -1170,7 +1158,7 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
             </Box>
 
             {latestNote && (
-              <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #F3F4F6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${isDarkMode ? theme.palette.divider : '#F3F4F6'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="caption" color="textSecondary">
                   Latest note by <strong>{latestNote.author}</strong>
                 </Typography>
@@ -1181,33 +1169,12 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
             )}
           </Paper>
         </Box>
-
-        {/* Growth & BSL Summary */}
-        <Paper elevation={0} sx={{
-          p: 3,
-          mt: 3,
-          borderRadius: '16px',
-          border: '1px solid #E5E7EB',
-          backgroundColor: '#FFFFFF',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-        }}>
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 3 }}>
-            <Box sx={{
-              width: 32,
-              height: 32,
-              borderRadius: '8px',
-              backgroundColor: alpha('#059669', 0.1),
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <FavoriteIcon sx={{ color: '#059669', fontSize: 20 }} />
-            </Box>
-            <Typography variant="h6" sx={{ color: '#059669', fontWeight: 700 }}>
-              Growth & BSL Summary
-            </Typography>
-          </Stack>
-
+ <Box>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: isDarkMode ? theme.palette.text.primary : "#124D81" }}>
+            <FavoriteIcon sx={{ color:  isDarkMode ? theme.palette.text.primary : "#059669" , fontSize: 20 }} /> Growth & BSL Summary
+          </Typography>
+          <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', backgroundColor: isDarkMode ? theme.palette.background.paper : '#FFFFFF', border: `1px solid ${isDarkMode ? theme.palette.divider : '#E5E7EB'}` }}>
+        
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 3 }}>
             {[
               {
@@ -1226,7 +1193,7 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
               <Box key={index} sx={{
                 p: 2.5,
                 borderRadius: '12px',
-                border: '1px solid #F3F4F6',
+                border: `1px solid ${isDarkMode ? theme.palette.divider : '#F3F4F6'}`,
                 backgroundColor: alpha('#059669', 0.02),
                 display: 'flex',
                 flexDirection: 'column',
@@ -1250,7 +1217,7 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
                     />
                   ) : (
                     <>
-                      <Typography variant="h5" sx={{ color: '#111827', fontWeight: 800 }}>
+                      <Typography variant="h5" sx={{ color: isDarkMode ? theme.palette.text.primary : '#111827', fontWeight: 800 }}>
                         {item.value}
                       </Typography>
                       {item.extra}
@@ -1261,32 +1228,15 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
             ))}
           </Box>
         </Paper>
-
-        {/* Clinical Scores Summary */}
-        <Paper elevation={0} sx={{
-          p: 3,
-          mt: 3,
-          borderRadius: '16px',
-          border: '1px solid #E5E7EB',
-          backgroundColor: '#FFFFFF',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-        }}>
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 3 }}>
-            <Box sx={{
-              width: 32,
-              height: 32,
-              borderRadius: '8px',
-              backgroundColor: alpha('#124D81', 0.1),
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <BoltIcon sx={{ color: '#124D81', fontSize: 20 }} />
-            </Box>
-            <Typography variant="h6" sx={{ color: '#124D81', fontWeight: 700 }}>
-              Latest Clinical Scores
-            </Typography>
-          </Stack>
+        </Box>
+        {/* Growth & BSL Summary */}
+       
+ <Box>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: isDarkMode ? theme.palette.text.primary : "#124D81" }}>
+             <BoltIcon sx={{ color:  isDarkMode ? theme.palette.text.primary : "#059669" , fontSize: 20 }} /> Latest Clinical Scores
+          </Typography>
+       <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', backgroundColor: isDarkMode ? theme.palette.background.paper : '#FFFFFF', border: `1px solid ${isDarkMode ? theme.palette.divider : '#E5E7EB'}` }}>
+         
 
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3 }}>
             {[
@@ -1297,8 +1247,8 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
               <Box key={index} sx={{
                 p: 2.5,
                 borderRadius: '12px',
-                border: '1px solid #F3F4F6',
-                backgroundColor: item.data ? alpha('#228BE6', 0.02) : '#F9FAFB',
+                border: `1px solid ${isDarkMode ? theme.palette.divider : '#F3F4F6'}`,
+                backgroundColor: item.data ? alpha('#228BE6', isDarkMode ? 0.1 : 0.02) : (isDarkMode ? theme.palette.background.default : '#F9FAFB'),
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
@@ -1310,11 +1260,11 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
 
                 {item.data ? (
                   <>
-                    <Typography variant="h4" sx={{ color: '#111827', fontWeight: 800, mb: 0.5 }}>
+                    <Typography variant="h4" sx={{ color: isDarkMode ? theme.palette.text.primary : '#111827', fontWeight: 800, mb: 0.5 }}>
                       {item.data.value}
                     </Typography>
                     <Typography variant="caption" sx={{ color: '#4B5563', fontWeight: 500 }}>
-                      Done by <strong style={{ color: '#1F2937' }}>{item.data.performer}</strong>
+                      Done by <strong style={{ color: isDarkMode ? theme.palette.text.primary : '#1F2937' }}>{item.data.performer}</strong>
                     </Typography>
                     <Typography variant="caption" sx={{ color: '#9CA3AF', mt: 0.5 }}>
                       {item.data.dateTime}
@@ -1329,7 +1279,8 @@ export const PatientOverview: React.FC<PatientOverviewProps> = (props) => {
             ))}
           </Box>
         </Paper>
-
+        </Box>
+        {/* Clinical Scores Summary */}
       </Box>
     </Box>
   );

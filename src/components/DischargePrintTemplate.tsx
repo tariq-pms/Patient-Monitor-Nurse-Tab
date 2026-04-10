@@ -1,293 +1,486 @@
-
-import React from 'react';
-import { Box, Typography, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import {
+    Box, Typography, Grid, Table, TableBody, TableCell,
+    TableContainer, TableHead, TableRow, Paper, Card, Divider, Stack
+} from '@mui/material';
+// import { logoBase64 } from '../utils/logoBase64';
+import pmsLogo from '../assets/phx_logo.png';
 
 interface DischargePrintTemplateProps {
     data: any;
+     userOrganization?: string;
 }
 
-const DischargePrintTemplate: React.FC<DischargePrintTemplateProps> = ({ data }) => {
+const A4_PAGE_STYLE = {
+    width: '210mm',
+    height: '297mm',
+    padding: '8mm',
+    boxSizing: 'border-box' as const,
+    backgroundColor: '#fff',
+    mx: 'auto',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    position: 'relative' as const,
+    overflow: 'hidden',
+    color: '#000',
+    pageBreakAfter: 'always',
+};
 
-    const styles = {
-        headerText: { fontSize: '10px', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' as const, mb: 0.5 },
-        valueText: { fontSize: '12px', color: '#1E293B', fontWeight: 600 },
-        sectionHeader: {
-            bgcolor: 'transparent',
-            color: '#94A3B8',
-            fontSize: '11px',
-            fontWeight: 700,
-            py: 1,
-            borderBottom: '1px solid #E2E8F0',
-            mb: 2,
-            mt: 3,
-            textTransform: 'uppercase' as const
+/* ─── Shared style tokens ──────────────────────────────────── */
+const token = {
+    label:   { variant: 'caption'  as const, sx: { color: '#64748B', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.04em', display: 'block' } },
+    value:   { variant: 'body2'    as const, sx: { color: '#1E293B', fontWeight: 600 } },
+    section: { variant: 'overline' as const, sx: { color: '#94A3B8', fontWeight: 700, display: 'block', borderBottom: '1px solid #E2E8F0', pb: 0.5, mb: 1.5, letterSpacing: '0.08em' } },
+    th:      { variant: 'caption'  as const, sx: { bgcolor: '#F8FAFC', color: '#64748B', fontWeight: 700 } },
+    td:      { variant: 'body2'    as const, sx: { color: '#334155', py: 0.75, borderBottom: '1px solid #F1F5F9' } },
+};
+
+/* ─── Helpers ──────────────────────────────────────────────── */
+const formatDate = (d: string) =>
+    d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+
+const formatDateTime = (d: string) =>
+    d ? new Date(d).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : '—';
+
+/* ─── Reusable sub-components ──────────────────────────────── */
+const SectionTitle: React.FC<{ children: React.ReactNode; mt?: number }> = ({ children, mt = 2.5 }) => (
+    <Typography {...token.section} sx={{ ...token.section.sx, mt }}>
+        {children}
+    </Typography>
+);
+
+const LabelValue: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, value }) => (
+    <Box>
+        <Typography {...token.label}>{label}</Typography>
+        <Typography {...token.value}>{value || '—'}</Typography>
+    </Box>
+);
+
+
+/* ════════════════════════════════════════════════════════════
+   COMPONENT
+════════════════════════════════════════════════════════════ */
+const DischargePrintTemplate: React.FC<DischargePrintTemplateProps> = ({ data,userOrganization }) => {
+const [logoDataUrl, setLogoDataUrl] = useState<string>('');
+useEffect(() => {
+  const fetchOrgData = async () => {
+    try {
+      const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/${userOrganization}`;
+
+      const res = await fetch(orgUrl, {
+        headers: {
+          Authorization: "Basic " + btoa("fhiruser:change-password"),
+          Accept: "application/fhir+json",
         },
-        tableHeader: { bgcolor: '#F8FAFC', color: '#64748B', fontWeight: 700, fontSize: '11px' },
-        tableCell: { fontSize: '11px', color: '#334155', py: 0.75, borderBottom: '1px solid #F1F5F9' },
-        boxLabel: { fontSize: '10px', color: '#64748B', mb: 0.5 },
-        boxValue: { fontSize: '12px', fontWeight: 600, color: '#0F172A' }
-    };
+      });
 
-    const formatDate = (dateString: string) => {
-        if (!dateString) return '';
-        return new Date(dateString).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    };
+      const orgData = await res.json();
 
-    const formatTime = (timeString: string) => {
-        if (!timeString) return '';
-        // Assuming timeString is HH:mm
-        const [hours, minutes] = timeString.split(':');
-        const h = parseInt(hours, 10);
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        const h12 = h % 12 || 12;
-        return `${h12}:${minutes} ${ampm}`;
-    };
+      const logoExt = (orgData.extension || []).find(
+        (ext: any) =>
+          ext.url === "http://example.org/fhir/StructureDefinition/organization-logo"
+      );
 
-    return (
-        <Box sx={{ p: 4, bgcolor: '#FFFFFF', maxWidth: '210mm', mx: 'auto', minHeight: '297mm' }}>
+      const logoRef = logoExt?.valueReference?.reference;
 
-            {/* Header */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4, borderBottom: '2px solid #F1F5F9', pb: 2 }}>
-                <Box>
-                    <Typography variant="h5" sx={{ color: '#E11D48', fontWeight: 800, mb: 0 }}>borneo<span style={{ fontSize: '12px', verticalAlign: 'super', color: '#94A3B8' }}>®</span></Typography>
-                    <Box sx={{ bgcolor: '#0EA5E9', color: 'white', px: 1, py: 0.5, borderRadius: 0.5, display: 'inline-block', mb: 1, fontSize: '10px', fontWeight: 700 }}>MOTHER & CHILD CARE HOSPITAL</Box>
-                    <Typography variant="caption" sx={{ display: 'block', color: '#64748B', lineHeight: 1.2 }}>
-                        Shree Vallabh Nagar,<br />
-                        Mumbai Naka, Nashik<br />
-                        422001.
-                    </Typography>
-                </Box>
+      if (logoRef) {
+        const binaryId = logoRef.replace("Binary/", "");
 
-                <Box sx={{ textAlign: 'right' }}>
-                    <Box sx={{ bgcolor: '#F1F5F9', py: 1, px: 2, borderRadius: 1, mb: 2, display: 'inline-block' }}>
-                        <Typography sx={{ fontWeight: 700, color: '#1E293B', fontSize: '14px' }}>DISCHARGE SUMMARY</Typography>
-                    </Box>
-                    <Grid container spacing={1} sx={{ width: '250px', ml: 'auto' }}>
-                        <Grid item xs={4}><Typography sx={styles.boxLabel}>B/O:</Typography></Grid>
-                        <Grid item xs={8}><Typography sx={{ ...styles.boxValue, textAlign: 'right' }}>{data.baby_name}</Typography></Grid>
+        const binaryRes = await fetch(
+          `${import.meta.env.VITE_FHIRAPI_URL}/Binary/${binaryId}`,
+          {
+            headers: {
+              Authorization: "Basic " + btoa("fhiruser:change-password"),
+              Accept: "application/fhir+json",
+            },
+          }
+        );
 
-                        <Grid item xs={4}><Typography sx={styles.boxLabel}>UHID:</Typography></Grid>
-                        <Grid item xs={8}><Typography sx={{ ...styles.boxValue, textAlign: 'right' }}>{data.uhid}</Typography></Grid>
+        const binaryData = await binaryRes.json();
 
-                        <Grid item xs={4}><Typography sx={styles.boxLabel}>GA:</Typography></Grid>
-                        <Grid item xs={8}><Typography sx={{ ...styles.boxValue, textAlign: 'right' }}>{data.gestation_weeks} W {data.gestation_days} D</Typography></Grid>
+        if (binaryData.data && binaryData.contentType) {
+          setLogoDataUrl(
+            `data:${binaryData.contentType};base64,${binaryData.data}`
+          );
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching logo:", err);
+    }
+  };
 
-                        <Grid item xs={4}><Typography sx={styles.boxLabel}>Current Wt:</Typography></Grid>
-                        <Grid item xs={8}><Typography sx={{ ...styles.boxValue, textAlign: 'right', color: '#E11D48' }}>{data.final_vitals.weight_kg} kg</Typography></Grid>
-                    </Grid>
-                </Box>
+  if (userOrganization) {
+    fetchOrgData();
+  }
+}, [userOrganization]);
+    /* ── HEADER ─────────────────────────────────────────────── */
+   const renderHeader = (isFirstPage: boolean = true) => (
+        <Box sx={{  borderBottom: '1px solid grey', p: 1, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {(logoDataUrl || pmsLogo) && (
+                  <Box component="img" src={logoDataUrl || pmsLogo} alt="Logo" sx={{ height: 60, objectFit: 'contain' }} />
+              )}
+               {isFirstPage && (
+              <Box sx={{ textAlign: 'right', position: 'relative', minWidth: '300px' }}>
+          
+          <Box sx={{ 
+            display: 'inline-block',
+            bgcolor: '#e0e4e7', 
+            px: 2, 
+            py: 0.3, 
+            borderRadius: '4px 4px 0 0',
+            mr: 5
+          }}>
+            <Typography sx={{ fontSize: '12px', fontWeight: 500, color: '#333' }}>
+             DISCHARGE SUMMARY
+            </Typography>
+          </Box>
+        
+          <Box sx={{ border: '1px solid #d1d9e0', borderRadius: '8px', p: 1.5, bgcolor: '#fff' }}>
+            <Grid container justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
+              <Grid item display="flex" gap={1}>
+                <Typography variant="subtitle2" sx={{ color: '#90a4ae'}}>B/O:</Typography>
+                <Typography  variant="subtitle2" sx={{ fontWeight: 'bold'}}>{data.baby_name}</Typography>
+              </Grid>
+              <Grid item display="flex" gap={1}>
+                <Typography variant="subtitle2" sx={{ color: '#90a4ae'}}>UHID:</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold'}}>{data.uhid}</Typography>
+              </Grid>
+            </Grid>
+        
+            <Box sx={{ borderBottom: '1px solid #e0e4e7', my: 1 }} />
+        
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item display="flex" gap={1}>
+                <Typography variant="subtitle2" sx={{ color: '#90a4ae' }}>GA:</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold'}}>{data.gestation_weeks} {data.gestation_weeks ? 'W' : ''} {data.gestation_days} {data.gestation_days ? 'D' : ''}</Typography>
+              </Grid>
+              <Grid item display="flex" gap={1}>
+                <Typography variant="subtitle2" sx={{ color: '#90a4ae'}}>ADMISSION NO:</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>--</Typography>
+              </Grid>
+            </Grid>
+          </Box>
+        </Box>)}
             </Box>
 
-            {/* 01. IDENTIFIERS & ADMIN */}
-            <Typography sx={styles.sectionHeader}>01. IDENTIFIERS & ADMIN</Typography>
-            <Box sx={{ bgcolor: '#F8FAFC', p: 2, borderRadius: 2 }}>
-                <Grid container spacing={2}>
-                    <Grid item xs={3}><Typography sx={styles.headerText}>UHID</Typography><Typography sx={styles.valueText}>{data.uhid}</Typography></Grid>
-                    <Grid item xs={3}><Typography sx={styles.headerText}>IP Number</Typography><Typography sx={styles.valueText}>{data.ip_number}</Typography></Grid>
-                    <Grid item xs={3}><Typography sx={styles.headerText}>Baby Name</Typography><Typography sx={styles.valueText}>{data.baby_name}</Typography></Grid>
-                    <Grid item xs={3}><Typography sx={styles.headerText}>Age at Outcome</Typography><Typography sx={styles.valueText}>{data.age_days || '-'} Days</Typography></Grid>
 
-                    <Grid item xs={3}><Typography sx={styles.headerText}>Sex</Typography><Typography sx={styles.valueText}>{data.sex}</Typography></Grid>
-                    <Grid item xs={3}><Typography sx={styles.headerText}>Parent Mobile</Typography><Typography sx={styles.valueText}>{data.parent_mobile}</Typography></Grid>
-                    <Grid item xs={3}><Typography sx={styles.headerText}>Department/Unit</Typography><Typography sx={styles.valueText}>{data.department}</Typography></Grid>
-                    <Grid item xs={3}><Typography sx={styles.headerText}>Payer/Scheme</Typography><Typography sx={styles.valueText}>{data.payer}</Typography></Grid>
-
-                    <Grid item xs={12}><Typography sx={styles.headerText}>Treating Doctors</Typography><Typography sx={{ ...styles.valueText, color: '#0EA5E9' }}>{data.treating_doctors.join(', ')}</Typography></Grid>
-                    <Grid item xs={12}><Typography sx={styles.headerText}>Full Address</Typography><Typography sx={styles.valueText}>{data.address}</Typography></Grid>
-                </Grid>
-            </Box>
-
-            {/* 02. DISCHARGE STATUS & DATES */}
-            <Typography sx={styles.sectionHeader}>02. DISCHARGE STATUS & DATES</Typography>
-            <Box sx={{ bgcolor: '#F8FAFC', p: 2, borderRadius: 2 }}>
-                <Grid container spacing={2}>
-                    <Grid item xs={3}><Typography sx={styles.headerText}>Discharge Type</Typography>
-                        <Box sx={{ bgcolor: '#DCFCE7', color: '#166534', px: 1, py: 0.5, borderRadius: 0.5, display: 'inline-block', fontSize: '11px', fontWeight: 700 }}>
-                            {data.discharge_type?.toUpperCase()}
-                        </Box>
-                    </Grid>
-                    <Grid item xs={3}><Typography sx={styles.headerText}>Status</Typography><Typography sx={styles.valueText}>{data.status?.toUpperCase()}</Typography></Grid>
-
-                    <Grid item xs={3}><Typography sx={styles.headerText}>Admission</Typography><Typography sx={styles.valueText}>{new Date(data.admission_datetime).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</Typography></Grid>
-                    <Grid item xs={3}><Typography sx={styles.headerText}>Discharge</Typography><Typography sx={styles.valueText}>{formatDate(data.outcome_date)}, {formatTime(data.outcome_time)}</Typography></Grid>
-                </Grid>
-            </Box>
-
-            {/* 03. MATERNAL & BIRTH HISTORY */}
-            <Typography sx={styles.sectionHeader}>03. MATERNAL & BIRTH HISTORY</Typography>
-            <Box sx={{ bgcolor: '#F8FAFC', p: 2, borderRadius: 2 }}>
-                <Grid container spacing={2} sx={{ mb: 2 }}>
-                    <Grid item xs={3}><Typography sx={styles.headerText}>Mother's Age:</Typography></Grid>
-                    <Grid item xs={3}><Typography sx={{ ...styles.valueText, textAlign: 'right' }}>{data.mother_age} Years</Typography></Grid>
-                    <Grid item xs={3}><Typography sx={styles.headerText}>Blood Group:</Typography></Grid>
-                    <Grid item xs={3}><Typography sx={{ ...styles.valueText, textAlign: 'right' }}>{data.mother_blood_group}</Typography></Grid>
-
-                    <Grid item xs={3}><Typography sx={styles.headerText}>Mode of Delivery:</Typography></Grid>
-                    <Grid item xs={3}><Typography sx={{ ...styles.valueText, textAlign: 'right' }}>{data.mode_of_delivery}</Typography></Grid>
-                    <Grid item xs={3}><Typography sx={styles.headerText}>Indication:</Typography></Grid>
-                    <Grid item xs={3}><Typography sx={{ ...styles.valueText, textAlign: 'right' }}>{data.lscs_indication || '-'}</Typography></Grid>
-                </Grid>
-                <Box sx={{ borderTop: '1px dashed #CBD5E1', pt: 2 }}>
-                    <Typography sx={styles.headerText}>Maternal Complications / Antenatal History:</Typography>
-                    <Typography sx={{ fontSize: '12px', color: '#334155', lineHeight: 1.6 }}>
-                        {data.obstetric_history}. {data.maternal_complications.length > 0 ? data.maternal_complications.join(', ') : 'No complications reported'}.
-                    </Typography>
-                </Box>
-            </Box>
-
-            {/* 04. DIAGNOSIS */}
-            <Typography sx={styles.sectionHeader}>04. PROVISIONAL DIAGNOSIS</Typography>
-            <Box sx={{ pl: 2 }}>
-                <ul style={{ margin: 0, paddingLeft: '1.5rem', fontSize: '12px', color: '#334155' }}>
-                    {data.provisional_diagnosis?.split('\n').map((line: string, i: number) => (
-                        <li key={i} style={{ marginBottom: '4px' }}>{line}</li>
-                    ))}
-                </ul>
-            </Box>
-
-            {/* 05. ANTHROPOMETRY & VITALS */}
-            <Typography sx={styles.sectionHeader}>05. ANTHROPOMETRY & VITALS</Typography>
-            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #E2E8F0' }}>
-                <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell sx={styles.tableHeader}>PARAMETER</TableCell>
-                            <TableCell sx={styles.tableHeader}>AT ADMISSION</TableCell>
-                            <TableCell sx={styles.tableHeader}>AT DISCHARGE</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        <TableRow>
-                            <TableCell sx={styles.tableCell}>Weight</TableCell>
-                            <TableCell sx={styles.tableCell}>{data.adm_vitals.weight_g ? `${(data.adm_vitals.weight_g / 1000).toFixed(2)} kg` : '-'}</TableCell>
-                            <TableCell sx={{ ...styles.tableCell, color: '#E11D48', fontWeight: 700 }}>{data.final_vitals.weight_kg ? `${data.final_vitals.weight_kg} kg` : '-'}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell sx={styles.tableCell}>Head Circumference</TableCell>
-                            <TableCell sx={styles.tableCell}>-</TableCell>
-                            <TableCell sx={styles.tableCell}>{data.anthropometry?.hc_cm} cm</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell sx={styles.tableCell}>Length</TableCell>
-                            <TableCell sx={styles.tableCell}>-</TableCell>
-                            <TableCell sx={styles.tableCell}>{data.anthropometry?.length_cm} cm</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell sx={styles.tableCell}>Heart Rate</TableCell>
-                            <TableCell sx={styles.tableCell}>{data.adm_vitals.hr} /min</TableCell>
-                            <TableCell sx={styles.tableCell}>{data.final_vitals.hr} /min</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell sx={styles.tableCell}>Respiratory Rate</TableCell>
-                            <TableCell sx={styles.tableCell}>{data.adm_vitals.rr} /min</TableCell>
-                            <TableCell sx={styles.tableCell}>{data.final_vitals.rr} /min</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell sx={styles.tableCell}>SpO2</TableCell>
-                            <TableCell sx={styles.tableCell}>{data.adm_vitals.spo2}%</TableCell>
-                            <TableCell sx={styles.tableCell}>{data.final_vitals.spo2}%</TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </TableContainer>
-
-            {/* 06. FINAL DIAGNOSIS */}
-            <Typography sx={styles.sectionHeader}>06. FINAL DIAGNOSIS</Typography>
-            <Box sx={{ pl: 2 }}>
-                <ul style={{ margin: 0, paddingLeft: '1.5rem', fontSize: '12px', color: '#0F172A', fontWeight: 600 }}>
-                    {data.final_diagnosis?.split('\n').map((line: string, i: number) => (
-                        <li key={i} style={{ marginBottom: '4px' }}>{line}</li>
-                    ))}
-                </ul>
-            </Box>
-
-            {/* 07. COURSE IN HOSPITAL */}
-            <Typography sx={styles.sectionHeader}>07. COURSE IN HOSPITAL</Typography>
-            <Box sx={{ pl: 0 }}>
-                {Object.entries(data.course).map(([key, value]: [string, any]) => (
-                    value ? (
-                        <Box key={key} sx={{ mb: 1.5 }}>
-                            <Typography component="span" sx={{ fontSize: '12px', fontWeight: 700, color: '#1E293B', textTransform: 'capitalize' }}>{key}: </Typography>
-                            <Typography component="span" sx={{ fontSize: '12px', color: '#334155' }}>{value}</Typography>
-                        </Box>
-                    ) : null
-                ))}
-            </Box>
-
-            {/* TREATMENT GIVEN */}
-            <Box sx={{ mt: 3, mb: 2 }}>
-                <Typography sx={{ fontSize: '11px', fontWeight: 700, color: '#1E293B', mb: 1, display: 'flex', alignItems: 'center' }}>
-                    <span style={{ marginRight: '8px' }}>+</span> TREATMENT / MEDICATIONS GIVEN
+     
+    );
+    /* ── FOOTER ─────────────────────────────────────────────── */
+    const renderFooter = (page: number, total = 3) => (
+        <Box sx={{ position: 'absolute', bottom: '6mm', left: '8mm', right: '8mm', borderTop: '1px solid #E2E8F0', pt: 0.75 }}>
+            {/* Row 1: Hospital name + Page x of y */}
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.25 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#334155' }}>
+                    {data.hospital_name || 'NICU Department — Discharge Summary'}
                 </Typography>
-                <Box sx={{ bgcolor: '#F8FAFC', p: 2, borderRadius: 1, border: '1px solid #E2E8F0' }}>
-                    <Grid container spacing={1}>
-                        {Object.entries(data.treatment).map(([key, value]: [string, any]) => (
-                            value ? (
-                                <Grid item xs={6} key={key} sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <Box sx={{ width: 4, height: 4, bgcolor: '#0EA5E9', borderRadius: '50%', mr: 1 }} />
-                                    <Typography sx={{ fontSize: '12px', color: '#334155' }}>{value}</Typography>
-                                </Grid>
-                            ) : null
-                        ))}
+                <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748B' }}>
+                    Page {page} of {total}
+                </Typography>
+            </Stack>
+
+            {/* Row 2: Confidentiality notice + print metadata */}
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+                    Confidential medical record — not for unauthorised disclosure
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+                    Printed: {new Date().toLocaleString('en-GB', {
+                        day: '2-digit', month: 'short', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit', hour12: true,
+                    })}
+                   
+                </Typography>
+            </Stack>
+        </Box>
+    );
+
+    /* ════════════════════════════════════════════════════════
+       PAGE 1 — Identifiers, Dates, Maternal Hx, Diagnosis
+    ════════════════════════════════════════════════════════ */
+    return (
+        <Box sx={{ bgcolor: '#F1F5F9', display: 'flex', flexDirection: 'column', gap: 2 }}>
+
+            <Card className="pdf-page" sx={A4_PAGE_STYLE}>
+                {renderHeader(true)}
+
+                {/* 01 — Identifiers & Admin */}
+                <SectionTitle mt={0}>01 · Identifiers &amp; Admin</SectionTitle>
+                <Box sx={{ bgcolor: '#F8FAFC', p: 1.5, borderRadius: 2 }}>
+                    <Grid container spacing={1.5}>
+                        <Grid item xs={3}><LabelValue label="UHID"             value={data.uhid} /></Grid>
+                        <Grid item xs={3}><LabelValue label="IP Number"         value={''} /></Grid>
+                        <Grid item xs={3}><LabelValue label="Baby Name"         value={data.baby_name} /></Grid>
+                        <Grid item xs={3}><LabelValue label="Age at Outcome"    value={data.age_days ? `${data.age_days} days` : undefined} /></Grid>
+
+                        <Grid item xs={3}><LabelValue label="Sex"               value={data.sex} /></Grid>
+                        <Grid item xs={3}><LabelValue label="Parent Mobile"     value={data.parent_mobile} /></Grid>
+                        <Grid item xs={3}><LabelValue label="Department / Unit" value={data.department} /></Grid>
+                        <Grid item xs={3}><LabelValue label="Payer / Scheme"    value={data.payer} /></Grid>
+
+                        <Grid item xs={6}>
+                            <Typography {...token.label}>Treating Doctors</Typography>
+                            <Typography variant="body2" sx={{ color: '#0EA5E9', fontWeight: 600 }}>
+                                {data.treating_doctors?.join(', ') || '—'}
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={6}><LabelValue label="Address" value={data.address} /></Grid>
                     </Grid>
                 </Box>
-            </Box>
 
-            {/* 08. DISCHARGE ADVICE */}
-            <Typography sx={styles.sectionHeader}>08. DISCHARGE ADVICE & MEDICATIONS</Typography>
-            <Box sx={{ bgcolor: '#F0F9FF', p: 2, borderRadius: 2, border: '1px solid #BAE6FD', display: 'flex', gap: 4 }}>
-                <Box sx={{ flex: 1 }}>
-                    <ol style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '12px', color: '#334155' }}>
-                        {data.dc_medications?.map((med: any, i: number) => (
-                            <li key={i} style={{ marginBottom: '6px' }}>
-                                <strong>{med.drug}</strong>: {med.dose} ({med.route}) - {med.frequency}
+                {/* 02 — Discharge Status & Dates */}
+                <SectionTitle>02 · Discharge Status &amp; Dates</SectionTitle>
+                <Box sx={{ bgcolor: '#F8FAFC', p: 1.5, borderRadius: 2 }}>
+                    <Grid container spacing={1.5} alignItems="center">
+                        <Grid item xs={3}>
+                            <Typography {...token.label}>Discharge Type</Typography>
+                            <Box sx={{ bgcolor: '#DCFCE7', px: 1, py: 0.25, borderRadius: 1, display: 'inline-block', mt: 0.5 }}>
+                                <Typography variant="caption" sx={{ fontWeight: 700, color: '#166534', textTransform: 'uppercase' }}>
+                                    {data.discharge_type || '—'}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                        <Grid item xs={3}><LabelValue label="Status"    value={data.status?.toUpperCase()} /></Grid>
+                        <Grid item xs={3}><LabelValue label="Admission" value={formatDateTime(data.admission_datetime)} /></Grid>
+                        <Grid item xs={3}><LabelValue label="Discharge" value={data.outcome_date ? formatDate(data.outcome_date) : '—'} /></Grid>
+                    </Grid>
+                </Box>
+
+                {/* 03 — Maternal & Birth History */}
+                <SectionTitle>03 · Maternal &amp; Birth History</SectionTitle>
+                <Box sx={{ bgcolor: '#F8FAFC', p: 1.5, borderRadius: 2 }}>
+                    <Grid container spacing={1.5} sx={{ mb: 1 }}>
+                        <Grid item xs={3}><LabelValue label="Mother's Age"      value={data.mother_age ? `${data.mother_age} years` : undefined} /></Grid>
+                        <Grid item xs={3}><LabelValue label="Blood Group"        value={data.mother_blood_group} /></Grid>
+                        <Grid item xs={3}><LabelValue label="Mode of Delivery"   value={data.mode_of_delivery} /></Grid>
+                        <Grid item xs={3}><LabelValue label="Birth Weight"       value={data.birth_weight ? `${data.birth_weight} g` : undefined} /></Grid>
+
+                        <Grid item xs={3}><LabelValue label="APGAR 1 min"   value={data.apgar_1} /></Grid>
+                        <Grid item xs={3}><LabelValue label="APGAR 5 min"   value={data.apgar_5} /></Grid>
+                        <Grid item xs={3}><LabelValue label="Place of Birth" value={data.place_of_birth} /></Grid>
+                        <Grid item xs={3}><LabelValue label="Obstetric Hx"  value={data.obstetric_history} /></Grid>
+                    </Grid>
+
+                    <Divider sx={{ borderStyle: 'dashed', my: 1 }} />
+
+                    <Typography {...token.label} sx={{ ...token.label.sx, mb: 0.5 }}>
+                        Maternal Complications / Antenatal History
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#334155', lineHeight: 1.6 }}>
+                        {data.maternal_complications?.length > 0
+                            ? data.maternal_complications.join(', ')
+                            : 'No complications reported.'}
+                    </Typography>
+                </Box>
+
+                {/* 04 — Provisional Diagnosis */}
+                <SectionTitle>04 · Provisional Diagnosis</SectionTitle>
+                <Box sx={{ pl: 2 }}>
+                    <ul style={{ margin: 0, paddingLeft: '1.4rem' }}>
+                        {data.provisional_diagnosis?.split('\n').map((line: string, i: number) => (
+                            <li key={i}>
+                                <Typography variant="body2" sx={{ color: '#334155', mb: 0.5 }}>{line}</Typography>
                             </li>
                         ))}
-                        {data.feeding_plan && <li style={{ marginBottom: '6px' }}>{data.feeding_plan}</li>}
-                        {data.home_care && <li style={{ marginBottom: '6px' }}>{data.home_care}</li>}
-                    </ol>
+                    </ul>
                 </Box>
-                <Box sx={{ flex: 1, borderLeft: '1px solid #BAE6FD', pl: 3 }}>
-                    <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#1E293B', mb: 1 }}>Follow up:</Typography>
-                    <Typography sx={{ fontSize: '12px', color: '#334155', mb: 2 }}>
-                        {data.followup.instructions}<br />
-                        Date: <strong>{formatDate(data.followup.date)}</strong><br />
-                        Clinic: {data.followup.clinic}
-                    </Typography>
 
-                    <Typography sx={{ fontSize: '11px', color: '#DC2626', fontWeight: 700, display: 'flex', alignItems: 'flex-start' }}>
-                        <span style={{ marginRight: '6px', fontSize: '14px' }}>*</span>
-                        Emergency: Bring baby immediately if poor feeding, lethargy, or fever.
-                    </Typography>
+                {renderFooter(1, 3)}
+            </Card>
+
+            {/* ════════════════════════════════════════════════════════
+                PAGE 2 — Vitals, Exam, Final Diagnosis, Course
+            ════════════════════════════════════════════════════════ */}
+            <Card className="pdf-page" sx={A4_PAGE_STYLE}>
+                {renderHeader(false)}
+
+                {/* 05 — Anthropometry & Vitals */}
+                <SectionTitle mt={0}>05 · Anthropometry &amp; Vitals</SectionTitle>
+                <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #E2E8F0', mb: 1.5 }}>
+                    <Table size="small">
+                        <TableHead>
+                            <TableRow>
+                                {['Parameter', 'At Admission', 'At Discharge'].map(h => (
+                                    <TableCell key={h} sx={{ bgcolor: '#F8FAFC' }}>
+                                        <Typography {...token.th}>{h}</Typography>
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {[
+                                {
+                                    label: 'Weight',
+                                    adm: data.adm_vitals?.weight_g ? `${(data.adm_vitals.weight_g / 1000).toFixed(2)} kg` : '—',
+                                    dis: data.final_vitals?.weight_kg ? `${data.final_vitals.weight_kg} kg` : '—',
+                                    highlight: true,
+                                },
+                                { label: 'Head Circumference', adm: '—', dis: data.anthropometry?.hc_cm     ? `${data.anthropometry.hc_cm} cm`     : '—' },
+                                { label: 'Length',             adm: '—', dis: data.anthropometry?.length_cm ? `${data.anthropometry.length_cm} cm` : '—' },
+                                { label: 'Heart Rate',         adm: data.adm_vitals?.hr   ? `${data.adm_vitals.hr} /min`   : '—', dis: data.final_vitals?.hr   ? `${data.final_vitals.hr} /min`   : '—' },
+                                { label: 'Respiratory Rate',   adm: data.adm_vitals?.rr   ? `${data.adm_vitals.rr} /min`   : '—', dis: data.final_vitals?.rr   ? `${data.final_vitals.rr} /min`   : '—' },
+                                { label: 'SpO₂',               adm: data.adm_vitals?.spo2 ? `${data.adm_vitals.spo2}%`     : '—', dis: data.final_vitals?.spo2 ? `${data.final_vitals.spo2}%`     : '—' },
+                            ].map(row => (
+                                <TableRow key={row.label}>
+                                    <TableCell><Typography variant="body2" sx={{ color: '#334155' }}>{row.label}</Typography></TableCell>
+                                    <TableCell><Typography variant="body2" sx={{ color: '#334155' }}>{row.adm}</Typography></TableCell>
+                                    <TableCell>
+                                        <Typography variant="body2" sx={{ color: row.highlight ? '#E11D48' : '#334155', fontWeight: row.highlight ? 700 : 400 }}>
+                                            {row.dis}
+                                        </Typography>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+
+                {/* 06 — Admission Physical Examination */}
+                <SectionTitle>06 · Admission Physical Examination</SectionTitle>
+                <Box sx={{ bgcolor: '#F8FAFC', p: 1.5, borderRadius: 2 }}>
+                    <Grid container spacing={1.5}>
+                        <Grid item xs={6}><LabelValue label="RS — Respiratory"   value={data.adm_exam?.rs} /></Grid>
+                        <Grid item xs={6}><LabelValue label="CVS — Cardiac"      value={data.adm_exam?.cvs} /></Grid>
+                        <Grid item xs={6}><LabelValue label="CNS — Neurological" value={data.adm_exam?.cns} /></Grid>
+                        <Grid item xs={6}><LabelValue label="PA — Abdomen"       value={data.adm_exam?.pa} /></Grid>
+                        <Grid item xs={12}><LabelValue label="AF — Fontanelle"   value={data.adm_exam?.af} /></Grid>
+                    </Grid>
                 </Box>
-            </Box>
 
-            {/* Footer Signatures */}
-            <Box sx={{ mt: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid #E2E8F0', pt: 2 }}>
+                {/* 07 — Final Diagnosis */}
+                <SectionTitle>07 · Final Diagnosis</SectionTitle>
+                <Box sx={{ pl: 2 }}>
+                    <ul style={{ margin: 0, paddingLeft: '1.4rem' }}>
+                        {data.final_diagnosis?.split('\n').map((line: string, i: number) => (
+                            <li key={i}>
+                                <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 600, mb: 0.5 }}>{line}</Typography>
+                            </li>
+                        ))}
+                    </ul>
+                </Box>
+
+                {/* 08 — Course in Hospital */}
+                <SectionTitle>08 · Course in Hospital</SectionTitle>
                 <Box>
-                    <Typography sx={{ fontSize: '11px', fontStyle: 'italic', color: '#64748B', mb: 4 }}>
-                        "I/We have been explained about Disease and Medication"
-                    </Typography>
-                    <Box sx={{ borderTop: '1px solid #94A3B8', width: '200px', pt: 0.5 }}>
-                        <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#334155' }}>Parent's Signature</Typography>
-                        <Typography sx={{ fontSize: '10px', color: '#64748B' }}>Acknowledged receipt of summary</Typography>
+                    {data.course && Object.entries(data.course).map(([key, value]: [string, any]) =>
+                        value ? (
+                            <Box key={key} sx={{ mb: 1 }}>
+                                <Typography component="span" variant="body2" sx={{ fontWeight: 700, color: '#1E293B', textTransform: 'capitalize' }}>
+                                    {key}:{' '}
+                                </Typography>
+                                <Typography component="span" variant="body2" sx={{ color: '#334155' }}>{value}</Typography>
+                            </Box>
+                        ) : null
+                    )}
+                </Box>
+
+                {renderFooter(2, 3)}
+            </Card>
+
+            {/* ════════════════════════════════════════════════════════
+                PAGE 3 — Treatment, Discharge Advice, Signatures
+            ════════════════════════════════════════════════════════ */}
+            <Card className="pdf-page" sx={A4_PAGE_STYLE}>
+                {renderHeader(false)}
+
+                {/* 09 — Treatment / Medications Given */}
+                <SectionTitle mt={0}>09 · Treatment / Medications Given</SectionTitle>
+                <Box sx={{ bgcolor: '#F8FAFC', p: 1.5, borderRadius: 1, border: '1px solid #E2E8F0', mb: 1.5 }}>
+                    <Grid container spacing={1}>
+                        {data.treatment && Object.entries(data.treatment).map(([key, value]: [string, any]) =>
+                            value ? (
+                                <Grid item xs={6} key={key} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
+                                    <Box sx={{ width: 5, height: 5, bgcolor: '#0EA5E9', borderRadius: '50%', mt: '6px', flexShrink: 0 }} />
+                                    <Typography variant="body2" sx={{ color: '#334155' }}>{value}</Typography>
+                                </Grid>
+                            ) : null
+                        )}
+                    </Grid>
+                </Box>
+
+                {/* 10 — Discharge Advice & Medications */}
+                <SectionTitle>10 · Discharge Advice &amp; Medications</SectionTitle>
+                <Box sx={{ bgcolor: '#F0F9FF', p: 1.5, borderRadius: 2, border: '1px solid #BAE6FD', display: 'flex', gap: 3 }}>
+                    {/* Medication list */}
+                    <Box sx={{ flex: 1 }}>
+                        <ol style={{ margin: 0, paddingLeft: '1.2rem' }}>
+                            {data.dc_medications?.map((med: any, i: number) => (
+                                <li key={i} style={{ marginBottom: '5px' }}>
+                                    <Typography variant="body2" sx={{ color: '#334155' }}>
+                                        <strong>{med.drug}</strong>: {med.dose} ({med.route}) — {med.frequency}
+                                    </Typography>
+                                </li>
+                            ))}
+                            {data.feeding_plan && (
+                                <li style={{ marginBottom: '5px' }}>
+                                    <Typography variant="body2" sx={{ color: '#334155' }}>{data.feeding_plan}</Typography>
+                                </li>
+                            )}
+                            {data.home_care && (
+                                <li>
+                                    <Typography variant="body2" sx={{ color: '#334155' }}>{data.home_care}</Typography>
+                                </li>
+                            )}
+                        </ol>
+                    </Box>
+
+                    {/* Follow-up + Emergency */}
+                    <Box sx={{ flex: 1, borderLeft: '1px solid #BAE6FD', pl: 2 }}>
+                        <Typography variant="subtitle2" sx={{ color: '#1E293B', mb: 0.75 }}>Follow-up</Typography>
+                        <Typography variant="body2" sx={{ color: '#334155', mb: 0.5 }}>{data.followup?.instructions}</Typography>
+                        <Typography variant="body2" sx={{ color: '#334155', mb: 0.5 }}>
+                            Date: <strong>{data.followup?.date ? formatDate(data.followup.date) : '—'}</strong>
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#334155', mb: 1.5 }}>
+                            Clinic: {data.followup?.clinic || '—'}
+                        </Typography>
+
+                        <Box sx={{ bgcolor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 1, p: 1 }}>
+                            <Typography variant="caption" sx={{ color: '#B91C1C', fontWeight: 700, lineHeight: 1.5 }}>
+                                ⚠ Emergency — bring baby immediately if: poor feeding, lethargy, or fever (&gt;38 °C).
+                            </Typography>
+                        </Box>
                     </Box>
                 </Box>
 
-                <Box sx={{ textAlign: 'right' }}>
-                    <Box sx={{ mb: 1 }}>
-                        {data.signatures?.approver_signature && <img src={data.signatures.approver_signature} alt="Doctor Sig" style={{ height: '40px' }} />}
-                    </Box>
-                    <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#1E293B' }}>Dr. Anjali Patil</Typography>
-                    <Typography sx={{ fontSize: '11px', color: '#0EA5E9' }}>Consultant Neonatologist</Typography>
-                    <Typography sx={{ fontSize: '10px', color: '#94A3B8' }}>Reg No: MMC 2012/04/1234</Typography>
-                </Box>
-            </Box>
+                {/* Signatures */}
+                 
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mt: 1 }}>
+                        {/* Parent */}
+                        <Box>
+                            <Typography variant="body2" sx={{ fontStyle: 'italic', color: '#64748B', mb: 3 }}>
+                            "I/We have been explained about the diagnosis and medications."
+                        </Typography>
+                            <Box sx={{ border: '1px dashed #9CA3AF', borderRadius: '4px', width: 160, height: 48, mb: 0.8, bgcolor: '#F9FAFB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                               
+                                <Typography sx={{ fontSize: '8.5px', color: '#9CA3AF', fontStyle: 'italic' }}>Parent Signature</Typography>
+                            </Box>
+                            <Typography sx={{  mb: 0 }}>Parent / Guardian</Typography>
+                            <Typography sx={{ fontSize: '9px', color: '#6B7280' }}>Acknowledged receipt of discharge summary</Typography>
+                        </Box>
 
-            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#CBD5E1' }}>
-                <Typography fontSize="inherit">Printed By: {data.summary_prepared_by}</Typography>
-                <Typography fontSize="inherit">Printed At: {new Date().toLocaleString()}</Typography>
-            </Box>
+                        {/* Doctor */}
+                        <Box sx={{ textAlign: 'right' }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0.5, minHeight: 48 }}>
+                                {data.signatures?.approver_signature
+                                    ? <Box component="img" src={data.signatures.approver_signature} alt="Doctor Signature" sx={{ height: 48 }} />
+                                    : <Box sx={{ border: '1px dashed #9CA3AF', borderRadius: '4px', width: 160, height: 48, bgcolor: '#F9FAFB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Typography sx={{ fontSize: '8.5px', color: '#9CA3AF', fontStyle: 'italic' }}>Doctor Signature</Typography>
+                                    </Box>
+                                }
+                            </Box>
+                            <Divider sx={{ borderColor: '#374151', mb: 0.5 }} />
+                            <Typography sx={{ fontSize: '11px' }}>
+                                {data.treating_doctors?.[0] || 'Consultant Neonatologist'}
+                            </Typography>
+                            <Typography sx={{ fontSize: '9.5px', color: '#1D4ED8' }}>Consultant Neonatologist</Typography>
+                            <Typography sx={{ fontSize: '9px', color: '#6B7280' }}>Dept. of Neonatology & Paediatrics</Typography>
+                        </Box>
+                    </Box>
+                
+
+                {renderFooter(3, 3)}
+            </Card>
 
         </Box>
     );

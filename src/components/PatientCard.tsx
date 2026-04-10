@@ -372,15 +372,15 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
   };
 
   // Determine if any vital is out of range for dynamic header color
-  const hasAlertVitals =
-    isVitalOutOfRange(latestVitals.hr, VITAL_THRESHOLDS.hr) ||
-    isVitalOutOfRange(latestVitals.temp, VITAL_THRESHOLDS.temp) ||
-    isVitalOutOfRange(latestVitals.spo2, VITAL_THRESHOLDS.spo2) ||
-    isVitalOutOfRange(latestVitals.rr, VITAL_THRESHOLDS.rr);
+  // const hasAlertVitals =
+  //   isVitalOutOfRange(latestVitals.hr, VITAL_THRESHOLDS.hr) ||
+  //   isVitalOutOfRange(latestVitals.temp, VITAL_THRESHOLDS.temp) ||
+  //   isVitalOutOfRange(latestVitals.spo2, VITAL_THRESHOLDS.spo2) ||
+  //   isVitalOutOfRange(latestVitals.rr, VITAL_THRESHOLDS.rr);
 
-  const headerGradient = hasAlertVitals
-    ? "linear-gradient(135deg, #C62828 0%, #B71C1C 100%)"
-    : "linear-gradient(135deg, #1565C0 0%, #1976D2 100%)";
+  // const headerGradient = hasAlertVitals
+  //   ? "linear-gradient(135deg, #C62828 0%, #B71C1C 100%)"
+  //   : "linear-gradient(135deg, #1565C0 0%, #1976D2 100%)";
 
   // Vitals config for rendering
   const vitalsConfig = [
@@ -435,7 +435,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
         overflow: "hidden",
         border: "1px solid #E2E8F0",
         boxShadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)",
-        backgroundColor: "#FFFFFF",
+         backgroundColor:props.darkTheme?'#2c2b2bb4': "#FFFFFF",
         cursor: "pointer",
       
         transition: "all 0.2s ease-in-out",
@@ -449,7 +449,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
       {/* ===== HEADER BAR ===== */}
       <Box
         sx={{
-          background: headerGradient,
+          background: "linear-gradient(135deg, #1565C0 0%, #1976D2 100%)",
           px: { xs: 2, md: 3 },
           py: 1.2,
           display: "flex",
@@ -520,7 +520,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                 variant="h6"
                 sx={{
                   fontWeight: 700,
-                  color: "#1E293B",
+                  color:props.darkTheme?"#FFFFFF": "#1E293B",
                   fontSize: { xs: "1rem", md: "1.15rem" },
                   lineHeight: 1.2,
                 }}
@@ -557,7 +557,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
             <Typography
               variant="caption"
               sx={{
-                color: "#64748B",
+                color: props.darkTheme?"#FFFFFF":"#64748B",
                 fontWeight: 500,
                 fontSize: "0.75rem",
                 mt: 0.3,

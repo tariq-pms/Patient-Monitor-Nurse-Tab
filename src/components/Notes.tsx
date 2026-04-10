@@ -1,33 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box, Typography, Dialog,
-  DialogTitle,
-  DialogContent,
-  IconButton, TextField, Button, Select, MenuItem, Snackbar, Alert, Card, CardContent,
-  Stack,
-  Tooltip,
-  useTheme
-} from '@mui/material';
+import { Box, Typography, Dialog, DialogTitle, DialogContent, IconButton, TextField, Button, Select, MenuItem, Snackbar, Alert, Card, CardContent, Stack,  useTheme, alpha } from '@mui/material';
 import MicIcon from '@mui/icons-material/Mic';
 import { ProtectedModule } from './ProtectedModule';
-
 import jsPDF from "jspdf";
 import DownloadIcon from '@mui/icons-material/Download';
 import CloseIcon from "@mui/icons-material/Close";
-
-
-
+import AddIcon from "@mui/icons-material/Add";
 interface NotesProps {
-
+  userOrganization: string;
   patient_resource_id: string;
   patient_name: string;
   patient_id: string;
   gestational_age: string;
   birth_date: string;
   UserRole: string;
-
 }
+
 // export const DeviceInService: React.FC<DeviceInServiceProps> = ({
+
 export const Notes: React.FC<NotesProps> = (props) => {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
@@ -129,13 +119,9 @@ export const Notes: React.FC<NotesProps> = (props) => {
   }, [dateFilter, categoryFilter, authorFilter, fetchedNotes]);
 
 
-
-
   // const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
   const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
   const recognition = new SpeechRecognition();
-
   recognition.continuous = false;
   recognition.interimResults = false;
   recognition.lang = 'en-US';
@@ -168,7 +154,6 @@ export const Notes: React.FC<NotesProps> = (props) => {
     const transcript = event.results[0][0].transcript;
     setNote(transcript);
     setIsListening(false);
-
     const detectedType = detectNoteType(transcript);
     if (detectedType) {
       setNoteType(detectedType); // Updates the Select dropdown
@@ -181,10 +166,13 @@ export const Notes: React.FC<NotesProps> = (props) => {
   };
 
   const toggleListening = () => {
-    if (isListening) {
+    if (isListening) 
+      {
       recognition.stop();
       setIsListening(false);
-    } else {
+    } 
+    else 
+      {
       recognition.start();
       setIsListening(true);
     }
@@ -192,12 +180,10 @@ export const Notes: React.FC<NotesProps> = (props) => {
 
   // Function to send the ClinicalImpression resource to FHIR server
   const submitNote = async () => {
-
     if (!note.trim()) {
       alert("Note cannot be empty!");
       return;
     }
-
     const clinicalImpression = {
       resourceType: "ClinicalImpression",
       status: "completed", // Required field
@@ -212,7 +198,6 @@ export const Notes: React.FC<NotesProps> = (props) => {
       ],
       summary: note, // Summary of impression
     };
-
     try {
       const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/ClinicalImpression`, {
         method: "POST",
@@ -221,10 +206,8 @@ export const Notes: React.FC<NotesProps> = (props) => {
           Authorization: "Basic " + btoa("fhiruser:change-password"),
         },
         body: JSON.stringify(clinicalImpression),
-      });
-
+     });
       const text = await response.text(); // Read response as text
-
       let data = null;
       if (text) {
         try {
@@ -233,387 +216,290 @@ export const Notes: React.FC<NotesProps> = (props) => {
           console.warn("Response is not valid JSON:", text);
         }
       }
-
       if (!response.ok) {
         throw new Error(`Error: ${data?.issue?.[0]?.details?.text || "Failed to save note"}`);
       }
-
       setSnackbarMessage("Note saved successfully!");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-
       // Clear fields and close dialog
       setNote('');
       setNoteType('');
       setOpen(false);
-
       fetchNotes();
     } catch (error) {
       console.error("Error saving note:", error);
       setSnackbarMessage("An error occurred while saving the note.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
-
     }
   };
 
   const downloadNotesPDF = async () => {
-
-    const doc = new jsPDF("p", "pt", "a4");
-
+    const doc       = new jsPDF("p", "pt", "a4");
     const pageWidth = doc.internal.pageSize.getWidth();
-
-    const margin = 40;
-
-    let startY = 50;
-
-
+    const margin    = 40;
 
     // =========================
-
-    // Header: Organization Name + Logo
-
+    // 1️⃣ FETCH ORGANIZATION + LOGO + FOOTER DATA
     // =========================
-
-    let orgName = "Unknown Organization";
-
+    let orgName    = "Unknown Organization";
     let logoDataUrl: string | null = null;
 
-
+    let footerAddress  = "";
+    let footerPhones: string[] = [];
+    let footerEmail    = "";
+    let footerWebsite  = "";
 
     try {
-
-      const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/190a1bc01d5-74da227d-60cc-459b-9046-3173eee76c83`;
-
-      const res = await fetch(orgUrl, {
-
-        headers: {
-
-          Authorization: "Basic " + btoa("fhiruser:change-password"),
-
-          Accept: "application/fhir+json",
-
-        },
-
-      });
-
-      if (!res.ok) throw new Error(`Organization fetch failed: ${res.status}`);
-
-      const orgData = await res.json();
-
-      orgName = orgData.name || orgName;
-
-
-
-      const extensions = Array.isArray(orgData.extension) ? orgData.extension : [];
-
-      const logoExt = extensions.find(
-
-        (ext: any) => ext.url === "http://example.org/fhir/StructureDefinition/organization-logo"
-
-      );
-
-      const logoRef = logoExt?.valueReference?.reference;
-
-
-
-      if (logoRef) {
-
-        const binaryId = logoRef.replace("Binary/", "");
-
-        const binaryUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Binary/${binaryId}`;
-
-        const binaryRes = await fetch(binaryUrl, {
-
-          headers: {
-
-            Authorization: "Basic " + btoa("fhiruser:change-password"),
-
-            Accept: "application/fhir+json",
-
-          },
-
+        const orgUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Organization/${props.userOrganization}`;
+        const res = await fetch(orgUrl, {
+            headers: {
+                Authorization: "Basic " + btoa("fhiruser:change-password"),
+                Accept: "application/fhir+json",
+            },
         });
 
-        if (!binaryRes.ok) throw new Error(`Binary fetch failed: ${binaryRes.status}`);
+        if (!res.ok) throw new Error(`Organization fetch failed: ${res.status}`);
+        const orgData = await res.json();
+        orgName = orgData.name || orgName;
 
-        const binaryData = await binaryRes.json();
-
-        if (binaryData.data && binaryData.contentType) {
-
-          logoDataUrl = `data:${binaryData.contentType};base64,${binaryData.data}`;
-
+        // ── Logo ──────────────────────────────────────────────
+        const logoExt = (orgData.extension || []).find(
+            (ext: any) => ext.url === "http://example.org/fhir/StructureDefinition/organization-logo"
+        );
+        const logoRef = logoExt?.valueReference?.reference;
+        if (logoRef) {
+            const binaryId  = logoRef.replace("Binary/", "");
+            const binaryRes = await fetch(
+                `${import.meta.env.VITE_FHIRAPI_URL}/Binary/${binaryId}`,
+                {
+                    headers: {
+                        Authorization: "Basic " + btoa("fhiruser:change-password"),
+                        Accept: "application/fhir+json",
+                    },
+                }
+            );
+            if (!binaryRes.ok) throw new Error(`Binary fetch failed: ${binaryRes.status}`);
+            const binaryData = await binaryRes.json();
+            if (binaryData.data && binaryData.contentType) {
+                logoDataUrl = `data:${binaryData.contentType};base64,${binaryData.data}`;
+            }
         }
 
-      }
+        // ── Address ───────────────────────────────────────────
+        const addr = orgData.address?.[0];
+        if (addr) {
+            footerAddress = [
+                addr.line?.join(", "),
+                addr.city,
+                addr.state,
+                addr.postalCode,
+                addr.country,
+            ].filter(Boolean).join(", ");
+        }
+
+        // ── Telecom ───────────────────────────────────────────
+        (orgData.telecom || []).forEach((t: any) => {
+            if (t.system === "phone") footerPhones.push(t.value);
+            if (t.system === "email") footerEmail   = t.value;
+            if (t.system === "url")   footerWebsite = t.value;
+        });
 
     } catch (err) {
-
-      console.error("❌ Error fetching organization/logo:", err);
-
+        console.error("❌ Error fetching organization/logo:", err);
     }
 
-
-
-    // Draw Logo
-
-    const logoBoxSize = 60;
-
-    const logoX = 40;
-
+    // =========================
+    // 🧾 HEADER
+    // =========================
+    const logoBoxSize = 80;
+    const logoX = 30;
     const logoY = 20;
 
     try {
-
-      if (logoDataUrl) {
-
-        const img = new Image();
-
-        img.src = logoDataUrl;
-
-        await new Promise<void>((resolve, reject) => {
-
-          img.onload = () => resolve();
-
-          img.onerror = (e) => reject(e);
-
-        });
-
-        const aspectRatio = img.width / img.height;
-
-        let drawWidth = logoBoxSize;
-
-        let drawHeight = logoBoxSize;
-
-        if (aspectRatio > 1) drawHeight = logoBoxSize / aspectRatio;
-
-        else drawWidth = logoBoxSize * aspectRatio;
-
-        const offsetX = logoX + (logoBoxSize - drawWidth) / 2;
-
-        const offsetY = logoY + (logoBoxSize - drawHeight) / 2 - 10;
-
-        doc.addImage(img, "PNG", offsetX, offsetY, drawWidth, drawHeight);
-
-      } else {
-
-        doc.setFillColor(200, 220, 255);
-
-        doc.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
-
-        doc.setFontSize(8);
-
-        doc.text("No Logo", logoX + 5, logoY + 30);
-
-      }
-
+        if (logoDataUrl) {
+            const img = new Image();
+            img.src = logoDataUrl;
+            await new Promise<void>((resolve, reject) => {
+                img.onload  = () => resolve();
+                img.onerror = (e) => reject(e);
+            });
+            const aspectRatio = img.width / img.height;
+            let drawWidth  = logoBoxSize;
+            let drawHeight = logoBoxSize;
+            if (aspectRatio > 1) drawHeight = logoBoxSize / aspectRatio;
+            else drawWidth = logoBoxSize * aspectRatio;
+            const offsetX = logoX + (logoBoxSize - drawWidth)  / 2;
+            const offsetY = logoY + (logoBoxSize - drawHeight) / 2 - 10;
+            doc.addImage(img, "PNG", offsetX, offsetY, drawWidth, drawHeight);
+        } else {
+            doc.setFillColor(200, 220, 255);
+            doc.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
+            doc.setFontSize(8);
+            doc.text("No Logo", logoX + 5, logoY + 30);
+        }
     } catch {
-
-      doc.setFillColor(200, 220, 255);
-
-      doc.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
-
+        doc.setFillColor(200, 220, 255);
+        doc.rect(logoX, logoY, logoBoxSize, logoBoxSize, "F");
     }
 
+    // Right side Info Box
+    const rightX = pageWidth - 40 - 250;
+    const boxY   = logoY + 10;
 
-
-    // Organization Name
-
+    // Grey Tab
+    doc.setFillColor(224, 228, 231);
+    doc.rect(rightX + 50, boxY - 14, 160, 14, "F");
+    doc.setFontSize(9);
+    doc.setTextColor(51, 51, 51);
     doc.setFont("helvetica", "bold");
+    doc.text("NOTES REPORT", rightX + 80, boxY - 4);
 
-    doc.setFontSize(14);
+    // Bordered Box
+    doc.setDrawColor(209, 217, 224);
+    doc.setLineWidth(1);
+    doc.roundedRect(rightX, boxY, 250, 40, 4, 4, "S");
 
-    doc.text(orgName, logoX + logoBoxSize + 10, logoY + 15);
+    const row1Y = boxY + 15;
+    const row2Y = boxY + 30;
+    doc.setFontSize(9);
 
-    doc.setFontSize(11);
+    doc.setTextColor(144, 164, 174); doc.setFont("helvetica", "normal");
+    doc.text("B/O:", rightX + 10, row1Y);
+    doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold");
+    doc.text(props.patient_name || "N/A", rightX + 35, row1Y);
 
-    doc.text("NOTES REPORT", logoX + logoBoxSize + 10, logoY + 35);
+    doc.setTextColor(144, 164, 174); doc.setFont("helvetica", "normal");
+    doc.text("UHID:", rightX + 130, row1Y);
+    doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold");
+    doc.text(props.patient_id || "N/A", rightX + 165, row1Y);
 
+    doc.setTextColor(144, 164, 174); doc.setFont("helvetica", "normal");
+    doc.text("GA:", rightX + 10, row2Y);
+    doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold");
+    doc.text(props.gestational_age || "N/A", rightX + 35, row2Y);
 
+    doc.setTextColor(144, 164, 174); doc.setFont("helvetica", "normal");
+    doc.text("DOB:", rightX + 130, row2Y);
+    doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold");
+    doc.text(props.birth_date || "N/A", rightX + 165, row2Y);
 
-    doc.setDrawColor(180);
-
-    doc.line(10, 70, pageWidth - 10, 70);
+    // Divider below header
+    doc.setDrawColor(238, 238, 238);
+    doc.line(logoX, boxY + 55, pageWidth - logoX, boxY + 55);
 
     // =========================
-
-    // Patient Info
-
+    // 👤 PATIENT INFO ROW
     // =========================
+    const patientY  = boxY + 70;
+    const lineGap   = 15;
 
     doc.setFont("helvetica", "normal");
-
     doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
 
-
-
-    const patientY = 85;
-
-    const lineGap = 15; // spacing between patient info lines
-
-    doc.text(`Name: ${props.patient_name}`, 40, patientY);
-    doc.text(`UHID: ${props.patient_id}`, 40, patientY + 20);
-    doc.text(`DOB:  ${props.birth_date}`, 250, patientY);
-    doc.text(`G.A  : ${props.gestational_age}`, 420, patientY);
-    doc.text(`DOA: ____________________`, 250, patientY + 22);
-
-    // doc.text(`Patient Name: ${props.patient_name}`, 40, patientStartY);
-
-    // doc.text(`UHID: ${props.patient_resource_id}`, 250, patientStartY + lineGap);
-
-    // doc.text(`DOB: ____________________`, 250, patientStartY);
-
-    // doc.text(`Age/Gender: ____________________`, 40, patientStartY + lineGap);
-
-    // doc.text(`DOA: ____________________`, 420, patientStartY);
-
-
-
-    // After patient info, update startY for the table
-
-    const tableStartY = patientY + lineGap + 30; // leave extra space
-
-
+    // doc.text(`Name: ${props.patient_name}`,      logoX,       patientY);
+    // doc.text(`UHID: ${props.patient_id}`,         logoX,       patientY + 20);
+    // doc.text(`DOB:  ${props.birth_date}`,         250,         patientY);
+    // doc.text(`G.A:  ${props.gestational_age}`,    420,         patientY);
+    // doc.text(`DOA:  ____________________`,        250,         patientY + 22);
 
     // =========================
-
-    // Table Columns
-
+    // 📊 TABLE
     // =========================
-
-    const colSummaryWidth = pageWidth - margin * 2 - 320; // Notes by + Type + Date = 320
-
+    const tableStartY    = patientY + lineGap 
+    const colSummaryWidth = pageWidth - margin * 2 - 320;
     const colNotesByWidth = 100;
+    const colTypeWidth    = 80;
+    const rowPadding      = 6;
 
-    const colTypeWidth = 80;
+    let startY = tableStartY;
 
-    // const colDateWidth = 120;
-
-    const rowPadding = 6;
-
-
-
-    startY = tableStartY;
-
-
-
-    // Table Header
-
+    // Table header
     doc.setFont("helvetica", "bold");
-
-    doc.setFontSize(12);
-
-    doc.text("Summary", margin + rowPadding, startY);
-
-    doc.text("Date/Time", margin + colSummaryWidth + rowPadding + 10, startY);
-
-    doc.text("Type", margin + colSummaryWidth + colNotesByWidth + rowPadding + 15, startY);
-
-    doc.text("Notes by", margin + colSummaryWidth + colNotesByWidth + colNotesByWidth / 2 + rowPadding + 20, startY);
-
-
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Summary",  margin + rowPadding,                                                          startY);
+    doc.text("Date/Time", margin + colSummaryWidth + rowPadding + 10,                                  startY);
+    doc.text("Type",      margin + colSummaryWidth + colNotesByWidth + rowPadding + 15,                startY);
+    doc.text("Notes by",  margin + colSummaryWidth + colNotesByWidth + colNotesByWidth / 2 + rowPadding +50, startY);
 
     startY += 15;
-
     doc.setDrawColor(180);
-
     doc.line(margin, startY, pageWidth - margin, startY);
-
     startY += 10;
 
-
-
-    // =========================
-
-    // Table Rows
-
-    // =========================
-
+    // Table rows
     doc.setFont("helvetica", "normal");
-
     doc.setFontSize(10);
 
-
-
     filteredNotes.slice().reverse().forEach((note: any) => {
+        const summaryLines = doc.splitTextToSize(note.summary, colSummaryWidth);
+        const rowHeight    = Math.max(summaryLines.length * 12, 14);
 
-      const summaryLines = doc.splitTextToSize(note.summary, colSummaryWidth);
+        // Page break — leave 60pt at bottom for footer
+        if (startY + rowHeight + 20 > doc.internal.pageSize.getHeight() - 60) {
+            doc.addPage();
+            startY = 50;
+        }
 
-      const rowHeight = Math.max(summaryLines.length * 12, 14);
+        doc.setFillColor(245, 245, 245);
+        doc.rect(margin, startY - 2, pageWidth - 2 * margin, rowHeight + 4, "F");
 
+        doc.setTextColor(0, 0, 0);
+        doc.text(summaryLines, margin + rowPadding, startY + 12);
 
+        doc.text(note.noteType, margin + colSummaryWidth + colNotesByWidth + rowPadding + 15, startY + 12);
 
-      // Page break
+        const formattedDate = new Date(note.dateTime).toLocaleString("en-IN", {
+            day: "2-digit", month: "short", year: "numeric",
+            hour: "2-digit", minute: "2-digit",
+        });
+        doc.text(formattedDate, margin + colSummaryWidth + rowPadding + 10, startY + 12);
 
-      if (startY + rowHeight + 20 > 800) {
+        doc.text(
+            `Dr. ${props.UserRole}`,
+            margin + colSummaryWidth + colNotesByWidth + colTypeWidth + rowPadding + 20,
+            startY + 12,
+        );
 
-        doc.addPage();
-
-        startY = 50;
-
-      }
-
-
-
-      // Draw row background (optional, alternating colors)
-
-      doc.setFillColor(245, 245, 245);
-
-      doc.rect(margin, startY - 2, pageWidth - 2 * margin, rowHeight + 4, "F");
-
-
-
-      // Summary (multi-line)
-
-      doc.setTextColor(0, 0, 0);
-
-      doc.text(summaryLines, margin + rowPadding, startY + 12);
-
-
-
-
-
-
-
-      // Type
-
-      doc.text(note.noteType, margin + colSummaryWidth + colNotesByWidth + rowPadding + 15, startY + 12);
-
-
-
-      // Date/Time
-
-      const noteDate = new Date(note.dateTime); // assuming note.dateTime exists
-
-      const formattedDate = noteDate.toLocaleString("en-IN", {
-
-        day: "2-digit",
-
-        month: "short",
-
-        year: "numeric",
-
-        hour: "2-digit",
-
-        minute: "2-digit",
-
-      });
-
-      doc.text(formattedDate, margin + colSummaryWidth + rowPadding + 10, startY + 12);
-
-      // Notes by
-
-      doc.text(`Dr. ${props.UserRole}`, margin + colSummaryWidth + colNotesByWidth + colTypeWidth + rowPadding + 20, startY + 12);
-
-      startY += rowHeight + 10;
-
+        startY += rowHeight + 10;
     });
 
+    // =========================
+    // 4️⃣ FOOTER — built from org resource
+    // =========================
+    const totalPages = (doc as any).internal.getNumberOfPages();
 
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        const pageHeight = doc.internal.pageSize.getHeight();
+
+        // Divider line
+        doc.setDrawColor(238, 238, 238);
+        doc.setLineWidth(1);
+        doc.line(logoX, pageHeight - 50, pageWidth - logoX, pageHeight - 50);
+
+        doc.setFontSize(7);
+        doc.setTextColor(100, 100, 100);
+        doc.setFont("helvetica", "normal");
+
+        // Row 1 — Address
+        doc.text(footerAddress || "Address not available", logoX, pageHeight - 35);
+
+        // Row 2 — Phones | Email | Website + page number
+        const contactParts: string[] = [];
+        if (footerPhones.length > 0) contactParts.push(footerPhones.join(", "));
+        if (footerEmail)             contactParts.push(footerEmail);
+        if (footerWebsite)           contactParts.push(footerWebsite);
+
+        doc.text(contactParts.join("  |  "), logoX, pageHeight - 21);
+        doc.text(`Page ${i}/${totalPages}`, pageWidth - logoX - 30, pageHeight - 21);
+    }
 
     doc.save(`Notes_Report(${props.patient_id}).pdf`);
-
-  };
+};
   return (
     <Box>
       {/* Add Note Button */}
@@ -625,7 +511,45 @@ export const Notes: React.FC<NotesProps> = (props) => {
       {/* {props.UserRole !== "NICU Nurse" &&  ( */}
       <ProtectedModule module="Clinical Notes" action="create">
         {/* 🔹 Button to open dialog */}
-        <Box
+        
+        
+        <Box mt={1} mb={1} display={'flex'} justifyContent={'space-between'}>
+            <Typography variant="h6" sx={{ color: isDarkMode ? theme.palette.text.primary : "#0F3B61" }} gutterBottom>
+                        Notes
+                      </Typography>
+          <Box display={"flex"}  alignItems="center"
+          justifyContent="flex-end"
+          gap={1.5}>
+            <IconButton 
+           onClick={downloadNotesPDF} // Add this
+          sx={{
+            backgroundColor: alpha("#228BE6", 0.1),
+            color: "#228BE6",
+            borderRadius: "8px",
+            px: 2, py: 0.9,
+            "&:hover": { backgroundColor: alpha("#228BE6", 0.2) },
+          }}
+        >
+          <DownloadIcon />
+        </IconButton>
+           <Button
+          startIcon={<AddIcon fontSize="small" />}
+          onClick={() => setOpen(true)}
+          sx={{
+            backgroundColor: alpha("#228BE6", 0.1),
+            color: "#228BE6",
+            textTransform: "none",
+            borderRadius: "8px",
+            px: 3,
+          }}
+        >
+          Entry
+        </Button>
+        
+          </Box>
+          </Box>
+        
+        {/* <Box
           sx={{
             display: "flex",
             alignItems: "center",
@@ -699,7 +623,7 @@ export const Notes: React.FC<NotesProps> = (props) => {
           </Stack>
 
 
-        </Box>
+        </Box> */}
 
         <Dialog
           open={open}
@@ -774,10 +698,10 @@ export const Notes: React.FC<NotesProps> = (props) => {
                     },
                   }}
                   sx={{
-                    '& .MuiSelect-icon': { color: '#0F3B61', backgroundColor: '#F2FBFF' },
+                    '& .MuiSelect-icon': { color: isDarkMode ? theme.palette.text.secondary : '#0F3B61', backgroundColor: isDarkMode ? 'transparent' : '#F2FBFF' },
                     flex: 1,
-                    color: '#0F3B61',
-                    border: '1px solid #DBE2F2',
+                    color: isDarkMode ? theme.palette.text.primary : '#0F3B61',
+                    border: `1px solid ${isDarkMode ? theme.palette.divider : '#DBE2F2'}`,
                   }}
                 >
                   <MenuItem value="Medication">Medication</MenuItem>
@@ -834,7 +758,7 @@ export const Notes: React.FC<NotesProps> = (props) => {
                 {/* Left side */}
                 <Stack spacing={0.5} p={1} sx={{
 
-                  backgroundColor: '#F9FAFB',     // optional: light background for clarity
+                  backgroundColor: isDarkMode ? theme.palette.background.default : '#F9FAFB',     // optional: light background for clarity
                 }}>
                   <Typography variant="body2" sx={{ color: "#9BA1AE" }}>
                     Note from
@@ -845,7 +769,7 @@ export const Notes: React.FC<NotesProps> = (props) => {
                       display: "flex",
                       alignItems: "center",
                       gap: 1,
-                      color: "#0F3B61",
+                      color: isDarkMode ? theme.palette.text.primary : "#0F3B61",
                     }}
                   >
                     Dr.{props.UserRole}
@@ -862,7 +786,7 @@ export const Notes: React.FC<NotesProps> = (props) => {
                       setNote('');
                       setNoteType('');
                     }}
-                    sx={{ borderColor: '#0F3B61', color: '#0F3B61' }}
+                    sx={{ borderColor: isDarkMode ? theme.palette.divider : '#0F3B61', color: isDarkMode ? theme.palette.text.primary : '#0F3B61' }}
                   >
                     Reset
                   </Button>
@@ -1007,13 +931,13 @@ export const Notes: React.FC<NotesProps> = (props) => {
                   sx={{
                     marginTop: 2,
                     borderRadius: '10px',
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: isDarkMode ? theme.palette.background.paper : '#FFFFFF',
                     display: "flex",
                     flexDirection: "column"
                   }}
                 >
                   <CardContent>
-                    <Typography variant="h6" sx={{ color: "#2C3E50" }}>
+                    <Typography variant="h6" sx={{ color: isDarkMode ? theme.palette.text.primary : "#2C3E50" }}>
                       {note.summary}
                     </Typography>
 
@@ -1037,7 +961,7 @@ export const Notes: React.FC<NotesProps> = (props) => {
                             marginLeft: 1,
                             display: "flex",
                             alignItems: "center",
-                            color: "#0F3B61",
+                            color: isDarkMode ? theme.palette.text.primary : "#0F3B61",
                           }}
                         >
                           Dr. {props.UserRole}
@@ -1054,7 +978,7 @@ export const Notes: React.FC<NotesProps> = (props) => {
                           alignItems: 'center',
                         }}
                       >
-                        <Typography sx={{ color: "#2C3E50" }}>{note.noteType}</Typography>
+                        <Typography sx={{ color: isDarkMode ? theme.palette.text.primary : "#2C3E50" }}>{note.noteType}</Typography>
                       </Box>
                     </Box>
                   </CardContent>

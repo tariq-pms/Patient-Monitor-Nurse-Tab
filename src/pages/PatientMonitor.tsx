@@ -171,34 +171,48 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
   // const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
   //   setSelectedTab(newValue);
   // };
-  useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Patient?_count=100&organization=${userOrganization}`, {
+useEffect(() => {
+  const fetchAllPatients = async () => {
+    let allPatients: string | any[] | ((prevState: Patient[]) => Patient[]) = [];
+    // 1. Initial URL with active=true filter
+    let nextUrl = `${import.meta.env.VITE_FHIRAPI_URL}/Patient?_count=100&organization=${userOrganization}&active=true`;
+
+    try {
+      while (nextUrl) {
+        const response = await fetch(nextUrl, {
           credentials: 'omit',
           headers: {
             Authorization: 'Basic ' + btoa('fhiruser:change-password'),
           },
         });
-        if (response.ok) {
-          const data = await response.json();
-          if (data.entry) {
-            const patients = data.entry.map((entry: { resource: any }) => entry.resource);
-            setPatientList(patients);
-            console.log('patient list in patient monitoring', patients);
 
-          }
-        } else {
-          throw new Error('Network response was not ok');
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        const data = await response.json();
+
+        // 2. Accumulate patients from the current page
+        if (data.entry) {
+          const pagePatients = data.entry.map((e: { resource: any; }) => e.resource);
+          allPatients = [...allPatients, ...pagePatients];
         }
-      } catch (error) {
-        console.error(error);
+
+        // 3. Check if there is a 'next' link in the bundle
+        const nextLink = data.link?.find((l: { relation: string; }) => l.relation === 'next');
+        nextUrl = nextLink ? nextLink.url : null;
       }
-    };
 
-    fetchPatients();
-  }, [userOrganization]);
+      setPatientList(allPatients);
+      console.log('Total active patients fetched:', allPatients.length);
 
+    } catch (error) {
+      console.error('Error fetching patients:', error);
+    }
+  };
+
+  if (userOrganization) {
+    fetchAllPatients();
+  }
+}, [userOrganization]);
   useEffect(() => {
     const socket = new WebSocket(`${import.meta.env.VITE_FHIRSOCKET_URL as string}/notification`);
 
@@ -368,7 +382,7 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
       {isAuthenticated && (
         <Box>
           <Box sx={{ position: 'sticky', top: 0, zIndex: 1000, backgroundColor: theme.palette.background.paper || "#FFFFFF", pb: 1 }}>
-            <Box sx={{ borderColor: "divider", border: '0.1px solid #DEE2E6' }}>
+            <Box sx={{ borderColor: "divider" }}>
               <Tabs
                 value={selectedIndex}
                 onChange={handleTabChange}
@@ -388,12 +402,13 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
                           flexDirection: isMobile ? "column" : "row",
                           justifyContent: "center",
                           alignItems: "center",
+                          color:darkTheme?'#FFFFFF': "#857373b4",
                           gap: 1,
                           width: "100%",
                         }}
                       >
                         {tab.icon}
-                        {!isMobile && <Typography variant="body2">{tab.label}</Typography>}
+                        {!isMobile && <Typography  variant="body2">{tab.label}</Typography>}
                       </Box>
                     }
                     sx={{
@@ -409,7 +424,7 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
             </Box>
 
             {/* Search and Filters Toolbar */}
-            {selectedIndex === 0 && (
+            {selectedIndex === 0 &&(
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={1.5}
@@ -427,7 +442,8 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
                   sx={{
                     flex: 1,
                     maxWidth: { sm: 500 },
-                    backgroundColor: "#FFFFFF",
+                    
+                   backgroundColor:darkTheme?'#2c2b2bb4': "#FFFFFF",
                     '& .MuiOutlinedInput-root': {
                       borderRadius: "10px",
                       '& fieldset': { borderColor: '#E2E8F0' },
@@ -457,7 +473,7 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
                         onChange={(e) => setSortBy(e.target.value)}
                         displayEmpty
                         sx={{
-                          backgroundColor: "#FFFFFF",
+                           backgroundColor:darkTheme?'#2c2b2bb4': "#FFFFFF",
                           borderRadius: "8px",
                           fontSize: "0.85rem",
                           '& .MuiOutlinedInput-notchedOutline': {
@@ -540,11 +556,41 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
                         ))}
                     </Box>
                   );
-                case 1:
+                  case 1:
                   return (
-                    <Box>
-                      {patientList.map(patient => (
-                        <PatientTaskContainer
+                   <Box
+  sx={{
+    
+    width: {
+      xs: "95%",   // mobile
+      sm: "95%",   // small tablets (optional)
+      md: "85%",   // medium screens (optional)
+      lg: "80%",   // large screens
+    },
+    mx: "auto",    // ✅ centers it horizontally
+  }}
+>
+                      {patientList
+                        .filter((patient) => {
+                          const name = patient.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "";
+                          const pid = patient.identifier?.[0]?.value || "";
+                          const query = searchQuery.toLowerCase();
+                          return name.toLowerCase().includes(query) || pid.toLowerCase().includes(query);
+                        })
+                        .sort((a, b) => {
+                          if (sortBy === 'name') {
+                            const nameA = a.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "";
+                            const nameB = b.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "";
+                            return nameA.localeCompare(nameB);
+                          } else if (sortBy === 'date') {
+                            const dateA = new Date(a.meta?.lastUpdated || a.birthDate || 0).getTime();
+                            const dateB = new Date(b.meta?.lastUpdated || b.birthDate || 0).getTime();
+                            return dateB - dateA;
+                          }
+                          return 0;
+                        })
+                        .map(patient => (
+                          <PatientTaskContainer
                           key={String(patient.id)}
                           patient_resource_id={String(patient.id)}
                           patient_name={String(patient.extension?.find(e => e.url === 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName')?.valueString || "Unknown")}
@@ -556,9 +602,10 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
                           gender={String(patient.gender)}
                           darkTheme={darkTheme}
                         />
-                      ))}
+                        ))}
                     </Box>
                   );
+                
                 default:
                   return (
                     <Box sx={{ textAlign: "center", mt: 4 }}>
@@ -612,7 +659,7 @@ export const PatientMonitor: React.FC<PatientMonitorProps> = ({ userOrganization
         <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
           <img src={pmsLogo} alt="Phoenix" style={{ maxWidth: '50%', height: 'auto', marginLeft: 'auto', marginRight: 'auto' }} />
           <Typography variant='h3' color={'#1864AB'} fontWeight={'50'}>NeoLife Sentinel</Typography>
-          <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
+          <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Patient Management System</Typography>
           <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
             <Button variant='outlined' sx={{ width: '200px', height: '50px', borderRadius: '100px' }} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>
             <Button variant='contained' sx={{ width: '200px', height: '50px', borderRadius: '100px' }} onClick={() => loginWithRedirect()}>Sign In</Button>

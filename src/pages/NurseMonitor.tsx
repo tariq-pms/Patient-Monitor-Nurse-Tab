@@ -500,7 +500,7 @@ export const NurseMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, 
         <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
           <img src={pmsLogo} alt="Phoenix" style={{ maxWidth: '50%', height: 'auto', marginLeft: 'auto', marginRight: 'auto' }} />
           <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography>
-          <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
+          <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Patient Management System</Typography>
           <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
             <Button variant='outlined' sx={{ width: '200px', height: '50px', borderRadius: '100px' }} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>
             <Button variant='contained' sx={{ width: '200px', height: '50px', borderRadius: '100px' }} onClick={() => loginWithRedirect()}>Sign In</Button>

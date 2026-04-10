@@ -162,6 +162,25 @@ export const PatientProfile: FC<PatientDetails> = (props): JSX.Element => {
     });
   }, [props.UserRole, isTechnician]);
 
+  useEffect(() => {
+    if (!patientDetails) return;
+
+    let label = "";
+    if (tabIndex === 0) label = "Nurse Assessments";
+    else if (tabIndex === 1) label = "Admission Details";
+    else if (!isTechnician) {
+      if (tabIndex === 2) label = "Growth Chart";
+      else if (tabIndex === 3) label = "Audit Logs";
+      else if (tabIndex === 4) label = "Other Docs";
+    } else {
+      if (tabIndex === 2) label = "Audit Logs";
+      else if (tabIndex === 3) label = "Other Docs";
+    }
+
+    const patientName = patientDetails.motherName ? `B/o ${patientDetails.motherName}` : "Patient Profile";
+    document.title = label ? `${label} | ${patientName}` : patientName;
+  }, [tabIndex, patientDetails, isTechnician]);
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">

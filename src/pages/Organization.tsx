@@ -30,7 +30,7 @@ import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import MuiAlert from '@mui/material/Alert';
-import { Sidebar1 } from '../components/Sidebar1';
+// import { Sidebar1 } from '../components/Sidebar1';
 import pmsLogo from '../assets/phx_logo.png';
 import {ModuleToggleList } from '../components/ModuleToggleList';
 import { OrganizationDeviceList } from '../components/OrganizationDeviceList';
@@ -461,7 +461,7 @@ export const Organization : React.FC<OrganizationProps> = ({ userOrganization })
     <Box sx={{ display: "flex", gap: 2 }}>
        {isAuthenticated ? (
       <>
-      <Sidebar1   onIconClick={() => {}}  selectedIndex={null} /><Box width={'100%'} sx={{ p: 2 }}>
+<Box width={'100%'} sx={{ p: 2 }}>
           {!selectedOrganization ? renderOrganizationList() : renderOrganizationDetail()}
 
           {/* Add Organization Dialog */}

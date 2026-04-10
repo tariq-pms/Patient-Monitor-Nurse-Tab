@@ -57,7 +57,7 @@ export const DeviceManagement: FC<roomdata> = (props) => {
     const [newRoomName, setNewRoomName] = useState("");
     const [snackSucc, setSnackSucc] = useState(false);
     const [snack, setSnack] = useState(false);
-    const [roomCapacity, setRoomCapacity] = useState(1);
+   const [roomCapacity, setRoomCapacity] = useState("");
     const [roomType, setRoomType] = useState(""); // Default to Level 1 // Default capacity
     // const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const [vvtemp, setvvtemp] = useState(false);
@@ -195,12 +195,24 @@ export const DeviceManagement: FC<roomdata> = (props) => {
   }}
 >
   <DialogTitle sx={{ fontWeight: 500, pb: 1, color: '#000000', textAlign: 'center' }}>
-    Add New Room
+    Add New Room 
   </DialogTitle>
   
   <DialogContent dividers sx={{ borderColor: '#ccc' }}>
     <Stack spacing={3} sx={{ pt: 1 }}>
-      <TextField
+      <TextField 
+  label="Room Name"
+  variant="standard"
+  value={newRoomName}
+  onChange={(e) => {
+    const value = e.target.value.slice(0, 25);
+    setNewRoomName(value);
+  }}
+  inputProps={{ maxLength: 25 }}
+  helperText={`${newRoomName.length}/25`}
+  sx={{ width: '90%' }}
+/>
+      {/* <TextField
         autoFocus
         margin="dense"
         id="Room-name"
@@ -217,26 +229,34 @@ export const DeviceManagement: FC<roomdata> = (props) => {
           },
         }}
         InputLabelProps={{ sx: { color: '#000000' } }}
-      />
+      /> */}
 
       <TextField
-        margin="dense"
-        id="room-capacity"
-        label="Total Bed Capacity"
-        type="number"
-        fullWidth
-        variant="outlined"
-        inputProps={{ min: 1 }}
-        onChange={(e) => setRoomCapacity(parseInt(e.target.value))}
-        InputProps={{
-          sx: {
-            backgroundColor: '#F5F5F5',
-            borderRadius: 1,
-            color: '#000000',
-          },
-        }}
-        InputLabelProps={{ sx: { color: '#000000' } }}
-      />
+  margin="dense"
+  id="room-capacity"
+  label="Total Bed Capacity"
+  type="text"
+  fullWidth
+  variant="outlined"
+  value={roomCapacity}
+  inputProps={{
+    inputMode: "numeric",
+    pattern: "[0-9]*",
+    maxLength: 2
+  }}
+  onChange={(e) => {
+    const value = e.target.value.replace(/\D/g, "").slice(0, 2); // only numbers + 2 digits
+    setRoomCapacity(value);
+  }}
+  InputProps={{
+    sx: {
+      backgroundColor: '#F5F5F5',
+      borderRadius: 1,
+      color: '#000000',
+    },
+  }}
+  InputLabelProps={{ sx: { color: '#000000' } }}
+/>
 
 <FormControl fullWidth margin="dense">
   <InputLabel id="room-type-label" sx={{ color: '#000000' }}>

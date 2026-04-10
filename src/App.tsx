@@ -25,6 +25,7 @@ import { Administration } from "./pages/Administration";
 import { PermissionProvider } from './contexts/PermissionContext';
 import { PatientProfile } from "./pages/PatientProfile";
 import { createAppTheme } from './theme';
+import TitleUpdater from "./components/TitleUpdater";
 
 
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -96,7 +97,7 @@ function App() {
             <ThemeProvider theme={theme}>
                 <CssBaseline />
                 <NotificationProvider>
-
+                    <TitleUpdater />
                     <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
                         <CircularProgress color="inherit" />
                     </Backdrop>

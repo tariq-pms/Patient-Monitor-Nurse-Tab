@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTheme } from '@mui/material/styles';
 import {
     Dialog,
     DialogTitle,
@@ -24,6 +25,10 @@ import {
     TableContainer,
     TableHead,
     TableRow,
+    Backdrop,
+    CircularProgress,
+    Alert,
+    Snackbar,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -34,6 +39,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import SignatureCanvas from 'react-signature-canvas';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+
 import DischargePrintTemplate from './DischargePrintTemplate';
 
 interface NICUDischargeModalProps {
@@ -47,6 +53,7 @@ interface NICUDischargeModalProps {
     initialData?: any;
     readOnly?: boolean;
     onSaveSuccess?: () => void;
+     userOrganization?: string;
 }
 
 const DEFAULT_FORM_DATA = {
@@ -131,7 +138,22 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
     initialData,
     readOnly = false,
     onSaveSuccess,
+    userOrganization,
 }) => {
+    const theme = useTheme();
+    const isDarkMode = theme.palette.mode === 'dark';
+
+    // Theme-aware color helpers
+    const bg = isDarkMode ? theme.palette.background.paper : '#FFFFFF';
+    const bgSubtle = isDarkMode ? theme.palette.background.default : '#F8FAFC';
+    const borderColor = isDarkMode ? theme.palette.divider : '#E2E8F0';
+    const labelColor = isDarkMode ? theme.palette.text.secondary : '#475569';
+    const headingColor = isDarkMode ? theme.palette.text.primary : '#1E293B';
+    const accent = isDarkMode ? '#60A5FA' : '#228BE6';
+
+    const [loading, setLoading] = useState(false);
+    const [alert, setAlert] = useState({ open: false, message: '', severity: 'info' as 'info' | 'success' | 'warning' | 'error' });
+
     // Local state to manage view/edit mode independently of the prop
     const [isViewMode, setIsViewMode] = useState(readOnly);
 
@@ -144,20 +166,209 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
 
     // Initialize/Reset form data
     useEffect(() => {
-        if (open) {
+        const fetchAndPopulateData = async () => {
+            if (!open) return;
+
             if (initialData) {
                 setFormData(initialData);
-            } else {
-                setFormData({
-                    ...JSON.parse(JSON.stringify(DEFAULT_FORM_DATA)),
-                    baby_name: patient_name || '',
-                    uhid: patient_id || '',
-                    sex: gender || '',
-                    dob_actual: dob || '',
-                });
+                return;
             }
-        }
-    }, [open, initialData, patient_name, patient_id, gender, dob]);
+
+            setLoading(true);
+            // Start with base info from props
+            let newFormData = {
+                ...JSON.parse(JSON.stringify(DEFAULT_FORM_DATA)),
+                baby_name: patient_name || '',
+                uhid: patient_id || '',
+                sex: gender || '',
+                dob_actual: dob || '',
+            };
+
+            try {
+                // 1. Fetch Patient for extensions
+                const patientRes = await fetch(`${FHIR_URL}/Patient/${_patient_resource_id}`, { headers: { Authorization: FHIR_AUTH } });
+                if (patientRes.ok) {
+                    const patient = await patientRes.json();
+                    
+                    // Map extensions
+                    const gestationExt = patient.extension?.find((e: any) => e.url?.includes('gestation'))?.valueString;
+                    if (gestationExt) {
+                        const parts = gestationExt.split(' ');
+                        newFormData.gestation_weeks = parts[0]?.replace('W', '') || '';
+                        newFormData.gestation_days = parts[1]?.replace('D', '') || '';
+                    }
+
+                    const birthWeightExt = patient.extension?.find((e: any) => e.url?.includes('birthWeight'))?.valueString;
+                    if (birthWeightExt) newFormData.birth_weight = birthWeightExt;
+
+                    const motherNameExt = patient.extension?.find((e: any) => e.url?.includes('motherMaidenName'))?.valueString;
+                    if (motherNameExt) newFormData.mother_name = motherNameExt;
+
+                    if (patient.address?.[0]) {
+                        const addr = patient.address[0];
+                        newFormData.address = [addr.line?.join(', '), addr.city, addr.state, addr.postalCode].filter(Boolean).join(', ');
+                    }
+                    if (patient.telecom?.[0]) newFormData.parent_mobile = patient.telecom[0].value || '';
+                }
+
+                // 2. Fetch latest Encounter
+                const encRes = await fetch(`${FHIR_URL}/Encounter?subject=Patient/${_patient_resource_id}&_sort=-date&_count=1`, { headers: { Authorization: FHIR_AUTH } });
+                let currentEncounterId = '';
+                if (encRes.ok) {
+                    const encBundle = await encRes.json();
+                    const enc = encBundle.entry?.[0]?.resource;
+                    if (enc) {
+                        currentEncounterId = enc.id;
+                        newFormData.admission_datetime = enc.period?.start || '';
+                        newFormData.ip_number = enc.identifier?.find((i: any) => i.system?.includes('ip-number'))?.value || enc.id || '';
+                        if (enc.participant?.[0]?.individual?.display) {
+                            newFormData.treating_doctors = [enc.participant[0].individual.display];
+                        }
+                    }
+                }
+
+                if (currentEncounterId) {
+                    // 3. Fetch Observations (Initial Assessment)
+                    const obsRes = await fetch(`${FHIR_URL}/Observation?subject=Patient/${_patient_resource_id}&encounter=Encounter/${currentEncounterId}&_count=500`, { headers: { Authorization: FHIR_AUTH } });
+                    console.log('obs Result check',obsRes);
+                    
+                    if (obsRes.ok) {
+                        const obsBundle = await obsRes.json();
+                        const observations = obsBundle.entry?.map((e: any) => e.resource) ?? [];
+
+                        // 3.1 Birth/Maternal History
+                        const bhObs = observations.find((o: any) => o.code?.text === 'Birth History' || o.code?.coding?.some((c: any) => c.code === 'birthhistory'));
+                        if (bhObs?.component) {
+                            bhObs.component.forEach((comp: any) => {
+                                const label = comp.code?.text;
+                                const val = comp.valueString;
+                                if (!val) return;
+                                if (label === "Mother Name") newFormData.mother_name = val;
+                                if (label === "Mother Age") newFormData.mother_age = val;
+                                if (label === "Mother Blood Group") newFormData.mother_blood_group = val;
+                                if (label === "Maternal History Complications") newFormData.maternal_history = val;
+                                if (label === "Gravida-Para-Living") newFormData.obstetric_history = val;
+                                if (label === "Type of Birth") newFormData.mode_of_delivery = val;
+                                if (label === "Place of Birth") newFormData.place_of_birth = val;
+                                if (label === "APGAR 1 min") newFormData.apgar_1 = val;
+                                if (label === "APGAR 5 min") newFormData.apgar_5 = val;
+                                if (label === "APGAR 10 min") newFormData.apgar_10 = val;
+                                if (label === "Vitamin K Given") newFormData.vitk_given = val.toLowerCase() === 'yes';
+                                if (label === "Birth Weight" && !newFormData.birth_weight) newFormData.birth_weight = val;
+                            });
+                        }
+
+                        // 3.2 Systematic Examination
+                        const systematicObs = observations.find((o: any) => o.code?.text === 'Systematic Examination');
+                        if (systematicObs?.component) {
+                          // Fix systematic exam mapping
+systematicObs.component.forEach((comp: any) => {
+    const label = comp.code?.text;
+    const val = comp.valueString;
+    if (!val) return;
+
+    if (label === "Respiratory Findings") newFormData.adm_exam.rs = val;
+    if (label === "Cardiovascular Findings") newFormData.adm_exam.cvs = val;
+    if (label === "GI Findings") newFormData.adm_exam.pa = val;
+    if (label === "CNS Findings") newFormData.adm_exam.cns = val;
+    if (label === "Head & Neck Findings") newFormData.adm_exam.headNeck = val; // fix key name
+});
+
+
+                        }
+
+                        // 3.3 Vitals
+                        const vitalsObs = observations.find((o: any) => o.code?.text === 'Vitals');
+                        if (vitalsObs?.component) {
+                            vitalsObs.component.forEach((comp: any) => {
+                                const label = comp.code?.text;
+                                const val = comp.valueQuantity?.value;
+                                if (val === undefined) return;
+
+                                if (label.includes("Temperature")) newFormData.adm_vitals.temp_c = val;
+                                if (label.includes("Heart Rate")) newFormData.adm_vitals.hr = val;
+                                if (label.includes("Respiratory Rate")) newFormData.adm_vitals.rr = val;
+                                if (label.includes("Saturation")) newFormData.adm_vitals.spo2 = val;
+                                //  if (label.includes("Blood Glucose")) newFormData.adm_vitals.bp_combined = val;
+                            });
+                        }
+
+                        // 3.4 Anthropometry
+                        const anthroObs = observations.find((o: any) => o.code?.text === 'Anthropometry');
+                        if (anthroObs?.component) {
+                            anthroObs.component.forEach((comp: any) => {
+                                const label = comp.code?.text;
+                                const val = comp.valueQuantity?.value;
+                                if (val === undefined) return;
+
+                                if (label.includes("Weight")) newFormData.adm_vitals.weight_g = val;
+                                if (label.includes("Head Circumference")) newFormData.adm_vitals.hc_cm = val;
+                                if (label.includes("Length")) newFormData.adm_vitals.length_cm = val;
+                              
+                                 if (label.includes("Blood Glucose")) newFormData.adm_vitals.bsl = val;
+                            });
+                        }
+                    }
+
+                    // 4. Fetch Conditions (Complaints & Diagnosis)
+                    const condRes = await fetch(`${FHIR_URL}/Condition?subject=Patient/${_patient_resource_id}&encounter=Encounter/${currentEncounterId}`, { headers: { Authorization: FHIR_AUTH } });
+                    if (condRes.ok) {
+                        const condBundle = await condRes.json();
+                        const conditions = condBundle.entry?.map((e: any) => e.resource) ?? [];
+                        
+                        const complaints = conditions
+                            .filter((c: any) => c.category?.some((cat: any) => cat.coding?.some((cod: any) => cod.code === 'problem-list-item')))
+                            .map((c: any) => c.code?.text)
+                            .filter(Boolean);
+                        
+                        if (complaints.length > 0) newFormData.presenting_complaints = complaints.join(', ');
+                       const provisional = conditions.find((c: any) =>
+                             c.verificationStatus?.coding?.some((v: any) => v.code === 'provisional')
+                    );
+                        if (provisional) newFormData.provisional_diagnosis = provisional.code?.text || '';
+                    }
+
+                    // 5. Fetch CarePlan for Activities (Investigations/Treatments)
+                    const carePlanRes = await fetch(`${FHIR_URL}/CarePlan?subject=Patient/${_patient_resource_id}&encounter=Encounter/${currentEncounterId}&status=active`, { headers: { Authorization: FHIR_AUTH } });
+                    if (carePlanRes.ok) {
+                        const carePlanBundle = await carePlanRes.json();
+                        const carePlan = carePlanBundle.entry?.[0]?.resource;
+                        if (carePlan) {
+                            // Map investigations
+                            const invs = carePlan.activity
+                                ?.filter((act: any) => act.detail?.code?.text === "Investigation")
+                                .map((act: any) => act.detail?.description)
+                                .filter(Boolean);
+                            if (invs?.length > 0) {
+                                newFormData.investigations.hematology = invs.join(', ');
+                            }
+
+                            // Map treatments
+                            const treatmentNote = carePlan.note?.[0]?.text;
+                            if (treatmentNote && treatmentNote.startsWith("Medication Orders: ")) {
+                                newFormData.treatment.antibiotics = treatmentNote.replace("Medication Orders: ", "");
+                            }
+
+                            const fluidAct = carePlan.activity?.find((act: any) => act.detail?.description?.includes("Fluids"));
+                            if (fluidAct) {
+                                newFormData.treatment.iv_fluids = fluidAct.detail.description;
+                            }
+                        }
+                    }
+                }
+
+                setFormData(newFormData);
+            } catch (error) {
+                console.error("Error auto-populating discharge data:", error);
+                setFormData(newFormData);
+                setAlert({ open: true, message: 'Failed to auto-populate some fields. Please verify data.', severity: 'warning' });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAndPopulateData();
+    }, [open, initialData, patient_id, patient_name, gender, dob, FHIR_URL, FHIR_AUTH]);
 
     // Handle Signature Canvas Population
     useEffect(() => {
@@ -292,17 +503,17 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
 
             console.log(`Saved as ${status}`, finalData);
             if (status === 'Final') {
-                alert('Discharge Summary Finalized and Saved Successfully!');
+                // alert('Discharge Summary Finalized and Saved Successfully!');
                 onClose();
                 if (onSaveSuccess) onSaveSuccess();
             } else {
-                alert('Draft Saved Successfully!');
+                // alert('Draft Saved Successfully!');
                 if (onSaveSuccess) onSaveSuccess();
             }
 
         } catch (e: any) {
             console.error("Failed to save discharge summary", e);
-            alert(`Failed to save: ${e.message || JSON.stringify(e)}`);
+            // alert(`Failed to save: ${e.message || JSON.stringify(e)}`);
         } finally {
             setIsSaving(false);
         }
@@ -314,7 +525,7 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
 
     const handleSaveFinal = () => {
         if (!formData.discharge_type) {
-            alert('Please select a Discharge Type before finalizing.');
+            // alert('Please select a Discharge Type before finalizing.');
             return;
         }
         if (window.confirm('Are you sure you want to finalize this Discharge Summary? It will be marked as permanent.')) {
@@ -323,50 +534,60 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
     };
 
     const handleDownloadPDF = async () => {
-        const element = document.getElementById('nicu-discharge-content');
-        if (!element) return;
-
-        // Save original styles
-        const originalHeight = element.style.height;
-        const originalOverflow = element.style.overflow;
-        const originalPosition = element.style.position;
+        const pages = document.querySelectorAll('.pdf-page');
+        if (!pages || pages.length === 0) {
+            console.error('No pages found for PDF generation');
+            return;
+        }
 
         try {
-            // Force full height capture
-            element.style.height = 'auto';
-            element.style.overflow = 'visible';
-            element.style.position = 'static'; // Ensure it flows correctly
-
-            // Wait for layout to settle
-            await new Promise(resolve => setTimeout(resolve, 200));
-
-            const canvas = await html2canvas(element, {
-                scale: 2,
-                useCORS: true,
-                scrollY: -window.scrollY,
-                windowHeight: element.scrollHeight + 100 // Add some buffer
-            });
-            const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            for (let i = 0; i < pages.length; i++) {
+                const page = pages[i] as HTMLElement;
+                
+                // Temporarily apply clean styles for capture
+                const originalBoxShadow = page.style.boxShadow;
+                const originalTransform = page.style.transform;
+                page.style.boxShadow = 'none';
+                page.style.transform = 'none';
+
+                // Small delay to ensure rendering is complete
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                const canvas = await html2canvas(page, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    windowWidth: page.scrollWidth,
+                    windowHeight: page.scrollHeight
+                });
+
+                // Restore styles
+                page.style.boxShadow = originalBoxShadow;
+                page.style.transform = originalTransform;
+
+                const imgData = canvas.toDataURL('image/png');
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+                if (i > 0) {
+                    pdf.addPage();
+                }
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
+            }
+
             pdf.save(`Discharge_Summary_${formData.uhid || 'Unknown'}.pdf`);
         } catch (error) {
             console.error('PDF Generation Error:', error);
-            alert('Failed to generate PDF');
-        } finally {
-            // Restore original styles
-            element.style.height = originalHeight;
-            element.style.overflow = originalOverflow;
-            element.style.position = originalPosition;
+            // alert('Failed to generate PDF. Please try again.');
         }
     };
 
+
     const SectionHeader = ({ number, title }: { number: string; title: string }) => (
-        <Box sx={{ mt: 5, mb: 2, borderLeft: '4px solid #228BE6', pl: 2 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1E293B', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.9rem' }}>
+        <Box sx={{ mt: 5, mb: 2, borderLeft: `4px solid ${accent}`, pl: 2 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: headingColor, textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.9rem' }}>
                 {number}. {title}
             </Typography>
         </Box>
@@ -394,11 +615,11 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
 
     const SignatureBox = ({ title, sigRef, name }: { title: string; sigRef: any; name: string }) => (
         <Box sx={{ flex: 1, minWidth: '250px' }}>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748B', mb: 1, display: 'block' }}>{title}</Typography>
-            <Paper elevation={0} sx={{ border: '1px solid #E2E8F0', borderRadius: 2, bgcolor: '#FFFFFF', overflow: 'hidden' }}>
-                <SignatureCanvas ref={sigRef} penColor="black" canvasProps={{ width: 300, height: 80, style: { width: '100%', height: '80px' } }} />
-                <Box sx={{ p: 1, bgcolor: '#F8FAFC', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption" sx={{ fontWeight: 600 }}>{name}</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: labelColor, mb: 1, display: 'block' }}>{title}</Typography>
+            <Paper elevation={0} sx={{ border: `1px solid ${borderColor}`, borderRadius: 2, bgcolor: bg, overflow: 'hidden' }}>
+                <SignatureCanvas ref={sigRef} penColor={isDarkMode ? 'white' : 'black'} canvasProps={{ width: 300, height: 80, style: { width: '100%', height: '80px' } }} />
+                <Box sx={{ p: 1, bgcolor: bgSubtle, borderTop: `1px solid ${borderColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: headingColor }}>{name}</Typography>
                     {!isViewMode && <Button size="small" variant="text" onClick={() => sigRef.current?.clear()} sx={{ fontSize: '0.6rem' }}>Clear</Button>}
                 </Box>
             </Paper>
@@ -406,11 +627,11 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
     );
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth PaperProps={{ sx: { borderRadius: 4, height: '95vh', display: 'flex', flexDirection: 'column' } }}>
+        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth PaperProps={{ sx: { borderRadius: 4, height: '95vh', display: 'flex', flexDirection: 'column', bgcolor: isDarkMode ? theme.palette.background.paper : '#FFFFFF' } }}>
             {/* Header with Controls */}
-            <DialogTitle sx={{ p: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9' }}>
+            <DialogTitle sx={{ p: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${borderColor}` }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#1E293B' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: headingColor }}>
                         {isViewMode ? 'Discharge Summary (Preview)' : 'New NICU Discharge'}
                     </Typography>
                     <Chip label={formData.status} size="small" color={formData.status === 'Final' ? 'success' : 'warning'} sx={{ fontWeight: 700, borderRadius: 1 }} />
@@ -440,78 +661,88 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                 </Box>
             </DialogTitle>
 
-            <DialogContent sx={{ p: 4, bgcolor: '#F8FAFC' }} id="nicu-discharge-content">
+            <DialogContent sx={{ p: 4, bgcolor: bgSubtle }} id="nicu-discharge-content">
+                <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1, display: 'flex', flexDirection: 'column', gap: 2 }} open={loading}>
+                    <CircularProgress color="inherit" />
+                    <Typography>Fetching patient data...</Typography>
+                </Backdrop>
+
+                <Snackbar open={alert.open} autoHideDuration={6000} onClose={() => setAlert({ ...alert, open: false })}>
+                    <Alert onClose={() => setAlert({ ...alert, open: false })} severity={alert.severity} sx={{ width: '100%' }}>
+                        {alert.message}
+                    </Alert>
+                </Snackbar>
                 {isViewMode ? (
-                    <DischargePrintTemplate data={formData} />
+                    <DischargePrintTemplate data={formData} userOrganization={userOrganization} />
                 ) : (
                     <>
                         {/* SECTION 1: ADMINISTRATION DETAILS */}
 <SectionHeader number="1" title="ADMINISTRATION DETAILS" />
-<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     <Grid container spacing={3}>
         
         {/* Row 1: Baby Name, UHID, Admission Number */}
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>B/O ( Mother's Name)</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>B/O ( Mother's Name)</Typography>
             <TextField 
                 fullWidth 
                 size="small"
                 placeholder="Mother's Name"
                 value={formData.baby_name} 
                 onChange={(e) => handleInputChange('baby_name', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
                 InputProps={{ readOnly: isViewMode }} 
             />
         </Grid>
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>UHID</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>UHID</Typography>
             <TextField 
                 fullWidth 
                 size="small"
                 value={formData.uhid} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
                 InputProps={{ readOnly: true }} 
             />
         </Grid>
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Admission Number</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Admission Number</Typography>
             <TextField 
                 fullWidth 
                 size="small"
                 value={formData.ip_number} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
                 InputProps={{ readOnly: true }} 
             />
         </Grid>
 
         {/* Row 2: Sex, Age, Treating Doctors */}
         <Grid item xs={3}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Sex</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Sex</Typography>
             <TextField 
-                select 
+                
                 fullWidth 
                 size="small"
                 value={formData.sex} 
-                onChange={(e) => handleInputChange('sex', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                // onChange={(e) => handleInputChange('sex', e.target.value)} 
+                sx={{ bgcolor: bgSubtle }}
                 InputProps={{ readOnly: isViewMode }}
             >
-                <MenuItem value="Male">Male</MenuItem>
-                <MenuItem value="Female">Female</MenuItem>
+                {/* <MenuItem value="Male">Male</MenuItem>
+                <MenuItem value="Female">Female</MenuItem> */}
             </TextField>
         </Grid>
         <Grid item xs={3}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Age</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Age</Typography>
             <TextField 
                 fullWidth 
                 size="small"
                 value={formData.age_days + " Days"} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
                 InputProps={{ readOnly: true }} 
             />
         </Grid>
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Treating Doctors</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Treating Doctors</Typography>
             <Box sx={{ 
                 display: 'flex', 
                 flexWrap: 'wrap', 
@@ -543,37 +774,37 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
 
         {/* Row 3: Payer Name, Mobile Number, Payer/Insurance */}
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Payer Name</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Payer Name</Typography>
             <TextField 
                 fullWidth 
                 size="small"
                 placeholder="Insurance Company Ltd."
                 value={formData.payer_name} 
                 onChange={(e) => handleInputChange('payer_name', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
                 InputProps={{ readOnly: isViewMode }} 
             />
         </Grid>
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Mobile Number</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Mobile Number</Typography>
             <TextField 
                 fullWidth 
                 size="small"
                 value={formData.parent_mobile} 
                 onChange={(e) => handleInputChange('parent_mobile', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
                 InputProps={{ readOnly: isViewMode }} 
             />
         </Grid>
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Payer / Insurance</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Payer / Insurance</Typography>
             <TextField 
                 select 
                 fullWidth 
                 size="small"
                 value={formData.payer_type || 'Self Pay'} 
                 onChange={(e) => handleInputChange('payer_type', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
                 InputProps={{ readOnly: isViewMode }}
             >
                 <MenuItem value="Self Pay">Self Pay</MenuItem>
@@ -584,14 +815,14 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
 
         {/* Row 4: Payer Address */}
         <Grid item xs={12}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Payer Address</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Payer Address</Typography>
             <TextField 
                 fullWidth 
                 size="small"
                 placeholder="Full address..."
                 value={formData.address} 
                 onChange={(e) => handleInputChange('address', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
                 InputProps={{ readOnly: isViewMode }} 
             />
         </Grid>
@@ -600,7 +831,7 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
 
                         {/* SECTION 2: DISCHARGE STATUS & DATES */}
                         <SectionHeader number="2" title="DISCHARGE STATUS & DATES" />
-                        <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+                        <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
                             <Grid container spacing={2.5}>
                                 <Grid item xs={4}>
                                     <TextField select label="Discharge Type" value={formData.discharge_type} onChange={(e) => handleInputChange('discharge_type', e.target.value)} fullWidth size="small" InputProps={{ readOnly: isViewMode }}>
@@ -626,11 +857,11 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                         </Paper>
                {/* SECTION 3: DIAGNOSIS */}
 <SectionHeader number="3" title="DIAGNOSIS" />
-<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     <Grid container spacing={3}>
         {/* Provisional Diagnosis */}
         <Grid item xs={12}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Provisional Diagnosis</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Provisional Diagnosis</Typography>
             <TextField 
                 fullWidth 
                 multiline 
@@ -649,7 +880,7 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
 
         {/* Final Diagnosis */}
         <Grid item xs={12}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Final Diagnosis</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Final Diagnosis</Typography>
             <TextField 
                 fullWidth 
                 multiline 
@@ -691,7 +922,7 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
 </Paper>
                         {/* SECTION 3: BIRTH HISTORY & MATERNAL DETAILS */}
 <SectionHeader number="4" title="BIRTH HISTORY & MATERNAL DETAILS" />
-<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     
     {/* BIRTH DETAILS SUB-SECTION */}
     <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#3B82F6', display: 'block', mb: 2, letterSpacing: 1 }}>
@@ -700,45 +931,45 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
     
     <Grid container spacing={2.5}>
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Date of Birth</Typography>
-            <TextField type="date" value={formData.dob_actual} onChange={(e) => handleInputChange('dob_actual', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#F8FAFC' }} InputProps={{ readOnly: isViewMode }} />
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Date of Birth</Typography>
+            <TextField type="date" value={formData.dob_actual} onChange={(e) => handleInputChange('dob_actual', e.target.value)} fullWidth size="small" sx={{ bgcolor: bgSubtle }} InputProps={{ readOnly: isViewMode }} />
         </Grid>
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Birth Time</Typography>
-            <TextField type="time" value={formData.birth_time} onChange={(e) => handleInputChange('birth_time', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#F8FAFC' }} InputProps={{ readOnly: isViewMode }} />
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Birth Time</Typography>
+            <TextField type="time" value={formData.birth_time} onChange={(e) => handleInputChange('birth_time', e.target.value)} fullWidth size="small" sx={{ bgcolor: bgSubtle }} InputProps={{ readOnly: isViewMode }} />
         </Grid>
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Place of Birth</Typography>
-            <TextField placeholder="e.g. Borneo Hospital / OT" value={formData.place_of_birth} onChange={(e) => handleInputChange('place_of_birth', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#F8FAFC' }} InputProps={{ readOnly: isViewMode }} />
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Place of Birth</Typography>
+            <TextField placeholder="e.g. Borneo Hospital / OT" value={formData.place_of_birth} onChange={(e) => handleInputChange('place_of_birth', e.target.value)} fullWidth size="small" sx={{ bgcolor: bgSubtle }} InputProps={{ readOnly: isViewMode }} />
         </Grid>
 
         {/* Gestational Age Row */}
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Gestational Age</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Gestational Age</Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
-                <TextField placeholder="32" value={formData.gestation_weeks} onChange={(e) => handleInputChange('gestation_weeks', e.target.value)} size="small" sx={{ bgcolor: '#F8FAFC' }} InputProps={{ endAdornment: <Typography variant="caption" sx={{ color: '#94A3B8', ml: 1 }}>wks</Typography> }} />
-                <TextField placeholder="5" value={formData.gestation_days} onChange={(e) => handleInputChange('gestation_days', e.target.value)} size="small" sx={{ bgcolor: '#F8FAFC' }} InputProps={{ endAdornment: <Typography variant="caption" sx={{ color: '#94A3B8', ml: 1 }}>days</Typography> }} />
+                <TextField placeholder="32" value={formData.gestation_weeks} onChange={(e) => handleInputChange('gestation_weeks', e.target.value)} size="small" sx={{ bgcolor: bgSubtle }} InputProps={{ endAdornment: <Typography variant="caption" sx={{ color: '#94A3B8', ml: 1 }}>wks</Typography> }} />
+                <TextField placeholder="5" value={formData.gestation_days} onChange={(e) => handleInputChange('gestation_days', e.target.value)} size="small" sx={{ bgcolor: bgSubtle }} InputProps={{ endAdornment: <Typography variant="caption" sx={{ color: '#94A3B8', ml: 1 }}>days</Typography> }} />
             </Box>
         </Grid>
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Birth Weight (g)</Typography>
-            <TextField placeholder="Weight in grams" value={formData.birth_weight} onChange={(e) => handleInputChange('birth_weight', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#F8FAFC' }} />
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Birth Weight (g)</Typography>
+            <TextField placeholder="Weight in grams" value={formData.birth_weight} onChange={(e) => handleInputChange('birth_weight', e.target.value)} fullWidth size="small" sx={{ bgcolor: bgSubtle }} />
         </Grid>
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Vaccination Status</Typography>
-            <TextField placeholder="-" value={formData.vaccination_status} onChange={(e) => handleInputChange('vaccination_status', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#F8FAFC' }} />
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Vaccination Status</Typography>
+            <TextField placeholder="-" value={formData.vaccination_status} onChange={(e) => handleInputChange('vaccination_status', e.target.value)} fullWidth size="small" sx={{ bgcolor: bgSubtle }} />
         </Grid>
 
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Type of Birth</Typography>
-            <TextField select fullWidth size="small" value={formData.mode_of_delivery} onChange={(e) => handleInputChange('mode_of_delivery', e.target.value)} sx={{ bgcolor: '#F8FAFC' }}>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Type of Birth</Typography>
+            <TextField select fullWidth size="small" value={formData.mode_of_delivery} onChange={(e) => handleInputChange('mode_of_delivery', e.target.value)} sx={{ bgcolor: bgSubtle }}>
                 <MenuItem value="Normal Vaginal Delivery">Normal Vaginal Delivery</MenuItem>
                 <MenuItem value="LSCS">LSCS</MenuItem>
             </TextField>
         </Grid>
         <Grid item xs={8}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Delivery Indication</Typography>
-            <TextField placeholder="e.g. Preterm labor, Fetal distress" value={formData.lscs_indication} onChange={(e) => handleInputChange('lscs_indication', e.target.value)} fullWidth size="small" sx={{ bgcolor: '#F8FAFC' }} />
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Delivery Indication</Typography>
+            <TextField placeholder="e.g. Preterm labor, Fetal distress" value={formData.lscs_indication} onChange={(e) => handleInputChange('lscs_indication', e.target.value)} fullWidth size="small" sx={{ bgcolor: bgSubtle }} />
         </Grid>
 
         {/* Checkbox row */}
@@ -776,27 +1007,27 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
             </Typography>
         </Grid>
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Mother's Name</Typography>
-            <TextField fullWidth size="small" value={formData.mother_name} onChange={(e) => handleInputChange('mother_name', e.target.value)} sx={{ bgcolor: '#F8FAFC' }} />
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Mother's Name</Typography>
+            <TextField fullWidth size="small" value={formData.mother_name} onChange={(e) => handleInputChange('mother_name', e.target.value)} sx={{ bgcolor: bgSubtle }} />
         </Grid>
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Mother's Age (Years)</Typography>
-            <TextField placeholder="e.g. 32" fullWidth size="small" value={formData.mother_age} onChange={(e) => handleInputChange('mother_age', e.target.value)} sx={{ bgcolor: '#F8FAFC' }} />
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Mother's Age (Years)</Typography>
+            <TextField placeholder="e.g. 32" fullWidth size="small" value={formData.mother_age} onChange={(e) => handleInputChange('mother_age', e.target.value)} sx={{ bgcolor: bgSubtle }} />
         </Grid>
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Mother's Blood Group</Typography>
-            <TextField select fullWidth size="small" value={formData.mother_blood_group} onChange={(e) => handleInputChange('mother_blood_group', e.target.value)} sx={{ bgcolor: '#F8FAFC' }}>
-                <MenuItem value="O Positive">O Positive</MenuItem>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Mother's Blood Group</Typography>
+            <TextField  fullWidth size="small" value={formData.mother_blood_group} onChange={(e) => handleInputChange('mother_blood_group', e.target.value)} sx={{ bgcolor: bgSubtle }}>
+                
                 {/* Add other groups */}
             </TextField>
         </Grid>
         <Grid item xs={4}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Multiple Gestation</Typography>
-            <TextField placeholder="e.g. Twin 1/Singleton" fullWidth size="small" value={formData.multiple_gestation} sx={{ bgcolor: '#F8FAFC' }} />
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Multiple Gestation</Typography>
+            <TextField placeholder="e.g. Twin 1/Singleton" fullWidth size="small" value={formData.multiple_gestation} sx={{ bgcolor: bgSubtle }} />
         </Grid>
         <Grid item xs={8}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Maternal History/Complications</Typography>
-            <TextField placeholder="e.g. Pre-eclampsia, GDM..." fullWidth size="small" value={formData.maternal_history} sx={{ bgcolor: '#F8FAFC' }} />
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Maternal History/Complications</Typography>
+            <TextField placeholder="e.g. Pre-eclampsia, GDM..." fullWidth size="small" value={formData.maternal_history} sx={{ bgcolor: bgSubtle }} />
         </Grid>
 
         {/* OBSTETRIC HISTORY */}
@@ -806,12 +1037,12 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
             </Typography>
         </Grid>
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Gravida-Para-Living (G-P-L)</Typography>
-            <TextField placeholder="e.g. G2P2L1" fullWidth size="small" value={formData.obstetric_history} sx={{ bgcolor: '#F8FAFC' }} />
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Gravida-Para-Living (G-P-L)</Typography>
+            <TextField placeholder="e.g. G2P2L1" fullWidth size="small" value={formData.obstetric_history} sx={{ bgcolor: bgSubtle }} />
         </Grid>
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Previous Pregnancy Details</Typography>
-            <TextField placeholder="e.g. G1-FT/LSCS" fullWidth size="small" value={formData.prev_pregnancy_details} sx={{ bgcolor: '#F8FAFC' }} />
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Previous Pregnancy Details</Typography>
+            <TextField placeholder="e.g. G1-FT/LSCS" fullWidth size="small" value={formData.prev_pregnancy_details} sx={{ bgcolor: bgSubtle }} />
         </Grid>
     </Grid>
 </Paper>
@@ -819,10 +1050,10 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                      
                        {/* SECTION 4: COMPLAINTS ON ADMISSION */}
 <SectionHeader number="5" title="COMPLAINTS ON ADMISSION" />
-<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     
     {/* Chief Complaints */}
-    <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Chief Complaints</Typography>
+    <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Chief Complaints</Typography>
     <TextField 
         fullWidth 
         multiline 
@@ -835,7 +1066,7 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
     />
 
     {/* ADMISSION VITALS & ANTHROPOMETRY BOX */}
-    <Box sx={{ p: 2, border: '1px solid #DBEAFE', borderRadius: 2, bgcolor: '#EFF6FF', mb: 4 }}>
+    <Box sx={{ p: 2, border: `1px solid #DBEAFE`, borderRadius: 2, bgcolor: isDarkMode ? 'rgba(59,130,246,0.08)' : '#EFF6FF', mb: 4 }}>
         <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#3B82F6', display: 'block', mb: 2, letterSpacing: 1 }}>
             ADMISSION VITALS & ANTHROPOMETRY
         </Typography>
@@ -859,7 +1090,7 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                         size="small"
                         value={formData[v.section][v.field]}
                         onChange={(e) => handleNestedInputChange(v.section, v.field, e.target.value)}
-                        sx={{ bgcolor: '#FFF', '& .MuiOutlinedInput-root': { height: '32px' } }}
+                        sx={{ bgcolor: bg, '& .MuiOutlinedInput-root': { height: '32px' } }}
                     />
                 </Grid>
             ))}
@@ -867,7 +1098,7 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
     </Box>
 
     {/* General Physical Examination */}
-    <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>General Physical Examination</Typography>
+    <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>General Physical Examination</Typography>
     <TextField 
         fullWidth 
         multiline 
@@ -879,8 +1110,8 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
     />
 
     {/* Systemic Examination - Accordion Style */}
-    <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Systemic Examination</Typography>
-    <Box sx={{ border: '1px solid #E2E8F0', borderRadius: 2, overflow: 'hidden' }}>
+    <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Systemic Examination</Typography>
+    <Box sx={{ border: `1px solid ${borderColor}`, borderRadius: 2, overflow: 'hidden' }}>
         {[
             { label: 'Respiratory', field: 'rs' },
             { label: 'Cardiovascular', field: 'cvs' },
@@ -890,9 +1121,9 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
             { label: 'Musculoskeletal', field: 'msk' },
             { label: 'Others', field: 'others' }
         ].map((system, _idx) => (
-            <Accordion key={system.field} elevation={0} sx={{ '&:not(:last-child)': { borderBottom: '1px solid #E2E8F0' } }}>
+            <Accordion key={system.field} elevation={0} sx={{ bgcolor: bg, '&:not(:last-child)': { borderBottom: `1px solid ${borderColor}` } }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ fontSize: '18px' }} />}>
-                    <Typography sx={{ fontSize: '14px', color: '#475569' }}>{system.label}</Typography>
+                    <Typography sx={{ fontSize: '14px', color: labelColor }}>{system.label}</Typography>
                 </AccordionSummary>
                 <AccordionDetails sx={{ pt: 0 }}>
                     <TextField 
@@ -902,7 +1133,7 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                         placeholder={`Findings for ${system.label}...`}
                         value={formData.adm_exam[system.field]}
                         onChange={(e) => handleNestedInputChange('adm_exam', system.field, e.target.value)}
-                        sx={{ bgcolor: '#F8FAFC' }}
+                        sx={{ bgcolor: bgSubtle }}
                     />
                 </AccordionDetails>
             </Accordion>
@@ -914,11 +1145,11 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
      
                         {/* SECTION 6: INVESTIGATIONS SUMMARY */}
 <SectionHeader number="6" title="INVESTIGATIONS SUMMARY" />
-<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     <Grid container spacing={3}>
         {/* Row 1: Hematology & Biochemistry */}
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Hematology / Coagulation</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Hematology / Coagulation</Typography>
             <TextField 
                 fullWidth 
                 multiline 
@@ -926,11 +1157,11 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                 placeholder="CBC, CRP, PT/INR details..."
                 value={formData.investigations.hematology} 
                 onChange={(e) => handleNestedInputChange('investigations', 'hematology', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
             />
         </Grid>
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Biochemistry (LFT, KFT, Lytes)</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Biochemistry (LFT, KFT, Lytes)</Typography>
             <TextField 
                 fullWidth 
                 multiline 
@@ -938,13 +1169,13 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                 placeholder="Creatinine, Bilirubin, Electrolytes..."
                 value={formData.investigations.biochemistry} 
                 onChange={(e) => handleNestedInputChange('investigations', 'biochemistry', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
             />
         </Grid>
 
         {/* Row 2: Microbiology & Radiology */}
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Microbiology (Cultures)</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Microbiology (Cultures)</Typography>
             <TextField 
                 fullWidth 
                 multiline 
@@ -952,11 +1183,11 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                 placeholder="Blood/Urine cultures, sensitivity results..."
                 value={formData.investigations.microbiology} 
                 onChange={(e) => handleNestedInputChange('investigations', 'microbiology', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
             />
         </Grid>
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Radiology (USG, X-Ray, Echo)</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Radiology (USG, X-Ray, Echo)</Typography>
             <TextField 
                 fullWidth 
                 multiline 
@@ -964,33 +1195,66 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                 placeholder="X-Ray findings, USG Abdomen, Echo details..."
                 value={formData.investigations.radiology} 
                 onChange={(e) => handleNestedInputChange('investigations', 'radiology', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
             />
         </Grid>
 
         {/* Row 3: Others (Full Width) */}
         <Grid item xs={12}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Others</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Others</Typography>
             <TextField 
                 fullWidth 
                 size="small"
                 placeholder="Any other special investigations..."
                 value={formData.investigations.others} 
                 onChange={(e) => handleNestedInputChange('investigations', 'others', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
             />
         </Grid>
     </Grid>
 </Paper>
 
                        
+                       {/* SECTION 7: COURSE IN HOSPITAL */}
+<SectionHeader number="7" title="COURSE IN HOSPITAL" />
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
+    <Grid container spacing={3}>
+        {[
+            { label: 'Overall Summary', field: 'overall', placeholder: 'General course and progress during hospital stay...' },
+            { label: 'Respiratory', field: 'respiratory', placeholder: 'Respiratory support, oxygen requirement, CPAP/Ventilator details...' },
+            { label: 'Cardiac', field: 'cardiac', placeholder: 'Cardiovascular events, inotrope use, echo findings...' },
+            { label: 'Sepsis / DIC', field: 'sepsis_dic', placeholder: 'Infection episodes, antibiotics response, coagulation issues...' },
+            { label: 'Feeding & Nutrition', field: 'feeding_nutrition', placeholder: 'Feeding method, progression, intolerance episodes...' },
+            { label: 'GI / NEC', field: 'gi_nec', placeholder: 'GI complications, NEC management if any...' },
+            { label: 'Renal', field: 'renal', placeholder: 'Urine output, fluid balance, renal function...' },
+            { label: 'Hemorrhage', field: 'hemorrhage', placeholder: 'Bleeding events, IVH grade, blood transfusions...' },
+            { label: 'Others', field: 'other', placeholder: 'Metabolic, endocrine, or other system findings...' },
+            { label: 'Last 24 Hours', field: 'last24h', placeholder: 'Condition in the last 24 hours before discharge...' },
+        ].map((item) => (
+            <Grid item xs={item.field === 'overall' || item.field === 'last24h' ? 12 : 6} key={item.field}>
+                <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>{item.label}</Typography>
+                <TextField
+                    fullWidth
+                    multiline
+                    rows={item.field === 'overall' || item.field === 'last24h' ? 4 : 3}
+                    placeholder={item.placeholder}
+                    value={formData.course[item.field] || ''}
+                    onChange={(e) => handleNestedInputChange('course', item.field, e.target.value)}
+                    sx={{ bgcolor: bgSubtle }}
+                    InputProps={{ readOnly: isViewMode }}
+                />
+            </Grid>
+        ))}
+    </Grid>
+</Paper>
+
                        {/* SECTION 8: TREATMENT GIVEN */}
 <SectionHeader number="8" title="TREATMENT GIVEN" />
-<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     <Grid container spacing={3}>
         {/* Row 1: Medications & Therapies */}
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Medications</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Medications</Typography>
             <TextField 
                 fullWidth 
                 multiline 
@@ -998,11 +1262,11 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                 placeholder="List antibiotics, syrups, supplements, and other medications..."
                 value={formData.treatment.medications} 
                 onChange={(e) => handleNestedInputChange('treatment', 'medications', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
             />
         </Grid>
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Therapies</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Therapies</Typography>
             <TextField 
                 fullWidth 
                 multiline 
@@ -1010,13 +1274,13 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                 placeholder="Describe Phototherapy, O2 therapy, CPAP, etc..."
                 value={formData.treatment.therapies} 
                 onChange={(e) => handleNestedInputChange('treatment', 'therapies', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
             />
         </Grid>
 
         {/* Row 2: Injections & Feeds/Fluids */}
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Injections</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Injections</Typography>
             <TextField 
                 fullWidth 
                 multiline 
@@ -1024,11 +1288,11 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                 placeholder="Record Vitamin K, Vaccinations, and other injections..."
                 value={formData.treatment.injections} 
                 onChange={(e) => handleNestedInputChange('treatment', 'injections', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
             />
         </Grid>
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Feeds & Fluids</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Feeds & Fluids</Typography>
             <TextField 
                 fullWidth 
                 multiline 
@@ -1036,7 +1300,7 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                 placeholder="Detail IV fluids, feeding methods, volumes, and duration..."
                 value={formData.treatment.feeds_fluids} 
                 onChange={(e) => handleNestedInputChange('treatment', 'feeds_fluids', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
             />
         </Grid>
     </Grid>
@@ -1044,19 +1308,19 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
 
                        {/* SECTION 9: CONDITION AT OUTCOME */}
 <SectionHeader number="9" title="CONDITION AT OUTCOME" />
-<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     
     <Grid container spacing={3} sx={{ mb: 4 }}>
         {/* Overall Condition Dropdown */}
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Overall Condition</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Overall Condition</Typography>
             <TextField 
                 select 
                 fullWidth 
                 size="small"
                 value={formData.overall_condition || 'Stable'} 
                 onChange={(e) => handleInputChange('overall_condition', e.target.value)}
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
             >
                 <MenuItem value="Stable">Stable</MenuItem>
                 <MenuItem value="Sick">Sick</MenuItem>
@@ -1066,14 +1330,14 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
 
         {/* Global Statement Field */}
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Global Statement</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Global Statement</Typography>
             <TextField 
                 fullWidth 
                 size="small"
                 placeholder="e.g. Discharged in stable condition"
                 value={formData.outcome_extras.dc_global_statement} 
                 onChange={(e) => handleNestedInputChange('outcome_extras', 'dc_global_statement', e.target.value)}
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
             />
         </Grid>
     </Grid>
@@ -1083,7 +1347,7 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
         p: 2, 
         border: '1px solid #DCFCE7', 
         borderRadius: 2, 
-        bgcolor: '#F0FDF4', 
+        bgcolor: isDarkMode ? 'rgba(34,197,94,0.08)' : '#F0FDF4', 
         mb: 4 
     }}>
         <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#166534', display: 'block', mb: 2, letterSpacing: 1 }}>
@@ -1110,10 +1374,10 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                         value={v.section === 'final_vitals' ? formData.final_vitals[v.field] : formData.anthropometry[v.field]}
                         onChange={(e) => handleNestedInputChange(v.section, v.field, e.target.value)}
                         sx={{ 
-                            bgcolor: '#FFF',
+                            bgcolor: bg,
                             '& .MuiOutlinedInput-root': {
                                 height: '32px',
-                                borderColor: v.error ? '#FCA5A5' : '#E2E8F0'
+                                borderColor: v.error ? '#FCA5A5' : borderColor
                             }
                         }}
                     />
@@ -1123,7 +1387,7 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
     </Box>
 
     {/* SYSTEMIC EXAMINATION (DISCHARGE) */}
-    <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Systemic Examination (Discharge)</Typography>
+    <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Systemic Examination (Discharge)</Typography>
     <TextField 
         fullWidth 
         multiline 
@@ -1131,16 +1395,16 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
         placeholder="Baby active, reflexes good, accepting feeds..."
         value={formData.final_state_summary} // Map to your state summary field
         onChange={(e) => handleInputChange('final_state_summary', e.target.value)}
-        sx={{ bgcolor: '#F8FAFC' }}
+        sx={{ bgcolor: bgSubtle }}
     />
 </Paper>
 
                         {/* SECTION 10: DISCHARGE MEDICATIONS & FOLLOW-UP */}
                         <SectionHeader number="10" title="DISCHARGE MEDICATIONS & FOLLOW-UP PLAN" />
-<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+<Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     
     {/* DISCHARGE MEDICATIONS TABLE */}
-    <TableContainer sx={{ border: '1px solid #E2E8F0', borderRadius: 2, mb: 2 }}>
+    <TableContainer sx={{ border: `1px solid ${borderColor}`, borderRadius: 2, mb: 2 }}>
         <Table size="small">
             <TableHead>
                 <TableRow>
@@ -1222,46 +1486,46 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
     {/* FOLLOW UP FIELDS */}
     <Grid container spacing={3}>
         <Grid item xs={12}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Next Follow-up Date</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Next Follow-up Date</Typography>
             <TextField 
                 type="date" 
                 fullWidth 
                 size="small"
                 value={formData.followup.date || ''} 
                 onChange={(e) => handleNestedInputChange('followup', 'date', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
                 InputProps={{ readOnly: isViewMode }} 
             />
         </Grid>
 
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Follow Up Clinic / Hospital</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Follow Up Clinic / Hospital</Typography>
             <TextField 
                 fullWidth 
                 size="small"
                 placeholder="e.g. Pediatric OPD, Room 102"
                 value={formData.followup.clinic} 
                 onChange={(e) => handleNestedInputChange('followup', 'clinic', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
                 InputProps={{ readOnly: isViewMode }} 
             />
         </Grid>
 
         <Grid item xs={6}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Follow Up Doctor</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Follow Up Doctor</Typography>
             <TextField 
                 fullWidth 
                 size="small"
                 placeholder="e.g. Dr. Jane Doe"
                 value={formData.followup.doctor} 
                 onChange={(e) => handleNestedInputChange('followup', 'doctor', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
                 InputProps={{ readOnly: isViewMode }} 
             />
         </Grid>
 
         <Grid item xs={12}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Follow Up Instructions & Advice</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Follow Up Instructions & Advice</Typography>
             <TextField 
                 fullWidth 
                 multiline 
@@ -1269,13 +1533,13 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                 placeholder="Review in OPD. Danger signs explained. Vaccination schedule discussed..."
                 value={formData.followup.instructions} 
                 onChange={(e) => handleNestedInputChange('followup', 'instructions', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
                 InputProps={{ readOnly: isViewMode }} 
             />
         </Grid>
 
         <Grid item xs={12}>
-            <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Feeding Instructions</Typography>
+            <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Feeding Instructions</Typography>
             <TextField 
                 fullWidth 
                 multiline 
@@ -1283,7 +1547,7 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                 placeholder="Feeding Instructions"
                 value={formData.feeding_plan} 
                 onChange={(e) => handleInputChange('feeding_plan', e.target.value)} 
-                sx={{ bgcolor: '#F8FAFC' }}
+                sx={{ bgcolor: bgSubtle }}
                 InputProps={{ readOnly: isViewMode }} 
             />
         </Grid>
@@ -1299,27 +1563,27 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
       <Box sx={{ 
         p: 2, 
         borderRadius: 3, 
-        border: '1px dashed #E2E8F0', 
-        bgcolor: '#F8FAFC', // Light blue-grey tint per design
+        border: `1px dashed ${borderColor}`, 
+        bgcolor: bgSubtle,
         height: '100%'
       }}>
-        <Typography variant="caption" fontWeight="bold" sx={{ color: '#475569', mb: 2, display: 'block', letterSpacing: 1 }}>
+        <Typography variant="caption" fontWeight="bold" sx={{ color: labelColor, mb: 2, display: 'block', letterSpacing: 1 }}>
           MEDICAL TEAM
         </Typography>
 
-        <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Approving Doctor (Consultant)</Typography>
+        <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Approving Doctor (Consultant)</Typography>
         <TextField
           fullWidth
           size="small"
           placeholder="Name of consultant"
           value="Consultant Name"
-          sx={{ mb: 0.5, bgcolor: '#FFF' }}
+          sx={{ mb: 0.5, bgcolor: bg }}
         />
         <Typography variant="caption" sx={{ color: '#94A3B8', display: 'block', mb: 2, fontSize: '10px' }}>
           Hold Ctrl/Cmd to select multiple
         </Typography>
 
-        <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Prepared by Signature</Typography>
+        <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Prepared by Signature</Typography>
         <Box sx={{ position: 'relative' }}>
           <SignatureBox 
                sigRef={preparedBySig}
@@ -1341,29 +1605,28 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
       <Box sx={{ 
         p: 2, 
         borderRadius: 3, 
-        border: '1px dashed #E2E8F0', 
-        bgcolor: '#F8FAFC', 
+        border: `1px dashed ${borderColor}`, 
+        bgcolor: bgSubtle,
         height: '100%'
       }}>
-        <Typography variant="caption" fontWeight="bold" sx={{ color: '#475569', mb: 2, display: 'block', letterSpacing: 1 }}>
+        <Typography variant="caption" fontWeight="bold" sx={{ color: labelColor, mb: 2, display: 'block', letterSpacing: 1 }}>
           GUARDIAN ACKNOWLEDGEMENT
         </Typography>
 
-        <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Parent/Guardian Name</Typography>
+        <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Parent/Guardian Name</Typography>
         <TextField
           fullWidth
           size="small"
           placeholder="Name of parent receiving discharge..."
           value={formData.parent_name}
           onChange={(e) => handleInputChange('parent_name', e.target.value)}
-          sx={{ mb: 3, bgcolor: '#FFF' }}
+          sx={{ mb: 3, bgcolor: bg }}
         />
 
-        <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>Parent/Guardian Signature</Typography>
+        <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Parent/Guardian Signature</Typography>
     <Box sx={{ position: 'relative', mb: 2 }}>
   <SignatureBox 
-    sigRef={parentSig}
-                                                    name="" title={''}   
+    sigRef={parentSig} name="" title={''}   
   />
 
   <Typography 
@@ -1390,7 +1653,7 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
             />
           }
           label={
-            <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>
+            <Typography variant="body2" sx={{ color: labelColor, fontSize: '13px' }}>
               Discharge summary explained & copy received
             </Typography>
           }
@@ -1403,8 +1666,8 @@ export const NICUDischargeModal: React.FC<NICUDischargeModalProps> = ({
                 )}
             </DialogContent>
 
-            <DialogActions sx={{ p: 3, borderTop: '1px solid #F1F5F9', justifyContent: 'flex-end', gap: 2 }}>
-                <Button onClick={onClose} variant="text" sx={{ color: '#64748B', fontWeight: 700 }}>Cancel</Button>
+            <DialogActions sx={{ p: 3, borderTop: `1px solid ${borderColor}`, justifyContent: 'flex-end', gap: 2 }}>
+                <Button onClick={onClose} variant="text" sx={{ color: labelColor, fontWeight: 700 }}>Cancel</Button>
 
                 {!isViewMode && (
                     <>

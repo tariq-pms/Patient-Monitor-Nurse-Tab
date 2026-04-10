@@ -444,7 +444,7 @@ export const Treatment = ({
         status: "current",
         docStatus: "final",
         type: { coding: [{ system: "http://loinc.org", code: "11506-3", display: "Progress note" }] },
-        subject: { reference: `Patient/${patient_id}` },
+        subject: { reference: `Patient/${patient_resource_id}` },
         date: noteTimestamp,
         author: [{ display: note.author }],
         content: [
@@ -454,7 +454,7 @@ export const Treatment = ({
         identifier: [{ system: "urn:oid:clinical-note-id", value: note.id }]
       };
 
-      const search = await fetch(`${FHIR_URL}/DocumentReference?subject=Patient/${patient_id}&identifier=${note.id}`, {
+      const search = await fetch(`${FHIR_URL}/DocumentReference?subject=Patient/${patient_resource_id}&identifier=${note.id}`, {
         headers: { Authorization: FHIR_AUTH }
       });
       const searchRes = await search.json();
@@ -484,10 +484,10 @@ export const Treatment = ({
 
   // Load from FHIR
   useEffect(() => {
-    if (!patient_id) return;
+    if (!patient_resource_id) return;
     const fetchNotes = async () => {
       try {
-        const res = await fetch(`${FHIR_URL}/DocumentReference?subject=Patient/${patient_id}&_sort=-date`, {
+        const res = await fetch(`${FHIR_URL}/DocumentReference?subject=Patient/${patient_resource_id}&_sort=-date`, {
           headers: { Authorization: FHIR_AUTH }
         });
         const bundle = await res.json();
@@ -520,7 +520,7 @@ export const Treatment = ({
       } catch (e) { console.error("Load failed", e); }
     };
     fetchNotes();
-  }, [patient_id]);
+  }, [patient_resource_id]);
 
   // Active Form State
   const [formState, setFormState] = useState<NoteData | null>(null);
@@ -1922,7 +1922,7 @@ export const Treatment = ({
   );
 
   return (
-    <Box sx={{ width: '100%', height: isEditing && layoutMode === 'stack' ? 'calc(100vh - 72px)' : 'auto', minHeight: '100vh', bgcolor: '#f8fafc', overflow: isEditing && layoutMode === 'stack' ? 'hidden' : 'visible', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ width: '100%', height: isEditing && layoutMode === 'stack' ? 'calc(100vh - 72px)' : 'auto', minHeight: '100vh',  overflow: isEditing && layoutMode === 'stack' ? 'hidden' : 'visible', display: 'flex', flexDirection: 'column' }}>
 
       {/* Print Styles */}
       <style>
@@ -2065,7 +2065,7 @@ export const Treatment = ({
           flexShrink: 0, // Prevent header from shrinking
           px: 4, pt: 3, pb: 2,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          bgcolor: '#f8fafc',
+         
           borderBottom: isEditing ? 'none' : '1px solid transparent',
           width: '75%', mx: 'auto'
         }}

@@ -10,8 +10,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import { InputAdornment } from "@mui/material";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-
-import { useEffect, useState, useRef } from "react";
+import AddIcon from '@mui/icons-material/Add';
+import React, { useEffect, useState, useRef } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
@@ -1524,48 +1524,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
   return (
 
-
-    <Box sx={{ flexGrow: 1, padding: 2, justifyContent: 'center' }}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-
-          borderRadius: "10px",
-          padding: "12px 20px",
-
-          mb: 2,
-        }}
-      >
-        <Typography
-          variant="h6"
-          sx={(theme) => ({
-            color: theme.palette.mode === 'dark' ? theme.palette.text.primary : "#0F3B61",
-            fontWeight: "bold",
-            fontSize: "1rem",
-          })}
-        >
-          Diagnostic Report
-        </Typography>
-
-        <Box display="flex" alignItems="center">
-          <Button
-            onClick={() => setOpen(true)}
-            sx={{
-              backgroundColor: alpha("#228BE6", 0.1),
-              color: "#228BE6",
-              textTransform: "none",
-              borderRadius: "8px",
-              px: 3,
-              justifyContent: "flex-start", // Left align text
-              "&:hover": {},
-            }}
-          >
-            + Order
-          </Button>
-
-          <IconButton
+<React.Fragment>
+    <Box mr={2} ml={2} >
+      
+      <Box mt={1} mb={1} display={'flex'} justifyContent={'space-between'}>
+          <Typography variant="h6" sx={{ color: "#0F3B61" }} gutterBottom>
+                      Diagnostic Report
+                    </Typography>
+        <Box display={"flex"}  alignItems="center"
+        justifyContent="flex-end"
+        gap={1.5}>
+         <IconButton
             onClick={() => setOpenSettingsDialog(true)}
             sx={{
               ml: 1,
@@ -1581,9 +1550,28 @@ export const Dashboard: React.FC<DashboardProps> = ({
           >
             <SettingsIcon fontSize="small" />
           </IconButton>
+         <Button
+        startIcon={<AddIcon fontSize="small" />}
+         onClick={() => setOpen(true)}
+        sx={{
+          backgroundColor: alpha("#228BE6", 0.1),
+          color: "#228BE6",
+          textTransform: "none",
+          borderRadius: "8px",
+          px: 3,
+        }}
+      >
+       Order
+      </Button>
+        
+      
         </Box>
+        </Box>
+      
+      
+      
+     
 
-      </Box>
       {/* Diagnostics Header */}
 
       {!selectedOrder ? (
@@ -1835,6 +1823,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </Paper>
       </>)}
 
+    
+    </Box >
       <Dialog
         open={openSampleDialog}
         onClose={() => setOpenSampleDialog(false)}
@@ -3464,6 +3454,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </Box>
         </DialogContent>
       </Dialog>
-    </Box >
+    </React.Fragment>
   );
 };

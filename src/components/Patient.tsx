@@ -134,9 +134,9 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
       
       "gestationWeeks",
       "gestationDays",
-      "birthWeight",
+      // "birthWeight",
       "gender",
-      "bedNo",
+      // "bedNo",
       "adminNo",
       
     ];
@@ -387,12 +387,94 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
+
+  const { name, value } = e.target;
+
+  let updatedValue = value;
+
+  // NAME VALIDATION
+  if (name === "mothersName") {
+    updatedValue = allowText(value).slice(0, 40);
+  }
+
+  // UHID LIMIT
+  if (name === "patientId") {
+    updatedValue = value.slice(0, 20);
+  }
+
+  // ADMISSION NUMBER LIMIT
+  if (name === "adminNo") {
+    updatedValue = value.slice(0, 20);
+  }
+
+  // MOBILE NUMBER
+  if (name === "mobile" || name === "kinPhone") {
+    updatedValue = allowNumbers(value).slice(0, 10);
+  }
+
+  // GESTATION WEEKS
+  if (name === "gestationWeeks") {
+    updatedValue = allowNumbers(value).slice(0, 2);
+
+    const num = Number(updatedValue);
+    if (num > 45) return; // medical upper limit
+  }
+
+  // GESTATION DAYS
+  if (name === "gestationDays") {
+    updatedValue = allowNumbers(value).slice(0, 1);
+
+    const num = Number(updatedValue);
+    if (num > 6) return;
+  }
+
+  // BIRTH WEIGHT (grams)
+  if (name === "birthWeight") {
+    updatedValue = allowNumbers(value).slice(0, 5);
+
+    const num = Number(updatedValue);
+    if (num > 6000) return; // realistic NICU range
+  }
+
+  // AGE (manual input fallback)
+  if (name === "age") {
+    updatedValue = allowNumbers(value).slice(0, 3);
+  }
+
+  // DOB -> AUTO AGE
+  if (name === "birthDate") {
+
+    const ageDays = calculateAgeFromDOB(value);
+
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      birthDate: value,
+      age: ageDays
     }));
-  };
+
+    return;
+  }
+ if (name === "kinName") {
+    updatedValue = allowText(value).slice(0, 40);
+  }
+  if (name === "treatingDr") {
+    updatedValue = allowText(value).slice(0, 40);
+  }
+   if (name === "treatingDr") {
+    updatedValue = allowText(value).slice(0, 40);
+  }
+   if (name === "admittingDr") {
+    updatedValue = allowText(value).slice(0, 40);
+  }
+    if (name === "refHospital") {
+    updatedValue = allowText(value).slice(0, 40);
+  }
+  
+  setFormData((prev) => ({
+    ...prev,
+    [name]: updatedValue
+  }));
+};
 
   // --- UPLOAD STATE (Renamed to avoid conflicts) ---
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -1081,6 +1163,23 @@ console.log("✅ FINAL patientRef:", patientRef);
       handleMenuClose();
     }
   };
+// Only numbers
+const allowNumbers = (value: string) => value.replace(/[^0-9]/g, "");
+
+// Only alphabets + spaces
+const allowText = (value: string) => value.replace(/[^a-zA-Z\s]/g, "");
+  const calculateAgeFromDOB = (dob: string) => {
+  if (!dob) return "";
+
+  const birth = new Date(dob);
+  const today = new Date();
+
+  const diff = today.getTime() - birth.getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  return days.toString();
+};
+
 
   return (
     <Box sx={{ p: 1 }}>
@@ -1206,16 +1305,20 @@ console.log("✅ FINAL patientRef:", patientRef);
         {filteredPatients.map((patient) => (
           <TableRow
           key={patient.id || patient.patientId}
-           onClick={() => navigate(`/patient-profile/${patient.id}`)}
+          
           sx={{
             backgroundColor: "#FFFFFF",
-            "&:hover": {
-              backgroundColor: "#f5f5f5",
-              cursor: "pointer",
-            },
+           
           }}
         >
-            <TableCell sx={{ color: "#000000" }}>{patient.name}</TableCell>
+            <TableCell   sx={{
+           
+            color: "#000000",
+            "&:hover": {
+              backgroundColor: "#228BE61A",
+              cursor: "pointer",
+            }
+          }} onClick={() => navigate(`/patient-profile/${patient.id}`)}>{patient.name}</TableCell>
             <TableCell sx={{ color: "#000000" }}>{patient.patientId}</TableCell>
             <TableCell sx={{ color: "#000000" }}>{patient.bed}</TableCell>
             <TableCell sx={{ color: "#000000" }}>{patient.assignee}</TableCell>
@@ -1253,7 +1356,7 @@ console.log("✅ FINAL patientRef:", patientRef);
     <MenuItem onClick={() => handleAssignClick("bed")}>Assign Bed</MenuItem>
   </Menu>
 
-  <Dialog
+      <Dialog
   open={openDialog}
   onClose={() => setOpenDialog(false)}
   maxWidth="sm"
@@ -1371,7 +1474,7 @@ console.log("✅ FINAL patientRef:", patientRef);
     <TextField
     required
       fullWidth
-      placeholder="Mother's name"
+      placeholder="Mother's / Father's Name"
       name="mothersName"
       value={formData.mothersName}
       onChange={handleChange}
@@ -1520,7 +1623,7 @@ console.log("✅ FINAL patientRef:", patientRef);
     </Box>
 
     <Box sx={{ flex: 1 }}>
-      <Typography sx={{ fontWeight: 500 }}>Age</Typography>
+      <Typography sx={{ fontWeight: 500 }}>Age*</Typography>
       <TextField
       required
       placeholder="Days"
@@ -1547,10 +1650,11 @@ console.log("✅ FINAL patientRef:", patientRef);
 
     {/* Gestation */}
     <Box sx={{ flex: 1 }}>
-      <Typography sx={{ fontWeight: 500 }}>Gestation</Typography>
+      <Typography sx={{ fontWeight: 500 }}>Gestation*</Typography>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
         <TextField
+          required
           placeholder="00"
           sx={{ width: 60 }}
           name="gestationWeeks"
@@ -2263,7 +2367,7 @@ console.log("✅ FINAL patientRef:", patientRef);
                   setSnackbar({
                     open: true,
                     severity: "error",
-                    message: "Fill all the fields",
+                    message: "Fill all the required fields",
                   });
                   return;
                 }

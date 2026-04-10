@@ -86,7 +86,41 @@ export const OrganizationDeviceList: React.FC<OrganizationCardProps> = ({
 
   const FHIR_BASE_URL = import.meta.env.VITE_FHIRAPI_URL;
   const authHeader = "Basic " + btoa("fhiruser:change-password");
+  const [mapDialog, setMapDialog] = useState(false);
+const [deviceLat, setDeviceLat] = useState<number | null>(null);
+const [deviceLng, setDeviceLng] = useState<number | null>(null);
+const fetchDeviceLocation = async (deviceId: string) => {
+  try {
+    const res = await fetch(`${FHIR_BASE_URL}/Device/${deviceId}`, {
+      headers: { Authorization: authHeader },
+    });
 
+    const device = await res.json();
+
+    const geoExtension = device.extension?.find(
+      (ext: any) =>
+        ext.url === "http://example.org/fhir/StructureDefinition/geolocation"
+    );
+
+    const lat = geoExtension?.extension?.find((e: any) => e.url === "latitude")
+      ?.valueDecimal;
+
+    const lng = geoExtension?.extension?.find((e: any) => e.url === "longitude")
+      ?.valueDecimal;
+
+    if (lat && lng) {
+      setDeviceLat(lat);
+      setDeviceLng(lng);
+    } else {
+      setDeviceLat(null);
+      setDeviceLng(null);
+    }
+
+    setMapDialog(true);
+  } catch (err) {
+    console.error("Error fetching device location:", err);
+  }
+};
   // ✅ Fetch all devices
   useEffect(() => {
     const fetchDevices = async () => {
@@ -364,9 +398,16 @@ export const OrganizationDeviceList: React.FC<OrganizationCardProps> = ({
                         {d.serialNumber || "—"}
                       </TableCell>
 
-                      <TableCell sx={{ color: "#124D81" }}>
-                        {d.identifier?.[0]?.value || ""}
-                      </TableCell>
+                     <TableCell
+  onClick={() => fetchDeviceLocation(d.id)}
+  sx={{
+    color: "#124D81",
+    cursor: "pointer",
+    "&:hover": { fontWeight: "bold" },
+  }}
+>
+  {d.identifier?.[0]?.value || ""}
+</TableCell>
 
                       <TableCell
                         sx={{
@@ -575,7 +616,31 @@ export const OrganizationDeviceList: React.FC<OrganizationCardProps> = ({
           </Stack>
         </DialogActions>
       </Dialog>
+<Dialog open={mapDialog} onClose={() => setMapDialog(false)} maxWidth="md" fullWidth>
+  <DialogTitle>Device Location</DialogTitle>
 
+  <DialogContent>
+
+    {deviceLat && deviceLng ? (
+      <iframe
+        width="100%"
+        height="400"
+        style={{ border: 0 }}
+        loading="lazy"
+        src={`https://maps.google.com/maps?q=${deviceLat},${deviceLng}&z=15&output=embed`}
+      ></iframe>
+    ) : (
+      <Typography color="error" fontWeight={600}>
+        Location not found for this device
+      </Typography>
+    )}
+
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={() => setMapDialog(false)}>Close</Button>
+  </DialogActions>
+</Dialog>
       {/* Service Details Dialog */}
       <ServiceDetails
         isDialogOpened={isOpen}

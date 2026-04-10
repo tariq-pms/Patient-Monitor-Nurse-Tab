@@ -54,7 +54,7 @@ export const Rooms: FC<roomdata> = (props) => {
     const [vvtemp, setVvtemp] = useState(false);
 
     useEffect(() => {
-      fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?organization=${props.userOrganization}`, {
+      fetch(`${import.meta.env.VITE_FHIRAPI_URL as string}/Location?organization=${props.userOrganization}&_count=500`, {
         credentials: "omit",
         headers: {
           Authorization: "Basic "+ btoa("fhiruser:change-password"),
@@ -76,7 +76,10 @@ export const Rooms: FC<roomdata> = (props) => {
           
           setRooms(filteredRooms);
         }
+        console.log('room check',data);
+        
       })
+      
       .catch(error => {
         console.error("Error fetching rooms:", error);
         setRooms([]);
@@ -156,13 +159,18 @@ export const Rooms: FC<roomdata> = (props) => {
                     {"Add New Room"}
                 </DialogTitle>
                 <DialogContent>
-                    <TextField 
-                        id="standard-basic" 
-                        label="Room Name" 
-                        variant="standard" 
-                        onChange={(e) => setNewRoomName(e.target.value)} 
-                        sx={{width: '90%'}} 
-                    />
+                   <TextField 
+  label="Room Name"
+  variant="standard"
+  value={newRoomName}
+  onChange={(e) => {
+    const value = e.target.value.slice(0, 25);
+    setNewRoomName(value);
+  }}
+  inputProps={{ maxLength: 25 }}
+  helperText={`${newRoomName.length}/25`}
+  sx={{ width: '90%' }}
+/>
                 </DialogContent>
                 <DialogActions>
                     <Stack direction={'row'} width={'100%'} justifyContent={'space-around'} sx={{marginBottom: '7%'}}>

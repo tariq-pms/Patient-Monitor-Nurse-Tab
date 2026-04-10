@@ -32,6 +32,7 @@ const defaultPermissions: ModulePermissions = {
   "Consent Forms":{ create: false, view: false, edit: false, delete: false },
   "Clinical Notes":{ create: false, view: false, edit: false, delete: false },
   "Initial Assessment":{ create: false, view: false, edit: false, delete: false },
+    "Venti Chart":{ create: false, view: false, edit: false, delete: false },
 
 };
 

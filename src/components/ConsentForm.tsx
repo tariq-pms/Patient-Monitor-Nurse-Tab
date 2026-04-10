@@ -9,8 +9,9 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { NICUDischargeModal } from './NICUDischargeModal';
-
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import React from "react";
+import { useTheme } from "@mui/material/styles";
 interface ConsentFormProps {
 
   UserRole: string;
@@ -20,7 +21,9 @@ interface ConsentFormProps {
   gestational_age: string;
   birth_date: string;
   gender: string,
-  birth_weight: string
+   userOrganization?: string;
+  birth_weight: string,
+  
 }
 
 
@@ -35,6 +38,8 @@ interface CardItemProps {
 
 
 export const ConsentForms: React.FC<ConsentFormProps> = (props) => {
+const theme = useTheme();
+const isDarkMode = theme.palette.mode === "dark";
 
 
   const [error, setError] = useState<string | null>(null);
@@ -2124,8 +2129,8 @@ I ............................................................ aged ............
         sx={{
           p: 2,
           borderRadius: 2,
-          backgroundColor: "#FFFFFF",
-          border: "1px solid #E5EAF2",
+          backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF",
+          border: `1px solid ${isDarkMode ? theme.palette.divider : "#E5EAF2"}`,
           cursor: "pointer",
           transition: "0.2s",
           "&:hover": {
@@ -2143,10 +2148,10 @@ I ............................................................ aged ............
 
 
           <Box>
-            <Typography sx={{ fontWeight: 600, fontSize: 14, color: "#0F172A" }}>
+            <Typography sx={{ fontWeight: 600, fontSize: 14, color: isDarkMode ? theme.palette.text.primary : "#0F172A" }}>
               {label}
             </Typography>
-            <Typography sx={{ fontSize: 12, color: "#64748B" }}>
+            <Typography sx={{ fontSize: 12, color: isDarkMode ? theme.palette.text.secondary : "#64748B" }}>
               {type}
             </Typography>
           </Box>
@@ -2176,7 +2181,7 @@ I ............................................................ aged ............
             p: 2,
             display: "flex",
             justifyContent: "space-between",
-            borderBottom: "1px solid #E5EAF2",
+            borderBottom: `1px solid ${isDarkMode ? theme.palette.divider : "#E5EAF2"}`,
           }}
         >
           <Button
@@ -2214,42 +2219,25 @@ I ............................................................ aged ............
   }
 
   return (
-
-    <Box sx={{ flexGrow: 1, padding: 2, justifyContent: 'center' }}>
+<React.Fragment>
+    <Box sx={{ flexGrow: 1,  justifyContent: 'center' }}>
+      
       <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-
-          borderRadius: "10px",
-          padding: "12px 20px",
-
-          mb: 2,
-        }}
+        mt={1} mb={1}
       >
-        <Typography
-          variant="h6"
-          sx={{
-            color: "#0F3B61",
-            fontWeight: "bold",
-            fontSize: "1rem",
-          }}
-        >
-          Consent Forms
-        </Typography>
-
-
+         <Typography variant="h6" sx={{ color: isDarkMode ? theme.palette.text.primary : "#0F3B61" }} gutterBottom>
+                       Consent Forms
+                     </Typography>
       </Box>
 
 
-      <Box sx={{ p: 3, background: "#fff" }}>
+      <Box sx={{ p: 1}}>
 
 
         {dynamicSections.map((section) => (
           <Box key={section.title} sx={{ mb: 4 }}>
             <Typography
-              sx={{ fontSize: 14, fontWeight: 600, color: "#475569", mb: 1 }}
+              sx={{ fontSize: 14, fontWeight: 600, color: isDarkMode ? theme.palette.text.secondary : "#475569", mb: 1 }}
             >
               {section.title}
             </Typography>
@@ -2276,7 +2264,7 @@ I ............................................................ aged ............
         {/* Saved Discharge Summaries Section */}
         {savedSummaries.length > 0 && (
           <Box sx={{ mb: 4 }}>
-            <Typography sx={{ fontSize: 14, fontWeight: 600, color: "#475569", mb: 1 }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 600, color: isDarkMode ? theme.palette.text.secondary : "#475569", mb: 1 }}>
               Generated File/Saved Files
             </Typography>
             <Grid container spacing={2}>
@@ -2286,7 +2274,7 @@ I ............................................................ aged ............
                     onClick={() => handleViewSummary(summary)}
                     elevation={0}
                     sx={{
-                      p: 2, borderRadius: 2, backgroundColor: "#FFFFFF", border: "1px solid #E5EAF2",
+                      p: 2, borderRadius: 2, backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF", border: `1px solid ${isDarkMode ? theme.palette.divider : "#E5EAF2"}`,
                       cursor: "pointer", transition: "0.2s",
                       "&:hover": { boxShadow: "0px 4px 14px rgba(0,0,0,0.08)", transform: "translateY(-2px)" },
                     }}
@@ -2294,10 +2282,10 @@ I ............................................................ aged ............
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <DescriptionIcon sx={{ color: "#3B82F6" }} />
                       <Box>
-                        <Typography sx={{ fontWeight: 600, fontSize: 14, color: "#0F172A" }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: 14, color: isDarkMode ? theme.palette.text.primary : "#0F172A" }}>
                           Discharge Summary
                         </Typography>
-                        <Typography sx={{ fontSize: 12, color: "#64748B" }}>
+                        <Typography sx={{ fontSize: 12, color: isDarkMode ? theme.palette.text.secondary : "#64748B" }}>
                           {new Date(summary.date).toLocaleDateString()} - {summary.docStatus}
                         </Typography>
                       </Box>
@@ -2320,7 +2308,7 @@ I ............................................................ aged ............
         </DialogTitle>
 
         <DialogContent>
-          <Typography sx={{ color: "#475569" }}>
+          <Typography sx={{ color: isDarkMode ? theme.palette.text.secondary : "#475569" }}>
             This form will be generated as a PDF with hospital header and footer.
           </Typography>
         </DialogContent>
@@ -2367,6 +2355,7 @@ I ............................................................ aged ............
         }}
         patient_name={props.patient_name}
         patient_id={props.patient_id}
+        userOrganization={props.userOrganization}
         patient_resource_id={props.patient_resource_id}
         gender={props.gender}
         dob={props.birth_date}
@@ -2377,6 +2366,6 @@ I ............................................................ aged ............
           // Optional: Force re-fetch immediately if useEffect depends on saveSuccess
         }}
       />
-    </Box>
+    </Box></React.Fragment>
   );
 };

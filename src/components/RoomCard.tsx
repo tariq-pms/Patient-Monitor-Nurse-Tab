@@ -32,30 +32,38 @@ interface BedData {
   patientName?: string;
   patientId?: string;
   addedDate?: string;
-  devices?: { id: string; name: string }[];
+  devices?: {
+    serialNumber: any; id: string; name: string 
+}[];
 }
 
 interface Patient {
-    resourceType: string;
-    id: string;
-    meta: {
-        versionId: string;
-        lastUpdated: string;
+  resourceType: string;
+  id: string;
+  meta: {
+    versionId: string;
+    lastUpdated: string;
+  };
+  name?: {
+    use?: string;
+    text?: string;
+    family?: string;
+    given?: string[];
+  }[];
+  extension: {
+    url: string;
+    valueReference?: {
+      reference: string;
     };
-    extension: {
-        url: string;
-        valueReference?: {
-            reference: string;
-        };
-        valueString?: string;
-    }[];
-    identifier: {
-        system: string;
-        value: string;
-    }[];
-    managingOrganization: {
-        reference: string;
-    };
+    valueString?: string;
+  }[];
+  identifier: {
+    system: string;
+    value: string;
+  }[];
+  managingOrganization: {
+    reference: string;
+  };
 }
 interface Device {
   resource: Device;
@@ -182,20 +190,49 @@ export const RoomCard: FC<roomData> = (props) => {
     }, [deviceChanged]);
     
 
-    useEffect(() => {
-      fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Patient?_count=1000&organization=${props.userOrganization}`, {
-        headers: {
-          Authorization: "Basic " + btoa("fhiruser:change-password"),
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.entry) {
-            setPatientList(data.entry.map((e: any) => e.resource));
-          }
-        })
-        .catch((err) => console.error("Error fetching patients:", err));
-    }, []);
+useEffect(() => {
+  const fetchAllActivePatients = async () => {
+    const allPatients: any[] = [];
+    let nextUrl: string | null = 
+      `${import.meta.env.VITE_FHIRAPI_URL}/Patient?_count=100&active=true&organization=${props.userOrganization}`;
+
+    while (nextUrl) {
+      try {
+        // Fix 1: Explicitly type the response as 'Response'
+        const res: Response = await fetch(nextUrl, {
+          headers: {
+            Authorization: "Basic " + btoa("fhiruser:change-password"),
+          },
+        });
+
+        // Fix 2: Explicitly type the data (using 'any' or a Bundle interface)
+        const data: any = await res.json();
+
+        if (data.entry) {
+          const activePatients = data.entry
+            .map((e: any) => e.resource)
+            // Note: Since you have active=true in the URL, this filter is technically 
+            // redundant, but safe to keep.
+            .filter((r: any) => r.active === true);
+          allPatients.push(...activePatients);
+        }
+
+        // Fix 3: nextLink will now infer correctly because 'data' is typed
+        const nextLink = data.link?.find((l: any) => l.relation === "next");
+        nextUrl = nextLink ? nextLink.url : null;
+      } catch (err) {
+        console.error("Error fetching patients:", err);
+        break;
+      }
+    }
+
+    setPatientList(allPatients);
+  };
+
+  if (props.userOrganization) {
+    fetchAllActivePatients();
+  }
+}, [props.userOrganization]);
     
     // const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
    
@@ -993,24 +1030,29 @@ spacing={2}
       >
         <DeleteIcon />
       </IconButton>
+<Button
+  variant="outlined"
+  startIcon={<AddIcon />}
+  onClick={() => setAddBedDialogOpen(true)}
+  disabled={beds.length >= (props.capacity ?? 0)}
+  sx={{
+    borderRadius: '15px',
+    minWidth: { xs: '40px', sm: 'auto' }, // small square on mobile
+    px: { xs: 1, sm: 2 },
 
-      <Button
-        variant="outlined"
-        startIcon={<AddIcon />}
-        onClick={() => setAddBedDialogOpen(true)}
-        disabled={beds.length >= (props.capacity ?? 0)}
-        sx={{
-          borderRadius: '15px',
-          color: props.darkTheme ? 'white' : '#124D81',
-          borderColor: props.darkTheme ? 'white' : '#124D81',
-          '&:hover': {
-            borderColor: props.darkTheme ? '#2BA0E0' : '#0d3a63',
-          },
-          whiteSpace: 'nowrap',
-        }}
-      >
-        Add Bed
-      </Button>
+    color: props.darkTheme ? 'white' : '#124D81',
+    borderColor: props.darkTheme ? 'white' : '#124D81',
+
+    '&:hover': {
+      borderColor: props.darkTheme ? '#2BA0E0' : '#0d3a63',
+    },
+
+    // center icon when no text
+    justifyContent: 'center',
+  }}
+>
+  {isMobile ? '' : 'Add Bed'}
+</Button>
     </Stack>
   </Stack>
                          {/* Beds Section */}
@@ -1047,8 +1089,8 @@ spacing={2}
                 <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Beds</strong></TableCell>
                 <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Patient</strong></TableCell>
                 <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Device</strong></TableCell>
-                <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Type</strong></TableCell>
-                <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Status</strong></TableCell>
+                {/* <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Type</strong></TableCell> */}
+                {/* <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Status</strong></TableCell> */}
                 <TableCell sx={{ color: 'black', whiteSpace: 'nowrap' }}><strong>Actions</strong></TableCell>
               </TableRow>
             </TableHead>
@@ -1098,7 +1140,7 @@ spacing={2}
             bed.devices.map((device) => (
               <Chip
                 key={device.id}
-                label={`${device.name} (S.No: ${device.id})`}
+                label={`${device.name} (S.No: ${device.serialNumber})`}
                 size="small"
                 color="info"
                 sx={{ mr: 0.5 }}
@@ -1109,9 +1151,9 @@ spacing={2}
           )}
         </TableCell>
 
-        <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>{bed.type}</TableCell>
+        {/* <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>{bed.type}</TableCell> */}
 
-        <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>
+        {/* <TableCell sx={{ color: props.darkTheme ? '#FFF' : 'black' }}>
           <Chip
             label={bed.status}
             size="small"
@@ -1123,7 +1165,7 @@ spacing={2}
                 : 'default'
             }
           />
-        </TableCell>
+        </TableCell> */}
         <TableCell>
   {/* Edit Button */}
   <IconButton
@@ -1233,8 +1275,8 @@ spacing={2}
 {selectedDevice ? (
   <Typography>
     {
-     selectedDevice.identifier?.[2]?.value ||
-     selectedDevice.identifier?.[0]?.value ||
+    //  selectedDevice.identifier?.[2]?.value ||
+     selectedDevice.serialNumber ||
      selectedDevice.id}
   </Typography>
 ) : (
@@ -1291,7 +1333,7 @@ spacing={2}
           <Typography variant="subtitle2" component="h2">
             {
             // patient.name?.[0]?.text ||
-              `${patient.identifier?.[0]?.value || ""} ${patient.identifier?.[1]?.value || ""}` ||
+              `${patient.name?.[0]?.text || ""}(${patient.identifier?.[1]?.value || ""})` ||
               patient.id}
           </Typography>
         </Button>
@@ -1354,7 +1396,7 @@ spacing={2}
             <Typography variant="subtitle2" component="h2">
               {(device.identifier?.[1]?.value || "") +
                 " " +
-                (device.identifier?.[0]?.value || "")}
+                (device.serialNumber || "")}
             </Typography>
           </Button>
         );

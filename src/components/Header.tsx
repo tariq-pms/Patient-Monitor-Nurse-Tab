@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import { AppBar, Divider, IconButton, Switch, Menu, Stack, useMediaQuery, useTheme } from '@mui/material';
+import { AppBar, Divider, IconButton,  Menu, Stack, useMediaQuery, useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 
@@ -11,7 +11,8 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { Typography } from '@material-ui/core';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 
-
+import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
+// BedIcon removed - not used
 
 export interface HeaderProps {
   currentRoom: string;
@@ -125,19 +126,6 @@ export const Header: FC<HeaderProps> = (props) => {
 
   }, [isAuthenticated, UserRole, location.pathname, navigate]);
 
-
-  // const handleBackButtonClick = () => {
-  //   setNotHome(true);
-
-  //   if (UserRole === 'Hospital Technician') {
-  //       navigate('/patient-monitor');
-  //   } else {
-  //       navigate('/patient-monitor');
-  //   }
-
-
-  // };
-
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
@@ -148,166 +136,108 @@ export const Header: FC<HeaderProps> = (props) => {
           borderBottom: theme.palette.mode === 'dark' ? `1px solid ${theme.palette.divider}` : 'none',
         }}
       >
-        <Toolbar>
+        {/* ✅ FIX 1: disableGutters + sx override removes default Toolbar min-height on mobile */}
+        <Toolbar sx={{ px: { xs: 1, sm: 2 }, minHeight: { xs: 52, sm: 64 } }}>
           {!isLoading && isAuthenticated && (
             <>
-              <div style={{ marginRight: 'auto' }}>
-                <Box sx={{ width: '55%', maxWidth: '55%', display: 'flex' }}>
-
-                  {/* <IconButton    onClick={handleBackButtonClick}   sx={{height:'40px',  cursor: 'pointer'}}>
-              <ArrowBackIcon style={{color: darkTheme ? 'white' : '#124D81' }} />        */}
-                  {/* < DehazeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} /> */}
-                  {/*        
-      </IconButton> */}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      minWidth: isMobile ? '80px' : '120px'
+              {/* ✅ FIX 2: Remove the hardcoded width:'55%' wrapper — just use marginRight:'auto' directly */}
+              <Box sx={{ marginRight: 'auto', display: 'flex', alignItems: 'center' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minWidth: isMobile ? '60px' : '120px',
+                  }}
+                >
+                  <img
+                    src={pmsLogo}
+                    alt="Logo"
+                    style={{ width: isMobile ? '60px' : '120px', height: 'auto' }}
+                  />
+                  <Typography
+                    variant="h2"
+                    style={{
+                      color: props.darkTheme ? 'white' : '#124D81',
+                      fontSize: isMobile ? '0.75rem' : '1.5rem',
+                      fontWeight: 400,
+                      lineHeight: 1,
                     }}
-
                   >
-                    <img
-                      src={pmsLogo} // Replace with your logo path
-                      alt="Logo"
-                      style={{
-                        width: isMobile ? '60px' : '120px',
-                        height: 'auto'
-                      }}
-                    />
+                    <span style={{ color: '#185284' }}>Neo</span>
+                    <span style={{ color: '#01AEEE', marginLeft: '2px' }}>Life</span>
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Stack direction="row" justifyContent="center" textAlign="center" alignItems="center">
+                <Divider
+                  orientation="vertical"
+                  flexItem
+                  sx={{ backgroundColor: darkTheme ? '#1C1C1E' : '#D6D6D6' }}
+                />
+
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <IconButton onClick={handleMenu} sx={{ height: '40px', px: { xs: 0.5, sm: 1 } }}>
+                    <AccountCircleRoundedIcon style={{ color: darkTheme ? 'white' : '#124D81' }} />
+                    {/* ✅ FIX 3: Truncate long names */}
                     <Typography
-                      variant="h2"
+                      variant="caption"
                       style={{
-                        color: props.darkTheme ? 'white' : '#124D81',
-                        fontSize: isMobile ? '0.9rem' : '1.5rem',
-                        fontWeight: 400,
-                        lineHeight: 1,
+                        color: darkTheme ? 'white' : '#124D81',
+                        maxWidth: isMobile ? '80px' : '160px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        display: 'inline-block',
                       }}
                     >
-                      <span style={{ color: '#185284' }}>Neo</span>
-                      <span style={{ color: '#01AEEE', marginLeft: '2px' }}>Life</span>
-                    </Typography>
-                  </Box>
-                </Box>
-
-
-
-
-              </div>
-              <Stack direction={'row'} justifyContent={'center'} textAlign={'center'} >
-                {/* {notHome && UserRole === 'Hospital Technician' && (
-                      <>
-                       
-                       <FormControl
-  variant="standard"
-  sx={{
-    width: '160px',
-    borderRadius: '16px',
-    height:'35px',
-    backgroundColor: darkTheme ? '#1C1C1E' : '#868E96',
-    '& .MuiInput-underline:before': { // Remove underline before focus
-      borderBottom: 'none',
-    },
-    
-    '& .MuiInput-underline:hover:not(.Mui-disabled):before': { // Remove underline on hover
-      borderBottom: 'none',
-    },
-  }}
->
-                        <Select label="Room" onChange={handleSetRoom} value={room}  MenuProps={{MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81',color: '#FFFFFF',},},}}sx={{ color: darkTheme?'white': 'grey' }}>
-                            {temproom.map((room) => {
-                                 return (
-                               <MenuItem key={room.resource.id} onClick={() => {setNotHome(true);}} value={String(room.resource.name)} sx={{justifyContent: 'center',padding: '6%',backgroundColor: '#F3F2F7',color: '#124D81'}}>
-                                {room.resource.name.toString()}
-                                </MenuItem>
-                                 );
-                              })}
-                            
-              <MenuItem value="R&D" sx={{width: '250px',padding: '6%', paddingLeft:'20px',backgroundColor: '#F3F2F7', color: '#124D81',borderTop:'1px solid black'}} onClick={() => {navigate('/rooms');setNotHome(false);setPrevRoom(room);}}>Rooms & Device Settings <SettingsIcon sx={{ marginLeft: 'auto' }}/></MenuItem>
-            </Select> </FormControl>
-                      </>
-                    )}
-                    {notHome && UserRole === 'Hospital Clinician' && (
-                      <>
-                        <FormControl variant="standard"  sx={{ width: '150px', backgroundColor: darkTheme?'':'#F3F2F7',borderRadius: '25px',border: '2px solid #BFDEFF'}}>
-                          
-                          <Select label="Room" onChange={handleSetRoom} style={{ height: '40px' }} value={room} disableUnderline MenuProps={{ MenuListProps: { disablePadding: true },sx: { '&& .Mui-selected': { backgroundColor: '#124D81', color: '#FFFFFF' } },}} sx={{ color: darkTheme ? '#BFDEFF' : '#124D81',}}
->
-
-               
-            {temproom.map((room) => {
-                              
-                      return (
-                        <MenuItem key={room.resource.id} onClick={() => {setNotHome(true)
-                         if(UserRole=='Hospital Clinician'){
-                              navigate('/patient-monitor')
-                            }
-                            else{
-                              navigate('/device-monitor')
-                            }
-                          }}
-                          value={String(room.resource.name)}
-                          sx={{
-                            justifyContent: 'center',
-                            padding: '6%',
-                            backgroundColor: '#F3F2F7',
-                            color: '#124D81',
-                          }}
-                        
-                        >
-                         
-                          {room.resource.name.toString()} 
-                        </MenuItem>
-                        
-                      );
-                      
-                    })}
-                <MenuItem value="R&1" sx={{justifyContent: 'center',padding: '6%',backgroundColor: '#F3F2F7',color: '#124D81'}} onClick={() => {navigate('/all-patient');setNotHome(true);setPrevRoom(room);}}>All Patients</MenuItem>   
-            
-                    </Select>
-                        </FormControl>
-                       
-                  
-                        
-                      </>
-                    )} */}
-                <Divider orientation="vertical" flexItem sx={{ backgroundColor: darkTheme ? '#1C1C1E' : '#D6D6D6' }} />
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-
-                  <IconButton onClick={handleMenu} sx={{ height: '40px' }}>
-                    <AccountCircleRoundedIcon style={{ color: darkTheme ? 'white' : '#124D81' }} />
-                    {/* < DehazeIcon style={{ color: darkTheme ? '#BFDEFF' : '#124D81', fontSize: '1.8rem' }} /> */}
-                    <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
                       {user?.name}
-
                     </Typography>
                   </IconButton>
 
                   <Menu
                     anchorEl={anchorEl}
                     open={state}
-                    onClose={() => { setAnchorEl(null); }}
+                    onClose={() => setAnchorEl(null)}
                     MenuListProps={{ disablePadding: true }}
-                    sx={{
-                      '& .MuiPaper-root': {
-                        borderRadius: '16px'
-                      }
+                    // ✅ FIX 4: Constrain menu to viewport width on mobile
+                    PaperProps={{
+                      sx: {
+                        width: { xs: 'calc(100vw - 32px)', sm: '270px' },
+                        maxWidth: '270px',
+                        borderRadius: '16px',
+                      },
                     }}
+                    // Anchor to bottom-right of the button on mobile so it doesn't go off-screen
+                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                   >
-                    <Box width={'270px'} sx={{ backgroundColor: darkTheme ? '#000000' : '#F3F2F7', color: darkTheme ? '' : '#124D81', border: '4px solid  #AEAEAE', borderRadius: '16px' }}>
-
-                      <Stack direction={'row'} width={'100%'} padding={'5px'} alignItems="center">
-                        <Box alignContent={'center'} sx={{ marginRight: '8px', marginTop: '0px' }}>
-                          <AccountCircleRoundedIcon style={{ fontSize: '44px', color: darkTheme ? 'white' : '#124D81' }} />
+                    <Box
+                      sx={{
+                        backgroundColor: darkTheme ? '#000000' : '#F3F2F7',
+                        color: darkTheme ? '' : '#124D81',
+                        border: '4px solid #AEAEAE',
+                        borderRadius: '16px',
+                      }}
+                    >
+                      <Stack direction="row" width="100%" padding="5px" alignItems="center">
+                        <Box sx={{ marginRight: '8px' }}>
+                          <AccountCircleRoundedIcon
+                            style={{ fontSize: '44px', color: darkTheme ? 'white' : '#124D81' }}
+                          />
                         </Box>
-                        <Stack justifyContent="center">
-                          <Typography variant="h6" style={{ color: darkTheme ? 'white' : '#124D81' }}>
+                        <Stack justifyContent="center" sx={{ minWidth: 0 }}>  {/* minWidth:0 prevents text overflow */}
+                          <Typography
+                            variant="h6"
+                            style={{ color: darkTheme ? 'white' : '#124D81', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                          >
                             {user?.nickname}
-
                           </Typography>
-                          <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
+                          <Typography
+                            variant="caption"
+                            style={{ color: darkTheme ? 'white' : '#124D81', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                          >
                             {user?.email}
-
                           </Typography>
                           <Typography variant="caption" style={{ color: darkTheme ? 'white' : '#124D81' }}>
                             {user?.role}
@@ -315,7 +245,7 @@ export const Header: FC<HeaderProps> = (props) => {
                         </Stack>
                       </Stack>
 
-                      <Stack direction="row" justifyContent="flex-end" paddingBottom="12px" paddingRight="22px">
+                      <Stack direction="row" justifyContent="flex-end" pb="12px" pr="22px">
                         <Button
                           onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
                           sx={{ backgroundColor: '#124D81', color: 'white', textTransform: 'capitalize' }}
@@ -326,36 +256,16 @@ export const Header: FC<HeaderProps> = (props) => {
 
                       <Divider sx={{ border: '0.3px solid #AEAEAE' }} />
 
-                      {/* <Divider sx={{ border: '0.3px solid grey' }} /> */}
-                      <Stack direction="row" width="100%" justifyContent="space-around"   >
-                        <Typography variant="subtitle1" style={{ marginRight: '50px', marginTop: '4px' }}>Dark Mode</Typography>
-                        <Switch
-                          onChange={toggleDarkTheme}
-                          checked={darkTheme}
-                          sx={{
-
-                            '& .MuiSwitch-switchBase.Mui-checked': {
-                              color: '#FFFFFF',
-                              '&:hover': {
-                                backgroundColor: 'rgba(18, 77, 129, 0.08)',
-                              },
-                            },
-                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                              backgroundColor: '#00AEEE',
-                            },
-                            '& .MuiSwitch-track': {
-                              backgroundColor: 'grey',
-                            },
-                          }}
-                        />
+                      <Stack direction="row" width="100%" justifyContent="space-around" alignItems="center">
+                        <Typography variant="subtitle1" style={{ marginTop: '4px' }}>Theme</Typography>
+                        <IconButton onClick={toggleDarkTheme}>
+                          <DarkModeOutlinedIcon sx={{ color: '#64748B' }} />
+                        </IconButton>
                       </Stack>
                     </Box>
                   </Menu>
                 </div>
               </Stack>
-
-
-
             </>
           )}
         </Toolbar>

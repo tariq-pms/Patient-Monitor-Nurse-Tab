@@ -55,7 +55,8 @@ const defaultModulePermissions: ModulePermissions = {
   "Diagnostics": { create: false, view: false, edit: false, delete: false },
   "Consent Forms": { create: false, view: false, edit: false, delete: false },
   "Clinical Notes":{ create: false, view: false, edit: false, delete: false },
-  "Initial Assessment":{ create: false, view: false, edit: false, delete: false }
+  "Initial Assessment":{ create: false, view: false, edit: false, delete: false },
+  "Venti Chart":{ create: false, view: false, edit: false, delete: false }
 };
 
 export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) => {
@@ -416,8 +417,9 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
   
     try {
       // 1. Search for practitioner by identifier (Auth0 user ID)
+      const searchQuery = encodeURIComponent(selectedUser.name || selectedUser.email);
       const searchResponse = await fetch(
-        `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?name=${selectedUser?.name}`, 
+        `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?name=${searchQuery}`, 
         {
           headers: {
             Authorization: "Basic " + btoa("fhiruser:change-password"),
@@ -533,10 +535,11 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
   };
   
   // FIXED: Enhanced permission fetching with better search
-  const fetchUserPermissionsFromFHIR = async (_user: any) => {
+  const fetchUserPermissionsFromFHIR = async (user: User) => {
     try {
+      const searchQuery = encodeURIComponent(user.name || user.email);
       const response = await fetch(
-        `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?name=${selectedUser?.name}`, 
+        `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?name=${searchQuery}`, 
         {
           headers: {
             Authorization: "Basic " + btoa("fhiruser:change-password"),
@@ -591,36 +594,38 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
   //   await fetchUserPermissionsFromFHIR(user.user_id);
   // };
 
-  const debugSearchResults = async (_user: any) => {
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?name=${selectedUser?.name}`, 
-        {
-          headers: {
-            Authorization: "Basic " + btoa("fhiruser:change-password"),
-          },
-        }
-      );
+  // const debugSearchResults = async (user: User) => {
+  //   try {
+  //     const searchQuery = encodeURIComponent(user.name || user.email);
+  //     const response = await fetch(
+  //       `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?name=${searchQuery}`, 
+  //       {
+  //         headers: {
+  //           Authorization: "Basic " + btoa("fhiruser:change-password"),
+  //         },
+  //       }
+  //     );
       
-      const data = await response.json();
-      console.log('Search results:', data);
-      console.log('Entries:', data.entry);
+  //     const data = await response.json();
+  //     console.log('Search results:', data);
+  //     console.log('Entries:', data.entry);
       
-      if (data.entry && data.entry.length > 0) {
-        console.log('First entry:', data.entry[0]);
-        console.log('Practitioner resource:', data.entry[0].resource);
-        console.log('Extensions:', data.entry[0].resource?.extension);
-      }
-    } catch (error) {
-      console.error('Debug error:', error);
-    }
-  };
+  //     if (data.entry && data.entry.length > 0) {
+  //       console.log('First entry:', data.entry[0]);
+  //       console.log('Practitioner resource:', data.entry[0].resource);
+  //       console.log('Extensions:', data.entry[0].resource?.extension);
+  //     }
+  //   } catch (error) {
+  //     console.error('Debug error:', error);
+  //   }
+  // };
   
   // Call this in your permission dialog opening
-  const handleOpenPermissionDialog = (user: User) => {
+  const handleOpenPermissionDialog = async (user: User) => {
     setSelectedUser(user);
-    debugSearchResults(user.user_id); // Temporary debug
-    fetchUserPermissionsFromFHIR(user.user_id);
+    setUserPermissions(defaultModulePermissions); // Reset first
+    // debugSearchResults(user); // Temporary debug
+    await fetchUserPermissionsFromFHIR(user);
     setPermissionDialogOpen(true);
   };
   const formatDate = (dateString?: string) => {
