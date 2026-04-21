@@ -16,6 +16,7 @@ import jsPDF from "jspdf";
 import DownloadIcon from "@mui/icons-material/Download";
 import html2canvas from "html2canvas";
 import CloseIcon from "@mui/icons-material/Close";
+import { saveVitalsToFHIR } from '../utils/fhirVitals';
 interface BirthHistory {
   chiefComplaints: string;
   presentIllness: string;
@@ -871,6 +872,8 @@ const [openEntryDialog, setOpenEntryDialog] = useState(false);
 //   }
 // };
 
+
+
 const saveInitialAssessment = async (patientId: string, encounterId: string) => {
   
   const savedResourceIds: string[] = [];
@@ -1108,53 +1111,24 @@ const components = [
  
    
     /* 3️⃣ VITALS & 4️⃣ ANTHROPOMETRY */
-     const vitalsPayload = {
-          resourceType: "Observation",
-          status: "final",
-          category: [{
-            coding: [{
-              system: "http://terminology.hl7.org/CodeSystem/observation-category",
-              code: "vital-signs",
-              display: "Vital Signs"
-            }]
-          }],
-          code: { text: "Vitals" },
-          subject: { reference: `Patient/${patientId}` },
-          encounter: { reference: `Encounter/${encounterId}` },
-         component: [
-            {   code: { text: "Body Temperature" },
-                valueQuantity: vitals.temp
-                ? { value: Number(vitals.temp), unit: "°C" }
-                : undefined,
-            },
-            {
-              code: { text: "Heart Rate" },
-              valueQuantity: vitals.hr
-                ? { value: Number(vitals.hr), unit: "beats/min" }
-                : undefined,
-            },
-
-            {
-              code: { text: "Respiratory Rate" },
-              valueQuantity: vitals.rr
-                ? { value: Number(vitals.rr), unit: "breaths/min" }
-                : undefined,
-            },
-
-            {
-              code: { text: "Oxygen Saturation" },
-              valueQuantity: vitals.spo2
-                ? { value: Number(vitals.spo2), unit: "%" }
-                : undefined,
-            },
-            {
-             code: { text: "Other Related Notes" },
-             valueString: vitals.relatedText,
-            },
-          ].filter(
-            (c) => c.valueQuantity || (c.valueString && c.valueString.trim() !== "")
-          ),
-        };
+     // We now save and merge vitals using the common service!
+     // We remove the old static payload creation.
+     try {
+       const vitalsData = {
+         hr: vitals.hr,
+         rr: vitals.rr,
+         spo2: vitals.spo2,
+         temp: vitals.temp,
+         relatedText: vitals.relatedText,
+       };
+       const vitalId = await saveVitalsToFHIR(patientId, vitalsData);
+       if (vitalId) {
+         savedResourceIds.push(`Observation/${vitalId}`);
+         console.log("✅ Vitals Synced & Tracked via fhirVitals.ts:", `Observation/${vitalId}`);
+       }
+     } catch (err) {
+       console.error("❌ Failed to save vitals using standard service", err);
+     }
         const anthropometryPayload = {
           resourceType: "Observation",
           status: "final",
@@ -1197,9 +1171,7 @@ const components = [
             },
           ].filter((c) => c.valueQuantity),
         };
-    await postResource("Observation", vitalsPayload);
     await postResource("Observation", anthropometryPayload);
-    console.log("vitalsPayload",vitalsPayload);
     console.log("anthropometryPayload",anthropometryPayload);
  
 

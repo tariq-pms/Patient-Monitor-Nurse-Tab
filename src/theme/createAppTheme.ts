@@ -56,7 +56,7 @@ export const createAppTheme = (mode: ThemeMode) => {
             },
         },
         typography: {
-            fontFamily: '"Noto Sans", "Roboto", "Helvetica", "Arial", sans-serif',
+            fontFamily: '"Inter", sans-serif',
             allVariants: {
                 userSelect: 'none',
             },

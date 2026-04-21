@@ -3,7 +3,7 @@ import {
   Box, Typography, Button, IconButton, Stack, Chip, TextField, Paper, Divider,
   Grid, Accordion, AccordionSummary, AccordionDetails, ToggleButton, ToggleButtonGroup, Tooltip,
   useTheme, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions,
-  Checkbox, List, ListItem, ListItemButton, ListItemText, InputAdornment
+  Checkbox, List, ListItem, ListItemButton, ListItemText, InputAdornment, Autocomplete
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import VaccinesIcon from '@mui/icons-material/Vaccines';
@@ -180,6 +180,32 @@ const SYSTEMIC_CONDITIONS: Record<string, string[]> = {
   'General': ['Active', 'Lethargic', 'Irritable']
 };
 
+const THERAPY_OPTIONS = [
+  'Phototherapy', 'CPAP', 'Mechanical ventilation', 'Oxygen therapy (hood / nasal prongs)',
+  'Surfactant therapy', 'Kangaroo Mother Care (KMC)', 'Exchange transfusion',
+  'Blood transfusion (PRBC / FFP / platelets)', 'Therapeutic hypothermia', 'Other therapy'
+];
+
+const INJECTION_OPTIONS = [
+  'Vitamin K', 'Hepatitis B vaccine', 'BCG vaccine', 'OPV / IPV', 'Other vaccine',
+  'Blood product (PRBC / FFP / platelets)', 'Other injection / procedure'
+];
+
+const FEED_MODE_OPTIONS = [
+  'Direct breastfeed', 'Expressed Breast Milk (EBM) - OG/NG', 'Donor human milk',
+  'Preterm formula', 'Term formula', 'Fortified breast milk (with HMF)',
+  'NPO (feeds withheld)', 'Other mode'
+];
+
+const FLUID_OPTIONS = [
+  'D10', 'D10 + electrolytes', 'Normal Saline (NS)', 'Ringer Lactate (RL)',
+  'TPN (Total Parenteral Nutrition)', 'Other fluid'
+];
+
+const ELECTROLYTE_OPTIONS = [
+  'Sodium', 'Potassium', 'Calcium', 'Magnesium', 'None', 'Other electrolyte'
+];
+
 
 export const Treatment = ({
   patient_name,
@@ -197,6 +223,16 @@ export const Treatment = ({
   const [activeInputTab, setActiveInputTab] = useState('Conditions');
   const [objectiveViewMode, setObjectiveViewMode] = useState<'current' | 'previous'>('current');
   const [expandedSystem, setExpandedSystem] = useState<string | false>('General');
+
+  // Local state for new entries
+  const [newTherapyType, setNewTherapyType] = useState<string | null>(null);
+  const [newTherapyOther, setNewTherapyOther] = useState('');
+  const [newTherapyDetails, setNewTherapyDetails] = useState('');
+
+  const [newInjectionName, setNewInjectionName] = useState<string | null>(null);
+  const [newInjectionOther, setNewInjectionOther] = useState('');
+  const [newInjectionTime, setNewInjectionTime] = useState('');
+  const [newInjectionSite, setNewInjectionSite] = useState('');
   const [activeTreatmentTab, setActiveTreatmentTab] = useState('Medications');
   const [deletedMedicationIds, setDeletedMedicationIds] = useState<string[]>([]); // Track deleted meds for FHIR update
   const [layoutMode, setLayoutMode] = useState<'stack' | 'side-by-side'>('stack'); // UI Toggle
@@ -520,7 +556,7 @@ export const Treatment = ({
       } catch (e) { console.error("Load failed", e); }
     };
     fetchNotes();
-  }, [patient_resource_id]);
+  }, [patient_id]);
 
   // Active Form State
   const [formState, setFormState] = useState<NoteData | null>(null);
@@ -709,7 +745,7 @@ export const Treatment = ({
       id: Date.now().toString(),
       timestamp: new Date().toISOString(),
       author: user?.name || 'Dr. Unknown',
-      attendingConsultants: lastNote?.attendingConsultants || 'Dr. Tariq & Dr. Ankit Mittal',
+      attendingConsultants: lastNote?.attendingConsultants || ' ',
       attachments: [],
       historyText: '', // Start fresh
       selectedConditions: lastNote?.selectedConditions || [], // COPY conditions
@@ -1711,18 +1747,14 @@ export const Treatment = ({
               {note.therapies.map(therapy => (
                 <Paper key={therapy.id} elevation={0} sx={{
                   bgcolor: '#fff',
-                  p: 2,
+                  p: 1.5,
                   borderRadius: '8px',
                   border: '1px solid #e2e8f0',
-                  borderLeft: '4px solid #f59e0b', // Amber accent
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
+                  borderLeft: '4px solid #f59e0b',
                 }}>
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#b45309', mb: 0.5 }}>{therapy.type}</Typography>
-                    <Typography variant="body2" sx={{ color: '#475569' }}>{therapy.details}</Typography>
-                  </Box>
+                  <Typography variant="body2" sx={{ color: '#334155' }}>
+                    <strong style={{ color: '#b45309' }}>{therapy.type}</strong> - {therapy.details}
+                  </Typography>
                 </Paper>
               ))}
             </Box>
@@ -1730,58 +1762,40 @@ export const Treatment = ({
         )}
 
         {/* Feeds & Fluids */}
-        {(note.feedsAndFluids?.enteralFeeds || note.feedsAndFluids?.ivFluids) && (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#3b82f6', mb: 2, textTransform: 'uppercase' }}><strong>FEEDS & FLUIDS</strong></Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 2 }}>
-              {/* Enteral Feeds */}
-              {note.feedsAndFluids.enteralFeeds && (
-                <Paper elevation={0} sx={{
-                  bgcolor: '#fff', p: 2, borderRadius: '12px',
-                  border: '1px solid #e2e8f0',
-                  borderLeft: '4px solid #ec4899', // Pink accent
-                }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#be185d' }}>ENTERAL FEEDS</Typography>
-                  </Box>
-                  <Box sx={{ pl: 0.5 }}>
-                    <Box sx={{ mb: 1 }}>
-                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>MODE</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>{note.feedsAndFluids.enteralFeeds.mode}</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>VOLUME / FREQUENCY</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>{note.feedsAndFluids.enteralFeeds.volumeFreq}</Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-              )}
+        {((note.feedsAndFluids?.enteralFeeds && (note.feedsAndFluids.enteralFeeds.mode || note.feedsAndFluids.enteralFeeds.volumeFreq)) ||
+          (note.feedsAndFluids?.ivFluids && (note.feedsAndFluids.ivFluids.type || note.feedsAndFluids.ivFluids.electrolytes))) && (
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#3b82f6', mb: 2, textTransform: 'uppercase' }}><strong>FEEDS & FLUIDS</strong></Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {/* Enteral Feeds */}
+                {note.feedsAndFluids.enteralFeeds && (note.feedsAndFluids.enteralFeeds.mode || note.feedsAndFluids.enteralFeeds.volumeFreq) && (
+                  <Paper elevation={0} sx={{
+                    bgcolor: '#fff', p: 1.5, borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    borderLeft: '4px solid #ec4899', // Pink accent
+                  }}>
+                    <Typography variant="body2" sx={{ color: '#334155' }}>
+                      <strong style={{ color: '#be185d' }}>Feeds:</strong> {[note.feedsAndFluids.enteralFeeds.mode, note.feedsAndFluids.enteralFeeds.volumeFreq].filter(Boolean).join(', ')}
+                    </Typography>
+                  </Paper>
+                )}
 
-              {/* IV Fluids */}
-              {note.feedsAndFluids.ivFluids && (
-                <Paper elevation={0} sx={{
-                  bgcolor: '#fff', p: 2, borderRadius: '12px',
-                  border: '1px solid #e2e8f0',
-                  borderLeft: '4px solid #3b82f6', // Blue accent
-                }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1d4ed8' }}>IV FLUIDS</Typography>
-                  </Box>
-                  <Box sx={{ pl: 0.5 }}>
-                    <Box sx={{ mb: 1 }}>
-                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>TYPE</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>{note.feedsAndFluids.ivFluids.type}</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>ELECTROLYTES</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>{note.feedsAndFluids.ivFluids.electrolytes}</Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-              )}
+                {/* IV Fluids */}
+                {note.feedsAndFluids.ivFluids && (note.feedsAndFluids.ivFluids.type || note.feedsAndFluids.ivFluids.electrolytes) && (
+                  <Paper elevation={0} sx={{
+                    bgcolor: '#fff', p: 1.5, borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    borderLeft: '4px solid #3b82f6', // Blue accent
+                  }}>
+                    <Typography variant="body2" sx={{ color: '#334155' }}>
+                      <strong style={{ color: '#1d4ed8' }}>IV Fluids:</strong> {note.feedsAndFluids.ivFluids.type}{note.feedsAndFluids.ivFluids.electrolytes ? ` with ${note.feedsAndFluids.ivFluids.electrolytes}` : ''}
+                    </Typography>
+                  </Paper>
+                )}
+              </Box>
             </Box>
-          </Box>
-        )}
+          )}
+
 
         {/* Injections */}
         {note.injections && note.injections.length > 0 && (
@@ -1799,15 +1813,13 @@ export const Treatment = ({
                   borderBottom: idx !== note.injections.length - 1 ? '1px solid #f1f5f9' : 'none'
                 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Box sx={{ minWidth: 28, width: 28, height: 28, borderRadius: '50%', bgcolor: '#d1fae5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Typography sx={{ color: '#059669', fontSize: '0.8rem', fontWeight: 700 }}>✓</Typography>
+                    <Box sx={{ minWidth: 24, width: 24, height: 24, borderRadius: '50%', bgcolor: '#d1fae5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Typography sx={{ color: '#059669', fontSize: '0.7rem', fontWeight: 700 }}>✓</Typography>
                     </Box>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155' }}>{injection.name}</Typography>
-                      <Typography variant="caption" sx={{ color: '#64748b' }}>{injection.site}</Typography>
-                    </Box>
+                    <Typography variant="body2" sx={{ color: '#334155' }}>
+                      <strong>{injection.name}</strong> at {injection.site} given at <strong>{injection.time}</strong>
+                    </Typography>
                   </Box>
-                  <Chip label={injection.time} size="small" sx={{ bgcolor: '#f1f5f9', color: '#475569', fontWeight: 600, height: 24 }} />
                 </Box>
               ))}
             </Paper>
@@ -1873,7 +1885,7 @@ export const Treatment = ({
       <Divider sx={{ borderStyle: 'dashed', mb: 3 }} />
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#64748b' }}>
         <GroupIcon fontSize="small" />
-        <Typography variant="caption" sx={{ fontWeight: 700 }}>Attending Consultants: {note.attendingConsultants || 'Dr. Tariq & Dr. Ankit Mittal'}</Typography>
+        <Typography variant="caption" sx={{ fontWeight: 700 }}>Attending Consultants: {note.attendingConsultants || ''}</Typography>
       </Box>
 
       {/* Attachments Display */}
@@ -1922,7 +1934,7 @@ export const Treatment = ({
   );
 
   return (
-    <Box sx={{ width: '100%', height: isEditing && layoutMode === 'stack' ? 'calc(100vh - 72px)' : 'auto', minHeight: '100vh',  overflow: isEditing && layoutMode === 'stack' ? 'hidden' : 'visible', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ width: '100%', height: isEditing && layoutMode === 'stack' ? 'calc(100vh - 72px)' : 'auto', minHeight: '100vh', bgcolor: '#f8fafc', overflow: isEditing && layoutMode === 'stack' ? 'hidden' : 'visible', display: 'flex', flexDirection: 'column' }}>
 
       {/* Print Styles */}
       <style>
@@ -2065,7 +2077,7 @@ export const Treatment = ({
           flexShrink: 0, // Prevent header from shrinking
           px: 4, pt: 3, pb: 2,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-         
+          bgcolor: '#f8fafc',
           borderBottom: isEditing ? 'none' : '1px solid transparent',
           width: '75%', mx: 'auto'
         }}
@@ -2699,38 +2711,70 @@ export const Treatment = ({
                           </Box>
                         ))}
                         {formState.therapies.length === 0 && <Box sx={{ p: 4, textAlign: 'center', color: '#94a3b8' }}>No therapies added.</Box>}
-                        <Box sx={{ p: 2, borderTop: '1px solid #e2e8f0', display: 'flex', gap: 2 }}>
-                          <TextField
-                            placeholder="Therapy type (e.g., Phototherapy, CPAP)"
-                            size="small"
-                            sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                            id="therapy-type-input"
-                          />
-                          <TextField
-                            placeholder="Details (e.g., Bili lights ON, TcB 8.5 mg/dL)"
-                            size="small"
-                            sx={{ flex: 2, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                            id="therapy-details-input"
-                          />
-                          <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            sx={{ textTransform: 'none', borderRadius: '8px', bgcolor: '#3b82f6', '&:hover': { bgcolor: '#2563eb' } }}
-                            onClick={() => {
-                              const typeInput = document.getElementById('therapy-type-input') as HTMLInputElement;
-                              const detailsInput = document.getElementById('therapy-details-input') as HTMLInputElement;
-                              if (typeInput.value && detailsInput.value) {
-                                setFormState({
-                                  ...formState,
-                                  therapies: [...formState.therapies, { id: Date.now(), type: typeInput.value, details: detailsInput.value }]
-                                });
-                                typeInput.value = '';
-                                detailsInput.value = '';
-                              }
-                            }}
-                          >
-                            Add
-                          </Button>
+                        <Box sx={{ p: 2, borderTop: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <Box sx={{ display: 'flex', gap: 2 }}>
+                            <Autocomplete
+                              fullWidth
+                              size="small"
+                              options={THERAPY_OPTIONS}
+                              value={newTherapyType}
+                              onChange={(_, newValue) => setNewTherapyType(newValue)}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  placeholder="Select Therapy"
+                                />
+                              )}
+                              sx={{ flex: 1 }}
+                            />
+                            <TextField
+                              placeholder="Details (e.g., Bili lights ON, TcB 8.5 mg/dL)"
+                              size="small"
+                              sx={{ flex: 2, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                              value={newTherapyDetails}
+                              onChange={(e) => setNewTherapyDetails(e.target.value)}
+                            />
+                            <Button
+                              variant="contained"
+                              startIcon={<AddIcon />}
+                              sx={{ textTransform: 'none', borderRadius: '8px', bgcolor: '#3b82f6', '&:hover': { bgcolor: '#2563eb' } }}
+                              onClick={() => {
+                                let selectedType = newTherapyType;
+                                if (selectedType === 'Other therapy' && newTherapyOther) {
+                                  selectedType = newTherapyOther;
+                                }
+
+                                if (selectedType && newTherapyDetails) {
+                                  setFormState({
+                                    ...formState,
+                                    therapies: [...formState.therapies, {
+                                      id: Date.now(),
+                                      type: selectedType,
+                                      details: newTherapyDetails
+                                    }]
+                                  });
+                                  // Reset local states
+                                  setNewTherapyType(null);
+                                  setNewTherapyOther('');
+                                  setNewTherapyDetails('');
+                                }
+                              }}
+                            >
+                              Add
+                            </Button>
+                          </Box>
+                          {newTherapyType === 'Other therapy' && (
+                            <Box>
+                              <TextField
+                                fullWidth
+                                placeholder="Please specify other therapy..."
+                                size="small"
+                                value={newTherapyOther}
+                                onChange={(e) => setNewTherapyOther(e.target.value)}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                              />
+                            </Box>
+                          )}
                         </Box>
                       </Box>
                     ) : activeTreatmentTab === 'Feeds & Fluids' ? (
@@ -2741,20 +2785,40 @@ export const Treatment = ({
                             ENTERAL FEEDS
                           </Typography>
                           <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                            <TextField
-                              label="Mode"
-                              placeholder="e.g., Breast milk"
-                              size="small"
-                              value={formState.feedsAndFluids.enteralFeeds?.mode || ''}
-                              onChange={(e) => setFormState({
-                                ...formState,
-                                feedsAndFluids: {
-                                  ...formState.feedsAndFluids,
-                                  enteralFeeds: { mode: e.target.value, volumeFreq: formState.feedsAndFluids.enteralFeeds?.volumeFreq || '' }
+                            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                              <Autocomplete
+                                fullWidth
+                                size="small"
+                                options={FEED_MODE_OPTIONS}
+                                value={
+                                  (formState.feedsAndFluids.enteralFeeds?.mode === 'Other mode' || (!FEED_MODE_OPTIONS.includes(formState.feedsAndFluids.enteralFeeds?.mode || '') && formState.feedsAndFluids.enteralFeeds?.mode !== ''))
+                                    ? 'Other mode'
+                                    : (formState.feedsAndFluids.enteralFeeds?.mode || null)
                                 }
-                              })}
-                              sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                            />
+                                onChange={(_, newValue) => setFormState({
+                                  ...formState,
+                                  feedsAndFluids: {
+                                    ...formState.feedsAndFluids,
+                                    enteralFeeds: { ...formState.feedsAndFluids.enteralFeeds, mode: newValue || '', volumeFreq: formState.feedsAndFluids.enteralFeeds?.volumeFreq || '' }
+                                  }
+                                })}
+                                renderInput={(params) => <TextField {...params} label="Mode" placeholder="Select Mode" />}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                              />
+                              {(formState.feedsAndFluids.enteralFeeds?.mode === 'Other mode' || (!FEED_MODE_OPTIONS.includes(formState.feedsAndFluids.enteralFeeds?.mode || '') && formState.feedsAndFluids.enteralFeeds?.mode !== '')) && (
+                                <TextField
+                                  fullWidth
+                                  placeholder="Please specify other mode..."
+                                  size="small"
+                                  value={formState.feedsAndFluids.enteralFeeds?.mode === 'Other mode' ? '' : (formState.feedsAndFluids.enteralFeeds?.mode || '')}
+                                  onChange={(e) => setFormState({
+                                    ...formState,
+                                    feedsAndFluids: { ...formState.feedsAndFluids, enteralFeeds: { ...formState.feedsAndFluids.enteralFeeds, mode: e.target.value === '' ? 'Other mode' : e.target.value, volumeFreq: formState.feedsAndFluids.enteralFeeds?.volumeFreq || '' } }
+                                  })}
+                                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                                />
+                              )}
+                            </Box>
                             <TextField
                               label="Volume/Freq"
                               placeholder="e.g., 40 mL every 2 hours (480 mL/24h)"
@@ -2767,7 +2831,7 @@ export const Treatment = ({
                                   enteralFeeds: { mode: formState.feedsAndFluids.enteralFeeds?.mode || '', volumeFreq: e.target.value }
                                 }
                               })}
-                              sx={{ flex: 2, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                              sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '8px' }, alignSelf: 'flex-start' }}
                             />
                           </Box>
                         </Box>
@@ -2780,34 +2844,108 @@ export const Treatment = ({
                             IV FLUIDS & ELECTROLYTES
                           </Typography>
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            <TextField
-                              label="Fluids"
-                              placeholder="e.g., 5% DNS @ 20 mL/h (480 mL/24h)"
-                              size="small"
-                              value={formState.feedsAndFluids.ivFluids?.type || ''}
-                              onChange={(e) => setFormState({
-                                ...formState,
-                                feedsAndFluids: {
-                                  ...formState.feedsAndFluids,
-                                  ivFluids: { type: e.target.value, electrolytes: formState.feedsAndFluids.ivFluids?.electrolytes || '' }
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                              <Autocomplete
+                                fullWidth
+                                size="small"
+                                options={FLUID_OPTIONS}
+                                value={
+                                  (formState.feedsAndFluids.ivFluids?.type === 'Other fluid' || (!FLUID_OPTIONS.includes(formState.feedsAndFluids.ivFluids?.type || '') && formState.feedsAndFluids.ivFluids?.type !== ''))
+                                    ? 'Other fluid'
+                                    : (formState.feedsAndFluids.ivFluids?.type || null)
                                 }
-                              })}
-                              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                            />
-                            <TextField
-                              label="Electrolytes"
-                              placeholder="e.g., Na 130, K 4.5, Cl 101"
-                              size="small"
-                              value={formState.feedsAndFluids.ivFluids?.electrolytes || ''}
-                              onChange={(e) => setFormState({
-                                ...formState,
-                                feedsAndFluids: {
-                                  ...formState.feedsAndFluids,
-                                  ivFluids: { type: formState.feedsAndFluids.ivFluids?.type || '', electrolytes: e.target.value }
-                                }
-                              })}
-                              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                            />
+                                onChange={(_, newValue) => setFormState({
+                                  ...formState,
+                                  feedsAndFluids: {
+                                    ...formState.feedsAndFluids,
+                                    ivFluids: { type: newValue || '', electrolytes: formState.feedsAndFluids.ivFluids?.electrolytes || '' }
+                                  }
+                                })}
+                                renderInput={(params) => <TextField {...params} label="Fluids" placeholder="Select Fluid" />}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                              />
+                              {(formState.feedsAndFluids.ivFluids?.type === 'Other fluid' || (!FLUID_OPTIONS.includes(formState.feedsAndFluids.ivFluids?.type || '') && formState.feedsAndFluids.ivFluids?.type !== '')) && (
+                                <TextField
+                                  fullWidth
+                                  placeholder="Please specify other fluid..."
+                                  size="small"
+                                  value={formState.feedsAndFluids.ivFluids?.type === 'Other fluid' ? '' : (formState.feedsAndFluids.ivFluids?.type || '')}
+                                  onChange={(e) => setFormState({
+                                    ...formState,
+                                    feedsAndFluids: { ...formState.feedsAndFluids, ivFluids: { type: e.target.value === '' ? 'Other fluid' : e.target.value, electrolytes: formState.feedsAndFluids.ivFluids?.electrolytes || '' } }
+                                  })}
+                                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                                />
+                              )}
+                            </Box>
+
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                              {(() => {
+                                const currentElectrolytesStr = formState.feedsAndFluids.ivFluids?.electrolytes || '';
+                                const selectedElectrolytes = currentElectrolytesStr.split(',').map(s => s.trim()).filter(Boolean);
+                                const predefinedSelected = selectedElectrolytes.filter(e => ELECTROLYTE_OPTIONS.includes(e) && e !== 'Other electrolyte');
+                                const customElectrolytes = selectedElectrolytes.filter(e => !ELECTROLYTE_OPTIONS.includes(e) && e !== 'Other electrolyte');
+                                const hasOther = selectedElectrolytes.includes('Other electrolyte') || customElectrolytes.length > 0;
+                                const electrolyteDropdownValue = [...predefinedSelected, ...(hasOther ? ['Other electrolyte'] : [])];
+
+                                return (
+                                  <>
+                                    <Autocomplete
+                                      multiple
+                                      fullWidth
+                                      size="small"
+                                      options={ELECTROLYTE_OPTIONS}
+                                      disableCloseOnSelect
+                                      value={electrolyteDropdownValue}
+                                      onChange={(_, newValue) => {
+                                        const keepsOther = newValue.includes('Other electrolyte');
+                                        const newCustom = keepsOther ? customElectrolytes : [];
+                                        const finalArray = newValue.filter(e => e !== 'Other electrolyte');
+                                        if (keepsOther && newCustom.length > 0) {
+                                          finalArray.push(...newCustom);
+                                        } else if (keepsOther) {
+                                          finalArray.push('Other electrolyte');
+                                        }
+                                        setFormState({
+                                          ...formState,
+                                          feedsAndFluids: {
+                                            ...formState.feedsAndFluids,
+                                            ivFluids: { type: formState.feedsAndFluids.ivFluids?.type || '', electrolytes: finalArray.join(', ') }
+                                          }
+                                        });
+                                      }}
+                                      renderInput={(params) => <TextField {...params} label="Electrolytes" placeholder="Select Electrolytes" />}
+                                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                                    />
+                                    {hasOther && (
+                                      <TextField
+                                        fullWidth
+                                        placeholder="Please specify other electrolytes (comma separated)..."
+                                        size="small"
+                                        value={customElectrolytes.join(', ')}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          const finalArray = [...predefinedSelected];
+                                          if (val.trim() !== '') {
+                                            finalArray.push(val);
+                                          } else {
+                                            finalArray.push('Other electrolyte');
+                                          }
+                                          setFormState({
+                                            ...formState,
+                                            feedsAndFluids: {
+                                              ...formState.feedsAndFluids,
+                                              ivFluids: { type: formState.feedsAndFluids.ivFluids?.type || '', electrolytes: finalArray.join(', ') }
+                                            }
+                                          });
+                                        }}
+                                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                                      />
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </Box>
                           </Box>
                         </Box>
                       </Box>
@@ -2829,57 +2967,83 @@ export const Treatment = ({
                           </Box>
                         ))}
                         {formState.injections.length === 0 && <Box sx={{ p: 4, textAlign: 'center', color: '#94a3b8' }}>No injections scheduled.</Box>}
-                        <Box sx={{ p: 2, borderTop: '1px solid #e2e8f0' }}>
-                          <Typography sx={{ fontWeight: 600, color: '#334155', mb: 2 }}>SCHEDULE NEW INJECTION</Typography>
-                          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                            <TextField
-                              placeholder="Injection Name (e.g., Vit K)"
+                        <Box sx={{ p: 2, borderTop: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <Typography sx={{ fontWeight: 600, color: '#334155', mb: 1 }}>SCHEDULE NEW INJECTION</Typography>
+                          <Box sx={{ display: 'flex', gap: 2 }}>
+                            <Autocomplete
+                              fullWidth
                               size="small"
-                              sx={{ flex: 2, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                              id="injection-name-input"
+                              options={INJECTION_OPTIONS}
+                              value={newInjectionName}
+                              onChange={(_, newValue) => setNewInjectionName(newValue)}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  placeholder="Select Injection"
+                                />
+                              )}
+                              sx={{ flex: 2 }}
                             />
                             <TextField
                               type="time"
                               size="small"
                               sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                              id="injection-time-input"
+                              value={newInjectionTime}
+                              onChange={(e) => setNewInjectionTime(e.target.value)}
                               InputLabelProps={{ shrink: true }}
                             />
                           </Box>
+                          {(newInjectionName === 'Other vaccine' || newInjectionName === 'Other injection / procedure') && (
+                            <Box>
+                              <TextField
+                                fullWidth
+                                placeholder="Please specify other injection/procedure..."
+                                size="small"
+                                value={newInjectionOther}
+                                onChange={(e) => setNewInjectionOther(e.target.value)}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                              />
+                            </Box>
+                          )}
                           <Box sx={{ display: 'flex', gap: 2 }}>
                             <TextField
                               placeholder="Site (e.g., Antero-lateral thigh)"
                               size="small"
                               sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                              id="injection-site-input"
+                              value={newInjectionSite}
+                              onChange={(e) => setNewInjectionSite(e.target.value)}
                             />
                             <Button
                               variant="contained"
                               sx={{ textTransform: 'none', borderRadius: '8px', bgcolor: '#10b981', '&:hover': { bgcolor: '#059669' } }}
                               onClick={() => {
-                                const nameInput = document.getElementById('injection-name-input') as HTMLInputElement;
-                                const timeInput = document.getElementById('injection-time-input') as HTMLInputElement;
-                                const siteInput = document.getElementById('injection-site-input') as HTMLInputElement;
-                                if (nameInput.value && timeInput.value && siteInput.value) {
+                                let selectedName = newInjectionName;
+                                if ((selectedName === 'Other vaccine' || selectedName === 'Other injection / procedure') && newInjectionOther) {
+                                  selectedName = newInjectionOther;
+                                }
+
+                                if (selectedName && newInjectionTime && newInjectionSite) {
                                   setFormState({
                                     ...formState,
                                     injections: [...formState.injections, {
                                       id: Date.now(),
-                                      name: nameInput.value,
+                                      name: selectedName,
                                       time: (() => {
-                                        const [h, m] = timeInput.value.split(':');
+                                        const [h, m] = newInjectionTime.split(':');
                                         const hour = parseInt(h);
                                         const ampm = hour >= 12 ? 'PM' : 'AM';
                                         const hour12 = hour % 12 || 12;
                                         return `${hour12}:${m} ${ampm}`;
                                       })(),
-                                      site: siteInput.value,
+                                      site: newInjectionSite,
                                       status: 'pending'
                                     }]
                                   });
-                                  nameInput.value = '';
-                                  timeInput.value = '';
-                                  siteInput.value = '';
+                                  // Reset local states
+                                  setNewInjectionName(null);
+                                  setNewInjectionOther('');
+                                  setNewInjectionTime('');
+                                  setNewInjectionSite('');
                                 }
                               }}
                             >

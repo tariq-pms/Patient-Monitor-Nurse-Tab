@@ -53,6 +53,7 @@ interface ApgarScreenProps {
   patient_id: string;
   patient_resource_id: string;
   UserRole: string;
+  canEdit?: boolean;
 
 }
 // export const DeviceInService: React.FC<DeviceInServiceProps> = ({
@@ -311,6 +312,7 @@ export const ApgarScreen: React.FC<ApgarScreenProps> = (props) => {
   return (
     <>
       <ProtectedModule module="Assessments" action="create">
+         {props.canEdit !== false && (
         <Box sx={{
 
           borderRadius: '25px',
@@ -422,6 +424,7 @@ export const ApgarScreen: React.FC<ApgarScreenProps> = (props) => {
               >
                 Reset
               </Button>
+             
               <Button
 
                 onClick={handleSave}
@@ -439,9 +442,10 @@ export const ApgarScreen: React.FC<ApgarScreenProps> = (props) => {
               >
                 Submit
               </Button>
+             
             </Box>
           </Box>
-        </Box></ProtectedModule>
+        </Box>)}</ProtectedModule>
       <ProtectedModule module="Assessments" action="view">
         <Box marginTop={5}>
           {loading ? (

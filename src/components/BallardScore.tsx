@@ -77,7 +77,7 @@ interface BallardScoreProps {
   patient_id: string;
   patient_resource_id: string;
   UserRole: string;
-
+  canEdit?: boolean;
 }
 //export const BallardScore = () => {
 export const BallardScore: React.FC<BallardScoreProps> = (props) => {
@@ -563,7 +563,7 @@ export const BallardScore: React.FC<BallardScoreProps> = (props) => {
   return (
     <>
       <ProtectedModule module="Assessments" action="create">
-        <Box sx={{ borderRadius: "25px", padding: 2 }}>
+         {props.canEdit !== false && ( <Box sx={{ borderRadius: "25px", padding: 2 }}>
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", }}>
             {/* <Typography variant="h5" sx={{ color: "#0F3B61" }}>
           Ballard Score
@@ -693,6 +693,7 @@ export const BallardScore: React.FC<BallardScoreProps> = (props) => {
                 padding: '8px 16px',
 
               }}>Reset</Button>
+            
               <Button onClick={handleSave} sx={{
                 backgroundColor: '#228BE6',
                 color: '#FFFFFF',
@@ -703,9 +704,10 @@ export const BallardScore: React.FC<BallardScoreProps> = (props) => {
                   backgroundColor: '#0D3252'
                 }
               }}>Submit</Button>
+            
             </Stack>
           </Box>
-        </Box> </ProtectedModule>
+        </Box> )}</ProtectedModule>
       <ProtectedModule module="Assessments" action="create">
         <Box marginTop={5}>
           {loading ? (

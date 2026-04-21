@@ -5,12 +5,12 @@ import { FC, useState, useEffect, useCallback, SetStateAction } from "react";
 import { PrescriptionScreen } from '../components/PrescriptionScreen';
 import { PatientOverview } from "../components/PatientOverview";
 import { FeedsScreen } from "../components/FeedsScreen";
-import { Assessments } from "../components/AssesmentScreen";
+import { AssessmentScoring } from "../components/AssesmentScoring";
 import { useLocation } from "react-router-dom";
-import { Trends1 } from "../components/Trends1";
+import { Trends1 } from "../components/Trends";
 import { Notes } from "../components/Notes";
 import { Treatment } from "../components/Treatment";
-import { Treatment1 } from "../components/Treatment1";
+import { Assessments } from "../components/Assessments";
 import { Dashboard } from '../components/Dashboard';
 import { ConsentForms } from '../components/ConsentForm';
 import { GrowthChart } from '../components/GrowthChart';
@@ -173,6 +173,51 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
   const [birthWeight, setBirthWeight] = useState(initialBirthWeight || "");
 
   const [selectedMenuItemId, setSelectedMenuItemId] = useState(initialTab || 'overview');
+  
+  const [patientLocation, setPatientLocation] = useState<string>("Loading...");
+
+  // Fetch true bed location dynamically based on Active Encounter
+  useEffect(() => {
+    const fetchLocation = async () => {
+      try {
+        if (!patientResourceId) return;
+        const baseUrl = import.meta.env.VITE_FHIRAPI_URL;
+        const encounterUrl = `${baseUrl}/Encounter?subject=Patient/${patientResourceId}&status=in-progress`;
+        const encRes = await fetch(encounterUrl, {
+          headers: { Authorization: "Basic " + btoa("fhiruser:change-password") },
+        });
+
+        if (encRes.ok) {
+          const encData = await encRes.json();
+          if (encData.entry && encData.entry.length > 0) {
+            for (const entry of encData.entry) {
+              const encounter = entry.resource;
+              if (encounter.location && encounter.location.length > 0) {
+                const locRef = encounter.location[0].location?.reference;
+                if (locRef) {
+                  const locRes = await fetch(`${baseUrl}/${locRef}`, {
+                    headers: { Authorization: "Basic " + btoa("fhiruser:change-password") },
+                  });
+                  if (locRes.ok) {
+                    const locData = await locRes.json();
+                    const locName = locData.name || locData.identifier?.[0]?.value || "Bed Assigned";
+                    setPatientLocation(locName);
+                    return;
+                  }
+                }
+              }
+            }
+          }
+        }
+        setPatientLocation("Unassigned");
+      } catch (err) {
+        console.error("Error fetching patient location:", err);
+        setPatientLocation("Unassigned");
+      }
+    };
+
+    fetchLocation();
+  }, [patientResourceId]);
 
   useEffect(() => {
     if (initialTab) {
@@ -194,7 +239,7 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
   }, [location.state, initialName, initialId, initialResourceId, initialGa, initialBirthDate, initialGender, initialBirthWeight]);
   const navigate = useNavigate();
   // ADD PERMISSION HOOK
-  const { canViewModule, loading } = usePermissions();
+  const { canViewModule, hasPermission, loading } = usePermissions();
   const [currentWeight, setCurrentWeight] = useState("");
   const [latestWeightData, setLatestWeightData] = useState<{ weight: string, gain: string }>({ weight: "", gain: "" });
 
@@ -639,7 +684,7 @@ useEffect(() => {
               sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
             >
               <Typography variant="body2" sx={{ color: isDarkMode ? theme.palette.text.secondary : "#64748B", fontWeight: 500 }}>
-                NICU 1-01
+                {patientLocation}
               </Typography>
               <ExpandMoreIcon sx={{ fontSize: 18, color: isDarkMode ? theme.palette.text.disabled : "#94A3B8" }} />
             </Stack>
@@ -878,6 +923,7 @@ useEffect(() => {
                     gestational_age={gestationAge}
                      userOrganization={props.userOrganization}
                     UserRole={props.UserRole}
+                    canEdit={hasPermission('Notes', 'edit')}
                   />
                 </Box>
               </ProtectedModule>
@@ -887,7 +933,7 @@ useEffect(() => {
           {/* Feeds */}
           {
             selectedMenuItemId === 'feeds' && (
-              <ProtectedModule module="Vitals & Trends">
+              <ProtectedModule module="Feeds & Fluids">
                 <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
                   <FeedsScreen
                     key={patientResourceId}
@@ -898,6 +944,7 @@ useEffect(() => {
                     userOrganization={props.userOrganization}
                     gestational_age={gestationAge}
                     birth_date={birthDate}
+                    canEdit={hasPermission('Feeds & Fluids', 'edit')}
                   />
                 </Box>
               </ProtectedModule>
@@ -948,7 +995,7 @@ useEffect(() => {
             selectedMenuItemId === 'initialassessment' && (
               <ProtectedModule module="Initial Assessment">
                 <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
-                  <Treatment1
+                  <Assessments
                     key={patientResourceId}
                     patient_name={patientName}
                     patient_id={patientId}
@@ -973,6 +1020,7 @@ useEffect(() => {
                     userOrganization={props.userOrganization}
                     gestational_age={gestationAge}
                     birth_date={birthDate}
+                    canEdit={hasPermission('Venti Chart', 'edit')}
                   />
                 </Box>
               </ProtectedModule>
@@ -983,7 +1031,7 @@ useEffect(() => {
             selectedMenuItemId === 'assessments' && (
               <ProtectedModule module="Assessments">
                 <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
-                  <Assessments
+                  <AssessmentScoring
                     key={patientResourceId}
                     userOrganization={props.userOrganization}
                     UserRole={props.UserRole}
@@ -992,6 +1040,7 @@ useEffect(() => {
                     patient_id={patientId}
                     birth_date={birthDate}
                     gestational_age={gestationAge}
+                    canEdit={hasPermission('Assessments', 'edit')}
                   />
                 </Box>
               </ProtectedModule>
@@ -1000,7 +1049,7 @@ useEffect(() => {
 
           {
             selectedMenuItemId === 'growthchart' && (
-              <ProtectedModule module="Diagnostics">
+              <ProtectedModule module="Growth Chart">
                 <Box sx={{ flexGrow: 1, paddingLeft: 2, paddingRight: 2, overflowY: "auto" }}>
                   <GrowthChart
                     key={patientResourceId}
@@ -1013,6 +1062,7 @@ useEffect(() => {
                     gender={gender}
                     
                     onWeightChange={handleWeightChange}
+                    canEdit={hasPermission('Growth Chart', 'edit')}
                   />
                 </Box>
               </ProtectedModule>

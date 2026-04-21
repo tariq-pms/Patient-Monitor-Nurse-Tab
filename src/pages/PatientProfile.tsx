@@ -42,7 +42,29 @@ export const PatientProfile: FC<PatientDetails> = (props): JSX.Element => {
       { headers: AUTH }
     );
     const encBundle = await encRes.json();
-    const encounter = encBundle.entry?.[0]?.resource || null;
+    let encounter = null;
+    let bedName = "-";
+
+    if (encBundle.entry && encBundle.entry.length > 0) {
+      for (const entry of encBundle.entry) {
+        const enc = entry.resource;
+        if (enc.location && enc.location.length > 0) {
+          encounter = enc;
+          const locRef = enc.location[0].location?.reference;
+          if (locRef) {
+            const locRes = await fetch(`${BASE}/${locRef}`, { headers: AUTH });
+            if (locRes.ok) {
+              const locData = await locRes.json();
+              bedName = locData.name || locData.identifier?.[0]?.value || "Bed Assigned";
+            }
+          }
+          break;
+        }
+      }
+      if (!encounter) {
+        encounter = encBundle.entry[0].resource;
+      }
+    }
 
     /* =========================
        3️⃣ RELATED PERSON
@@ -107,8 +129,7 @@ export const PatientProfile: FC<PatientDetails> = (props): JSX.Element => {
       address: patient.address?.[0]?.text || "-",
 
       /* Admission */
-      bed:
-        encounter?.location?.[0]?.location?.display || "-",
+      bed: bedName,
 
       admissionDate: encounter?.period?.start
         ? new Date(encounter.period.start).toLocaleString()

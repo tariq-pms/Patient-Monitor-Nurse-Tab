@@ -17,9 +17,10 @@ interface AssessmentsProps {
   birth_date:string;
   UserRole: string;
   userOrganization: string;
+  canEdit?: boolean;
 }
 
-export const Assessments = ({ patient_name, patient_id, patient_resource_id, UserRole,userOrganization, gestational_age,birth_date }: AssessmentsProps) => {
+export const AssessmentScoring = ({ patient_name, patient_id, patient_resource_id, UserRole,userOrganization, gestational_age,birth_date ,canEdit}: AssessmentsProps) => {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
   const [activeTab, setActiveTab] = useState(0);
@@ -42,7 +43,7 @@ export const Assessments = ({ patient_name, patient_id, patient_resource_id, Use
       }
     };
     if (patient_resource_id) checkProcedures();
-  }, [patient_resource_id]);
+  }, [patient_resource_id]); 
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -386,6 +387,7 @@ export const Assessments = ({ patient_name, patient_id, patient_resource_id, Use
             patient_id={patient_id}
             patient_resource_id={patient_resource_id}
             UserRole={UserRole}
+            canEdit={canEdit}
           />
         )}
         {activeTab === 1 && (
@@ -394,6 +396,7 @@ export const Assessments = ({ patient_name, patient_id, patient_resource_id, Use
             patient_id={patient_id}
             patient_resource_id={patient_resource_id}
             UserRole={UserRole}
+            canEdit={canEdit}
           />
         )}
         {activeTab === 2 && (
@@ -402,6 +405,7 @@ export const Assessments = ({ patient_name, patient_id, patient_resource_id, Use
             patient_id={patient_id}
             patient_resource_id={patient_resource_id}
             UserRole={UserRole}
+            canEdit={canEdit}
           />
         )}
       </Box>

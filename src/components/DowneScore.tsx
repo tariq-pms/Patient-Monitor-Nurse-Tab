@@ -53,6 +53,7 @@ interface DowneScoreProps {
   patient_id: string;
   patient_resource_id: string;
   UserRole: string;
+  canEdit?: boolean;
 
 }
 // export const DeviceInService: React.FC<DeviceInServiceProps> = ({
@@ -320,6 +321,7 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
 
   return (
     <><ProtectedModule module="Assessments" action="create">
+      {props.canEdit !== false && (
       <Box sx={{ borderRadius: '25px', padding: 2 }}>
 
 
@@ -401,11 +403,13 @@ export const DowneScore: React.FC<DowneScoreProps> = (props) => {
             >
               Reset
             </Button>
+            
             <Button variant="contained" onClick={handleSave} color="primary">
               Save
             </Button>
+           
           </Stack>
-        </Box> </Box>
+        </Box> </Box>)}
     </ProtectedModule>
       <ProtectedModule module="Assessments" action="view">
         <Box marginTop={5}>

@@ -5,7 +5,7 @@ import { ProtectedModule } from './ProtectedModule';
 import jsPDF from "jspdf";
 import DownloadIcon from '@mui/icons-material/Download';
 import CloseIcon from "@mui/icons-material/Close";
-import AddIcon from "@mui/icons-material/Add";
+
 interface NotesProps {
   userOrganization: string;
   patient_resource_id: string;
@@ -14,6 +14,7 @@ interface NotesProps {
   gestational_age: string;
   birth_date: string;
   UserRole: string;
+  canEdit?: boolean;
 }
 
 // export const DeviceInService: React.FC<DeviceInServiceProps> = ({
@@ -532,19 +533,21 @@ export const Notes: React.FC<NotesProps> = (props) => {
         >
           <DownloadIcon />
         </IconButton>
-           <Button
-          startIcon={<AddIcon fontSize="small" />}
-          onClick={() => setOpen(true)}
-          sx={{
-            backgroundColor: alpha("#228BE6", 0.1),
-            color: "#228BE6",
-            textTransform: "none",
-            borderRadius: "8px",
-            px: 3,
-          }}
-        >
-          Entry
-        </Button>
+              {props.canEdit !== false && (
+              <Button
+                variant="contained"
+                onClick={() => setOpen(true)}
+                sx={{
+                  backgroundColor: '#228BE6',
+                  color: '#fff',
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  '&:hover': { backgroundColor: '#0D3252' },
+                }}
+              >
+                Entry
+              </Button>
+              )}
         
           </Box>
           </Box>

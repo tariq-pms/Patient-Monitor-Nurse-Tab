@@ -89,6 +89,7 @@ export interface PatientDetails {
   gender: string
   currentUserName?: string;
   onWeightChange?: (weight: string) => void;
+  canEdit?: boolean;
 }
 
 // FENTON 2025 DATA (Rough Approximation based on provided images)
@@ -3568,6 +3569,7 @@ autoTable(doc, {
                     </IconButton>
 
                     {/* Entry Button */}
+                    {props.canEdit !== false && (
                     <Button
                       variant="contained"
                       startIcon={<AddIcon />}
@@ -3589,6 +3591,7 @@ autoTable(doc, {
                     >
                       Entry
                     </Button>
+                    )}
                   </Stack>
 
                   {/* Row 2: 1D / 7D Filter - REMOVED GLOBAL TOGGLE */}
@@ -4042,6 +4045,7 @@ autoTable(doc, {
                   >
                     <DownloadIcon fontSize="small" sx={{ color: isDarkMode ? theme.palette.text.secondary : '#666' }} />
                   </IconButton>
+                  {props.canEdit !== false && (
                   <Button
                     variant="outlined"
                     startIcon={<AddIcon />}
@@ -4057,6 +4061,7 @@ autoTable(doc, {
                   >
                     Weekly Entry
                   </Button>
+                  )}
                 </Stack>
               </Stack>
 

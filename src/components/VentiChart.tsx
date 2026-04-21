@@ -18,6 +18,7 @@ export interface PatientDetails {
   birth_date:string;
   UserRole: string;
   userOrganization?: string;
+  canEdit?: boolean;
 }
   export const VentiChart: React.FC<PatientDetails> = (props) => {
 const theme = useTheme();
@@ -583,21 +584,22 @@ return (
       >
         <DownloadIcon />
       </IconButton>
-      <Button
-        
-        startIcon={<AddIcon fontSize="small" />}
-        onClick={() => setOpenEntryDialog(true)}
-        sx={{
-          backgroundColor: alpha("#228BE6", 0.1),
-          color: "#228BE6",
-          textTransform: "none",
-          borderRadius: "8px",
-          px: 3,
-          height: '40px'
-        }}
-      >
-        Entry
-      </Button>
+      {props.canEdit !== false && (
+        <Button
+          startIcon={<AddIcon fontSize="small" />}
+          onClick={() => setOpenEntryDialog(true)}
+          sx={{
+            backgroundColor: alpha("#228BE6", 0.1),
+            color: "#228BE6",
+            textTransform: "none",
+            borderRadius: "8px",
+            px: 3,
+            height: '40px'
+          }}
+        >
+          Entry
+        </Button>
+      )}
     </Box>
   </Box>
 

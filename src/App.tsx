@@ -9,25 +9,19 @@ import { Backdrop, CircularProgress } from "@mui/material";
 import { useAuth0 } from "@auth0/auth0-react";
 import { UserInfo } from "./pages/UserInfo";
 import { useEffect, useState, useMemo } from "react";
-import "@fontsource/noto-sans";
 import { PatientMonitor } from "./pages/PatientMonitor";
 import { NurseMonitor } from "./pages/NurseMonitor";
-
 import { AdminPage } from "./pages/AdminPage";
 import { Organization } from "./pages/Organization";
 // import { AllPatient } from "./pages/AllPatient";
-import { DeviceProvider } from "./contexts/DeviceContext";
-
+// import { DeviceProvider } from "./contexts/DeviceContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import { PatientDetailView } from "./pages/PatientDetails";
 import { Administration } from "./pages/Administration";
-
 import { PermissionProvider } from './contexts/PermissionContext';
 import { PatientProfile } from "./pages/PatientProfile";
 import { createAppTheme } from './theme';
 import TitleUpdater from "./components/TitleUpdater";
-
-
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
@@ -102,7 +96,7 @@ function App() {
                         <CircularProgress color="inherit" />
                     </Backdrop>
                     <Header darkTheme={darkTheme} setSearchQuery={setSearchQuery} toggleDarkTheme={toggleDarkTheme} currentRoom={currentRoom} roomChange={roomChange} onToggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} onAddClick={handleOpenDialog} userOrganization={""} />
-                    <DeviceProvider>
+                    {/* <DeviceProvider> */}
                         <PermissionProvider>
                             <Routes>
                                 <Route path="/" element={<Home />} />
@@ -119,7 +113,7 @@ function App() {
                                 <Route path="/patient/:id" element={<PatientDetailView isSidebarCollapsed={isSidebarCollapsed} key={""} newData={false} userOrganization={UserOrganization} patient_id={""} device={[]} patient_resource_id={""} observation_resource={[]} communication_resource={[]} patient_name={""} darkTheme={darkTheme} toggleTheme={toggleDarkTheme} UserRole={UserRole} selectedIcon={""} gestational_age={""} birthDate={""} gender={""} />} />
                             </Routes>
                         </PermissionProvider>
-                    </DeviceProvider>
+                    {/* </DeviceProvider> */}
 
                 </NotificationProvider>
             </ThemeProvider>

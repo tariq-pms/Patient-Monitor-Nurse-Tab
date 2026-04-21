@@ -3,9 +3,9 @@
 import {Box,Typography,Tabs,Tab} from "@mui/material";
 import { FC, useEffect, useState } from "react";
 
-import{ InitialAssessment }from "../components/InitialAssessment";
-import AdmissionDetails from "../components/AdmissionDetails";
-import { NurseAssessment } from "../components/InitialAssessmentNurse";
+import{ InitialAssessment }from "./InitialAssessment";
+import AdmissionDetails from "./AdmissionDetails";
+import { NurseAssessment } from "./InitialAssessmentNurse";
 export interface PatientDetails {
   patient_resource_id: string;
   patient_name: string;
@@ -16,7 +16,7 @@ export interface PatientDetails {
   userOrganization: string;
     location: string;
 }
-export const Treatment1: FC<PatientDetails> = (props): JSX.Element => {
+export const Assessments: FC<PatientDetails> = (props): JSX.Element => {
 // export default function PatientProfile() {
 
  

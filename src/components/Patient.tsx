@@ -776,11 +776,11 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
             valueString: formData.mothersName,
           },
           {
-            url: "http://example.org/fhir/StructureDefinition/gestationalAge",
+            url: "http://hl7.org/fhir/StructureDefinition/gestationalAge",
             valueString: `${formData.gestationWeeks || 0}W ${formData.gestationDays || 0}D`,
           },
           {
-            url: "http://example.org/fhir/StructureDefinition/birthWeight",
+            url: "http://hl7.org/fhir/StructureDefinition/birthWeight",
             valueQuantity: {
               value: Number(formData.birthWeight) || 0,
               unit: "g",
@@ -789,7 +789,7 @@ const [selectedPatient, setSelectedPatient] = useState<any>(null);
             },
           },
           {
-            url: "http://example.org/fhir/StructureDefinition/nationality",
+            url: "http://hl7.org/fhir/StructureDefinition/nationality",
             valueString:
               formData.nationality === "Other"
                 ? formData.otherNationality
@@ -1079,12 +1079,15 @@ console.log("✅ FINAL patientRef:", patientRef);
     if (!selectedPatient) return;
     
     try {
-      // First, fetch the current patient data to ensure we have all fields
+      const baseUrl = import.meta.env.VITE_FHIRAPI_URL;
+      const authHeader = "Basic " + btoa("fhiruser:change-password");
+
+      // 1. Fetch current patient data to update active status
       const patientResponse = await fetch(
-        `${import.meta.env.VITE_FHIRAPI_URL}/Patient/${selectedPatient.id}`,
+        `${baseUrl}/Patient/${selectedPatient.id}`,
         {
           headers: {
-            "Authorization": "Basic " + btoa("fhiruser:change-password"),
+            "Authorization": authHeader,
             "Content-Type": "application/fhir+json"
           }
         }
@@ -1095,54 +1098,106 @@ console.log("✅ FINAL patientRef:", patientRef);
       }
   
       const currentPatient = await patientResponse.json();
-  
-      // Create the updated patient resource with all existing data
       const patientUpdate = {
-        ...currentPatient, // Spread all existing patient data
-        active: false, // Update only the active status
+        ...currentPatient,
+        active: false,
       };
-  
-      // Create a discharge encounter
-      const dischargeEncounter = {
-        resourceType: "Encounter",
-        status: "finished",
-        class: {
-          system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
-          code: "IMP",
-          display: "inpatient encounter"
-        },
-        subject: {
-          reference: `Patient/${selectedPatient.id}`
-        },
-        period: {
-          end: new Date().toISOString()
-        },
-        // Add any other relevant discharge information
-      };
-  
-      // Send both requests
-      const [encounterResponse, updateResponse] = await Promise.all([
-        fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Encounter`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/fhir+json",
-            "Authorization": "Basic " + btoa("fhiruser:change-password")
-          },
-          body: JSON.stringify(dischargeEncounter)
-        }),
-        fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Patient/${selectedPatient.id}`, {
+
+      const promises: Promise<any>[] = [];
+
+      // Save Patient
+      promises.push(
+        fetch(`${baseUrl}/Patient/${selectedPatient.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/fhir+json",
-            "Authorization": "Basic " + btoa("fhiruser:change-password")
+            "Authorization": authHeader
           },
           body: JSON.stringify(patientUpdate)
         })
-      ]);
-  
-      if (!encounterResponse.ok || !updateResponse.ok) {
-        throw new Error("Failed to discharge patient");
+      );
+
+      // 2. Query for active Encounter
+      const encounterSearchUrl = `${baseUrl}/Encounter?subject=Patient/${selectedPatient.id}&status=in-progress`;
+      const encSearchRes = await fetch(encounterSearchUrl, {
+         headers: { "Authorization": authHeader }
+      });
+      
+      if (encSearchRes.ok) {
+        const encData = await encSearchRes.json();
+        if (encData.entry && encData.entry.length > 0) {
+          // Process all active encounters
+          for (const entry of encData.entry) {
+            const encounter = entry.resource;
+            encounter.status = "finished";
+            encounter.period = encounter.period || {};
+            encounter.period.end = new Date().toISOString();
+
+            promises.push(
+              fetch(`${baseUrl}/Encounter/${encounter.id}`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/fhir+json",
+                  "Authorization": authHeader
+                },
+                body: JSON.stringify(encounter)
+              })
+            );
+
+            // 3. Device Unlinking: Find Bed ID from encounter
+            if (encounter.location && encounter.location.length > 0) {
+              const locRef = encounter.location[0].location?.reference; // "Location/bed-123"
+              if (locRef) {
+                const bedId = locRef.replace("Location/", "");
+                
+                // Fetch the Bed to locate its parent Room
+                const bedRes = await fetch(`${baseUrl}/Location/${bedId}`, {
+                   headers: { "Authorization": authHeader }
+                });
+                if (bedRes.ok) {
+                  const bedResource = await bedRes.json();
+                  const roomId = bedResource.partOf?.reference?.replace("Location/", "");
+
+                  if (roomId) {
+                    // Fetch Devices assigned to this Bed
+                    const devRes = await fetch(`${baseUrl}/Device?location=Location/${bedId}`, {
+                      headers: { "Authorization": authHeader }
+                    });
+                    if (devRes.ok) {
+                      const devData = await devRes.json();
+                      if (devData.entry) {
+                        for (const devEntry of devData.entry) {
+                          const device = devEntry.resource;
+                          // Remove patient bind
+                          if (device.patient) delete device.patient;
+                          // Remap back to Room
+                          device.location = {
+                             reference: `Location/${roomId}`,
+                             display: "Room"
+                          };
+
+                          promises.push(
+                            fetch(`${baseUrl}/Device/${device.id}`, {
+                               method: "PUT",
+                               headers: {
+                                 "Content-Type": "application/json",
+                                 "Authorization": authHeader
+                               },
+                               body: JSON.stringify(device)
+                            })
+                          );
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
+  
+      await Promise.all(promises);
   
       setSnackbar({
         open: true,
@@ -1150,7 +1205,7 @@ console.log("✅ FINAL patientRef:", patientRef);
         severity: "success"
       });
   
-      // Refresh the patient list
+      // Refresh the UI Patient list
       setPatients(prev => prev.filter(p => p.id !== selectedPatient.id));
     } catch (error) {
       console.error("Error discharging patient:", error);

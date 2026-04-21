@@ -709,8 +709,17 @@ useEffect(() => {
               throw new Error("Failed to create encounter");
             }
         
-               setSnack(true);
-                setSnackSucc(true);
+            setSnack(true);
+            setSnackSucc(true);
+
+            // 🚀 Force real-time UI refresh by toggling dependencies
+            setDeviceChangeToggle((prev: any) => !prev);
+            setDeviceChanged((prev: any) => !prev);
+            
+            // ✅ Close modal & reset selections
+            setOpen(false);
+            setSelectedPatient(null);
+            setSelectedDevice(null);
           } catch (error) {
             console.error("Error saving bed mapping:", error);
             setSnack(true);
@@ -1359,19 +1368,11 @@ spacing={2}
         const device = entry.resource ?? entry; // ✅ FIX HERE
         if (!device) return false;
 
-        const serial =
-          device.serialNumber ||
-          device.identifier?.find((id: any) =>
-            id.system?.toLowerCase().includes("serial")
-          )?.value ||
-          device.identifier?.[0]?.value ||
-          device.id;
-
-        const notLinked = !linkedDeviceIds.includes(serial);
+        // linkedDeviceIds stores the actual FHIR UUIDs (device.id), so we must compare against that
+        const notLinked = !linkedDeviceIds.includes(device.id);
 
         const locMatch =
           device.location?.reference === `Location/${props.roomId}`;
-
 
         return locMatch && notLinked;
       })

@@ -56,7 +56,9 @@ const defaultModulePermissions: ModulePermissions = {
   "Consent Forms": { create: false, view: false, edit: false, delete: false },
   "Clinical Notes":{ create: false, view: false, edit: false, delete: false },
   "Initial Assessment":{ create: false, view: false, edit: false, delete: false },
-  "Venti Chart":{ create: false, view: false, edit: false, delete: false }
+  "Venti Chart":{ create: false, view: false, edit: false, delete: false },
+  "Growth Chart":{ create: false, view: false, edit: false, delete: false },
+  "Feeds & Fluids":{ create: false, view: false, edit: false, delete: false }
 };
 
 export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) => {
@@ -338,6 +340,34 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
     }));
   };
 
+  const handleAllAccessChange = (moduleName: string, value: boolean) => {
+    setUserPermissions(prev => ({
+      ...prev,
+      [moduleName]: {
+        create: value,
+        view: value,
+        edit: value,
+        delete: value
+      }
+    }));
+  };
+
+  const handleGrantAll = () => {
+    const allAccess: ModulePermissions = {};
+    Object.keys(defaultModulePermissions).forEach(module => {
+      allAccess[module] = { create: true, view: true, edit: true, delete: true };
+    });
+    setUserPermissions(allAccess);
+  };
+
+  const handleDenyAll = () => {
+    const noAccess: ModulePermissions = {};
+    Object.keys(defaultModulePermissions).forEach(module => {
+      noAccess[module] = { create: false, view: false, edit: false, delete: false };
+    });
+    setUserPermissions(noAccess);
+  };
+
   // const handleSavePermissions = async () => {
   //   if (!selectedUser) return;
 
@@ -416,10 +446,10 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
     if (!selectedUser) return;
   
     try {
-      // 1. Search for practitioner by identifier (Auth0 user ID)
-      const searchQuery = encodeURIComponent(selectedUser.name || selectedUser.email);
+      // 1. Search for practitioner by telecom (email) to securely avoid Auth0 identifier character splitting
+      const searchQuery = encodeURIComponent(selectedUser.email);
       const searchResponse = await fetch(
-        `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?name=${searchQuery}`, 
+        `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?telecom=${searchQuery}`, 
         {
           headers: {
             Authorization: "Basic " + btoa("fhiruser:change-password"),
@@ -534,12 +564,12 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
     }
   };
   
-  // FIXED: Enhanced permission fetching with better search
+  // FIXED: Enhanced permission fetching with telecom search
   const fetchUserPermissionsFromFHIR = async (user: User) => {
     try {
-      const searchQuery = encodeURIComponent(user.name || user.email);
+      const searchQuery = encodeURIComponent(user.email);
       const response = await fetch(
-        `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?name=${searchQuery}`, 
+        `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?telecom=${searchQuery}`, 
         {
           headers: {
             Authorization: "Basic " + btoa("fhiruser:change-password"),
@@ -583,45 +613,7 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
       setUserPermissions(defaultModulePermissions);
     }
   };
-  
-  // Also update the dialog opening to reset permissions properly
-  // const handleOpenPermissionDialog = async (user: User) => {
-  //   setSelectedUser(user);
-  //   setPermissionDialogOpen(true);
-    
-  //   // Reset to defaults first, then load from FHIR
-  //   setUserPermissions(defaultModulePermissions);
-  //   await fetchUserPermissionsFromFHIR(user.user_id);
-  // };
-
-  // const debugSearchResults = async (user: User) => {
-  //   try {
-  //     const searchQuery = encodeURIComponent(user.name || user.email);
-  //     const response = await fetch(
-  //       `${import.meta.env.VITE_FHIRAPI_URL}/Practitioner?name=${searchQuery}`, 
-  //       {
-  //         headers: {
-  //           Authorization: "Basic " + btoa("fhiruser:change-password"),
-  //         },
-  //       }
-  //     );
-      
-  //     const data = await response.json();
-  //     console.log('Search results:', data);
-  //     console.log('Entries:', data.entry);
-      
-  //     if (data.entry && data.entry.length > 0) {
-  //       console.log('First entry:', data.entry[0]);
-  //       console.log('Practitioner resource:', data.entry[0].resource);
-  //       console.log('Extensions:', data.entry[0].resource?.extension);
-  //     }
-  //   } catch (error) {
-  //     console.error('Debug error:', error);
-  //   }
-  // };
-  
-  // Call this in your permission dialog opening
-  const handleOpenPermissionDialog = async (user: User) => {
+ const handleOpenPermissionDialog = async (user: User) => {
     setSelectedUser(user);
     setUserPermissions(defaultModulePermissions); // Reset first
     // debugSearchResults(user); // Temporary debug
@@ -639,13 +631,7 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
     });
   };
 
-  // const tabConfig = [
-  //   { label: "User Directory", icon: <PeopleIcon /> },
-  //   { label: "User Groups & Permission", icon: <HotelIcon /> },
-  //   { label: "Registration Request", icon: <ManageAccountsIcon /> },
-  // ];
-
-  // Permission Dialog Component
+  
   const PermissionDialog = () => (
     <Dialog 
       open={permissionDialogOpen} 
@@ -660,10 +646,14 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
       }}
       fullWidth
     >
-      <DialogTitle sx={{ fontWeight: 500, pb: 1, color: '#000000' }}>
+      <DialogTitle sx={{ fontWeight: 500, pb: 1, color: '#000000', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Stack direction="row" alignItems="center" spacing={1}>
           <LockIcon />
           <Typography variant="h6">Module Access - {selectedUser?.name || selectedUser?.email}</Typography>
+        </Stack>
+        <Stack direction="row" spacing={2}>
+          <Button variant="outlined" size="small" onClick={handleGrantAll} sx={{ borderColor: '#059669', color: '#059669', '&:hover': { backgroundColor: '#ECFDF5', borderColor: '#059669' } }}>Grant All</Button>
+          <Button variant="outlined" size="small" onClick={handleDenyAll} sx={{ borderColor: '#EF4444', color: '#EF4444', '&:hover': { backgroundColor: '#FEF2F2', borderColor: '#EF4444' } }}>Deny All</Button>
         </Stack>
       </DialogTitle>
       <DialogContent>
@@ -677,6 +667,7 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
                   <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>View</TableCell>
                   <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Edit</TableCell>
                   <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Delete</TableCell>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Full Access</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -728,6 +719,17 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
                         }}
                         checked={permissions.delete}
                         onChange={(e) => handlePermissionChange(moduleName, 'delete', e.target.checked)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                         sx={{
+                           '& .MuiSwitch-track': {
+                            backgroundColor: 'grey', 
+                          },
+                        }}
+                        checked={permissions.create && permissions.view && permissions.edit && permissions.delete}
+                        onChange={(e) => handleAllAccessChange(moduleName, e.target.checked)}
                       />
                     </TableCell>
                   </TableRow>

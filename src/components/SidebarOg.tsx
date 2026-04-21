@@ -13,7 +13,7 @@ import {
   faFile,
   faBell,
   faClipboardCheck,
-  faDroplet,
+  
   faWeightHanging,
   faTasks,
   faHeartPulse,
@@ -22,7 +22,8 @@ import {
   faFileSignature,
   faNotesMedical,
   faMaskVentilator,
-  faFaceSmile
+  faFaceSmile,
+  faFlask
 } from "@fortawesome/free-solid-svg-icons";
 import { usePermissions } from "../contexts/PermissionContext";
 import { Tooltip } from "@mui/material";
@@ -58,14 +59,14 @@ export const SidebarOg: FC<SidebarProps> = ({
   const baseMenuItems: MenuItem[] = [
     { id: 'overview', label: "Overview", icon: faTableColumns, fhirModuleName: "Patients Overview" },
     { id: 'medication', label: "Medication", icon: faPrescription, fhirModuleName: "Medications" },
-    { id: 'feeds', label: "Feeds&Nutrition", icon: faInbox, fhirModuleName: "Clinical Notes" },
+    { id: 'feeds', label: "Feeds&Nutrition", icon: faInbox, fhirModuleName: "Feeds & Fluids" },
     { id: 'trends', label: "Trends", icon: faHeartPulse, fhirModuleName: "Vitals & Trends" },
-    { id: 'diagnostics', label: "Diagnostics", icon: faDroplet, fhirModuleName: "Diagnostics" }, 
+    { id: 'diagnostics', label: "Diagnostics", icon: faFlask, fhirModuleName: "Diagnostics" }, 
      { id: 'treatment', label: "Treatment", icon: faNotesMedical, fhirModuleName: "Clinical Notes"},
     // Changed to Patients Clinical List
     { id: 'notes', label: "Notes", icon: faFile, fhirModuleName: "Clinical Notes" },
     { id: 'assessments', label: "Scoring", icon: faClipboardCheck, fhirModuleName: "Assessments" },
-    { id: 'growthchart', label: "Growth Chart", icon: faWeightHanging, fhirModuleName: "Diagnostics" },
+    { id: 'growthchart', label: "Growth Chart", icon: faWeightHanging, fhirModuleName: "Growth Chart" },
     { id: 'consentforms', label: "Consent Forms", icon: faFileSignature, fhirModuleName: "Consent Forms" },
     //  { id: 'treatment', label: "Treatment", icon: faFaceSmile, fhirModuleName: "Initial Assessment"},
      { id: 'initialassessment', label: "Assessment", icon: faFaceSmile, fhirModuleName: "Initial Assessment" },
