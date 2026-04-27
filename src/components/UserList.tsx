@@ -21,6 +21,18 @@ interface AdminPageProps {
   darkTheme: boolean;
 }
 
+interface PermissionDialogProps {
+  open: boolean;
+  onClose: () => void;
+  selectedUser: { name?: string; email?: string } | null;
+  userPermissions: ModulePermissions;
+  onPermissionChange: (moduleName: string, permissionType: string, value: boolean) => void;
+  onAllAccessChange: (moduleName: string, value: boolean) => void;
+  onGrantAll: () => void;
+  onDenyAll: () => void;
+  onSave: () => void;
+}
+
 interface User {
   user_id: string;
   email: string;
@@ -60,6 +72,100 @@ const defaultModulePermissions: ModulePermissions = {
   "Growth Chart":{ create: false, view: false, edit: false, delete: false },
   "Feeds & Fluids":{ create: false, view: false, edit: false, delete: false }
 };
+
+const PermissionDialog: FC<PermissionDialogProps> = ({
+  open, onClose, selectedUser, userPermissions,
+  onPermissionChange, onAllAccessChange, onGrantAll, onDenyAll, onSave
+}) => (
+  <Dialog
+    open={open}
+    onClose={onClose}
+    maxWidth="md"
+    PaperProps={{
+      sx: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 3,
+        color: '#000000',
+      },
+    }}
+    fullWidth
+  >
+    <DialogTitle sx={{ fontWeight: 500, pb: 1, color: '#000000', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Stack direction="row" alignItems="center" spacing={1}>
+        <LockIcon />
+        <Typography variant="h6">Module Access - {selectedUser?.name || selectedUser?.email}</Typography>
+      </Stack>
+      <Stack direction="row" spacing={2}>
+        <Button variant="outlined" size="small" onClick={onGrantAll} sx={{ borderColor: '#059669', color: '#059669', '&:hover': { backgroundColor: '#ECFDF5', borderColor: '#059669' } }}>Grant All</Button>
+        <Button variant="outlined" size="small" onClick={onDenyAll} sx={{ borderColor: '#EF4444', color: '#EF4444', '&:hover': { backgroundColor: '#FEF2F2', borderColor: '#EF4444' } }}>Deny All</Button>
+      </Stack>
+    </DialogTitle>
+    <DialogContent>
+      <Box sx={{ mt: 2 }}>
+        <TableContainer component={Paper} sx={{ backgroundColor: '#FFFFFF' }}>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: '#868E961F' }}>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Module Name</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Create</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>View</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Edit</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Delete</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Full Access</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {Object.entries(userPermissions).map(([moduleName, permissions]) => (
+                <TableRow key={moduleName} hover sx={{ backgroundColor: '#FFF' }}>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>{moduleName}</TableCell>
+                  <TableCell>
+                    <Switch
+                      checked={permissions.create}
+                      onChange={(e) => onPermissionChange(moduleName, 'create', e.target.checked)}
+                      sx={{ '& .MuiSwitch-track': { backgroundColor: 'grey' } }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Switch
+                      checked={permissions.view}
+                      onChange={(e) => onPermissionChange(moduleName, 'view', e.target.checked)}
+                      sx={{ '& .MuiSwitch-track': { backgroundColor: 'grey' } }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Switch
+                      checked={permissions.edit}
+                      onChange={(e) => onPermissionChange(moduleName, 'edit', e.target.checked)}
+                      sx={{ '& .MuiSwitch-track': { backgroundColor: 'grey' } }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Switch
+                      checked={permissions.delete}
+                      onChange={(e) => onPermissionChange(moduleName, 'delete', e.target.checked)}
+                      sx={{ '& .MuiSwitch-track': { backgroundColor: 'grey' } }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Switch
+                      checked={permissions.create && permissions.view && permissions.edit && permissions.delete}
+                      onChange={(e) => onAllAccessChange(moduleName, e.target.checked)}
+                      sx={{ '& .MuiSwitch-track': { backgroundColor: 'grey' } }}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </DialogContent>
+    <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'space-between' }}>
+      <Button onClick={onClose} variant="outlined" sx={{ textTransform: 'none', borderColor: '#D0D5DD', color: '#344054', fontWeight: 500, backgroundColor: '#FFFFFF', '&:hover': { backgroundColor: '#F9FAFB' } }}>Cancel</Button>
+      <Button onClick={onSave} variant="contained" sx={{ backgroundColor: '#228BE6', color: '#FFFFFF', '&:hover': { backgroundColor: '#228BE6', color: '#FFFFFF' }, '&.Mui-disabled': { backgroundColor: '#228BE61A', color: 'grey', opacity: 1 } }}>Save</Button>
+    </DialogActions>
+  </Dialog>
+);
 
 export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) => {
   const { isAuthenticated } = useAuth0();
@@ -632,141 +738,7 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
   };
 
   
-  const PermissionDialog = () => (
-    <Dialog 
-      open={permissionDialogOpen} 
-      onClose={() => setPermissionDialogOpen(false)}
-      maxWidth="md"
-      PaperProps={{
-        sx: {
-          backgroundColor: '#FFFFFF', // white background
-          borderRadius: 3,
-          color: '#000000', // all text color black by default
-        },
-      }}
-      fullWidth
-    >
-      <DialogTitle sx={{ fontWeight: 500, pb: 1, color: '#000000', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Stack direction="row" alignItems="center" spacing={1}>
-          <LockIcon />
-          <Typography variant="h6">Module Access - {selectedUser?.name || selectedUser?.email}</Typography>
-        </Stack>
-        <Stack direction="row" spacing={2}>
-          <Button variant="outlined" size="small" onClick={handleGrantAll} sx={{ borderColor: '#059669', color: '#059669', '&:hover': { backgroundColor: '#ECFDF5', borderColor: '#059669' } }}>Grant All</Button>
-          <Button variant="outlined" size="small" onClick={handleDenyAll} sx={{ borderColor: '#EF4444', color: '#EF4444', '&:hover': { backgroundColor: '#FEF2F2', borderColor: '#EF4444' } }}>Deny All</Button>
-        </Stack>
-      </DialogTitle>
-      <DialogContent>
-        <Box sx={{ mt: 2 }}>
-          <TableContainer component={Paper} sx={{ backgroundColor: '#FFFFFF'}}>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: '#868E961F' }}>
-                  <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Module Name</TableCell>
-                  <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Create</TableCell>
-                  <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>View</TableCell>
-                  <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Edit</TableCell>
-                  <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Delete</TableCell>
-                  <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Full Access</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {Object.entries(userPermissions).map(([moduleName, permissions]) => (
-                  <TableRow key={moduleName} hover sx={{ backgroundColor: '#FFF' }}>
-                    <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>{moduleName}</TableCell>
-                    <TableCell>
-                    <Switch
-  checked={permissions.create}
-  onChange={(e) =>
-    handlePermissionChange(moduleName, 'create', e.target.checked)
-  }
-  sx={{
- 
-    '& .MuiSwitch-track': {
-      backgroundColor: 'grey', // track color when unchecked
-    },
-  }}
-/>
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                       sx={{
-                         '& .MuiSwitch-track': {
-                          backgroundColor: 'grey', // track color when unchecked
-                        },
-                      }}
-                        checked={permissions.view}
-                        onChange={(e) => handlePermissionChange(moduleName, 'view', e.target.checked)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        sx={{
-                           '& .MuiSwitch-track': {
-                            backgroundColor: 'grey', // track color when unchecked
-                          },
-                        }}
-                        checked={permissions.edit}
-                        onChange={(e) => handlePermissionChange(moduleName, 'edit', e.target.checked)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                         sx={{
-                           '& .MuiSwitch-track': {
-                            backgroundColor: 'grey', // track color when unchecked
-                          },
-                        }}
-                        checked={permissions.delete}
-                        onChange={(e) => handlePermissionChange(moduleName, 'delete', e.target.checked)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                         sx={{
-                           '& .MuiSwitch-track': {
-                            backgroundColor: 'grey', 
-                          },
-                        }}
-                        checked={permissions.create && permissions.view && permissions.edit && permissions.delete}
-                        onChange={(e) => handleAllAccessChange(moduleName, e.target.checked)}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'space-between'}}>
-        <Button onClick={() => setPermissionDialogOpen(false)}  variant="outlined"
-      sx={{
-        textTransform: 'none',
-        borderColor: '#D0D5DD',
-        color: '#344054',
-        fontWeight: 500,
-        backgroundColor: '#FFFFFF',
-        '&:hover': {
-          backgroundColor: '#F9FAFB',
-        },
-      }}>Cancel</Button>
-        <Button onClick={handleSavePermissions} variant="contained"  sx={{
-    backgroundColor: '#228BE6',
-    color: '#FFFFFF',
-    '&:hover': {
-      backgroundColor: '#228BE6',
-    color: '#FFFFFF',
-    },
-    '&.Mui-disabled': {
-      backgroundColor: '#228BE61A',
-      color: 'grey',
-      opacity: 1, // prevents dimming
-    },
-  }}>Save</Button>
-      </DialogActions>
-    </Dialog>
-  );
+
 
   return (
     <div>
@@ -1239,7 +1211,17 @@ export const UserList: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =>
   </DialogActions>
     </Dialog>
       {/* Permission Dialog */}
-      <PermissionDialog />
+      <PermissionDialog
+        open={permissionDialogOpen}
+        onClose={() => setPermissionDialogOpen(false)}
+        selectedUser={selectedUser}
+        userPermissions={userPermissions}
+        onPermissionChange={handlePermissionChange}
+        onAllAccessChange={handleAllAccessChange}
+        onGrantAll={handleGrantAll}
+        onDenyAll={handleDenyAll}
+        onSave={handleSavePermissions}
+      />
 
       <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
         <MuiAlert
