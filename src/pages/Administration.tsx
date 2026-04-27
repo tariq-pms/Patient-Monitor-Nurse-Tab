@@ -72,8 +72,13 @@ export const Administration: FC<AdministrationPageProps> = ({
       </Stack>
     </Stack>
   );
+  console.log({
+  Patient,
+  DeviceManagement,
+  UserList,
+  Rooms
+});
   return (
-    
     <div>
 {isAuthenticated ? (
   <Box >
