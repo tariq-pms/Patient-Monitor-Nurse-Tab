@@ -17,12 +17,6 @@ export const Home = () => {
       navigate('/patient-monitor');
     }
   }, [isAuthenticated]);
-console.log({
-  Button,
-  Stack,
-  Typography,
-  OpenInNewIcon
-});
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <Box
