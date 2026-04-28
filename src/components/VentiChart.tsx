@@ -20,7 +20,7 @@ export interface PatientDetails {
   userOrganization?: string;
   canEdit?: boolean;
 }
-  export const VentiChart: React.FC<PatientDetails> = (props) => {
+export const VentiChart: React.FC<PatientDetails> = (props) => {
 const theme = useTheme();
 const isDarkMode = theme.palette.mode === "dark";
 

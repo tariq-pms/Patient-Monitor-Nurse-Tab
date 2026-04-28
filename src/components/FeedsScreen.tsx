@@ -64,7 +64,7 @@ const QuantityInput = ({
     }}
   />
 );
-  export const FeedsScreen: React.FC<PatientDetails> = (props) => {
+export const FeedsScreen: React.FC<PatientDetails> = (props) => {
 const theme = useTheme();
 const isDarkMode = theme.palette.mode === "dark";
 

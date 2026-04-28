@@ -28,13 +28,56 @@ interface ConsentFormProps {
 
 
 
+import { Theme } from "@mui/material/styles";
+
 interface CardItemProps {
   label: string;
   type: string;
   setSelectedForm: (val: string) => void;
   generateFormPDF: (label: string, type: string) => void;
   onClick: () => void;
+  isDarkMode: boolean;
+  theme: Theme;
 }
+
+// Top-level component – must be outside any render function (React error #130)
+const CardItem = ({ label, type, onClick, isDarkMode, theme }: CardItemProps) => {
+  const isClinical = type === "Clinical Form";
+  return (
+    <Paper
+      onClick={onClick}
+      elevation={0}
+      sx={{
+        p: 2,
+        borderRadius: 2,
+        backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF",
+        border: `1px solid ${isDarkMode ? theme.palette.divider : "#E5EAF2"}`,
+        cursor: "pointer",
+        transition: "0.2s",
+        "&:hover": {
+          boxShadow: "0px 4px 14px rgba(0,0,0,0.08)",
+          transform: "translateY(-2px)",
+        },
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        {isClinical ? (
+          <LocalHospitalIcon sx={{ color: "#22C55E" }} />
+        ) : (
+          <DescriptionIcon sx={{ color: "#F59E0B" }} />
+        )}
+        <Box>
+          <Typography sx={{ fontWeight: 600, fontSize: 14, color: isDarkMode ? theme.palette.text.primary : "#0F172A" }}>
+            {label}
+          </Typography>
+          <Typography sx={{ fontSize: 12, color: isDarkMode ? theme.palette.text.secondary : "#64748B" }}>
+            {type}
+          </Typography>
+        </Box>
+      </Box>
+    </Paper>
+  );
+};
 
 
 export const ConsentForms: React.FC<ConsentFormProps> = (props) => {
@@ -2119,46 +2162,7 @@ I ............................................................ aged ............
   };
 
 
-  const CardItem = ({ label, type, onClick }: CardItemProps) => {
-    const isClinical = type === "Clinical Form";
-
-    return (
-      <Paper
-        onClick={onClick}
-        elevation={0}
-        sx={{
-          p: 2,
-          borderRadius: 2,
-          backgroundColor: isDarkMode ? theme.palette.background.paper : "#FFFFFF",
-          border: `1px solid ${isDarkMode ? theme.palette.divider : "#E5EAF2"}`,
-          cursor: "pointer",
-          transition: "0.2s",
-          "&:hover": {
-            boxShadow: "0px 4px 14px rgba(0,0,0,0.08)",
-            transform: "translateY(-2px)",
-          },
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          {isClinical ? (
-            <LocalHospitalIcon sx={{ color: "#22C55E" }} />
-          ) : (
-            <DescriptionIcon sx={{ color: "#F59E0B" }} />
-          )}
-
-
-          <Box>
-            <Typography sx={{ fontWeight: 600, fontSize: 14, color: isDarkMode ? theme.palette.text.primary : "#0F172A" }}>
-              {label}
-            </Typography>
-            <Typography sx={{ fontSize: 12, color: isDarkMode ? theme.palette.text.secondary : "#64748B" }}>
-              {type}
-            </Typography>
-          </Box>
-        </Box>
-      </Paper>
-    );
-  };
+  // (CardItem is defined at module level above)
 
   const [selectedForm, setSelectedForm] = useState<any | null>(null);
   const [openPdfDialog, setOpenPdfDialog] = useState(false);
@@ -2249,7 +2253,10 @@ I ............................................................ aged ............
                   <CardItem
                     label={item.label}
                     type={item.type}
-                    onClick={() => handleFormCardClick(item)} setSelectedForm={function (): void {
+                    onClick={() => handleFormCardClick(item)}
+                    isDarkMode={isDarkMode}
+                    theme={theme}
+                    setSelectedForm={function (): void {
                       throw new Error("Function not implemented.");
                     }} generateFormPDF={function (): void {
                       throw new Error("Function not implemented.");

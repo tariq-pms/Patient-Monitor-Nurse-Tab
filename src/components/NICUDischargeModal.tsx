@@ -42,6 +42,34 @@ import jsPDF from 'jspdf';
 
 import DischargePrintTemplate from './DischargePrintTemplate';
 
+// ── Top-level sub-components (must be outside any render fn) ──────────────
+const SectionHeader = ({ number, title, accent, headingColor }: { number: string; title: string; accent: string; headingColor: string }) => (
+    <Box sx={{ mt: 5, mb: 2, borderLeft: `4px solid ${accent}`, pl: 2 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: headingColor, textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.9rem' }}>
+            {number}. {title}
+        </Typography>
+    </Box>
+);
+
+const SignatureBox = ({
+    title, sigRef, name, isDarkMode, borderColor, bg, bgSubtle, labelColor, headingColor, isViewMode
+}: {
+    title: string; sigRef: any; name: string;
+    isDarkMode: boolean; borderColor: string; bg: string; bgSubtle: string;
+    labelColor: string; headingColor: string; isViewMode: boolean;
+}) => (
+    <Box sx={{ flex: 1, minWidth: '250px' }}>
+        <Typography variant="caption" sx={{ fontWeight: 700, color: labelColor, mb: 1, display: 'block' }}>{title}</Typography>
+        <Paper elevation={0} sx={{ border: `1px solid ${borderColor}`, borderRadius: 2, bgcolor: bg, overflow: 'hidden' }}>
+            <SignatureCanvas ref={sigRef} penColor={isDarkMode ? 'white' : 'black'} canvasProps={{ width: 300, height: 80, style: { width: '100%', height: '80px' } }} />
+            <Box sx={{ p: 1, bgcolor: bgSubtle, borderTop: `1px solid ${borderColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption" sx={{ fontWeight: 600, color: headingColor }}>{name}</Typography>
+                {!isViewMode && <Button size="small" variant="text" onClick={() => sigRef.current?.clear()} sx={{ fontSize: '0.6rem' }}>Clear</Button>}
+            </Box>
+        </Paper>
+    </Box>
+);
+
 interface NICUDischargeModalProps {
     open: boolean;
     onClose: () => void;
@@ -585,46 +613,7 @@ systematicObs.component.forEach((comp: any) => {
     };
 
 
-    const SectionHeader = ({ number, title }: { number: string; title: string }) => (
-        <Box sx={{ mt: 5, mb: 2, borderLeft: `4px solid ${accent}`, pl: 2 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: headingColor, textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.9rem' }}>
-                {number}. {title}
-            </Typography>
-        </Box>
-    );
-
-    // const VitalsPill = ({ label, value, unit, field, section }: { label: string; value: string; unit: string; field: string; section: string }) => (
-    //     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 1.5, borderRight: '1px solid #E2E8F0', '&:last-child': { borderRight: 'none' }, flex: 1 }}>
-    //         <Typography variant="caption" sx={{ color: '#94A3B8', fontSize: '0.65rem', fontWeight: 700, mb: 0.5 }}>{label}</Typography>
-    //         <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
-    //             <TextField
-    //                 value={value}
-    //                 onChange={(e) => handleNestedInputChange(section, field, e.target.value)}
-    //                 variant="standard"
-    //                 inputProps={{ readOnly: isViewMode }}
-    //                 sx={{
-    //                     width: '45px',
-    //                     '& .MuiInput-input': { textAlign: 'center', fontSize: '0.9rem', fontWeight: 700, p: 0, color: '#1E293B' },
-    //                     '& .MuiInput-underline:before': { borderBottom: 'none' },
-    //                 }}
-    //             />
-    //             <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.65rem' }}>{unit}</Typography>
-    //         </Box>
-    //     </Box>
-    // );
-
-    const SignatureBox = ({ title, sigRef, name }: { title: string; sigRef: any; name: string }) => (
-        <Box sx={{ flex: 1, minWidth: '250px' }}>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: labelColor, mb: 1, display: 'block' }}>{title}</Typography>
-            <Paper elevation={0} sx={{ border: `1px solid ${borderColor}`, borderRadius: 2, bgcolor: bg, overflow: 'hidden' }}>
-                <SignatureCanvas ref={sigRef} penColor={isDarkMode ? 'white' : 'black'} canvasProps={{ width: 300, height: 80, style: { width: '100%', height: '80px' } }} />
-                <Box sx={{ p: 1, bgcolor: bgSubtle, borderTop: `1px solid ${borderColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption" sx={{ fontWeight: 600, color: headingColor }}>{name}</Typography>
-                    {!isViewMode && <Button size="small" variant="text" onClick={() => sigRef.current?.clear()} sx={{ fontSize: '0.6rem' }}>Clear</Button>}
-                </Box>
-            </Paper>
-        </Box>
-    );
+    // (SectionHeader and SignatureBox are defined at module level above)
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth PaperProps={{ sx: { borderRadius: 4, height: '95vh', display: 'flex', flexDirection: 'column', bgcolor: isDarkMode ? theme.palette.background.paper : '#FFFFFF' } }}>
@@ -677,7 +666,7 @@ systematicObs.component.forEach((comp: any) => {
                 ) : (
                     <>
                         {/* SECTION 1: ADMINISTRATION DETAILS */}
-<SectionHeader number="1" title="ADMINISTRATION DETAILS" />
+<SectionHeader accent={accent} headingColor={headingColor} number="1" title="ADMINISTRATION DETAILS" />
 <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     <Grid container spacing={3}>
         
@@ -830,7 +819,7 @@ systematicObs.component.forEach((comp: any) => {
 </Paper>
 
                         {/* SECTION 2: DISCHARGE STATUS & DATES */}
-                        <SectionHeader number="2" title="DISCHARGE STATUS & DATES" />
+                        <SectionHeader accent={accent} headingColor={headingColor} number="2" title="DISCHARGE STATUS & DATES" />
                         <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
                             <Grid container spacing={2.5}>
                                 <Grid item xs={4}>
@@ -856,7 +845,7 @@ systematicObs.component.forEach((comp: any) => {
                             </Grid>
                         </Paper>
                {/* SECTION 3: DIAGNOSIS */}
-<SectionHeader number="3" title="DIAGNOSIS" />
+<SectionHeader accent={accent} headingColor={headingColor} number="3" title="DIAGNOSIS" />
 <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     <Grid container spacing={3}>
         {/* Provisional Diagnosis */}
@@ -921,7 +910,7 @@ systematicObs.component.forEach((comp: any) => {
     </Grid>
 </Paper>
                         {/* SECTION 3: BIRTH HISTORY & MATERNAL DETAILS */}
-<SectionHeader number="4" title="BIRTH HISTORY & MATERNAL DETAILS" />
+<SectionHeader accent={accent} headingColor={headingColor} number="4" title="BIRTH HISTORY & MATERNAL DETAILS" />
 <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     
     {/* BIRTH DETAILS SUB-SECTION */}
@@ -1049,7 +1038,7 @@ systematicObs.component.forEach((comp: any) => {
     
                      
                        {/* SECTION 4: COMPLAINTS ON ADMISSION */}
-<SectionHeader number="5" title="COMPLAINTS ON ADMISSION" />
+<SectionHeader accent={accent} headingColor={headingColor} number="5" title="COMPLAINTS ON ADMISSION" />
 <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     
     {/* Chief Complaints */}
@@ -1144,7 +1133,7 @@ systematicObs.component.forEach((comp: any) => {
                         
      
                         {/* SECTION 6: INVESTIGATIONS SUMMARY */}
-<SectionHeader number="6" title="INVESTIGATIONS SUMMARY" />
+<SectionHeader accent={accent} headingColor={headingColor} number="6" title="INVESTIGATIONS SUMMARY" />
 <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     <Grid container spacing={3}>
         {/* Row 1: Hematology & Biochemistry */}
@@ -1216,7 +1205,7 @@ systematicObs.component.forEach((comp: any) => {
 
                        
                        {/* SECTION 7: COURSE IN HOSPITAL */}
-<SectionHeader number="7" title="COURSE IN HOSPITAL" />
+<SectionHeader accent={accent} headingColor={headingColor} number="7" title="COURSE IN HOSPITAL" />
 <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     <Grid container spacing={3}>
         {[
@@ -1249,7 +1238,7 @@ systematicObs.component.forEach((comp: any) => {
 </Paper>
 
                        {/* SECTION 8: TREATMENT GIVEN */}
-<SectionHeader number="8" title="TREATMENT GIVEN" />
+<SectionHeader accent={accent} headingColor={headingColor} number="8" title="TREATMENT GIVEN" />
 <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     <Grid container spacing={3}>
         {/* Row 1: Medications & Therapies */}
@@ -1307,7 +1296,7 @@ systematicObs.component.forEach((comp: any) => {
 </Paper>
 
                        {/* SECTION 9: CONDITION AT OUTCOME */}
-<SectionHeader number="9" title="CONDITION AT OUTCOME" />
+<SectionHeader accent={accent} headingColor={headingColor} number="9" title="CONDITION AT OUTCOME" />
 <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     
     <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -1400,7 +1389,7 @@ systematicObs.component.forEach((comp: any) => {
 </Paper>
 
                         {/* SECTION 10: DISCHARGE MEDICATIONS & FOLLOW-UP */}
-                        <SectionHeader number="10" title="DISCHARGE MEDICATIONS & FOLLOW-UP PLAN" />
+                        <SectionHeader accent={accent} headingColor={headingColor} number="10" title="DISCHARGE MEDICATIONS & FOLLOW-UP PLAN" />
 <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `1px solid ${borderColor}`, bgcolor: bg }}>
     
     {/* DISCHARGE MEDICATIONS TABLE */}
@@ -1554,7 +1543,7 @@ systematicObs.component.forEach((comp: any) => {
     </Grid>
 </Paper>
 
-                        <SectionHeader number="11" title="AUTHORIZATION & SIGNATURES" />
+                        <SectionHeader accent={accent} headingColor={headingColor} number="11" title="AUTHORIZATION & SIGNATURES" />
 <Paper elevation={0} sx={{ p: 0, bgcolor: 'transparent' }}>
   <Grid container spacing={3}>
     
@@ -1585,9 +1574,10 @@ systematicObs.component.forEach((comp: any) => {
 
         <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Prepared by Signature</Typography>
         <Box sx={{ position: 'relative' }}>
-          <SignatureBox 
-               sigRef={preparedBySig}
-               name={formData.summary_prepared_by} title={''}             
+          <SignatureBox
+            isDarkMode={isDarkMode} borderColor={borderColor} bg={bg} bgSubtle={bgSubtle} labelColor={labelColor} headingColor={headingColor} isViewMode={isViewMode}
+            sigRef={preparedBySig}
+            name={formData.summary_prepared_by} title={''}             
           />
           <Typography 
             variant="caption" 
@@ -1626,8 +1616,7 @@ systematicObs.component.forEach((comp: any) => {
         <Typography variant="body2" sx={{ color: labelColor, mb: 1 }}>Parent/Guardian Signature</Typography>
     <Box sx={{ position: 'relative', mb: 2 }}>
   <SignatureBox 
-    sigRef={parentSig} name="" title={''}   
-  />
+                                                    sigRef={parentSig} name="" title={''} isDarkMode={false} borderColor={''} bg={''} bgSubtle={''} labelColor={''} headingColor={''} isViewMode={false}  />
 
   <Typography 
     variant="caption"

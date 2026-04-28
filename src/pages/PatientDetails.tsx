@@ -240,6 +240,9 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
   const navigate = useNavigate();
   // ADD PERMISSION HOOK
   const { canViewModule, hasPermission, loading } = usePermissions();
+  // Get theme for dynamic colors — must be before any conditional returns (Rules of Hooks)
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [currentWeight, setCurrentWeight] = useState("");
   const [latestWeightData, setLatestWeightData] = useState<{ weight: string, gain: string }>({ weight: "", gain: "" });
 
@@ -588,9 +591,6 @@ useEffect(() => {
     );
   }
 
-  // Get theme for dynamic colors
-  const theme = useTheme();
-  const isDarkMode = theme.palette.mode === 'dark';
 
   return (
     <>
