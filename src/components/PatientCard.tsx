@@ -1,20 +1,21 @@
 
-import { Box, Card, IconButton, Stack, Typography, Chip } from "@mui/material";
+import { Box, Card, IconButton, Stack, Typography } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import {
   faArrowTrendUp,
-  faBed,
+  
   faDroplet,
   faHeartPulse,
   faNotesMedical,
   faPrescription,
   faTemperatureHalf,
 
-  faWind,
+  faLungs,
   faFlask,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
+
 
 export interface PatientDetails {
   onClick: () => void;
@@ -162,6 +163,56 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
     rr: string;
     lastUpdate: string;
   }>({ hr: "--", spo2: "--", temp: "--", rr: "--", lastUpdate: "--" });
+
+  const [patientLocation, setPatientLocation] = useState<string>("Loading...");
+
+  // Fetch Patient Location dynamically based on Active Encounter
+  useEffect(() => {
+    const fetchLocation = async () => {
+      try {
+        const baseUrl = import.meta.env.VITE_FHIRAPI_URL;
+        const encounterUrl = `${baseUrl}/Encounter?subject=Patient/${props.patient_resource_id}&status=in-progress`;
+        const encRes = await fetch(encounterUrl, {
+          headers: { Authorization: "Basic " + btoa("fhiruser:change-password") },
+        });
+
+        if (encRes.ok) {
+          const encData = await encRes.json();
+          if (encData.entry && encData.entry.length > 0) {
+            
+            // A patient might have multiple in-progress encounters (admission vs bed assignment)
+            // Iterate and find the one that specifically maps them to a Location
+            for (const entry of encData.entry) {
+              const encounter = entry.resource;
+            
+              // Check if location array exists inside this Encounter
+              if (encounter.location && encounter.location.length > 0) {
+                const locRef = encounter.location[0].location?.reference; // e.g. Location/1234
+                if (locRef) {
+                  const locRes = await fetch(`${baseUrl}/${locRef}`, {
+                    headers: { Authorization: "Basic " + btoa("fhiruser:change-password") },
+                  });
+                  
+                  if (locRes.ok) {
+                    const locData = await locRes.json();
+                    const locName = locData.name || locData.identifier?.[0]?.value || "Bed Assigned";
+                    setPatientLocation(locName);
+                    return; // Successfully found and set the location
+                  }
+                }
+              }
+            }
+          }
+        }
+        setPatientLocation("Unassigned");
+      } catch (err) {
+        console.error("Error fetching patient location:", err);
+        setPatientLocation("Unassigned");
+      }
+    };
+
+    fetchLocation();
+  }, [props.patient_resource_id]);
 
   // Fetch Growth Chart Data (Weight & Gain)
   useEffect(() => {
@@ -395,7 +446,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
     {
       icon: faTemperatureHalf,
       value: latestVitals.temp,
-      label: "°C",
+      label: "TEMP",
       color: "#F97316",
       bgColor: "#FFEDD5",
       threshold: VITAL_THRESHOLDS.temp,
@@ -409,7 +460,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
       threshold: VITAL_THRESHOLDS.spo2,
     },
     {
-      icon: faWind,
+      icon: faLungs,
       value: latestVitals.rr,
       label: "RR",
       color: "#EAB308",
@@ -421,7 +472,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
   // Action buttons config
   const actionButtons = [
     { icon: faPrescription, id: "medication", label: "Rx" },
-    { icon: faArrowTrendUp, id: "growthchart", label: "Growth" },
+    { icon: faArrowTrendUp, id: "trends", label: "Trends" },
     { icon: faNotesMedical, id: "treatment", label: "Notes" },
     { icon: faFlask, id: "diagnostics", label: "Lab" },
   ];
@@ -431,25 +482,22 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
       onClick={() => handleCardClick("overview")}
       sx={{
         mb: 2,
-        borderRadius: "12px",
+        borderRadius: "8px", // Sharper radius matching design
         overflow: "hidden",
-        border: "1px solid #E2E8F0",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)",
-         backgroundColor:props.darkTheme?'#2c2b2bb4': "#FFFFFF",
+        border: "1px solid #E5E7EB", // Lighter border
+        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+        backgroundColor: props.darkTheme ? '#1E293B' : "#FFFFFF",
         cursor: "pointer",
-      
         transition: "all 0.2s ease-in-out",
         "&:hover": {
-          boxShadow:
-            "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)",
-          transform: "translateY(-2px)",
+          boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
         },
       }}
     >
       {/* ===== HEADER BAR ===== */}
       <Box
         sx={{
-          background: "linear-gradient(135deg, #1565C0 0%, #1976D2 100%)",
+          backgroundColor: "#1E68C2", // Flat solid blue matching the design
           px: { xs: 2, md: 3 },
           py: 1.2,
           display: "flex",
@@ -460,210 +508,232 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
         }}
       >
         {/* Left: Patient Name + ID Badge */}
-        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flexWrap: "wrap" }}>
+        <Stack direction="row" alignItems="center" spacing={1.5}>
+          {/* Smiley Icon */}
+          <Box sx={{ color: "rgba(255,255,255,0.7)", display: 'flex', alignItems: 'center' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+              <line x1="9" y1="9" x2="9.01" y2="9"></line>
+              <line x1="15" y1="9" x2="15.01" y2="9"></line>
+            </svg>
+          </Box>
           <Typography
-            variant="subtitle1"
             sx={{
               color: "#FFFFFF",
-              fontWeight: 700,
-              fontSize: { xs: "0.85rem", md: "0.95rem" },
+              fontWeight: 500, // Medium weight, not too bold
+              fontSize: "0.9rem",
               letterSpacing: "0.3px",
             }}
           >
             B/O {props.patient_name}
           </Typography>
-          <Chip
-            label={props.patient_id || "N/A"}
-            size="small"
+          <Box
             sx={{
-              backgroundColor: "rgba(255,255,255,0.25)",
-              color: "#FFFFFF",
-              fontWeight: 600,
-              fontSize: "0.7rem",
-              height: "22px",
-              backdropFilter: "blur(4px)",
+              backgroundColor: "rgba(255,255,255,0.2)",
+              borderRadius: "12px",
+              px: 1.5,
+              py: 0.2,
             }}
-          />
+          >
+            <Typography sx={{ color: "#FFFFFF", fontWeight: 500, fontSize: "0.75rem" }}>
+              {props.patient_id || "N/A"}
+            </Typography>
+          </Box>
         </Stack>
 
         {/* Right: Location */}
-        <Stack direction="row" alignItems="center" spacing={0.5}>
-          <FontAwesomeIcon
-            icon={faBed}
-            style={{ color: "rgba(255,255,255,0.85)", fontSize: "12px" }}
-          />
+        <Stack direction="row" alignItems="center" spacing={0.8}>
+          <Box sx={{ color: "rgba(255,255,255,0.7)", display: 'flex', alignItems: 'center' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path><path d="M2 17h20"></path><path d="M6 8v9"></path>
+            </svg>
+          </Box>
           <Typography
-            variant="caption"
             sx={{
-              color: "rgba(255,255,255,0.9)",
-              fontWeight: 600,
-              fontSize: "0.75rem",
+              color: "#FFFFFF",
+              fontWeight: 500,
+              fontSize: "0.9rem",
             }}
           >
-            NICU 1 - A1
+            {patientLocation}
           </Typography>
         </Stack>
       </Box>
 
       {/* ===== DETAILS ROW ===== */}
-      <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 1.5, md: 2 } }}>
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          alignItems={{ xs: "flex-start", sm: "center" }}
-          justifyContent="space-between"
-          spacing={{ xs: 2, sm: 2 }}
-        >
-          {/* Left: Weight + GA */}
-          <Box sx={{ minWidth: { xs: "100%", sm: 140 } }}>
-            <Stack direction="row" alignItems="baseline" spacing={0.5}>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 700,
-                  color:props.darkTheme?"#FFFFFF": "#1E293B",
-                  fontSize: { xs: "1rem", md: "1.15rem" },
-                  lineHeight: 1.2,
-                }}
-              >
-                {currentWeight !== "--"
-                  ? `${currentWeight}${weightUnit}`
-                  : "--"}
-              </Typography>
-              {gainLoss !== "--" && (
-                <Stack direction="row" alignItems="center" spacing={0.3}>
-                  <FontAwesomeIcon
-                    icon={faArrowTrendUp}
-                    style={{
-                      color: gainLoss.includes("-") ? "#EF4444" : "#059669",
-                      fontSize: "11px",
-                      transform: gainLoss.includes("-")
-                        ? "rotate(180deg)"
-                        : "none",
-                    }}
-                  />
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontWeight: 600,
-                      color: gainLoss.includes("-") ? "#EF4444" : "#059669",
-                      fontSize: "0.7rem",
-                    }}
-                  >
-                    {gainLoss}
-                  </Typography>
-                </Stack>
-              )}
-            </Stack>
+      <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 1.5, md: 2 }, display: 'flex', flexDirection: { xs: "column", md: "row" }, alignItems: { xs: "flex-start", md: "center" }, justifyContent: "space-between", gap: 2 }}>
+        
+        {/* === Left: Weight + GA === */}
+        <Box sx={{ minWidth: 150 }}>
+          <Typography
+            sx={{
+              color: "#9CA3AF",
+              fontWeight: 600,
+              fontSize: "0.65rem",
+              textTransform: "uppercase",
+              mb: 0.4,
+            }}
+          >
+            CURR.WT
+          </Typography>
+          <Stack direction="row" alignItems="center" spacing={1}>
             <Typography
-              variant="caption"
               sx={{
-                color: props.darkTheme?"#FFFFFF":"#64748B",
-                fontWeight: 500,
-                fontSize: "0.75rem",
-                mt: 0.3,
-                display: "block",
+                fontWeight: 700,
+                color: props.darkTheme ? "#10B981" : "#059669",
+                fontSize: "1.4rem",
+                lineHeight: 1,
               }}
             >
-              GA: {props.gestational_age || "--"}
+              {currentWeight} <span style={{ fontSize: "1.1rem" }}>{weightUnit}</span>
             </Typography>
-          </Box>
+            {gainLoss !== "--" && (
+              <Box
+                sx={{
+                  backgroundColor: gainLoss.includes("-") ? "#FEE2E2" : "#D1FAE5",
+                  borderRadius: "12px",
+                  px: 1,
+                  py: 0.3,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={faArrowTrendUp}
+                  style={{
+                    color: gainLoss.includes("-") ? "#EF4444" : "#059669",
+                    fontSize: "9px",
+                    transform: gainLoss.includes("-") ? "rotate(180deg)" : "none",
+                  }}
+                />
+                <Typography
+                  sx={{
+                    fontWeight: 600,
+                    color: gainLoss.includes("-") ? "#EF4444" : "#059669",
+                    fontSize: "0.65rem",
+                  }}
+                >
+                  {gainLoss}
+                </Typography>
+              </Box>
+            )}
+          </Stack>
+          <Stack mt={2}> <Typography
+          variant="subtitle2"
+            sx={{
+              color: props.darkTheme ? "#9CA3AF" : "#64748B",
+             
+            
+            }}
+          >
+            GA: <span style={{ fontWeight: 700, color: props.darkTheme ? "#FFFFFF" : "#334155" }}>{props.gestational_age || "--"}</span>
+          </Typography></Stack>
+         
+        </Box>
 
-          {/* Center: Vitals */}
+        {/* === Center: Vitals === */}
+        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Stack
             direction="row"
-            spacing={{ xs: 1.5, sm: 2, md: 3 }}
+            spacing={{ xs: 2, sm: 3, md: 4 }}
             alignItems="center"
             justifyContent="center"
-            sx={{ flex: 1, flexWrap: "wrap", rowGap: 1 }}
+            sx={{ flexWrap: "wrap", rowGap: 1 }}
           >
             {vitalsConfig.map((vital, idx) => {
-              const outOfRange = isVitalOutOfRange(
-                vital.value,
-                vital.threshold
-              );
+              const outOfRange = isVitalOutOfRange(vital.value, vital.threshold);
               return (
-                <Stack
-                  key={idx}
-                  direction="row"
-                  alignItems="center"
-                  spacing={1}
-                >
+                <Stack key={idx} direction="row" alignItems="center" spacing={1.5}>
                   {/* Circular Icon */}
-                  <Box
+                  <Box 
                     sx={{
-                      width: { xs: 32, md: 38 },
-                      height: { xs: 32, md: 38 },
+                      width: { xs: 34, md: 36 },
+                      height: { xs: 34, md: 36 },
                       borderRadius: "50%",
-                      backgroundColor: outOfRange
-                        ? "#FEE2E2"
-                        : vital.bgColor,
+                      backgroundColor: outOfRange ? "#FEE2E2" : vital.bgColor,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       flexShrink: 0,
                     }}
                   >
+                    {/* For HR, let's use a specific thin path if faHeartPulse is too thick, but FontAwesome works */}
                     <FontAwesomeIcon
                       icon={vital.icon}
                       style={{
                         color: outOfRange ? "#EF4444" : vital.color,
-                        fontSize: "14px",
+                        fontSize: "18px",
                       }}
                     />
                   </Box>
                   {/* Value + Label */}
                   <Box>
-                    <Typography
-                      variant="body2"
+                    <Stack direction="row" alignItems="self-start" spacing={0.5}>
+                      <Typography variant="h6"
+                        sx={{
+                         
+                          color: outOfRange ? "#EF4444" : (props.darkTheme ? "#FFFFFF" : "#1F2937"),
+                          fontSize: { xs: "1rem", md: "1.05rem" },
+                          lineHeight: 1,
+                        }}
+                      >
+                        {vital.value}
+                      </Typography>
+                      <Typography variant="caption"
+  sx={{
+    color: "#9CA3AF",
+  
+    
+    lineHeight: 1,
+  }}
+>
+  {
+    vital.label === "BPM"
+      ? "bpm"
+      : vital.label === "SPO2"
+      ? "%"
+      : vital.label === "RR"
+      ? "rpm"
+      : vital.label === "TEMP"
+      ? "°C"   // ✅ ADD THIS
+      : vital.label
+  }
+</Typography>
+                    </Stack>
+                    <Typography variant="subtitle2"
                       sx={{
-                        fontWeight: 700,
-                        color: outOfRange ? "#EF4444" : "#1E293B",
-                        fontSize: { xs: "0.85rem", md: "0.95rem" },
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {vital.value}
-                      {vital.label === "SPO2" && vital.value !== "--"
-                        ? " %"
-                        : ""}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "#94A3B8",
-                        fontSize: "0.6rem",
-                        fontWeight: 500,
+                        color: "#9CA3AF",
+                       
+                        fontWeight: 600,
                         textTransform: "uppercase",
-                        lineHeight: 1,
+                        mt: 0.3,
                       }}
                     >
-                      {vital.label}
+                      {vital.label === "BPM" ? "PR" : vital.label}
                     </Typography>
                   </Box>
                 </Stack>
               );
             })}
           </Stack>
+          
+          {/* Last Update Centered Below Vitals */}
+          <Stack mt={1}> <Typography variant="caption" 
+            sx={{
+              color: "#9CA3AF",
+             
+              textAlign: "center",
+            }}
+          >
+            Last entered at {latestVitals.lastUpdate !== "--" ? latestVitals.lastUpdate.split(', ')[1] || latestVitals.lastUpdate : "--"}
+          </Typography></Stack>
+         
+        </Box>
 
-          {/* Timestamp */}
-          <Typography
-  variant="caption"
-  sx={{
-    color: "#94A3B8",
-    fontSize: "0.65rem",
-    display: { xs: "none", md: "block" },
-    minWidth: 130,
-    textAlign: "center",
-    lineHeight: 1.3,
-  }}
->
-  Last Update:
-  <br />
-  {latestVitals.lastUpdate}
-</Typography>
-
-          {/* Right: Action Buttons */}
-          <Box
+        {/* === Right: Action Buttons === */}
+       <Box
             onClick={(e) => e.stopPropagation()}
             sx={{
               display: "grid",
@@ -699,21 +769,6 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
               </IconButton>
             ))}
           </Box>
-        </Stack>
-
-        {/* Mobile-only timestamp */}
-        <Typography
-          variant="caption"
-          sx={{
-            color: "#94A3B8",
-            fontSize: "0.65rem",
-            display: { xs: "block", md: "none" },
-            mt: 1,
-            textAlign: "right",
-          }}
-        >
-          Last Update: {latestVitals.lastUpdate}
-        </Typography>
       </Box>
     </Card>
   );
