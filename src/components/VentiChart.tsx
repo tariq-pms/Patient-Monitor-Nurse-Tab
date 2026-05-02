@@ -8,6 +8,7 @@ import { alpha  } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { saveVitalsToFHIR } from '../utils/fhirVitals';
 
 export interface PatientDetails {
  
@@ -170,6 +171,28 @@ const handleSaveVentilation = async () => {
 
   try {
 
+    // 1️⃣ Write the vitals portion to the shared canonical vital-signs Observation
+    // so that Trends1 charts can pick up readings entered via VentiChart.
+    const vitalsPayload: Record<string, any> = {};
+    if (ventEntry.temp)   vitalsPayload.temp  = ventEntry.temp;
+    if (ventEntry.pulse)  vitalsPayload.pr    = ventEntry.pulse;  // pulse → pr
+    if (ventEntry.spo2)   vitalsPayload.spo2  = ventEntry.spo2;
+    if (ventEntry.rr)     vitalsPayload.rr    = ventEntry.rr;
+    if (ventEntry.bpSys && ventEntry.bpDia) {
+      vitalsPayload.bp = `${ventEntry.bpSys}/${ventEntry.bpDia}`;
+    }
+
+    if (Object.keys(vitalsPayload).length > 0) {
+      try {
+        await saveVitalsToFHIR(props.patient_resource_id, vitalsPayload);
+        console.log("✅ VentiChart vitals synced to vital-signs Observation");
+      } catch (vitalsErr) {
+        // Non-blocking — log but don't abort the main ventilation save
+        console.warn("⚠️ Failed to sync vitals from VentiChart:", vitalsErr);
+      }
+    }
+
+    // 2️⃣ Save the full ventilation-entry Observation (unchanged structure)
     const res = await fetch(`${import.meta.env.VITE_FHIRAPI_URL}/Observation`,{
       method:"POST",
       headers:{

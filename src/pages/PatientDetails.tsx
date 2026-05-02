@@ -394,6 +394,50 @@ export const PatientDetailView: FC<PatientDetails> = (props): JSX.Element => {
   //   };
   //   fetchPatients();
   // }, [props.userOrganization]);
+  const [patientLocation, setPatientLocation] = useState<string>("Loading...");
+
+  // Fetch true bed location dynamically based on Active Encounter
+  useEffect(() => {
+    const fetchLocation = async () => {
+      try {
+        if (!patientResourceId) return;
+        const baseUrl = import.meta.env.VITE_FHIRAPI_URL;
+        const encounterUrl = `${baseUrl}/Encounter?subject=Patient/${patientResourceId}&status=in-progress`;
+        const encRes = await fetch(encounterUrl, {
+          headers: { Authorization: "Basic " + btoa("fhiruser:change-password") },
+        });
+
+        if (encRes.ok) {
+          const encData = await encRes.json();
+          if (encData.entry && encData.entry.length > 0) {
+            for (const entry of encData.entry) {
+              const encounter = entry.resource;
+              if (encounter.location && encounter.location.length > 0) {
+                const locRef = encounter.location[0].location?.reference;
+                if (locRef) {
+                  const locRes = await fetch(`${baseUrl}/${locRef}`, {
+                    headers: { Authorization: "Basic " + btoa("fhiruser:change-password") },
+                  });
+                  if (locRes.ok) {
+                    const locData = await locRes.json();
+                    const locName = locData.name || locData.identifier?.[0]?.value || "Bed Assigned";
+                    setPatientLocation(locName);
+                    return;
+                  }
+                }
+              }
+            }
+          }
+        }
+        setPatientLocation("Unassigned");
+      } catch (err) {
+        console.error("Error fetching patient location:", err);
+        setPatientLocation("Unassigned");
+      }
+    };
+
+    fetchLocation();
+  }, [patientResourceId]);
 
 useEffect(() => {
   const fetchPatients = async () => {
@@ -621,7 +665,7 @@ useEffect(() => {
             </Stack>
 
             {/* Divider */}
-            <Box
+        <Box
               sx={{
                 width: "1px",
                 height: "20px",
@@ -639,7 +683,7 @@ useEffect(() => {
               sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
             >
               <Typography variant="body2" sx={{ color: isDarkMode ? theme.palette.text.secondary : "#64748B", fontWeight: 500 }}>
-                NICU 1-01
+                {patientLocation}
               </Typography>
               <ExpandMoreIcon sx={{ fontSize: 18, color: isDarkMode ? theme.palette.text.disabled : "#94A3B8" }} />
             </Stack>

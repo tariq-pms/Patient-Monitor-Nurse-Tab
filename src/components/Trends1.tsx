@@ -12,7 +12,7 @@ import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import jsPDF from "jspdf";
 import DownloadIcon from '@mui/icons-material/Download';
 import { useTheme } from "@mui/material/styles";
-
+import { saveVitalsToFHIR } from '../utils/fhirVitals';
 import Grid from "@mui/material/Grid";
 import AddIcon from '@mui/icons-material/Add';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -1318,7 +1318,7 @@ const [deviceData, setDeviceData] = useState<any[]>([]);
     setrendergraph(!rendergraph)
   }, [times])
   
-  const handleAddEntry = async (formData?: any) => {
+   const handleAddEntry = async (formData?: any) => {
     try {
       const vitals = formData?.vitals || {};
       const observation = formData?.observation1 || {};
@@ -1349,184 +1349,16 @@ const [deviceData, setDeviceData] = useState<any[]>([]);
         if (coreTemp < 10 || coreTemp > 45) return alert("Core Temperature must be between 10 and 45°C");
       }
 
-      const baseUrl = import.meta.env.VITE_FHIRAPI_URL as string;
-      const searchUrl = `${baseUrl}/Observation?subject=Patient/${props.patient_resource_id}&category=vital-signs&_sort=-date&_count=1`;
+      // Map the observation block properly so the utility parses it
+      vitals.observation = observation;
 
-      // ------------------------
-      // 🔍 Step 1: Fetch latest Observation
-      // ------------------------
-      let existingObservationId: string | null = null;
-
-      const searchResponse = await fetch(searchUrl, {
-        headers: {
-          Authorization: "Basic " + btoa("fhiruser:change-password"),
-          Accept: "application/fhir+json",
-        },
-      });
-
-      if (searchResponse.ok) {
-        // Avoid parsing empty response bodies
-        const text = await searchResponse.text();
-        if (text.trim()) {
-          const result = JSON.parse(text);
-          if (result.entry?.length > 0) {
-            existingObservationId = result.entry[0].resource.id;
-            console.log("🩺 Found existing observation:", existingObservationId);
-          }
-        }
-      } else {
-        console.warn("⚠️ Observation search failed:", searchResponse.status);
-      }
-
-      // ------------------------
-      // 🧱 Step 2: Build Components
-      // ------------------------
-      const components: any[] = [];
-
-      const addVital = (
-        code: string,
-        display: string,
-        value: any,
-        unit: string,
-        systemCode: string
-      ) => {
-        if (value !== undefined && value !== null && value !== "") {
-          components.push({
-            code: {
-              coding: [{ system: "http://loinc.org", code, display }],
-              text: display,
-            },
-            valueQuantity: {
-              value: parseFloat(value),
-              unit,
-              system: "http://unitsofmeasure.org",
-              code: systemCode,
-            },
-          });
-        }
-      };
-
-      // 🩸 Add vitals
-      addVital("8867-4", "Heart Rate", vitals.hr, "BPM", "BPM");
-      addVital("8888-4", "Pulse Rate", vitals.pr, "BPM", "BPM");
-      addVital("9279-1", "Respiratory Rate", vitals.rr, "BPM", "BPM");
-      addVital("20564-1", "SpO₂", vitals.spo2, "%", "%");
-      addVital("60839-8", "Skin Temperature", vitals.skinTemp, "°C", "°C");
-      addVital("60839-8", "Core Temperature", vitals.coreTemp, "°C", "°C");
-
-      // 🧍 BP split
-      if (vitals.bp) {
-        const [sys, dia] = vitals.bp.split("/").map((v: string) => v.trim());
-        if (sys && dia) {
-          addVital("8480-6", "Systolic BP", sys, "mm[Hg]", "mm[Hg]");
-          addVital("8462-4", "Diastolic BP", dia, "mm[Hg]", "mm[Hg]");
-        }
-      }
-
-      // 🗒️ Notes
-      // if (vitals.observation) {
-      //   components.push({
-      //     code: {
-      //       coding: [{ system: "http://loinc.org", code: "69730-0", display: "Note" }],
-      //       text: "Note",
-      //     },
-      //     valueString: vitals.observation,
-      //   });
-      // }
-
-      // ------------------------
-      // 🧠 Step 3: Add Observation fields
-      // ------------------------
-      const addObs = (field: string, label: string, value: any) => {
-        if (value) {
-          components.push({
-            code: {
-              coding: [
-                {
-                  system: "http://hospital.local/observation",
-                  code: field,
-                  display: label,
-                },
-              ],
-              text: label,
-            },
-            valueString: value,
-          });
-        }
-      };
-
-      addObs("grunting", "Grunting", observation.grunting);
-      addObs("colour", "Colour", observation.colour);
-      addObs("neuro", "Neuro", observation.neuro);
-      addObs("feeding", "Feeding", observation.feeding);
-      addObs("glucose", "Glucose", observation.glucose);
-      addObs("parentalConcerns", "Parental Concerns", observation.parentalConcerns);
-
-      // ------------------------
-      // 🏗️ Step 4: Create or Update Observation
-      // ------------------------
-      const requestBody: any = {
-        resourceType: "Observation",
-        status: "final",
-        category: [
-          {
-            coding: [
-              {
-                system: "http://terminology.hl7.org/CodeSystem/observation-category",
-                code: "vital-signs",
-                display: "Vital Signs",
-              },
-            ],
-          },
-        ],
-        code: {
-          coding: [
-            {
-              system: "http://loinc.org",
-              code: "85353-1",
-              display: "Vital signs panel",
-            },
-          ],
-          text: "Vital signs panel",
-        },
-        subject: { reference: `Patient/${props.patient_resource_id}` },
-        effectiveDateTime: new Date().toISOString(),
-        component: components,
-      };
-
-      if (existingObservationId) {
-        requestBody.id = existingObservationId;
-      }
-
-      const url = existingObservationId
-        ? `${baseUrl}/Observation/${existingObservationId}`
-        : `${baseUrl}/Observation`;
-
-      const response = await fetch(url, {
-        method: existingObservationId ? "PUT" : "POST",
-        headers: {
-          Authorization: "Basic " + btoa("fhiruser:change-password"),
-          "Content-Type": "application/fhir+json",
-          Accept: "application/fhir+json",
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      // ------------------------
-      // ✅ Step 5: Handle Response
-      // ------------------------
-      const text = await response.text();
-      if (!response.ok) {
-        console.error("❌ Failed to save:", text);
+      try {
+        await saveVitalsToFHIR(props.patient_resource_id, vitals);
+        console.log("✅ Observation saved successfully");
+      } catch (err) {
+        console.error("❌ Failed to save:", err);
         alert("Failed to save observation");
         return;
-      }
-
-      if (text.trim()) {
-        const saved = JSON.parse(text);
-        console.log("✅ Observation saved successfully:", saved);
-      } else {
-        console.log("✅ Observation saved (no response body)");
       }
 
       alert("Vitals + Observation saved successfully!");

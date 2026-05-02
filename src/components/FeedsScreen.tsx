@@ -12,6 +12,7 @@ import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useTheme } from "@mui/material/styles";
+import { saveVitalsToFHIR } from '../utils/fhirVitals';
 
 export interface PatientDetails {
   patient_resource_id: string;
@@ -99,7 +100,6 @@ const [entry, setEntry] = useState({
 });
 
 
-
 const handleAddEntry = async () => {
   if (!isFormValid) return;
 
@@ -119,11 +119,8 @@ const handleAddEntry = async () => {
       coding: [{ system: "http://loinc.org", code: "fluid-intake-output", display: "Inpatient Charting" }]
     },
     component: [
-      // --- Vitals ---
-      ...(entry.heartRate ? [{ code: { text: "Heart Rate" }, valueQuantity: { value: Number(entry.heartRate), unit: "bpm" } }] : []),
-      ...(entry.spo2 ? [{ code: { text: "SpO2" }, valueQuantity: { value: Number(entry.spo2), unit: "%" } }] : []),
-      ...(entry.temp ? [{ code: { text: "Temperature" }, valueQuantity: { value: Number(entry.temp), unit: "°C" } }] : []),
-      ...(entry.respRate ? [{ code: { text: "Respiratory Rate" }, valueQuantity: { value: Number(entry.respRate), unit: "breaths/min" } }] : []),
+      // Vitals are now saved consistently via fhirVitals.ts.
+      // Keeping them OUT of this observation payload to avoid duplication.
       
       // --- Intakes ---
       ...(entry.ivFluid ? [{ code: { text: "IV Fluid" }, valueQuantity: { value: Number(entry.ivFluid), unit: "mL" } }] : []),
@@ -152,6 +149,17 @@ const handleAddEntry = async () => {
   };
 
   try {
+    // 1️⃣ Save vitals via shared central service first
+    if (entry.heartRate || entry.spo2 || entry.temp || entry.respRate) {
+      await saveVitalsToFHIR(props.patient_resource_id, {
+        hr: entry.heartRate,
+        spo2: entry.spo2,
+        temp: entry.temp,
+        rr: entry.respRate
+      });
+    }
+
+    // 2️⃣ Save the I/O data
     const url = `${import.meta.env.VITE_FHIRAPI_URL}/Observation`;
     const response = await fetch(url, {
       method: "POST",

@@ -1,6 +1,8 @@
 
 import { Box, Card, IconButton, Stack, Typography } from "@mui/material";
 import { FC, useEffect, useState } from "react";
+import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
+import HotelIcon from '@mui/icons-material/Hotel';
 import {
   faArrowTrendUp,
   
@@ -508,15 +510,10 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
         }}
       >
         {/* Left: Patient Name + ID Badge */}
-        <Stack direction="row" alignItems="center" spacing={1.5}>
+        <Stack direction="row" alignItems="center" spacing={0.5}>
           {/* Smiley Icon */}
           <Box sx={{ color: "rgba(255,255,255,0.7)", display: 'flex', alignItems: 'center' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-              <line x1="9" y1="9" x2="9.01" y2="9"></line>
-              <line x1="15" y1="9" x2="15.01" y2="9"></line>
-            </svg>
+           <EmojiEmotionsIcon  style={{ fontSize: "20px"}} />
           </Box>
           <Typography
             sx={{
@@ -545,9 +542,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
         {/* Right: Location */}
         <Stack direction="row" alignItems="center" spacing={0.8}>
           <Box sx={{ color: "rgba(255,255,255,0.7)", display: 'flex', alignItems: 'center' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path><path d="M2 17h20"></path><path d="M6 8v9"></path>
-            </svg>
+            <HotelIcon  style={{ fontSize: "20px"}} />
           </Box>
           <Typography
             sx={{
@@ -562,41 +557,43 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
       </Box>
 
       {/* ===== DETAILS ROW ===== */}
-      <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 1.5, md: 2 }, display: 'flex', flexDirection: { xs: "column", md: "row" }, alignItems: { xs: "flex-start", md: "center" }, justifyContent: "space-between", gap: 2 }}>
+      <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 1.5, md: 2 }, display: 'flex',  alignItems:  "center" , justifyContent: "space-between", gap: 2 }}>
         
         {/* === Left: Weight + GA === */}
-        <Box sx={{ minWidth: 150 }}>
+        <Box >
           <Typography
+          variant="caption"
             sx={{
               color: "#9CA3AF",
-              fontWeight: 600,
-              fontSize: "0.65rem",
+           
               textTransform: "uppercase",
-              mb: 0.4,
+              
             }}
           >
             CURR.WT
           </Typography>
-          <Stack direction="row" alignItems="center" spacing={1}>
+          <Stack  alignItems="left" >
             <Typography
+            variant="h5"
               sx={{
-                fontWeight: 700,
+               
                 color: props.darkTheme ? "#10B981" : "#059669",
-                fontSize: "1.4rem",
-                lineHeight: 1,
+                
+                
               }}
             >
-              {currentWeight} <span style={{ fontSize: "1.1rem" }}>{weightUnit}</span>
+              {currentWeight} <span style={{ fontSize: "0.9rem" }}>{weightUnit}</span>
             </Typography>
             {gainLoss !== "--" && (
               <Box
+              
                 sx={{
                   backgroundColor: gainLoss.includes("-") ? "#FEE2E2" : "#D1FAE5",
                   borderRadius: "12px",
                   px: 1,
                   py: 0.3,
                   display: "flex",
-                  alignItems: "center",
+                  alignItems: "left",
                   gap: 0.5,
                 }}
               >
@@ -609,10 +606,11 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                   }}
                 />
                 <Typography
+                variant="caption"
                   sx={{
                     fontWeight: 600,
                     color: gainLoss.includes("-") ? "#EF4444" : "#059669",
-                    fontSize: "0.65rem",
+                    
                   }}
                 >
                   {gainLoss}
@@ -620,7 +618,7 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
               </Box>
             )}
           </Stack>
-          <Stack mt={2}> <Typography
+          <Stack mt={1}> <Typography
           variant="subtitle2"
             sx={{
               color: props.darkTheme ? "#9CA3AF" : "#64748B",
@@ -637,22 +635,27 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Stack
             direction="row"
-            spacing={{ xs: 2, sm: 3, md: 4 }}
+            spacing={{ xs: 2, sm: 3, md: 2 }}
             alignItems="center"
             justifyContent="center"
             sx={{ flexWrap: "wrap", rowGap: 1 }}
           >
             {vitalsConfig.map((vital, idx) => {
               const outOfRange = isVitalOutOfRange(vital.value, vital.threshold);
+              const noData = !vital.value || vital.value === "--";
               return (
-                <Stack key={idx} direction="row" alignItems="center" spacing={1.5}>
+                <Stack key={idx} direction="row" alignItems="center" spacing={1}>
                   {/* Circular Icon */}
                   <Box 
                     sx={{
-                      width: { xs: 34, md: 36 },
-                      height: { xs: 34, md: 36 },
+                      width: { xs: 38, md: 46 },
+                      height: { xs: 38, md: 46 },
                       borderRadius: "50%",
-                      backgroundColor: outOfRange ? "#FEE2E2" : vital.bgColor,
+                      backgroundColor: noData
+  ? "#E5E7EB"
+  : outOfRange
+  ? "#FEE2E2"
+  : vital.bgColor,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -663,7 +666,11 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                     <FontAwesomeIcon
                       icon={vital.icon}
                       style={{
-                        color: outOfRange ? "#EF4444" : vital.color,
+                        color: noData
+  ? "#9CA3AF"
+  : outOfRange
+  ? "#EF4444"
+  : vital.color,
                         fontSize: "18px",
                       }}
                     />
@@ -674,7 +681,11 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                       <Typography variant="h6"
                         sx={{
                          
-                          color: outOfRange ? "#EF4444" : (props.darkTheme ? "#FFFFFF" : "#1F2937"),
+                         color: noData
+  ? "#9CA3AF"
+  : outOfRange
+  ? "#EF4444"
+  : (props.darkTheme ? "#FFFFFF" : "#1F2937"),
                           fontSize: { xs: "1rem", md: "1.05rem" },
                           lineHeight: 1,
                         }}
@@ -702,11 +713,11 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
   }
 </Typography>
                     </Stack>
-                    <Typography variant="subtitle2"
+                    <Typography variant="caption"
                       sx={{
                         color: "#9CA3AF",
                        
-                        fontWeight: 600,
+                      
                         textTransform: "uppercase",
                         mt: 0.3,
                       }}
@@ -755,8 +766,8 @@ export const PatientCard: FC<PatientDetails> = (props): JSX.Element => {
                   backgroundColor: "#F8FAFC",
                   border: "1px solid #E2E8F0",
                   color: "#64748B",
-                  width: 58,
-                  height: 34,
+                  width: 62,
+                  height: 40,
                   transition: "all 0.15s ease",
                   "&:hover": {
                     backgroundColor: "#EFF6FF",
