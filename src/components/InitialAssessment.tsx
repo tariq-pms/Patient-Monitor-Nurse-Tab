@@ -1971,7 +1971,16 @@ const handleTableChange = (index: number, field: string, value: string) => {
       Fetching assessment data...
     </Typography>
   </Box>
-) : !report || Object.keys(report?.vitals || {}).length === 0 ? (
+) : !report || !(
+  Object.keys(report?.vitals || {}).length > 0 ||
+  Object.keys(report?.birthHistory || {}).length > 0 ||
+  Object.keys(report?.generalExam || {}).length > 0 ||
+  Object.keys(report?.systematicExam || {}).length > 0 ||
+  Object.keys(report?.anthropometry || {}).length > 0 ||
+  (report?.chiefComplaints || []).length > 0 ||
+  Object.keys(report?.planOfCare || {}).length > 0 ||
+  !!report?.signature
+) ? (
   /* --- NO REPORT FOUND STATE --- */
   <Box sx={{ 
     p: 6, textAlign: 'center', border: '2px dashed #DEE2E6', 
