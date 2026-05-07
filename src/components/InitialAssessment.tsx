@@ -561,6 +561,8 @@ const [openFullReport, setOpenFullReport] = useState(false);
   
   
   const [report, setReport] = useState<any>(null);
+  const [assessmentExists, setAssessmentExists] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 const [openEntryDialog, setOpenEntryDialog] = useState(false);
   const getObsTitle = (obs: any): string => {
     return (
@@ -623,6 +625,7 @@ const [openEntryDialog, setOpenEntryDialog] = useState(false);
         }
   
         setReport(fullReport);
+        if (provenances.length > 0) setAssessmentExists(true);
       })
       .catch(err => {
         if (err.name !== "AbortError") {
@@ -873,7 +876,7 @@ const [openEntryDialog, setOpenEntryDialog] = useState(false);
 // };
 
 const saveInitialAssessment = async (patientId: string, encounterId: string) => {
-  
+  setIsSaving(true);
   const savedResourceIds: string[] = [];
   const BASE = import.meta.env.VITE_FHIRAPI_URL;
   const AUTH = {
@@ -1533,10 +1536,12 @@ if (savedResourceIds.length > 0) {
     console.error("❌ Skipping Provenance: savedResourceIds array is empty. Check postResource helper.");
 }
     setSnackbar({ open: true, severity: "success", message: "NICU Admission completed successfully" });
+    setAssessmentExists(true);
   } catch (err) {
     console.error("❌ Failed to save Initial Assessment", err);
     setSnackbar({ open: true, severity: "error", message: "Save failed. Please check connection." });
-    throw err;
+  } finally {
+    setIsSaving(false);
   }
 };
 
@@ -5087,17 +5092,28 @@ const handleTableChange = (index: number, field: string, value: string) => {
     >
       
 
-      <Button
-        variant="contained"
-        onClick={() => { saveInitialAssessment(props.patientId, props.encounterId); } }
-        sx={{
-          textTransform: "none",
-          backgroundColor: "#228BE6",
-          px: 4
-        }}
-      >
-        Save
-      </Button>
+      {assessmentExists ? (
+        <Chip
+          icon={<CheckCircleIcon />}
+          label="Assessment Saved"
+          color="success"
+          variant="outlined"
+        />
+      ) : (
+        <Button
+          variant="contained"
+          onClick={() => { saveInitialAssessment(props.patientId, props.encounterId); }}
+          disabled={isSaving}
+          startIcon={isSaving ? <CircularProgress size={16} color="inherit" /> : null}
+          sx={{
+            textTransform: "none",
+            backgroundColor: "#228BE6",
+            px: 4
+          }}
+        >
+          {isSaving ? "Saving…" : "Save"}
+        </Button>
+      )}
     </Box>
   </AccordionDetails>
 </Accordion>

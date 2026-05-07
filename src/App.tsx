@@ -9,7 +9,6 @@ import { Backdrop, CircularProgress } from "@mui/material";
 import { useAuth0 } from "@auth0/auth0-react";
 import { UserInfo } from "./pages/UserInfo";
 import { useEffect, useState, useMemo } from "react";
-import "@fontsource/noto-sans";
 import { PatientMonitor } from "./pages/PatientMonitor";
 import { NurseMonitor } from "./pages/NurseMonitor";
 
