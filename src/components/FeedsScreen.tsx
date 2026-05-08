@@ -119,27 +119,27 @@ const handleAddEntry = async () => {
       coding: [{ system: "http://loinc.org", code: "fluid-intake-output", display: "Inpatient Charting" }]
     },
     component: [
-      // Vitals are now saved consistently via fhirVitals.ts.
-      // Keeping them OUT of this observation payload to avoid duplication.
-      
+      // --- Vitals (also stored here for table display) ---
+      // They are ALSO saved via saveVitalsToFHIR for the Trends dashboard.
+      ...(entry.temp      ? [{ code: { text: "Temperature" },       valueQuantity: { value: Number(entry.temp),      unit: "°C"  } }] : []),
+      ...(entry.heartRate ? [{ code: { text: "Heart Rate" },        valueQuantity: { value: Number(entry.heartRate), unit: "bpm" } }] : []),
+      ...(entry.respRate  ? [{ code: { text: "Respiratory Rate" },  valueQuantity: { value: Number(entry.respRate),  unit: "bpm" } }] : []),
+      ...(entry.spo2      ? [{ code: { text: "SpO2" },              valueQuantity: { value: Number(entry.spo2),      unit: "%"   } }] : []),
+
       // --- Intakes ---
-      ...(entry.ivFluid ? [{ code: { text: "IV Fluid" }, valueQuantity: { value: Number(entry.ivFluid), unit: "mL" } }] : []),
-      ...(entry.byMouth ? [{ code: { text: "By Mouth" }, valueQuantity: { value: Number(entry.byMouth), unit: "mL" } }] : []),
-      ...(entry.rtFeed ? [{ code: { text: "RT Feed" }, valueQuantity: { value: Number(entry.rtFeed), unit: "mL" } }] : []),
-      
+      ...(entry.ivFluid  ? [{ code: { text: "IV Fluid"  }, valueQuantity: { value: Number(entry.ivFluid),  unit: "mL" } }] : []),
+      ...(entry.byMouth  ? [{ code: { text: "By Mouth"  }, valueQuantity: { value: Number(entry.byMouth),  unit: "mL" } }] : []),
+      ...(entry.rtFeed   ? [{ code: { text: "RT Feed"   }, valueQuantity: { value: Number(entry.rtFeed),   unit: "mL" } }] : []),
+
       // --- Outputs (With Volumes) ---
-      // We save the volume if the box is checked AND a volume is entered. 
-      // Otherwise, we just save the boolean "true" if checked.
       ...(entry.aspiration ? [{ 
           code: { text: "Aspiration Volume" }, 
           valueQuantity: { value: Number(entry.aspirationVol || 0), unit: "mL" } 
       }] : []),
-
       ...(entry.urine ? [{ 
           code: { text: "Urine Volume" }, 
           valueQuantity: { value: Number(entry.urineVol || 0), unit: "mL" } 
       }] : []),
-
       ...(entry.stool ? [{ 
           code: { text: "Drain / Stool Volume" }, 
           valueQuantity: { value: Number(entry.stoolVol || 0), unit: "mL" } 
