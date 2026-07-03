@@ -136,6 +136,10 @@ useEffect(() => {
   if (props.admission_date) {
     const dateObj = new Date(props.admission_date);
 
+    if (isNaN(dateObj.getTime())) {
+      return;
+    }
+
     // Format date as yyyy-MM-dd (best for input type="date")
     const formattedDate = dateObj.toISOString().split("T")[0];
 
@@ -1122,7 +1126,7 @@ const components = [
          temp: vitals.temp,
          relatedText: vitals.relatedText,
        };
-       const vitalId = await saveVitalsToFHIR(patientId, vitalsData);
+       const vitalId = await saveVitalsToFHIR(patientId, vitalsData, encounterId);
        if (vitalId) {
          savedResourceIds.push(`Observation/${vitalId}`);
          console.log("✅ Vitals Synced & Tracked via fhirVitals.ts:", `Observation/${vitalId}`);
@@ -1634,7 +1638,7 @@ if (savedResourceIds.length > 0) {
           });
         }
     
-        else if (title === "vitals") {
+        else if (title === "vitals" || title === "vital signs panel") {
           obs.component?.forEach((c: any) => {
             const { label, value } = readLabelValue(c);
             if (label && value) report.vitals[label] = value;
@@ -2305,10 +2309,10 @@ const handleTableChange = (index: number, field: string, value: string) => {
   </Typography>
   <Box sx={{ border: '1px solid #f0f0f0', borderRadius: '4px', p: 1.5, mb: 3 }}>
     <Grid container spacing={2} sx={{ fontSize: '10px' }}>
-      <Grid item xs={3} display="flex" gap={1}><span>Temp</span> <strong>{report?.vitals?.["Body Temperature"] || "—"}</strong></Grid>
+      <Grid item xs={3} display="flex" gap={1}><span>Temp</span> <strong>{report?.vitals?.["Skin Temperature"] || report?.vitals?.["Core Temperature"] || report?.vitals?.["Body Temperature"] || "—"}</strong></Grid>
       <Grid item xs={3} display="flex" gap={1}><span>HR</span> <strong>{report?.vitals?.["Heart Rate"] || "—"}</strong></Grid>
       <Grid item xs={3} display="flex" gap={1}><span>RR</span> <strong>{report?.vitals?.["Respiratory Rate"] || "—"}</strong></Grid>
-      <Grid item xs={3} display="flex" gap={1}><span>SpO2</span> <strong>{report?.vitals?.["Oxygen Saturation"] || "—"}</strong></Grid>
+      <Grid item xs={3} display="flex" gap={1}><span>SpO2</span> <strong>{report?.vitals?.["SpO₂"] || report?.vitals?.["Oxygen Saturation"] || "—"}</strong></Grid>
       <Grid item xs={3} display="flex" gap={1}><span>BSL</span> <strong>{report?.anthropometry?.["Blood Glucose"] || "—"}</strong></Grid>
       <Grid item xs={3} display="flex" gap={1}><span>Weight</span> <strong>{report?.anthropometry?.["Weight"] || "—"}</strong></Grid>
       <Grid item xs={3} display="flex" gap={1}><span>Length</span> <strong>{report?.anthropometry?.["Length"] || "—"}</strong></Grid>

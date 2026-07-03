@@ -14,7 +14,7 @@ export interface VitalsData {
  * Saves vitals into a single unified Observation(category=vital-signs)
  * Uses the precise LOINC codes and display strings required by Trends1.
  */
-export const saveVitalsToFHIR = async (patientId: string, vitals: VitalsData) => {
+export const saveVitalsToFHIR = async (patientId: string, vitals: VitalsData, encounterId?: string) => {
   const baseUrl = import.meta.env.VITE_FHIRAPI_URL as string;
   const authHeaders = {
     Authorization: "Basic " + btoa("fhiruser:change-password"),
@@ -123,6 +123,7 @@ export const saveVitalsToFHIR = async (patientId: string, vitals: VitalsData) =>
       text: "Vital signs panel",
     },
     subject: { reference: `Patient/${patientId}` },
+    ...(encounterId ? { encounter: { reference: `Encounter/${encounterId}` } } : {}),
     effectiveDateTime: new Date().toISOString(),
     component: components,
   };
