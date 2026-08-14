@@ -376,7 +376,7 @@ export const NewDeviceDetails2: FC<DeviceDetails> = (props): JSX.Element => {
     //             color:darkTheme? 'white':'black' // Set the color of the scale values (ticks) to red
     //         }
     //       },
-    //       y1: {     // %
+    //       y1: { // %
     //         type: 'linear' as const,
     //         display: true,
     //         position: 'right' as const,

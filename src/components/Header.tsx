@@ -6,7 +6,7 @@ import Toolbar from '@mui/material/Toolbar';
 
 import Button from '@mui/material/Button';
 import { useNavigate, useLocation } from 'react-router-dom';
-import pmsLogo from '../assets/image 135.png';
+import pmsLogo from '../assets/logo.png';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography } from '@material-ui/core';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
@@ -154,7 +154,7 @@ export const Header: FC<HeaderProps> = (props) => {
                     alt="Logo"
                     style={{ width: isMobile ? '60px' : '120px', height: 'auto' }}
                   />
-                  <Typography
+                  {/* <Typography
                     variant="h2"
                     style={{
                       color: props.darkTheme ? 'white' : '#124D81',
@@ -165,7 +165,7 @@ export const Header: FC<HeaderProps> = (props) => {
                   >
                     <span style={{ color: '#185284' }}>Neo</span>
                     <span style={{ color: '#01AEEE', marginLeft: '2px' }}>Life</span>
-                  </Typography>
+                  </Typography> */}
                 </Box>
               </Box>
 

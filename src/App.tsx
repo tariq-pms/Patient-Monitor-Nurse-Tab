@@ -1,12 +1,12 @@
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Home } from "./pages/Home";
 // import { Rooms } from "./pages/Rooms";
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import { Header } from "./components/Header";
 import { Backdrop, CircularProgress } from "@mui/material";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth0, withAuthenticationRequired } from "@auth0/auth0-react";
 import { UserInfo } from "./pages/UserInfo";
 import { useEffect, useState, useMemo } from "react";
 import { PatientMonitor } from "./pages/PatientMonitor";
@@ -29,6 +29,23 @@ import TitleUpdater from "./components/TitleUpdater";
 
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+
+import { PatientSummaryLayout } from "./pages/patient-summary/PatientSummaryLayout";
+import { OrgLayout } from "./pages/patient-summary/OrgLayout";
+import { PatientListPage } from "./pages/patient-summary/PatientListPage";
+import { AnalyticsDashboardPage } from "./pages/patient-summary/AnalyticsDashboardPage";
+import { PatientSummaryPage } from "./pages/patient-summary/PatientSummaryPage";
+
+// Wrapped once at module scope so its identity is stable across renders --
+// wrapping inline in JSX would remount the whole patient-summary subtree
+// (losing tab/search state) every time App re-renders (e.g. dark mode toggle).
+const ProtectedPatientSummaryLayout = withAuthenticationRequired(PatientSummaryLayout, {
+    onRedirecting: () => (
+        <Backdrop sx={{ color: '#fff' }} open>
+            <CircularProgress color="inherit" />
+        </Backdrop>
+    ),
+});
 
 function App() {
     const { isLoading, getIdTokenClaims, isAuthenticated } = useAuth0();
@@ -116,6 +133,17 @@ function App() {
                                 <Route path="/organization" element={<Organization darkTheme={darkTheme} userOrganization={UserOrganization} />} />
                                 <Route path="/patient-profile/:patientId" element={<PatientProfile UserRole={UserRole} userOrganization={UserOrganization} />} />
                                 <Route path="/patient/:id" element={<PatientDetailView isSidebarCollapsed={isSidebarCollapsed} key={""} newData={false} userOrganization={UserOrganization} patient_id={""} device={[]} patient_resource_id={""} observation_resource={[]} communication_resource={[]} patient_name={""} darkTheme={darkTheme} toggleTheme={toggleDarkTheme} UserRole={UserRole} selectedIcon={""} gestational_age={""} birthDate={""} gender={""} />} />
+
+                                <Route path="/patient-summary" element={<ProtectedPatientSummaryLayout darkTheme={darkTheme} />}>
+                                    {/* Every admin is scoped to one organization (from the Auth0 token),
+                                        so there's no multi-org picker -- go straight to that org's data. */}
+                                    <Route index element={<Navigate to={`/patient-summary/org/${UserOrganization}`} replace />} />
+                                    <Route path="org/:orgId" element={<OrgLayout />}>
+                                        <Route index element={<PatientListPage />} />
+                                        <Route path="analytics" element={<AnalyticsDashboardPage />} />
+                                    </Route>
+                                    <Route path="org/:orgId/patient/:patientId" element={<PatientSummaryPage />} />
+                                </Route>
                             </Routes>
                         </PermissionProvider>
                     </DeviceProvider>

@@ -9,9 +9,9 @@ import { useAuth0 } from '@auth0/auth0-react';
 import pmsLogo from '../assets/phx_logo.png';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { DeviceManagement } from "../components/DeviceManagement";
-import { Patient } from "../components/Patient";
 import { UserList } from "../components/UserList";
 import { Rooms } from "./Rooms";
+import { ReportsPanel } from "../components/patient-summary/ReportsPanel";
 
 
 interface AdministrationPageProps {
@@ -31,9 +31,10 @@ const tabConfig = [
 ];
 
 export const Administration: FC<AdministrationPageProps> = ({
-  openDialog,
-  onCloseDialog,
+  openDialog: _openDialog,
+  onCloseDialog: _onCloseDialog,
   userOrganization,
+  darkTheme,
 }) => {
   const { isAuthenticated, loginWithRedirect } = useAuth0();
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
@@ -123,12 +124,7 @@ export const Administration: FC<AdministrationPageProps> = ({
         {(() => {
           switch (selectedIndex) {
             case 0:
-              return (
-                <Patient
-                  userOrganization={userOrganization}
-                  openDialog={openDialog}
-                  onCloseDialog={onCloseDialog} darkTheme={false}                />
-              );
+              return <ReportsPanel organizationId={userOrganization} darkTheme={darkTheme} />;
             case 1:
               return <DeviceManagement userOrganization={userOrganization} darkTheme={false} />;
             case 2:

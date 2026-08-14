@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import Button from '@mui/material/Button';
-import pmsLogo from "../assets/phx_logo.png";
+// import pmsLogo from "../assets/phx_logo.png";
+import paavaiLogo from "../assets/logo.png";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useAuth0 } from '@auth0/auth0-react';
 
@@ -42,12 +43,12 @@ useEffect(() => {if(isAuthenticated){navigate('/patient-monitor')}},[isAuthentic
             }}
           >
          {!isAuthenticated && !isLoading && (
-              <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
-                <img src={pmsLogo} alt="Phoenix" style={{maxWidth: '50%', height: 'auto',marginLeft:'auto',marginRight:'auto'}}/>
+              <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'10px'} width={'90%'}>
+                {/* <img src={pmsLogo} alt="Phoenix" style={{maxWidth: '50%', height: 'auto',marginLeft:'auto',marginRight:'auto'}}/> */}
       
-                <Typography variant='h3' color={'#2ba1e0'} fontWeight={'50'}>NeoLife Sentinel</Typography> {/*PhoenixCare Sentinel*/ }
-                <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Patient Management System</Typography>
-                <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
+                 <img src={paavaiLogo} alt="Phoenix" style={{maxWidth: '50%', height: 'auto',marginLeft:'auto',marginRight:'auto'}}/> {/*PhoenixCare Sentinel*/ }
+                <Typography variant='h6' color={'grey'} fontWeight={'50'}>Patient Management System</Typography>
+                <Stack direction={'row'}spacing={'30px'} justifyContent={'center'}>
                 <Button variant='outlined'sx={{width:'200px', height:'50px', borderRadius:'100px'}} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>
                 <Button variant='contained' sx={{width:'200px', height:'50px', borderRadius:'100px'}} onClick={() => loginWithRedirect()}>Sign In</Button>
                 
