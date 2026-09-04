@@ -28,8 +28,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useAuth0 } from '@auth0/auth0-react';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import pmsLogo from '../assets/phx_logo.png';
 
 interface AdminPageProps {
   userOrganization: string;
@@ -49,7 +47,7 @@ interface User {
 }
 
 export const AdminPage: FC<AdminPageProps> = ({ userOrganization, darkTheme }) => {
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
+  const { isAuthenticated } = useAuth0();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<User[]>([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -198,36 +196,8 @@ export const AdminPage: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =
       });
   };
 
-  const renderAuthPrompt = () => (
-    <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'}>
-      <img 
-        src={pmsLogo} 
-        alt="Phoenix" 
-        style={{ maxWidth: '20%', height: 'auto', margin: '0 auto' }} 
-      />
-      <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography>
-      <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
-      <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
-        <Button 
-          variant='outlined' 
-          sx={{ width: '200px', height: '50px', borderRadius: '100px' }} 
-          endIcon={<OpenInNewIcon />} 
-          target='_blank' 
-          href='https://www.phoenixmedicalsystems.com/'
-        >
-          Product page
-        </Button>
-        <Button 
-          variant='contained' 
-          sx={{ width: '200px', height: '50px', borderRadius: '100px' }} 
-          onClick={() => loginWithRedirect()}
-        >
-          Sign In
-        </Button>
-      </Stack>
-    </Stack>
-  );
-
+  // Auth is enforced at the route level (App.tsx wraps this page with
+  // withAuthenticationRequired), so this always renders authenticated.
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
@@ -241,7 +211,6 @@ export const AdminPage: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =
 
   return (
     <div>
-      {isAuthenticated ? (
         <Box sx={{ p: 2 }}>
           
           <Stack
@@ -450,7 +419,6 @@ export const AdminPage: FC<AdminPageProps> = ({ userOrganization, darkTheme }) =
             </DialogActions>
           </Dialog>
         </Box>
-      ) : renderAuthPrompt()}
 
       <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
         <MuiAlert

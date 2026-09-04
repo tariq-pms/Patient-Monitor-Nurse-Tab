@@ -36,16 +36,27 @@ import { PatientListPage } from "./pages/patient-summary/PatientListPage";
 import { AnalyticsDashboardPage } from "./pages/patient-summary/AnalyticsDashboardPage";
 import { PatientSummaryPage } from "./pages/patient-summary/PatientSummaryPage";
 
-// Wrapped once at module scope so its identity is stable across renders --
-// wrapping inline in JSX would remount the whole patient-summary subtree
-// (losing tab/search state) every time App re-renders (e.g. dark mode toggle).
-const ProtectedPatientSummaryLayout = withAuthenticationRequired(PatientSummaryLayout, {
+// Shared spinner shown mid-redirect for every auth-protected route below.
+const authRedirectOptions = {
     onRedirecting: () => (
         <Backdrop sx={{ color: '#fff' }} open>
             <CircularProgress color="inherit" />
         </Backdrop>
     ),
-});
+};
+
+// Wrapped once at module scope so identity is stable across renders --
+// wrapping inline in JSX would remount these subtrees (losing local state)
+// every time App re-renders (e.g. dark mode toggle). Without this wrapper,
+// visiting one of these routes while logged out (expired session, direct
+// link, back button) used to fall through to that page's own stale
+// "NeoLife Sentinel" sign-in screen instead of going straight to Auth0.
+const ProtectedPatientSummaryLayout = withAuthenticationRequired(PatientSummaryLayout, authRedirectOptions);
+const ProtectedPatientMonitor = withAuthenticationRequired(PatientMonitor, authRedirectOptions);
+const ProtectedNurseMonitor = withAuthenticationRequired(NurseMonitor, authRedirectOptions);
+const ProtectedAdminPage = withAuthenticationRequired(AdminPage, authRedirectOptions);
+const ProtectedAdministration = withAuthenticationRequired(Administration, authRedirectOptions);
+const ProtectedOrganization = withAuthenticationRequired(Organization, authRedirectOptions);
 
 function App() {
     const { isLoading, getIdTokenClaims, isAuthenticated } = useAuth0();
@@ -124,13 +135,13 @@ function App() {
                                 <Route path="/" element={<Home />} />
                                 <Route path="/user" element={<UserInfo />} />
                                 {/* <Route path="/rooms" element={<Rooms roomModified={roomModified} userOrganization={UserOrganization} darkTheme={darkTheme} />} /> */}
-                                <Route path="/patient-monitor" element={<PatientMonitor currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
-                                <Route path="/nurse-monitor" element={<NurseMonitor currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
+                                <Route path="/patient-monitor" element={<ProtectedPatientMonitor currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
+                                <Route path="/nurse-monitor" element={<ProtectedNurseMonitor currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} />
                                 {/* <Route path="/all-patient" element={<AllPatient searchQuery={searchQuery} currentRoom={currentRoom} userOrganization={UserOrganization} darkTheme={darkTheme} />} /> */}
 
-                                <Route path="/admin" element={<AdminPage userOrganization={UserOrganization} darkTheme={darkTheme} />} />
-                                <Route path="/administration" element={<Administration isSidebarCollapsed={isSidebarCollapsed} openDialog={openDialog} userOrganization={UserOrganization} darkTheme={darkTheme} onCloseDialog={handleCloseDialog} />} />
-                                <Route path="/organization" element={<Organization darkTheme={darkTheme} userOrganization={UserOrganization} />} />
+                                <Route path="/admin" element={<ProtectedAdminPage userOrganization={UserOrganization} darkTheme={darkTheme} />} />
+                                <Route path="/administration" element={<ProtectedAdministration isSidebarCollapsed={isSidebarCollapsed} openDialog={openDialog} userOrganization={UserOrganization} darkTheme={darkTheme} onCloseDialog={handleCloseDialog} />} />
+                                <Route path="/organization" element={<ProtectedOrganization darkTheme={darkTheme} userOrganization={UserOrganization} />} />
                                 <Route path="/patient-profile/:patientId" element={<PatientProfile UserRole={UserRole} userOrganization={UserOrganization} />} />
                                 <Route path="/patient/:id" element={<PatientDetailView isSidebarCollapsed={isSidebarCollapsed} key={""} newData={false} userOrganization={UserOrganization} patient_id={""} device={[]} patient_resource_id={""} observation_resource={[]} communication_resource={[]} patient_name={""} darkTheme={darkTheme} toggleTheme={toggleDarkTheme} UserRole={UserRole} selectedIcon={""} gestational_age={""} birthDate={""} gender={""} />} />
 

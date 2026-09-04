@@ -25,13 +25,11 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import MuiAlert from '@mui/material/Alert';
 // import { Sidebar1 } from '../components/Sidebar1';
-import pmsLogo from '../assets/phx_logo.png';
 import {ModuleToggleList } from '../components/ModuleToggleList';
 import { OrganizationDeviceList } from '../components/OrganizationDeviceList';
 // import { ServiceDetails } from '../components/ServiceDetails';
@@ -93,7 +91,7 @@ export const Organization : React.FC<OrganizationProps> = ({ userOrganization })
     severity: 'success' as 'success' | 'error'
   });
 
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
+  const { isAuthenticated } = useAuth0();
 
  
   const formatDate = (dateString?: string): string => {
@@ -427,39 +425,10 @@ export const Organization : React.FC<OrganizationProps> = ({ userOrganization })
     </Box>
   );
 
-  const renderAuthPrompt = () => (
-    <Stack width={'100%'} marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'}>
-      <img 
-        src={pmsLogo} 
-        alt="Phoenix" 
-        style={{ maxWidth: '20%', height: 'auto', margin: '0 auto' }} 
-      />
-      <Typography variant='h3' color={'#0CB0D3'} fontWeight={'50'}>NeoLife Sentinel</Typography>
-      <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
-      <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
-        <Button 
-          variant='outlined' 
-          sx={{ width: '200px', height: '50px', borderRadius: '100px' }} 
-          endIcon={<OpenInNewIcon />} 
-          target='_blank' 
-          href='https://www.phoenixmedicalsystems.com/'
-        >
-          Product page
-        </Button>
-        <Button 
-          variant='contained' 
-          sx={{ width: '200px', height: '50px', borderRadius: '100px' }} 
-          onClick={() => loginWithRedirect()}
-        >
-          Sign In
-        </Button>
-      </Stack>
-    </Stack>
-  );
-
+  // Auth is enforced at the route level (App.tsx wraps this page with
+  // withAuthenticationRequired), so this always renders authenticated.
   return (
     <Box sx={{ display: "flex", gap: 2 }}>
-       {isAuthenticated ? (
       <>
 <Box width={'100%'} sx={{ p: 2 }}>
           {!selectedOrganization ? renderOrganizationList() : renderOrganizationDetail()}
@@ -617,7 +586,6 @@ export const Organization : React.FC<OrganizationProps> = ({ userOrganization })
             </MuiAlert>
           </Snackbar>
         </Box></>
-      ) : renderAuthPrompt()}
     </Box>
   );
 };

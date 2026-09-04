@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, SetStateAction, useCallback } from 'react';
-import { Box, Typography, Stack, Button, DialogContent, DialogActions, Dialog, TextField, DialogTitle, Snackbar, Alert, Tabs, Tab, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Typography, Button, DialogContent, DialogActions, Dialog, TextField, DialogTitle, Snackbar, Alert, Tabs, Tab, useTheme, useMediaQuery } from '@mui/material';
 import { useAuth0 } from '@auth0/auth0-react';
-import pmsLogo from '../assets/phx_logo.png';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { PatientCard } from '../components/PatientCard';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
@@ -60,8 +58,8 @@ export const NurseMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, 
   const [parentDevice, setParentDevice] = useState<{ [key: string]: any }>({});
   const [parentObs, setParentObs] = useState<{ [key: string]: any }>({});
   const [parentComm, setParentComm] = useState<{ [key: string]: any }>({});
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
-  const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated } = useAuth0();
+  const [, setIsLoading] = useState(true);
   const [pageNumber, setPageNumber] = useState(1);
   // const [selectedTab, setSelectedTab] = useState<number>(1); // Default to Patients tab
   // const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
@@ -496,17 +494,8 @@ export const NurseMonitor: React.FC<PatientMonitorProps> = ({ userOrganization, 
           </Dialog>
         </Box>
       )}
-      {!isAuthenticated && !isLoading && (
-        <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'} width={'70%'}>
-          <img src={pmsLogo} alt="Phoenix" style={{ maxWidth: '50%', height: 'auto', marginLeft: 'auto', marginRight: 'auto' }} />
-          <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography>
-          <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Patient Management System</Typography>
-          <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
-            <Button variant='outlined' sx={{ width: '200px', height: '50px', borderRadius: '100px' }} endIcon={<OpenInNewIcon />} target='_blank' href='https://www.phoenixmedicalsystems.com/'>Product page</Button>
-            <Button variant='contained' sx={{ width: '200px', height: '50px', borderRadius: '100px' }} onClick={() => loginWithRedirect()}>Sign In</Button>
-          </Stack>
-        </Stack>
-      )}
+      {/* Auth is enforced at the route level (App.tsx wraps this page with
+          withAuthenticationRequired), so this always renders authenticated. */}
       <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
         <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: "100%" }}>
           {snackbarMessage}

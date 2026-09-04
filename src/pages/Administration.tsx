@@ -1,13 +1,10 @@
-import { Box, Typography, Tabs, Tab, useMediaQuery, Stack, Button } from "@mui/material";
+import { Box, Typography, Tabs, Tab, useMediaQuery } from "@mui/material";
 import { FC, useState } from "react";
 import { useTheme } from "@mui/material/styles";
 import PeopleIcon from "@mui/icons-material/People";
 import HotelIcon from "@mui/icons-material/Hotel";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import DevicesIcon from "@mui/icons-material/Devices";
-import { useAuth0 } from '@auth0/auth0-react';
-import pmsLogo from '../assets/phx_logo.png';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { DeviceManagement } from "../components/DeviceManagement";
 import { UserList } from "../components/UserList";
 import { Rooms } from "./Rooms";
@@ -36,7 +33,6 @@ export const Administration: FC<AdministrationPageProps> = ({
   userOrganization,
   darkTheme,
 }) => {
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -44,39 +40,10 @@ export const Administration: FC<AdministrationPageProps> = ({
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setSelectedIndex(newValue);
   };
-  const renderAuthPrompt = () => (
-    <Stack marginTop={'9%'} justifyContent={'center'} textAlign={'center'} spacing={'40px'}>
-      <img 
-        src={pmsLogo} 
-        alt="Phoenix" 
-        style={{ maxWidth: '20%', height: 'auto', margin: '0 auto' }} 
-      />
-      <Typography variant='h3' color={'white'} fontWeight={'50'}>NeoLife Sentinel</Typography>
-      <Typography variant='h6' color={'grey'} fontWeight={'50'}>Remote Device Monitoring System</Typography>
-      <Stack direction={'row'} spacing={'30px'} justifyContent={'space-evenly'}>
-        <Button 
-          variant='outlined' 
-          sx={{ width: '200px', height: '50px', borderRadius: '100px' }} 
-          endIcon={<OpenInNewIcon />} 
-          target='_blank' 
-          href='https://www.phoenixmedicalsystems.com/'
-        >
-          Product page
-        </Button>
-        <Button 
-          variant='contained' 
-          sx={{ width: '200px', height: '50px', borderRadius: '100px' }} 
-          onClick={() => loginWithRedirect()}
-        >
-          Sign In
-        </Button>
-      </Stack>
-    </Stack>
-  );
+  // Auth is enforced at the route level (App.tsx wraps this page with
+  // withAuthenticationRequired), so this always renders authenticated.
   return (
-    
     <div>
-{isAuthenticated ? (
   <Box >
        <Box sx={{  borderColor: "divider",border:'0.1px solid #DEE2E6'}}>
       <Tabs
@@ -144,8 +111,7 @@ export const Administration: FC<AdministrationPageProps> = ({
       </Box>
    
   </Box>
-) : renderAuthPrompt()}
-{/* 
+{/*
 <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
   <MuiAlert
     elevation={6}
